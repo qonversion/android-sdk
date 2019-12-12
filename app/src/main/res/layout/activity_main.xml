@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    android:scrollIndicators="bottom">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/monitor"
+        android:gravity="center"
+        android:text="say hello"
+        android:textSize="18sp"
+        android:textIsSelectable="true"
+        android:scrollbars="vertical"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Purchase"
+        android:id="@+id/billing_flow_purchase"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Subscription"
+        android:id="@+id/billing_flow_subscription"/>
+
+</LinearLayout>
