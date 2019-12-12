@@ -18,14 +18,3 @@ fun init(@Body request: InitRequest): Call<BaseResponse<Response>>
 fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<Response>>
 
 }
-
-//    @POST("init")
-//    suspend fun init(@Body request: InitRequest): BaseResponse<Response>
-//
-//    @POST("purchase")
-//    suspend fun purchase(@Body request: PurchaseRequest): BaseResponse<Response>
-//@POST("init")
-//fun init(@Body request: InitRequest): Call<BaseResponse<Response>>
-//
-//@POST("purchase")
-//fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<Response>>

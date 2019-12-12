@@ -3,10 +3,8 @@ package com.qonversion.android.app
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
-import com.qonversion.android.sdk.PurchaseConverter
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionCallback
-import com.qonversion.android.sdk.entity.Purchase
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -71,19 +69,6 @@ class MainActivity : AppCompatActivity() {
                 for (p in purchases) {
                     sendPurchase(p)
                 }
-            } else {
-                sendPurchase(Purchase(
-                    "{\n" +
-                            "  \"orderId\": \"GPA.3368-3431-6959-29917\",\n" +
-                            "  \"packageName\": \"com.qonversion.android.sdk\",\n" +
-                            "  \"productId\": \"conversion_test_purchase\",\n" +
-                            "  \"purchaseTime\": 1575404326564,\n" +
-                            "  \"purchaseState\": 0,\n" +
-                            "  \"purchaseToken\": \"ahkjgfmodjjkklgkgphhkenm.AO-J1OxFQZXEruaWf2oatep7EBjv03zcXzZda7_Vxi7giVHvy5Xn0qlsEOZrqp-GsmxQcoUl21CgiPD-jfNkf5GqqE3LviUvpLrEvLwqXRkmGYCaJSzOSgm97CJOiS6bjGpEe_M-PHhy71NKn6MHuiKK9D-Mn6fNgw\",\n" +
-                            "  \"acknowledged\": false\n" +
-                            "}",
-                    ""
-                ))
             }
         }.build()
 
