@@ -47,5 +47,5 @@ dependencies {
 
     implementation 'com.android.billingclient:billing:2.0.3'
 
-    api project(':sdk')
+    implementation project(':sdk')
 }

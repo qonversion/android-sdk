@@ -6,6 +6,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.entity.Ads
 import com.qonversion.android.sdk.storage.TokenStorage
+import java.lang.RuntimeException
 
 class Qonversion private constructor(
     private val repository: QonversionRepository,
@@ -38,6 +39,9 @@ class Qonversion private constructor(
         ) : Qonversion {
             if (instance != null) {
                 return instance!!
+            }
+            if (key.isNullOrBlank()) {
+                throw RuntimeException("Qonversion initialization error! Key should not be empty!")
             }
             val storage = TokenStorage(PreferenceManager.getDefaultSharedPreferences(context))
             val environment = EnvironmentProvider(context)
