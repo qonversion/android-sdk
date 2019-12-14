@@ -8,7 +8,7 @@
 
 ## Authors
 
-Developed by Team of [Qonversion](https://qonversion.io), and written by [Bogdan Novikov](https://github.com/Axcic) & [Sam Mejlumyan](https://github.com/smejl)
+Developed by Team of [Qonversion](https://qonversion.io), and written by [Artemy Glukhov](https://github.com/ArtemyGlukhov)
 
 ## License
 
