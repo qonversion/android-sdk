@@ -35,7 +35,7 @@ In your `BillingClient` listener, when `onPurchasesUpdated` callback has been ca
 ### Java
 
 ```java
-    private void purchase(final SkuDetails details, final Purchase purchase) {
+    private void purchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
         Qonversion.getInstance().purchase(details, purchase);
     }
 ```
