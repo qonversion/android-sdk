@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionCallback
+import com.qonversion.android.sdk.billing.Billing
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -13,7 +14,7 @@ class MainActivity : AppCompatActivity() {
     private val skuDetailsMap = mutableMapOf<String, SkuDetails>()
     private val sku_purchase = "conversion_test_purchase"
     private val sku_subscription = "conversion_test_subscribe"
-    private lateinit var billingClient : BillingClient
+    private var billingClient : Billing? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity() {
             .setSkusList(listOf(purchaseId))
             .build()
 
-        billingClient.querySkuDetailsAsync(params, object: SkuDetailsResponseListener {
+        billingClient?.querySkuDetailsAsync(params, object: SkuDetailsResponseListener {
             override fun onSkuDetailsResponse(
                 billingResult: BillingResult?,
                 skuDetailsList: MutableList<SkuDetails>?
@@ -56,23 +57,13 @@ class MainActivity : AppCompatActivity() {
         val billingFlowParams = BillingFlowParams.newBuilder()
             .setSkuDetails(skuDetailsMap[purchaseId])
             .build()
-        billingClient.launchBillingFlow(this, billingFlowParams)
+        billingClient?.launchBillingFlow(this, billingFlowParams)
     }
 
     private fun initBilling() {
-        billingClient = BillingClient
-            .newBuilder(this)
-            .enablePendingPurchases()
-            .setListener { billingResult, purchases ->
-            if (billingResult?.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                // here purchase is accepted
-                for (p in purchases) {
-                    sendPurchase(p)
-                }
-            }
-        }.build()
+        billingClient = Qonversion.instance?.billingClient
 
-        billingClient.startConnection(object : BillingClientStateListener {
+        billingClient?.startConnection(object : BillingClientStateListener {
             override fun onBillingServiceDisconnected() {
                 monitor.text = "Billing Connection failed"
             }
@@ -83,29 +74,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-    }
-
-    private fun sendPurchase(purchase: com.android.billingclient.api.Purchase) {
-        clearMonitor()
-        val details = skuDetailsMap[purchase.sku]
-        if (details != null) {
-            Qonversion.instance?.purchase(
-                details,
-                purchase,
-                object: QonversionCallback {
-                    override fun onSuccess(uid: String) {
-                        monitor.text = "Success: ${uid}"
-                    }
-
-                    override fun onError(t: Throwable) {
-                        monitor.text = "Failed: ${t.message}"
-                    }
-                }
-            )
-        }
-    }
-
-    private fun clearMonitor() {
-        monitor.text = ""
     }
 }

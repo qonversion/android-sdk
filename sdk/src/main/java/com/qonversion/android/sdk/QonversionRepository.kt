@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.entity.Ads
 import com.qonversion.android.sdk.entity.Purchase
+import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.Storage
 import com.squareup.moshi.Moshi
 import okhttp3.*
@@ -23,7 +24,8 @@ internal class QonversionRepository private constructor(
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val ads: Ads,
-    private val key: String
+    private val key: String,
+    private val logger: Logger
 ) {
 
     fun init(callback: QonversionCallback?) {
@@ -80,9 +82,13 @@ internal class QonversionRepository private constructor(
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 callback?.onSuccess(saveUid(it))
+                logger.log("purchaseRequest - success - $it")
             }
             onFailure = {
-                callback?.onError(it!!)
+                if (it != null) {
+                    callback?.onError(it)
+                    logger.log("purchaseRequest - failure - $it")
+                }
             }
         }
     }
@@ -100,9 +106,13 @@ internal class QonversionRepository private constructor(
         api.init(initRequest).enqueue {
             onResponse = {
                 callback?.onSuccess(saveUid(it))
+                logger.log("initRequest - success - $it")
             }
             onFailure = {
-                callback?.onError(it!!)
+                if (it != null) {
+                    callback?.onError(it)
+                    logger.log("initRequest - failure - $it")
+                }
             }
         }
     }
@@ -124,6 +134,7 @@ internal class QonversionRepository private constructor(
         fun initialize(
             context: Application,
             storage: Storage,
+            logger: Logger,
             environmentProvider: EnvironmentProvider,
             config: QonversionConfig
         ): QonversionRepository {
@@ -132,12 +143,6 @@ internal class QonversionRepository private constructor(
                 .cache(Cache(context.cacheDir, CACHE_SIZE))
                 .readTimeout(TIMEOUT, TimeUnit.SECONDS)
                 .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
-                .apply {
-                    val interceptors: List<Interceptor> = emptyList()
-                    interceptors.forEach {
-                        this.addInterceptor(it)
-                    }
-                }
                 .build()
 
 
@@ -152,7 +157,8 @@ internal class QonversionRepository private constructor(
                 environmentProvider,
                 config.sdkVersion,
                 config.ads,
-                config.key
+                config.key,
+                logger
             )
         }
     }
