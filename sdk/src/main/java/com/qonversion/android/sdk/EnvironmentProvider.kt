@@ -15,7 +15,7 @@ import com.qonversion.android.sdk.dto.device.Os
 import com.qonversion.android.sdk.dto.device.Screen
 import java.util.*
 
-internal class EnvironmentProvider(private val context: Context) {
+class EnvironmentProvider(private val context: Context) {
 
     companion object {
         private const val UNKNOWN = "UNKNOWN"

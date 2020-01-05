@@ -16,8 +16,8 @@ android {
         applicationId "com.qonversion.android.sdk"
         minSdkVersion 14
         targetSdkVersion 29
-        versionCode 6
-        versionName "1.0.5"
+        versionCode 8
+        versionName "1.0.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -45,7 +45,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
 
 
-    implementation 'com.android.billingclient:billing:2.0.3'
+    implementation 'com.android.billingclient:billing:2.1.0'
 
     implementation project(':sdk')
 }
