@@ -53,6 +53,16 @@ class Qonversion private constructor(
             context: Application,
             key: String,
             adsId: String,
+            callback: QonversionCallback?
+        ) : Qonversion {
+            return initialize(context, key, adsId, null, false, callback)
+        }
+
+        @JvmStatic
+        fun initialize(
+            context: Application,
+            key: String,
+            adsId: String,
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean
         ) : Qonversion {
