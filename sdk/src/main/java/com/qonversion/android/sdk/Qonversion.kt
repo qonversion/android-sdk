@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.entity.Ads
 import com.qonversion.android.sdk.logger.ConsoleLogger
@@ -30,7 +31,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "0.2.0"
+        private const val SDK_VERSION = "0.2.1"
 
         @JvmStatic
         @Volatile
@@ -43,37 +44,37 @@ class Qonversion private constructor(
         fun initialize(
             context: Application,
             key: String,
-            adsId: String
+            internalUserId: String
         ) : Qonversion {
-            return initialize(context, key, adsId, null, false, null)
+            return initialize(context, key, internalUserId, null, false, null)
         }
 
         @JvmStatic
         fun initialize(
             context: Application,
             key: String,
-            adsId: String,
+            internalUserId: String,
             callback: QonversionCallback?
         ) : Qonversion {
-            return initialize(context, key, adsId, null, false, callback)
+            return initialize(context, key, internalUserId, null, false, callback)
         }
 
         @JvmStatic
         fun initialize(
             context: Application,
             key: String,
-            adsId: String,
+            internalUserId: String,
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean
         ) : Qonversion {
-            return initialize(context, key, adsId, billingBuilder, autoTracking, null)
+            return initialize(context, key, internalUserId, billingBuilder, autoTracking, null)
         }
 
         @JvmStatic
         fun initialize(
             context: Application,
             key: String,
-            adsId: String,
+            internalUserId: String,
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean,
             callback: QonversionCallback?
@@ -97,11 +98,34 @@ class Qonversion private constructor(
             }
             val storage = TokenStorage(PreferenceManager.getDefaultSharedPreferences(context))
             val environment = EnvironmentProvider(context)
-            val ads = Ads(autoTracking, adsId)
+            val ads = Ads(autoTracking)
             val config = QonversionConfig(SDK_VERSION, key, ads)
-            val repository = QonversionRepository.initialize(context, storage, logger, environment, config)
+            val repository = QonversionRepository.initialize(context, storage, logger, environment, config, internalUserId)
             val converter = GooglePurchaseConverter()
-            repository.init(callback)
+            val adProvider =  AdvertisingProvider()
+            repository.init(object : QonversionCallback {
+                override fun onSuccess(uid: String) {
+                    callback?.onSuccess(uid)
+                    addAttribution()
+                }
+
+                override fun onError(t: Throwable) {
+                    callback?.onError(t)
+                    addAttribution()
+                }
+
+                fun addAttribution() {
+                    adProvider.init(context, object : AdvertisingProvider.Callback {
+                        override fun onSuccess(advertisingId: String, provider: String) {
+                            repository.attributionData(advertisingId, provider)
+                        }
+
+                        override fun onFailure(t: Throwable) {
+                            callback?.onError(t)
+                        }
+                    })
+                }
+            })
             val billingClient = if (billingBuilder != null) {
                 QonversionBilling(context, billingBuilder, logger, autoTracking)
             } else {

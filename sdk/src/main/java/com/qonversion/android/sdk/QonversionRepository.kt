@@ -2,9 +2,7 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import com.qonversion.android.sdk.api.Api
-import com.qonversion.android.sdk.dto.BaseResponse
-import com.qonversion.android.sdk.dto.InitRequest
-import com.qonversion.android.sdk.dto.PurchaseRequest
+import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.Response
 import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
@@ -25,7 +23,8 @@ internal class QonversionRepository private constructor(
     private val sdkVersion: String,
     private val ads: Ads,
     private val key: String,
-    private val logger: Logger
+    private val logger: Logger,
+    private val internalUserId: String
 ) {
 
     fun init(callback: QonversionCallback?) {
@@ -43,15 +42,14 @@ internal class QonversionRepository private constructor(
         purchase: Purchase,
         callback: QonversionCallback?
     ) {
-
-        val ONE_MILLION = 1_000_000
         val uid = storage.load()
-        val adsDto = AdsDto(ads.trackingEnabled, ads.advertisingID)
+        val adsDto = AdsDto(ads.trackingEnabled)
         val purchaseRequest = PurchaseRequest(
             d = environmentProvider.getInfo(
+                internalUserId,
                 adsDto
             ),
-            v = "${purchase.priceAmountMicros / ONE_MILLION}",
+            v = sdkVersion,
             accessToken = key,
             clientUid = uid,
             inapp = Inapp(
@@ -100,8 +98,13 @@ internal class QonversionRepository private constructor(
         callback: QonversionCallback?
     ) {
         val uid = storage.load()
-        val adsDto = AdsDto(ads.trackingEnabled, ads.advertisingID)
-        val initRequest = InitRequest(environmentProvider.getInfo(adsDto), sdkVersion, key, uid)
+        val adsDto = AdsDto(ads.trackingEnabled)
+        val initRequest = InitRequest(
+            d = environmentProvider.getInfo(internalUserId, adsDto),
+            v = sdkVersion,
+            accessToken = key,
+            clientUid = uid
+        )
 
         api.init(initRequest).enqueue {
             onResponse = {
@@ -125,6 +128,29 @@ internal class QonversionRepository private constructor(
         return clientUid
     }
 
+    fun attributionData(advertisingId: String, provider: String) {
+        val adsDto = AdsDto(ads.trackingEnabled)
+        val adRequest = AttributionDataRequest(
+            d = environmentProvider.getInfo(
+                internalUserId,
+                adsDto
+            ),
+            provider = provider,
+            advertisingId = advertisingId
+        )
+
+        api.attribution(adRequest).enqueue {
+            onResponse = {
+                logger.log("AttributionRequest - success - $it")
+            }
+            onFailure = {
+                if (it != null) {
+                    logger.log("AttributionRequest - failure - $it")
+                }
+            }
+        }
+    }
+
     companion object {
 
         private const val BASE_URL = "https://qonversion.io/api/"
@@ -136,7 +162,8 @@ internal class QonversionRepository private constructor(
             storage: Storage,
             logger: Logger,
             environmentProvider: EnvironmentProvider,
-            config: QonversionConfig
+            config: QonversionConfig,
+            internalUserId: String
         ): QonversionRepository {
 
             val client = OkHttpClient.Builder()
@@ -155,10 +182,11 @@ internal class QonversionRepository private constructor(
                 retrofit.create(Api::class.java),
                 storage,
                 environmentProvider,
-                config.sdkVersion,
-                config.ads,
                 config.key,
-                logger
+                config.ads,
+                config.sdkVersion,
+                logger,
+                internalUserId
             )
         }
     }
