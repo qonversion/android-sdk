@@ -24,10 +24,10 @@ allprojects {
 2. Add qonversion to `dependencies` section in your app `build.gradle`
 
 ```kotlin
-    implementation "com.qonversion.android.sdk:sdk:0.1.0@aar"
+    implementation "com.qonversion.android.sdk:sdk:0.2.0@aar"
 ```
 
-### Usage
+### 1. Basic Usage (without auto tracking purchases)
 
 In your `Application` in the `onCreate` method, setup the SDK like so:
 
@@ -60,6 +60,52 @@ In your `BillingClient` listener, when `onPurchasesUpdated` callback has been ca
     }
 ```
 
+### 2. Advanced Usage (with auto tracking purchases)
+
+In your `Application` in the `onCreate` method, setup the SDK like so.
+
+1. Create instance of `QonversionBillingBuilder`. It looks like a standard `BillingClient` instantination. And put this as fourth param in `Qonversion.initialize` method
+
+2. Put `autoTracking = TRUE` as fifth param in `Qonversion.initialize` method
+
+```java
+public class App extends MultiDexApplication {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", buildBilling(), true);
+    }
+
+    private QonversionBillingBuilder buildBilling() {
+        return new QonversionBillingBuilder()
+                .enablePendingPurchases()
+                .setChildDirected(BillingClient.ChildDirected.CHILD_DIRECTED)
+                .setUnderAgeOfConsent(BillingClient.UnderAgeOfConsent.UNDER_AGE_OF_CONSENT)
+                .setListener(new PurchasesUpdatedListener() {
+                    @Override
+                    public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
+                        // your purchases update logic
+                    }
+                });
+    }
+}
+```
+And than in all places in your code use `Qonversion.instance?.billingClient` instead standard Google `BillingClient`. It has own type `Billing`, but it's no problem. It is one 100% match with standart Google `BillingClient` API.
+
+```java
+import com.qonversion.android.sdk.billing.Billing
+
+// ...
+private var billingClient : Billing? 
+
+// ...
+billingClient = Qonversion.instance?.billingClient
+
+billingClient?.startConnection(...)
+billingClient?.launchBillingFlow(...)
+// etc
+
+```
 
 ## Authors
 

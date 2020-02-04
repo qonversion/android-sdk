@@ -21,7 +21,7 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(ads: AdsDto): Environment = Environment(getAppInfo(), getDeviceInfo(ads))
+    fun getInfo(internalUserId: String, ads: AdsDto): Environment = Environment(internalUserId, getAppInfo(), getDeviceInfo(ads))
 
     private fun getAppInfo(): App = App(
         name = getAppName(),
