@@ -5,5 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class AdsDto(
-    @Json(name = "trackingEnabled") val trackingEnabled: Boolean
+    @Json(name = "trackingEnabled") val trackingEnabled: Boolean,
+    @Json(name = "edfa") val edfa: String?
 )

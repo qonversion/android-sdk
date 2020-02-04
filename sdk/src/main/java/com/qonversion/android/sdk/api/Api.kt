@@ -14,7 +14,4 @@ interface Api {
     @POST("purchase")
     fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<Response>>
 
-    @POST("attribution")
-    fun attribution(@Body request: AttributionDataRequest): Call<BaseResponse<Response>>
-
 }

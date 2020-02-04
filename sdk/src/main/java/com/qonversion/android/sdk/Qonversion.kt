@@ -6,7 +6,6 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
-import com.qonversion.android.sdk.entity.Ads
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
@@ -83,7 +82,7 @@ class Qonversion private constructor(
                 return instance!!
             }
 
-            if (key.isNullOrBlank()) {
+            if (key.isEmpty()) {
                 throw RuntimeException("Qonversion initialization error! Key should not be empty!")
             }
 
@@ -98,11 +97,10 @@ class Qonversion private constructor(
             }
             val storage = TokenStorage(PreferenceManager.getDefaultSharedPreferences(context))
             val environment = EnvironmentProvider(context)
-            val ads = Ads(autoTracking)
-            val config = QonversionConfig(SDK_VERSION, key, ads)
+            val config = QonversionConfig(SDK_VERSION, key, autoTracking)
             val repository = QonversionRepository.initialize(context, storage, logger, environment, config, internalUserId)
             val converter = GooglePurchaseConverter()
-            val adProvider =  AdvertisingProvider()
+            val adProvider = AdvertisingProvider()
             repository.init(object : QonversionCallback {
                 override fun onSuccess(uid: String) {
                     callback?.onSuccess(uid)
@@ -117,7 +115,7 @@ class Qonversion private constructor(
                 fun addAttribution() {
                     adProvider.init(context, object : AdvertisingProvider.Callback {
                         override fun onSuccess(advertisingId: String, provider: String) {
-                            repository.attributionData(advertisingId, provider)
+                            repository.init(advertisingId, callback)
                         }
 
                         override fun onFailure(t: Throwable) {

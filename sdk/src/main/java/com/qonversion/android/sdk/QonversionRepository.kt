@@ -6,7 +6,6 @@ import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.Response
 import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
-import com.qonversion.android.sdk.entity.Ads
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.Storage
@@ -21,14 +20,18 @@ internal class QonversionRepository private constructor(
     private var storage: Storage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
-    private val ads: Ads,
+    private val trackingEnabled: Boolean,
     private val key: String,
     private val logger: Logger,
     private val internalUserId: String
 ) {
 
     fun init(callback: QonversionCallback?) {
-        initRequest(ads, key, sdkVersion, callback)
+        initRequest(trackingEnabled, key, sdkVersion, callback, null)
+    }
+
+    fun init(edfa: String, callback: QonversionCallback?) {
+        initRequest(trackingEnabled, key, sdkVersion, callback, edfa)
     }
 
     fun purchase(
@@ -43,7 +46,7 @@ internal class QonversionRepository private constructor(
         callback: QonversionCallback?
     ) {
         val uid = storage.load()
-        val adsDto = AdsDto(ads.trackingEnabled)
+        val adsDto = AdsDto(trackingEnabled, edfa = null)
         val purchaseRequest = PurchaseRequest(
             d = environmentProvider.getInfo(
                 internalUserId,
@@ -58,9 +61,11 @@ internal class QonversionRepository private constructor(
                 description = purchase.description,
                 productId = purchase.productId,
                 type = purchase.type,
-                price = purchase.introductoryPrice,
+                originalPrice = purchase.originalPrice,
+                originalPriceAmountMicros = purchase.originalPriceAmountMicros,
+                priceCurrencyCode = purchase.priceCurrencyCode,
+                price = purchase.price,
                 priceAmountMicros = purchase.priceAmountMicros,
-                currencyCode = purchase.currencyCode,
                 subscriptionPeriod = purchase.subscriptionPeriod,
                 freeTrialPeriod = purchase.freeTrialPeriod,
                 introductoryPriceAmountMicros = purchase.introductoryPriceAmountMicros,
@@ -92,13 +97,14 @@ internal class QonversionRepository private constructor(
     }
 
     private fun initRequest(
-        ads: Ads,
+        trackingEnabled: Boolean,
         key: String,
         sdkVersion: String,
-        callback: QonversionCallback?
+        callback: QonversionCallback?,
+        edfa: String?
     ) {
         val uid = storage.load()
-        val adsDto = AdsDto(ads.trackingEnabled)
+        val adsDto = AdsDto(trackingEnabled, edfa)
         val initRequest = InitRequest(
             d = environmentProvider.getInfo(internalUserId, adsDto),
             v = sdkVersion,
@@ -126,29 +132,6 @@ internal class QonversionRepository private constructor(
         } ?: ""
         storage.save(clientUid)
         return clientUid
-    }
-
-    fun attributionData(advertisingId: String, provider: String) {
-        val adsDto = AdsDto(ads.trackingEnabled)
-        val adRequest = AttributionDataRequest(
-            d = environmentProvider.getInfo(
-                internalUserId,
-                adsDto
-            ),
-            provider = provider,
-            advertisingId = advertisingId
-        )
-
-        api.attribution(adRequest).enqueue {
-            onResponse = {
-                logger.log("AttributionRequest - success - $it")
-            }
-            onFailure = {
-                if (it != null) {
-                    logger.log("AttributionRequest - failure - $it")
-                }
-            }
-        }
     }
 
     companion object {
@@ -183,7 +166,7 @@ internal class QonversionRepository private constructor(
                 storage,
                 environmentProvider,
                 config.key,
-                config.ads,
+                config.trackingEnabled,
                 config.sdkVersion,
                 logger,
                 internalUserId

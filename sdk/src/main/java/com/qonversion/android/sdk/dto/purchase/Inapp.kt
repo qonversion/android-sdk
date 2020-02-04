@@ -10,9 +10,11 @@ data class Inapp(
     @Json(name = "description") val description: String,
     @Json(name = "productId") val productId: String,
     @Json(name = "type") val type: String,
+    @Json(name = "originalPriceAmountMicros") val originalPriceAmountMicros: Long,
+    @Json(name = "originalPrice") val originalPrice: String,
     @Json(name = "price") val price: String,
     @Json(name = "priceAmountMicros") val priceAmountMicros: Long,
-    @Json(name = "currencyCode") val currencyCode: String,
+    @Json(name = "priceCurrencyCode") val priceCurrencyCode: String,
     @Json(name = "subscriptionPeriod") val subscriptionPeriod: String,
     @Json(name = "freeTrialPeriod") val freeTrialPeriod: String,
     @Json(name = "introductoryPriceAmountMicros") val introductoryPriceAmountMicros: Long,
@@ -27,3 +29,4 @@ data class Inapp(
     @Json(name = "acknowledged") val acknowledged: Boolean,
     @Json(name = "autoRenewing") val autoRenewing: Boolean
 )
+
