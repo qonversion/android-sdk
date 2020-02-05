@@ -30,7 +30,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "0.2.1"
+        private const val SDK_VERSION = "0.2.2"
 
         @JvmStatic
         @Volatile
@@ -101,27 +101,13 @@ class Qonversion private constructor(
             val repository = QonversionRepository.initialize(context, storage, logger, environment, config, internalUserId)
             val converter = GooglePurchaseConverter()
             val adProvider = AdvertisingProvider()
-            repository.init(object : QonversionCallback {
-                override fun onSuccess(uid: String) {
-                    callback?.onSuccess(uid)
-                    addAttribution()
+            adProvider.init(context, object : AdvertisingProvider.Callback {
+                override fun onSuccess(advertisingId: String, provider: String) {
+                    repository.init(advertisingId, callback)
                 }
 
-                override fun onError(t: Throwable) {
-                    callback?.onError(t)
-                    addAttribution()
-                }
-
-                fun addAttribution() {
-                    adProvider.init(context, object : AdvertisingProvider.Callback {
-                        override fun onSuccess(advertisingId: String, provider: String) {
-                            repository.init(advertisingId, callback)
-                        }
-
-                        override fun onFailure(t: Throwable) {
-                            callback?.onError(t)
-                        }
-                    })
+                override fun onFailure(t: Throwable) {
+                    repository.init(callback)
                 }
             })
             val billingClient = if (billingBuilder != null) {
