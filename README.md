@@ -24,7 +24,7 @@ allprojects {
 2. Add qonversion to `dependencies` section in your app `build.gradle`
 
 ```kotlin
-    implementation "com.qonversion.android.sdk:sdk:0.2.0@aar"
+    implementation "com.qonversion.android.sdk:sdk:0.2.2@aar"
 ```
 
 ### 1. Basic Usage (without auto tracking purchases)
