@@ -33,7 +33,7 @@ Qonversion SDK can work in two modes depending on your goals:
 
 1. Without autotracking purchases (manual mode). In this mode your should call SDK methods manualy, when your want to track purchase to Qonversion. 
 
-2. With autotracking purchases (automatic mode). In this mode, you don’t have to worry about how your purchases tracks to Qonversion, all necessary work will take place inside SDK.
+2. With autotracking purchases (auto tracking mode). In this mode, you don’t have to worry about how your purchases tracks to Qonversion, all necessary work will take place inside SDK.
 
 Next, in order will be considered the necessary steps to work in each of the modes
 
@@ -147,23 +147,25 @@ private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purcha
 ```
 
 
+### 2. Auto Tracking mode
 
-### 2. Advanced Usage (with auto tracking purchases)
+### 2.1 Initializing Qonversion SDK 
 
-In your `Application` in the `onCreate` method, setup the SDK like so.
+The SDK initialization should be called in your `Application` in the `onCreate` method following the steps:
 
-1. Create instance of `QonversionBillingBuilder`. It looks like a standard `BillingClient` instantination. And put this as fourth param in `Qonversion.initialize` method
+#### Step 1. Add Qonversion SDK import
 
-2. Put `autoTracking = TRUE` as fifth param in `Qonversion.initialize` method
+To import the Qonversion SDK, add the following code:
+```java
+import com.qonversion.android.sdk.Qonversion;
+```
+#### Step 2. Initialize QonversionBillingBuilder
+
+Create an instance of `QonversionBillingBuilder`. It creation exactly like creation Android [BillingClient](https://developer.android.com/reference/com/android/billingclient/api/BillingClient.Builder) 
+
+### Java
 
 ```java
-public class App extends MultiDexApplication {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", buildBilling(), true);
-    }
-
     private QonversionBillingBuilder buildBilling() {
         return new QonversionBillingBuilder()
                 .enablePendingPurchases()
@@ -176,25 +178,71 @@ public class App extends MultiDexApplication {
                     }
                 });
     }
-}
 ```
-And than in all places in your code use `Qonversion.instance?.billingClient` instead standard Google `BillingClient`. It has own type `Billing`, but it's no problem. It is one 100% match with standart Google `BillingClient` API.
+
+### Kotlin
+
+```kotlin
+    private fun buildBilling(): QonversionBillingBuilder {
+        return QonversionBillingBuilder()
+            .enablePendingPurchases()
+            .setChildDirected(BillingClient.ChildDirected.CHILD_DIRECTED)
+            .setUnderAgeOfConsent(BillingClient.UnderAgeOfConsent.UNSPECIFIED)
+            .setListener { billingResult, purchases ->
+                // your purchases update logic
+            }
+    }
+```
+#### Step 3. Initializing Qonversion SDK.
+
+To enable auto tracking mode put these parameters to Qonversion `initialize` method:
+
+1. ApplicationContext
+2. Your Qonversion API key.
+3. Your side UserID
+4. QonversionBillingBuilder instance from Step 1.
+5. Autotracking - Boolean parameter put it to TRUE
+6. QonversionCallback - Optional parameter. Callback that will notify your about SDK's work 
+
+### Java
 
 ```java
-import com.qonversion.android.sdk.billing.Billing
+public class App extends Application {
 
-// ...
-private var billingClient : Billing? 
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-// ...
-billingClient = Qonversion.instance?.billingClient
+        QonversionBillingBuilder billingBuilder = buildBilling();
+        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true, new QonversionCallback() {
+                    @Override
+                    public void onSuccess(@NotNull String uid) {
 
-billingClient?.startConnection(...)
-billingClient?.launchBillingFlow(...)
-// etc
+                    }
 
+                    @Override
+                    public void onError(@NotNull Throwable t) {
+
+                    }
+                }
+        );
+    }
 ```
 
+```kotlin
+class App : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        val billingBuilder = buildBilling()
+        initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true, object : QonversionCallback {
+                override fun onSuccess(uid: String) {}
+                override fun onError(t: Throwable) {}
+            }
+        )
+    }
+}
+```
 ## Authors
 
 Developed by Team of [Qonversion](https://qonversion.io), and written by [Artemy Glukhov](https://github.com/ArtemyGlukhov)
