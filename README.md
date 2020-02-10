@@ -108,7 +108,7 @@ public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableB
          
 }
 
-private void purchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
+private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
     Qonversion.getInstance().purchase(details, purchase);
 }
 ```
