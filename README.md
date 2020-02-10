@@ -84,7 +84,7 @@ To track purchase data to the SDK you need to call the method `purchase`. So thi
 
 The best place to call method `purchase` it time when method [`onPurchasesUpdated`](https://developer.android.com/reference/com/android/billingclient/api/PurchasesUpdatedListener) of `BillingClient` will be called. 
 
-#### *For more information how it works please see example app in this repo [ManualTrackingActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivity.java) [ManualTrackingActivityKt](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivityKt.kt) classes.
+#### For more information how it works please see example app in this repo [ManualTrackingActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivity.java) [ManualTrackingActivityKt](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivityKt.kt) classes.
 
 ### Java
 
