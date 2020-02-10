@@ -228,6 +228,7 @@ public class App extends Application {
         );
     }
 ```
+### Kotlin
 
 ```kotlin
 class App : Application() {
