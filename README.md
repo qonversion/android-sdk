@@ -84,7 +84,7 @@ To track purchase data to the SDK you need to call the method `purchase`. So thi
 
 The best place to call method `purchase` it time when method [`onPurchasesUpdated`](https://developer.android.com/reference/com/android/billingclient/api/PurchasesUpdatedListener) of `BillingClient` will be called. 
 
-#### For more information how it works please see example app in this repo [ManualTrackingActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivity.java) and [ManualTrackingActivityKt](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivityKt.kt) classes.
+#### For more information please see example app in this repo [ManualTrackingActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivity.java) and [ManualTrackingActivityKt](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/ManualTrackingActivityKt.kt) classes.
 
 ### Java
 
@@ -200,9 +200,8 @@ To enable auto tracking mode put these parameters to Qonversion `initialize` met
 1. ApplicationContext
 2. Your Qonversion API key.
 3. Your side UserID
-4. QonversionBillingBuilder instance from Step 1.
+4. Instance of QonversionBillingBuilder from Step 2.
 5. Autotracking - Boolean parameter put it to TRUE
-6. QonversionCallback - Optional parameter. Callback that will notify your about SDK's work 
 
 ### Java
 
@@ -214,18 +213,7 @@ public class App extends Application {
         super.onCreate();
 
         QonversionBillingBuilder billingBuilder = buildBilling();
-        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true, new QonversionCallback() {
-                    @Override
-                    public void onSuccess(@NotNull String uid) {
-
-                    }
-
-                    @Override
-                    public void onError(@NotNull Throwable t) {
-
-                    }
-                }
-        );
+        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true);
     }
 ```
 ### Kotlin
@@ -236,14 +224,75 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         val billingBuilder = buildBilling()
-        initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true, object : QonversionCallback {
-                override fun onSuccess(uid: String) {}
-                override fun onError(t: Throwable) {}
-            }
-        )
+        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true)
     }
 }
 ```
+#### Step 4. Use Qonversion Billing instead Google BillingClient
+
+For further work with SDK in auto tracking mode, your should use Qonversion Billing instance. 
+It has exactly the same interface and methods as Google BillingClient. It’s just enough for you to call `Qonversion.instance?.billingClient` And to do what you want in the same way if you used the Google [BillingClient](https://developer.android.com/reference/com/android/billingclient/api/BillingClient.html). Below are 
+simplified example of usage.
+
+```kotlin
+
+class MainActivity : AppCompatActivity() {
+
+    private var billingClient : Billing? = null
+    private val skuDetailsMap = mutableMapOf<String, SkuDetails>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        billingClient = Qonversion.instance?.billingClient
+        billingClient?.startConnection(object : BillingClientStateListener {
+            override fun onBillingServiceDisconnected() {
+                monitor.text = "Billing Connection failed"
+            }
+
+            override fun onBillingSetupFinished(billingResult: BillingResult?) {
+                if (billingResult?.responseCode == BillingClient.BillingResponseCode.OK) {
+                    launchBilling("your_purchase_id", "sku_type")
+                }
+            }
+        })
+    }
+
+    private fun launchBilling(purchaseId: String, type: String) {
+        var params = SkuDetailsParams.newBuilder()
+            .setType(type)
+            .setSkusList(listOf(purchaseId))
+            .build()
+
+        billingClient?.querySkuDetailsAsync(params, object: SkuDetailsResponseListener {
+            override fun onSkuDetailsResponse(
+                billingResult: BillingResult?,
+                skuDetailsList: MutableList<SkuDetails>?
+            ) {
+                if (billingResult!!.responseCode == BillingClient.BillingResponseCode.OK) {
+                    for (skuDetails in skuDetailsList!!) {
+                         skuDetailsMap[skuDetails.sku] = skuDetails
+                    }
+                    launchBillingFlow(purchaseId)
+                }
+            }
+        })
+    }
+
+    private fun launchBillingFlow(purchaseId: String) {
+        val billingFlowParams = BillingFlowParams.newBuilder()
+            .setSkuDetails(skuDetailsMap[purchaseId])
+            .build()
+        billingClient?.launchBillingFlow(this, billingFlowParams)
+    }
+}
+
+```
+#### For more information please see example app in this repo [MainActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/MainActivity.kt)
+
+
+
 ## Authors
 
 Developed by Team of [Qonversion](https://qonversion.io), and written by [Artemy Glukhov](https://github.com/ArtemyGlukhov)
