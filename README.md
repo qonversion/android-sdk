@@ -75,7 +75,7 @@ public class App : Application {
 
 ### 1.2 Usage Qonversion SDK in manual mode
 
-First of all youn need setup and initialize Google Play Billing Library, following the [documentation](https://developer.android.com/google/play/billing/billing_library_overview) 
+First of all your need setup and initialize Google Play Billing Library, following the [documentation](https://developer.android.com/google/play/billing/billing_library_overview) 
 
 To track purchase data to the SDK you need to call the method `purchase`. So this method takes two parameters. All of these parameters is objects from [Google Play Billing Library](https://developer.android.com/google/play/billing/billing_library_overview) 
 
