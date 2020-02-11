@@ -38,7 +38,7 @@ Qonversion SDK can work in two modes depending on your goals:
 Next, in order will be considered the necessary steps to work in each of the modes
 
 
-### 1. Manual mode
+## 1. Manual mode
 
 ### 1.1 Initializing Qonversion SDK 
 
@@ -147,7 +147,7 @@ private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purcha
 ```
 
 
-### 2. Auto Tracking mode
+## 2. Auto Tracking mode
 
 ### 2.1 Initializing Qonversion SDK 
 
@@ -228,11 +228,12 @@ class App : Application() {
     }
 }
 ```
-#### Step 4. Use Qonversion Billing instead Google BillingClient
+### 2.2. Use Qonversion Billing instead Google BillingClient
 
 For further work with SDK in auto tracking mode, your should use Qonversion Billing instance. 
 It has exactly the same interface and methods as Google BillingClient. It’s just enough for you to call `Qonversion.instance?.billingClient` And to do what you want in the same way if you used the Google [BillingClient](https://developer.android.com/reference/com/android/billingclient/api/BillingClient.html). Below are 
-simplified example of usage.
+simplified example of usage. 
+#### For more information please see example app in this repo [MainActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/MainActivity.kt)
 
 ```kotlin
 
@@ -248,7 +249,7 @@ class MainActivity : AppCompatActivity() {
         billingClient = Qonversion.instance?.billingClient
         billingClient?.startConnection(object : BillingClientStateListener {
             override fun onBillingServiceDisconnected() {
-                monitor.text = "Billing Connection failed"
+                // billing connection failed
             }
 
             override fun onBillingSetupFinished(billingResult: BillingResult?) {
@@ -289,7 +290,6 @@ class MainActivity : AppCompatActivity() {
 }
 
 ```
-#### For more information please see example app in this repo [MainActivity](https://github.com/qonversion/android-sdk/blob/master/app/src/main/java/com/qonversion/android/app/MainActivity.kt)
 
 
 
