@@ -9,15 +9,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 
 ### Instalation
 
-1. Add Qonversion SDK repository to the project/build.gradle file:
-```kotlin
-allprojects {
-    repositories {
-        maven { url 'https://dl.bintray.com/artemyglukhov/Qonversion'}
-    }
-}
-```
-2. Add qonversion to `dependencies` section in your app `build.gradle`
+1. Add qonversion to `dependencies` section in your app `build.gradle`
 
 ```kotlin
 dependencies {
