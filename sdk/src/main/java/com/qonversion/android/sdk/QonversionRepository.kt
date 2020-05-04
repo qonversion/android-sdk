@@ -84,7 +84,8 @@ internal class QonversionRepository private constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-                callback?.onSuccess(saveUid(it))
+                val savedUid = saveUid(it)
+                callback?.onSuccess(savedUid)
                 logger.log("purchaseRequest - success - $it")
             }
             onFailure = {
@@ -114,7 +115,8 @@ internal class QonversionRepository private constructor(
 
         api.init(initRequest).enqueue {
             onResponse = {
-                callback?.onSuccess(saveUid(it))
+                val savedUid = saveUid(it)
+                callback?.onSuccess(savedUid)
                 logger.log("initRequest - success - $it")
             }
             onFailure = {
