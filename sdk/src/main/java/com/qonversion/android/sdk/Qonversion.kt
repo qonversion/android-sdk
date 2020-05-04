@@ -30,7 +30,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "0.2.3"
+        private const val SDK_VERSION = "0.2.4"
 
         @JvmStatic
         @Volatile
