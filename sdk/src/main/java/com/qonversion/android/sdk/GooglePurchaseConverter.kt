@@ -12,10 +12,10 @@ class GooglePurchaseConverter :
         val purchase = purchaseInfo.second
         return Purchase(
             detailsToken = extractDetailsToken(details.originalJson),
-            title = details.title ?: "",
-            description = details.description ?: "",
+            title = details.title,
+            description = details.description,
             productId = purchase.sku,
-            type = details.type ?: "",
+            type = details.type,
             originalPrice = details.originalPrice ?: "",
             originalPriceAmountMicros = details.originalPriceAmountMicros,
             priceCurrencyCode = details.priceCurrencyCode,

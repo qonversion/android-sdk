@@ -14,7 +14,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 ```kotlin
 dependencies {
     ... 
-    implementation "com.qonversion.android.sdk:sdk:0.2.4"
+    implementation "com.qonversion.android.sdk:sdk:1.0.0"
     ...
 }
 ```
@@ -281,6 +281,39 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+```
+
+## 3. Attribution
+
+### 3.1 AppsFlyer
+
+You need to have AppsFlyer SDK integrated in your app before starting with this integration. 
+If you do not have Appsflyer integration yet, please use this [docs](https://support.appsflyer.com/hc/en-us/articles/207032126-Android-SDK-integration-for-developers#introduction)
+When you receive the onConversionDataReceived callback you can use the `attribution` method 
+for passing the attribution data dictionary:
+
+### Java
+
+```java
+    @Override
+    public void onConversionDataSuccess(final Map<String, Object> conversionData) {
+          Qonversion.getInstance().attribution(
+                  conversionData, 
+                  AttributionSource.APPS_FLYER, 
+                  AppsFlyerLib.getInstance().getAppsFlyerUID(this)
+                  );
+    }
+```
+### Kotlin
+
+```kotlin
+    override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
+        Qonversion.instance?.attribution(
+            conversionData,
+            AttributionSource.APPS_FLYER,
+            AppsFlyerLib.getInstance().getAppsFlyerUID(applicationContext)
+        )
+    }
 ```
 
 

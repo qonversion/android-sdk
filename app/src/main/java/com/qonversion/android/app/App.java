@@ -7,6 +7,9 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.appsflyer.AppsFlyerConversionListener;
+import com.appsflyer.AppsFlyerLib;
+import com.qonversion.android.sdk.AttributionSource;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionBillingBuilder;
 import com.qonversion.android.sdk.QonversionCallback;
@@ -14,8 +17,10 @@ import com.qonversion.android.sdk.QonversionCallback;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 public class App extends MultiDexApplication {
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -37,6 +42,33 @@ public class App extends MultiDexApplication {
                     }
                 }
         );
+
+        AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
+
+            @Override
+            public void onConversionDataSuccess(final Map<String, Object> conversionData) {
+                Qonversion.getInstance().attribution(conversionData, AttributionSource.APPS_FLYER, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
+            }
+
+            @Override
+            public void onConversionDataFail(String errorMessage) {
+
+            }
+
+            @Override
+            public void onAppOpenAttribution(Map<String, String> conversionData) {
+
+            }
+
+            @Override
+            public void onAttributionFailure(String errorMessage) {
+
+            }
+        };
+
+        AppsFlyerLib.getInstance().init(BuildConfig.AF_DEV_KEY, conversionListener, this);
+        AppsFlyerLib.getInstance().setDebugLog(true);
+        AppsFlyerLib.getInstance().startTracking(this);
     }
 
     private QonversionBillingBuilder buildBilling() {
