@@ -3,17 +3,18 @@ package com.qonversion.android.sdk
 import android.app.Application
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.Response
 import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.Storage
 import com.squareup.moshi.Moshi
-import okhttp3.*
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
+
 
 internal class QonversionRepository private constructor(
     private val api: Api,
@@ -23,7 +24,8 @@ internal class QonversionRepository private constructor(
     private val trackingEnabled: Boolean,
     private val key: String,
     private val logger: Logger,
-    private val internalUserId: String
+    private val internalUserId: String,
+    private val requestQueue: RequestsQueue
 ) {
 
     fun init(callback: QonversionCallback?) {
@@ -39,6 +41,66 @@ internal class QonversionRepository private constructor(
         callback: QonversionCallback?
     ) {
         purchaseRequest(purchase, callback)
+    }
+
+    fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
+        val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
+        if (attributionRequest.isAuthorized()) {
+            logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
+            sendQonversionRequest(attributionRequest)
+        } else {
+            logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
+            requestQueue.add(attributionRequest)
+        }
+    }
+
+    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
+        val uid = storage.load()
+        val adsDto = AdsDto(trackingEnabled, edfa = null)
+        return AttributionRequest(
+            d = environmentProvider.getInfo(
+                internalUserId,
+                adsDto
+            ),
+            v = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            providerData = ProviderData(
+                data = conversionInfo,
+                provider = from,
+                uid = conversionUid
+            )
+        )
+    }
+
+    private fun sendQonversionRequest(request: QonversionRequest) {
+        when (request) {
+            is AttributionRequest -> {
+                api.attribution(request).enqueue {
+                    onResponse = {
+                        logger.log("QonversionRequest - success - $it")
+                        kickRequestQueue()
+                    }
+
+                    onFailure = {
+                        logger.log("QonversionRequest - failure - $it")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun kickRequestQueue() {
+        val clientUid = storage.load()
+        if (clientUid.isNotEmpty() && !requestQueue.isEmpty()) {
+            logger.log("QonversionRepository: kickRequestQueue queue is not empty")
+            val request = requestQueue.poll()
+            logger.log("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
+            if (request != null) {
+                request.authorize(clientUid)
+                sendQonversionRequest(request)
+            }
+        }
     }
 
     private fun purchaseRequest(
@@ -84,14 +146,15 @@ internal class QonversionRepository private constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
+                logger.log("purchaseRequest - success - $it")
                 val savedUid = saveUid(it)
                 callback?.onSuccess(savedUid)
-                logger.log("purchaseRequest - success - $it")
+                kickRequestQueue()
             }
             onFailure = {
+                logger.log("purchaseRequest - failure - $it")
                 if (it != null) {
                     callback?.onError(it)
-                    logger.log("purchaseRequest - failure - $it")
                 }
             }
         }
@@ -104,6 +167,7 @@ internal class QonversionRepository private constructor(
         callback: QonversionCallback?,
         edfa: String?
     ) {
+
         val uid = storage.load()
         val adsDto = AdsDto(trackingEnabled, edfa)
         val initRequest = InitRequest(
@@ -115,14 +179,15 @@ internal class QonversionRepository private constructor(
 
         api.init(initRequest).enqueue {
             onResponse = {
+                logger.log("initRequest - success - $it")
                 val savedUid = saveUid(it)
                 callback?.onSuccess(savedUid)
-                logger.log("initRequest - success - $it")
+                kickRequestQueue()
             }
             onFailure = {
                 if (it != null) {
-                    callback?.onError(it)
                     logger.log("initRequest - failure - $it")
+                    callback?.onError(it)
                 }
             }
         }
@@ -157,12 +222,14 @@ internal class QonversionRepository private constructor(
                 .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
                 .build()
 
-
             val retrofit = Retrofit.Builder()
                 .addConverterFactory(MoshiConverterFactory.create(Moshi.Builder().build()))
                 .baseUrl(BASE_URL)
                 .client(client)
                 .build()
+
+            val requestQueue = RequestsQueue(logger)
+
             return QonversionRepository(
                 retrofit.create(Api::class.java),
                 storage,
@@ -171,7 +238,8 @@ internal class QonversionRepository private constructor(
                 config.trackingEnabled,
                 config.sdkVersion,
                 logger,
-                internalUserId
+                internalUserId,
+                requestQueue
             )
         }
     }
