@@ -30,7 +30,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "0.2.4"
+        private const val SDK_VERSION = "1.0.0"
 
         @JvmStatic
         @Volatile
@@ -44,7 +44,7 @@ class Qonversion private constructor(
             context: Application,
             key: String,
             internalUserId: String
-        ) : Qonversion {
+        ): Qonversion {
             return initialize(context, key, internalUserId, null, false, null)
         }
 
@@ -54,7 +54,7 @@ class Qonversion private constructor(
             key: String,
             internalUserId: String,
             callback: QonversionCallback?
-        ) : Qonversion {
+        ): Qonversion {
             return initialize(context, key, internalUserId, null, false, callback)
         }
 
@@ -65,7 +65,7 @@ class Qonversion private constructor(
             internalUserId: String,
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean
-        ) : Qonversion {
+        ): Qonversion {
             return initialize(context, key, internalUserId, billingBuilder, autoTracking, null)
         }
 
@@ -77,7 +77,7 @@ class Qonversion private constructor(
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean,
             callback: QonversionCallback?
-        ) : Qonversion {
+        ): Qonversion {
             if (instance != null) {
                 return instance!!
             }
@@ -98,7 +98,14 @@ class Qonversion private constructor(
             val storage = TokenStorage(PreferenceManager.getDefaultSharedPreferences(context))
             val environment = EnvironmentProvider(context)
             val config = QonversionConfig(SDK_VERSION, key, autoTracking)
-            val repository = QonversionRepository.initialize(context, storage, logger, environment, config, internalUserId)
+            val repository = QonversionRepository.initialize(
+                context,
+                storage,
+                logger,
+                environment,
+                config,
+                internalUserId
+            )
             val converter = GooglePurchaseConverter()
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
@@ -129,9 +136,20 @@ class Qonversion private constructor(
         purchase(android.util.Pair.create(details, p), callback)
     }
 
-    private fun purchase(purchaseInfo: android.util.Pair<SkuDetails, Purchase>, callback: QonversionCallback?) {
+    private fun purchase(
+        purchaseInfo: android.util.Pair<SkuDetails, Purchase>,
+        callback: QonversionCallback?
+    ) {
         val purchase = converter.convert(purchaseInfo)
         repository.purchase(purchase, callback)
+    }
+
+    fun attribution(
+        conversionInfo: Map<String, Any>,
+        from: AttributionSource,
+        conversionUid: String
+    ) {
+        repository.attribution(conversionInfo, from.id, conversionUid)
     }
 }
 

@@ -8,7 +8,7 @@ apply from: '../bintray/bintray.gradle'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.1"
+    buildToolsVersion "29.0.2"
 
 
     defaultConfig {
@@ -19,7 +19,7 @@ android {
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
-        version = '0.2.4'
+        version = '1.0.0'
     }
 
     buildTypes {
@@ -28,6 +28,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
 }
 
 ext {
@@ -35,17 +40,16 @@ ext {
 
     PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '0.2.4'
+    PUBLISH_VERSION = '1.0.0'
 
-    kotlinVersion = '1.3.41'
-    moshiVersion = '1.8.0'
-    retrofit_version = '2.3.0'
-    okhttp_version = '3.10.0'
-    billing = '2.0.3'
+    kotlinVersion = '1.3.61'
+    moshiVersion = '1.9.2'
+    retrofit_version = '2.8.1'
+    okhttp_version = '4.6.0'
+    billing = '2.2.0'
 
 
     kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    preferences = "androidx.preference:preference:1.0.0-alpha3"
 
     billing = [
             billingClient: "com.android.billingclient:billing:$billing"
@@ -76,7 +80,7 @@ dependencies {
     implementation network.core
     implementation network.okhttp
     implementation network.moshiConverter
-    implementation preferences
+    implementation "androidx.preference:preference:1.1.1"
 
     implementation 'androidx.ads:ads-identifier:1.0.0-alpha04'
     implementation 'com.google.guava:guava:28.0-android'

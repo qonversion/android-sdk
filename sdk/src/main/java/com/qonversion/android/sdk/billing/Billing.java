@@ -119,6 +119,8 @@ public interface Billing {
      * @param listener Implement it to get the result of the load operation returned asynchronously
      *     through the callback with the {@link BillingClient.BillingResponseCode}
      */
+    @Deprecated
+    /** @deprecated */
     void loadRewardedSku(RewardLoadParams params, @NonNull RewardResponseListener listener);
 
     /**
