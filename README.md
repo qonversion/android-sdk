@@ -14,7 +14,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 ```kotlin
 dependencies {
     ... 
-    implementation "com.qonversion.android.sdk:sdk:1.0.0"
+    implementation "com.qonversion.android.sdk:sdk:1.0.1"
     ...
 }
 ```
@@ -299,7 +299,7 @@ for passing the attribution data dictionary:
     public void onConversionDataSuccess(final Map<String, Object> conversionData) {
           Qonversion.getInstance().attribution(
                   conversionData, 
-                  AttributionSource.APPS_FLYER, 
+                  AttributionSource.APPSFLYER, 
                   AppsFlyerLib.getInstance().getAppsFlyerUID(this)
                   );
     }
@@ -310,7 +310,7 @@ for passing the attribution data dictionary:
     override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
         Qonversion.instance?.attribution(
             conversionData,
-            AttributionSource.APPS_FLYER,
+            AttributionSource.APPSFLYER,
             AppsFlyerLib.getInstance().getAppsFlyerUID(applicationContext)
         )
     }
