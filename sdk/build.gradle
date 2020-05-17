@@ -19,7 +19,7 @@ android {
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
-        version = '1.0.1'
+        version = '1.0.2'
     }
 
     buildTypes {
@@ -40,12 +40,12 @@ ext {
 
     PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '1.0.1'
+    PUBLISH_VERSION = '1.0.2'
 
     kotlinVersion = '1.3.61'
     moshiVersion = '1.9.2'
-    retrofit_version = '2.8.1'
-    okhttp_version = '4.6.0'
+    retrofit_version = '2.3.0'
+    okhttp_version = '3.12.8'
     billing = '2.2.0'
 
 
