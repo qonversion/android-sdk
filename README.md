@@ -14,7 +14,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 ```kotlin
 dependencies {
     ... 
-    implementation "com.qonversion.android.sdk:sdk:1.0.1"
+    implementation "com.qonversion.android.sdk:sdk:1.0.2"
     ...
 }
 ```
