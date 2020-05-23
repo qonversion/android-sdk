@@ -7,7 +7,11 @@ import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.extractor.Extractor
 import com.qonversion.android.sdk.storage.Storage
+import com.qonversion.android.sdk.extractor.TokenExtractor
+import com.qonversion.android.sdk.validator.RequestValidator
+import com.qonversion.android.sdk.validator.Validator
 import com.squareup.moshi.Moshi
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -25,7 +29,9 @@ internal class QonversionRepository private constructor(
     private val key: String,
     private val logger: Logger,
     private val internalUserId: String,
-    private val requestQueue: RequestsQueue
+    private val requestQueue: RequestsQueue,
+    private val tokenExtractor: Extractor<retrofit2.Response<BaseResponse<Response>>>,
+    private val requestValidator: Validator<QonversionRequest>
 ) {
 
     fun init(callback: QonversionCallback?) {
@@ -45,7 +51,7 @@ internal class QonversionRepository private constructor(
 
     fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
         val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
-        if (attributionRequest.isAuthorized()) {
+        if (requestValidator.valid(attributionRequest)) {
             logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
         } else {
@@ -193,13 +199,9 @@ internal class QonversionRepository private constructor(
     }
 
     private fun saveUid(response: retrofit2.Response<BaseResponse<Response>>): String {
-        val clientUid = response.body()?.let {
-            it.data.clientUid ?: ""
-        } ?: ""
-        if (clientUid.isNotEmpty()) {
-            storage.save(clientUid)
-        }
-        return clientUid
+        val token = tokenExtractor.extract(response)
+        storage.save(token)
+        return token
     }
 
     companion object {
@@ -240,7 +242,9 @@ internal class QonversionRepository private constructor(
                 config.sdkVersion,
                 logger,
                 internalUserId,
-                requestQueue
+                requestQueue,
+                TokenExtractor(),
+                RequestValidator()
             )
         }
     }

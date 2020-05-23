@@ -1,15 +1,21 @@
 package com.qonversion.android.sdk.storage
 
 import android.content.SharedPreferences
+import com.qonversion.android.sdk.validator.Validator
 
-class TokenStorage(private val preferences: SharedPreferences) : Storage {
+class TokenStorage(
+    private val preferences: SharedPreferences,
+    private val tokenValidator: Validator<String>
+) : Storage {
 
     companion object {
         private const val TOKEN_KEY = "token_key"
     }
 
     override fun save(token: String) {
-       preferences.edit().putString(TOKEN_KEY, token).apply()
+       if (tokenValidator.valid(token)) {
+           preferences.edit().putString(TOKEN_KEY, token).apply()
+       }
     }
 
     override fun load(): String {

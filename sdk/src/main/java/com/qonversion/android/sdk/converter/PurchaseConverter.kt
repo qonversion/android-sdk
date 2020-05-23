@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.converter
 
 import com.qonversion.android.sdk.entity.Purchase
 

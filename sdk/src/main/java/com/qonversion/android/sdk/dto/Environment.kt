@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.dto.app.App
 import com.qonversion.android.sdk.dto.device.Device
 @JsonClass(generateAdapter = true)
 data class Environment(
-    @Json(name = "internalUserId") val internalUserId: String,
+    @Json(name = "internalUserID") val internalUserID: String,
     @Json(name = "app") val app: App,
     @Json(name = "device") val device: Device
 )
