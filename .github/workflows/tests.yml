@@ -18,7 +18,7 @@ jobs:
     - name: Fastlane Action
       uses: maierj/fastlane-action@v1.4.0
       with:
-        lane: 'test’
+        lane: test
     - name: Build and Tests
       run: |
           fastlane test
