@@ -1,10 +1,11 @@
+import java.text.SimpleDateFormat
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
-apply from: '../bintray/bintray.gradle'
 
 android {
     compileSdkVersion 29
@@ -32,6 +33,48 @@ android {
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
+    }
+}
+
+bintray {
+    user = getProps("bintray_user")
+    key = getProps("bintray_password")
+
+    pkg {
+        repo = 'Qonversion'
+        name = 'com.qonversion.android.sdk'
+
+        version {
+            name = '1.0.4'
+            desc = 'qonversion-android-sdk'
+            released  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ENGLISH).format(new Date())
+            vcsTag = '1.0.4'
+        }
+
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/qonversion/android-sdk.git'
+        websiteUrl = 'https://qonversion.io/'
+    }
+    configurations = ['archives']
+    publishing {
+        publications {
+            MyPublication(MavenPublication) {
+                groupId 'com.qonversion.android.sdk'
+                artifactId 'sdk'
+                version '1.0.4'
+            }
+        }
+    }
+}
+
+def getProps(String propName) {
+    def propsFile = rootProject.file('local.properties')
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        return props[propName]
+    } else {
+        return ""
     }
 }
 
