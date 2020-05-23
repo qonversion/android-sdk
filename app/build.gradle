@@ -37,12 +37,8 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
             signingConfig signingConfigs.release
-            buildConfigField "String", "QONVERSION_API_KEY", getProps("qonversion_api_key")
-            buildConfigField "String", "AF_DEV_KEY", getProps("appsflyer_api_key")
         }
         debug {
-            buildConfigField "String", "QONVERSION_API_KEY", getProps("qonversion_api_key")
-            buildConfigField "String", "AF_DEV_KEY", getProps("appsflyer_api_key")
             signingConfig signingConfigs.release
             debuggable true
         }
@@ -51,17 +47,6 @@ android {
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
-    }
-}
-
-def getProps(String propName) {
-    def propsFile = rootProject.file('local.properties')
-    if (propsFile.exists()) {
-        def props = new Properties()
-        props.load(new FileInputStream(propsFile))
-        return props[propName]
-    } else {
-        return ""
     }
 }
 
