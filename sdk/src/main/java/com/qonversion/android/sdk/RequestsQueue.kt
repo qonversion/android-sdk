@@ -22,4 +22,6 @@ class RequestsQueue(private val logger: Logger) {
         logger.log("RequestsQueue: poll: [${request?.javaClass?.simpleName}] size: [${queue.size}]")
         return request
     }
+
+    @Synchronized fun size() : Int = queue.size
 }

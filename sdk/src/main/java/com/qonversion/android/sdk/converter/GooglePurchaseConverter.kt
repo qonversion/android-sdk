@@ -1,17 +1,19 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.converter
 
+import android.util.Pair
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.entity.Purchase
-import org.json.JSONObject
+import com.qonversion.android.sdk.extractor.Extractor
 
-class GooglePurchaseConverter :
-    PurchaseConverter<android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
+class GooglePurchaseConverter(
+    private val extractor: Extractor<String>
+) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
 
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
         return Purchase(
-            detailsToken = extractDetailsToken(details.originalJson),
+            detailsToken = extractor.extract(details.originalJson),
             title = details.title,
             description = details.description,
             productId = purchase.sku,
@@ -35,20 +37,5 @@ class GooglePurchaseConverter :
             acknowledged = purchase.isAcknowledged,
             autoRenewing = purchase.isAutoRenewing
         )
-    }
-
-    private fun extractDetailsToken(json: String?): String {
-
-        if (json.isNullOrEmpty()) {
-            return ""
-        }
-
-        val jsonObj = JSONObject(json)
-
-        if (jsonObj.has("skuDetailsToken")) {
-            return jsonObj.getString("skuDetailsToken")
-        }
-
-        return ""
     }
 }
