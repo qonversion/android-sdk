@@ -1,19 +1,24 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import android.util.Pair
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
+import com.qonversion.android.sdk.converter.GooglePurchaseConverter
+import com.qonversion.android.sdk.converter.PurchaseConverter
+import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
+import com.qonversion.android.sdk.validator.TokenValidator
 
 class Qonversion private constructor(
     private val billing: QonversionBilling?,
     private val repository: QonversionRepository,
-    private val converter: PurchaseConverter<android.util.Pair<SkuDetails, Purchase>>
+    private val converter: PurchaseConverter<Pair<SkuDetails, Purchase>>
 ) {
 
     init {
@@ -95,7 +100,10 @@ class Qonversion private constructor(
             } else {
                 StubLogger()
             }
-            val storage = TokenStorage(PreferenceManager.getDefaultSharedPreferences(context))
+            val storage = TokenStorage(
+                PreferenceManager.getDefaultSharedPreferences(context),
+                TokenValidator()
+            )
             val environment = EnvironmentProvider(context)
             val config = QonversionConfig(SDK_VERSION, key, autoTracking)
             val repository = QonversionRepository.initialize(
@@ -106,7 +114,7 @@ class Qonversion private constructor(
                 config,
                 internalUserId
             )
-            val converter = GooglePurchaseConverter()
+            val converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
                 override fun onSuccess(advertisingId: String, provider: String) {
