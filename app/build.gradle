@@ -18,12 +18,16 @@ android {
 
     signingConfigs {
         release {
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            storeFile file(properties.getProperty('storeFile'))
-            keyAlias properties.getProperty('keyAlias')
-            storePassword properties.getProperty('storePassword')
-            keyPassword properties.getProperty('keyPassword')
+            File propertiesFile = project.rootProject.file('local.properties')
+            if (propertiesFile.exists()) {
+                Properties properties = new Properties()
+                properties.load(propertiesFile.newDataInputStream())
+                storeFile file(properties.getProperty('storeFile'))
+                keyAlias properties.getProperty('keyAlias')
+                storePassword properties.getProperty('storePassword')
+                keyPassword properties.getProperty('keyPassword')
+            }
+
         }
     }
 
