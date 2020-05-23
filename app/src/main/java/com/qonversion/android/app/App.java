@@ -26,7 +26,7 @@ public class App extends MultiDexApplication {
         super.onCreate();
         Qonversion.initialize(
                 this,
-                BuildConfig.QONVERSION_API_KEY,
+                "projectKey",
                 "yourSideUserID",
                 buildBilling(),
                 true,
@@ -66,7 +66,7 @@ public class App extends MultiDexApplication {
             }
         };
 
-        AppsFlyerLib.getInstance().init(BuildConfig.AF_DEV_KEY, conversionListener, this);
+        AppsFlyerLib.getInstance().init("afDevKey", conversionListener, this);
         AppsFlyerLib.getInstance().setDebugLog(true);
         AppsFlyerLib.getInstance().startTracking(this);
     }

@@ -14,7 +14,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 ```kotlin
 dependencies {
     ... 
-    implementation "com.qonversion.android.sdk:sdk:1.0.3"
+    implementation "com.qonversion.android.sdk:sdk:1.0.4"
     ...
 }
 ```
@@ -205,7 +205,7 @@ public class App extends Application {
         super.onCreate();
 
         QonversionBillingBuilder billingBuilder = buildBilling();
-        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true);
+        Qonversion.initialize(this, "projectKey", "yourSideUserID", billingBuilder, true);
     }
 ```
 ### Kotlin
@@ -216,7 +216,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         val billingBuilder = buildBilling()
-        Qonversion.initialize(this, BuildConfig.QONVERSION_API_KEY, "yourSideUserID", billingBuilder, true)
+        Qonversion.initialize(this, "projectKey", "yourSideUserID", billingBuilder, true)
     }
 }
 ```
