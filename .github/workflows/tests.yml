@@ -17,4 +17,4 @@ jobs:
         java-version: 1.8
     - name: Build and Tests
       run: |
-          fastlane tests
+          fastlane test
