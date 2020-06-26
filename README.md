@@ -14,7 +14,7 @@ The latest release is available on [Bintray](https://dl.bintray.com/artemyglukho
 ```kotlin
 dependencies {
     ... 
-    implementation "com.qonversion.android.sdk:sdk:1.0.4"
+    implementation "com.qonversion.android.sdk:sdk:1.0.5"
     ...
 }
 ```
@@ -161,8 +161,6 @@ Create an instance of `QonversionBillingBuilder`. It creation exactly like creat
     private QonversionBillingBuilder buildBilling() {
         return new QonversionBillingBuilder()
                 .enablePendingPurchases()
-                .setChildDirected(BillingClient.ChildDirected.CHILD_DIRECTED)
-                .setUnderAgeOfConsent(BillingClient.UnderAgeOfConsent.UNDER_AGE_OF_CONSENT)
                 .setListener(new PurchasesUpdatedListener() {
                     @Override
                     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
@@ -178,8 +176,6 @@ Create an instance of `QonversionBillingBuilder`. It creation exactly like creat
     private fun buildBilling(): QonversionBillingBuilder {
         return QonversionBillingBuilder()
             .enablePendingPurchases()
-            .setChildDirected(BillingClient.ChildDirected.CHILD_DIRECTED)
-            .setUnderAgeOfConsent(BillingClient.UnderAgeOfConsent.UNSPECIFIED)
             .setListener { billingResult, purchases ->
                 // your purchases update logic
             }

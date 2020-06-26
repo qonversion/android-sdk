@@ -17,8 +17,6 @@ import com.android.billingclient.api.PriceChangeFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.RewardLoadParams;
-import com.android.billingclient.api.RewardResponseListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -106,22 +104,6 @@ public interface Billing {
      *     the callback with a {@link Purchase.PurchasesResult} parameter.
      */
     void queryPurchaseHistoryAsync(String skuType, @NonNull PurchaseHistoryResponseListener listener);
-
-    /**
-     * Loads a rewarded sku in the background and returns the result asynchronously.
-     *
-     * <p>If the rewarded sku is available, the response will be BILLING_RESULT_OK. Otherwise the
-     * response will be ITEM_UNAVAILABLE. There is no guarantee that a rewarded sku will always be
-     * available. After a successful response, only then should the offer be given to a user to obtain
-     * a rewarded item and call launchBillingFlow.
-     *
-     * @param params Params specific to this load request {@link RewardLoadParams}
-     * @param listener Implement it to get the result of the load operation returned asynchronously
-     *     through the callback with the {@link BillingClient.BillingResponseCode}
-     */
-    @Deprecated
-    /** @deprecated */
-    void loadRewardedSku(RewardLoadParams params, @NonNull RewardResponseListener listener);
 
     /**
      * Acknowledge in-app purchases.

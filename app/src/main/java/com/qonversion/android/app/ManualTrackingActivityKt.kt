@@ -10,7 +10,7 @@ import java.util.*
 
 class ManualTrackingActivityKt : AppCompatActivity() {
     private var client: BillingClient? = null
-    private val skuDetails: MutableMap<String, SkuDetails> =
+    private val skuDetails: MutableMap<String, SkuDetails?> =
         HashMap()
 
     override fun onCreate(
@@ -56,7 +56,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
                         params
                     ) { billingResult, list ->
                         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                            if (!list.isEmpty()) {
+                            if (!list!!.isEmpty()) {
                                 skuDetails[SKU_ID] = list[0]
                             }
                             launchBillingFlow()
@@ -74,7 +74,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
         val params =
             BillingFlowParams
                 .newBuilder()
-                .setSkuDetails(skuDetails[SKU_ID])
+                .setSkuDetails(skuDetails[SKU_ID]!!)
                 .build()
         client!!.launchBillingFlow(this, params)
     }

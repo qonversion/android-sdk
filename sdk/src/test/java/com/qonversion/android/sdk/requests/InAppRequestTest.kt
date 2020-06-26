@@ -106,7 +106,7 @@ class InAppRequestTest {
         Assert.assertEquals(0, jsonObj.get("introductoryPriceAmountMicros"))
         Assert.assertEquals("", jsonObj.get("introductoryPricePeriod"))
         Assert.assertEquals("", jsonObj.get("introductoryPrice"))
-        Assert.assertEquals("", jsonObj.get("introductoryPriceCycles"))
+        Assert.assertEquals("0", jsonObj.get("introductoryPriceCycles"))
         Assert.assertEquals("GPA.0000-0000-0000-00000", jsonObj.get("orderId"))
         Assert.assertEquals("com.qonversion.android.sdk", jsonObj.get("packageName"))
         Assert.assertEquals(1575404326564, jsonObj.get("purchaseTime"))

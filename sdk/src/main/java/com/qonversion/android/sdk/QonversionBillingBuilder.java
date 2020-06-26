@@ -12,8 +12,6 @@ public class QonversionBillingBuilder {
     private Context mContext;
     private boolean mEnablePendingPurchases;
     private boolean mEnableAutoTracking = false;
-    private int mChildDirected = BillingClient.ChildDirected.UNSPECIFIED;
-    private int mUnderAgeOfConsent = BillingClient.UnderAgeOfConsent.UNSPECIFIED;
     private PurchasesUpdatedListener mListener;
     private PurchasesListener updateCallback;
     private Logger logger;
@@ -24,16 +22,6 @@ public class QonversionBillingBuilder {
 
     public QonversionBillingBuilder setListener(PurchasesUpdatedListener listener) {
         mListener = listener;
-        return this;
-    }
-
-    public QonversionBillingBuilder setChildDirected(@BillingClient.ChildDirected int childDirected) {
-        this.mChildDirected = childDirected;
-        return this;
-    }
-
-    public QonversionBillingBuilder setUnderAgeOfConsent(@BillingClient.UnderAgeOfConsent int underAgeOfConsent) {
-        this.mUnderAgeOfConsent = underAgeOfConsent;
         return this;
     }
 
@@ -85,8 +73,6 @@ public class QonversionBillingBuilder {
                 .newBuilder(mContext)
                 .enablePendingPurchases()
                 .setListener(listener)
-                .setChildDirected(mChildDirected)
-                .setUnderAgeOfConsent(mUnderAgeOfConsent)
                 .build();
     }
 }
