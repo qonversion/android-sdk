@@ -74,7 +74,6 @@ public class App extends MultiDexApplication {
     private QonversionBillingBuilder buildBilling() {
         return new QonversionBillingBuilder()
                 .enablePendingPurchases()
-                .setChildDirected(BillingClient.ChildDirected.CHILD_DIRECTED)
                 .setListener(new PurchasesUpdatedListener() {
                     @Override
                     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {

@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val skuDetailsMap = mutableMapOf<String, SkuDetails>()
+    private val skuDetailsMap = mutableMapOf<String, SkuDetails?>()
     private val sku_purchase = "conversion_test_purchase"
     private val sku_subscription = "conversion_test_subscribe"
     private var billingClient : Billing? = null
@@ -38,11 +38,8 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         billingClient?.querySkuDetailsAsync(params, object: SkuDetailsResponseListener {
-            override fun onSkuDetailsResponse(
-                billingResult: BillingResult?,
-                skuDetailsList: MutableList<SkuDetails>?
-            ) {
-                if (billingResult!!.responseCode == 0) {
+            override fun onSkuDetailsResponse(billingResult: BillingResult, skuDetailsList: MutableList<SkuDetails>?) {
+                if (billingResult.responseCode == 0) {
                     for (skuDetails in skuDetailsList!!) {
                         monitor.text = skuDetails.originalJson
                         skuDetailsMap[skuDetails.sku] = skuDetails
@@ -55,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun launchBillingFlow(purchaseId: String) {
         val billingFlowParams = BillingFlowParams.newBuilder()
-            .setSkuDetails(skuDetailsMap[purchaseId])
+            .setSkuDetails(skuDetailsMap[purchaseId]!!)
             .build()
         billingClient?.launchBillingFlow(this, billingFlowParams)
     }
@@ -68,8 +65,8 @@ class MainActivity : AppCompatActivity() {
                 monitor.text = "Billing Connection failed"
             }
 
-            override fun onBillingSetupFinished(billingResult: BillingResult?) {
-                if (billingResult?.responseCode == BillingClient.BillingResponseCode.OK) {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     monitor.text = "Billing Connection successful"
                 }
             }
