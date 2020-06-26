@@ -44,7 +44,7 @@ class GooglePurchaseConverterTest {
         assertEquals("", converted.freeTrialPeriod)
         assertEquals("", converted.introductoryPrice)
         assertEquals(0, converted.introductoryPriceAmountMicros)
-        assertEquals("", converted.introductoryPriceCycles)
+        assertEquals("0", converted.introductoryPriceCycles)
         assertEquals("", converted.introductoryPricePeriod)
         assertEquals("", converted.subscriptionPeriod)
         assertFalse(converted.acknowledged)

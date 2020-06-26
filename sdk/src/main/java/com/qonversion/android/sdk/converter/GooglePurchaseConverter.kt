@@ -28,7 +28,7 @@ class GooglePurchaseConverter(
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
             introductoryPricePeriod = details.introductoryPricePeriod ?: "",
             introductoryPrice = details.introductoryPrice ?: "",
-            introductoryPriceCycles = details.introductoryPriceCycles ?: "",
+            introductoryPriceCycles = details.introductoryPriceCycles.toString(),
             orderId = purchase.orderId,
             packageName = purchase.packageName,
             purchaseTime = purchase.purchaseTime,

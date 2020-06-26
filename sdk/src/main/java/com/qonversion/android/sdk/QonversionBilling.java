@@ -18,8 +18,6 @@ import com.android.billingclient.api.PriceChangeConfirmationListener;
 import com.android.billingclient.api.PriceChangeFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchaseHistoryResponseListener;
-import com.android.billingclient.api.RewardLoadParams;
-import com.android.billingclient.api.RewardResponseListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -128,11 +126,6 @@ public class QonversionBilling implements Billing {
     @Override
     public void queryPurchaseHistoryAsync(String skuType, @NonNull PurchaseHistoryResponseListener listener) {
         billingClient.queryPurchaseHistoryAsync(skuType, listener);
-    }
-
-    @Override
-    public void loadRewardedSku(RewardLoadParams params, @NonNull RewardResponseListener listener) {
-        billingClient.loadRewardedSku(params, listener);
     }
 
     @Override
