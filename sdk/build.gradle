@@ -7,6 +7,8 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
+def schemasFolderName = "schemas".toString()
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -21,6 +23,12 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
         version = '1.0.5'
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/$schemasFolderName")
+            }
+        }
     }
 
     buildTypes {
@@ -146,6 +154,19 @@ dependencies {
 
     implementation 'androidx.ads:ads-identifier:1.0.0-alpha04'
     implementation 'com.google.guava:guava:28.0-android'
+
+    // Room
+    implementation "androidx.room:room-runtime:2.2.5"
+    kapt "androidx.room:room-compiler:2.2.5"
+    testImplementation "androidx.room:room-testing:2.2.5"
+    testImplementation 'android.arch.lifecycle:livedata:1.1.1'
+    implementation "android.arch.persistence.room:rxjava2:1.1.1"
+    implementation "androidx.room:room-rxjava2:2.2.5"
+
+    // RxJava
+    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 
     testImplementation 'junit:junit:4.13'
 

@@ -1,5 +1,8 @@
 package com.qonversion.android.sdk.entity
 
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
 data class Purchase(
     val detailsToken: String,
     val title: String,

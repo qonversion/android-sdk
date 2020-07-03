@@ -104,8 +104,12 @@ class Qonversion private constructor(
                 PreferenceManager.getDefaultSharedPreferences(context),
                 TokenValidator()
             )
-            val environment = EnvironmentProvider(context)
-            val config = QonversionConfig(SDK_VERSION, key, autoTracking)
+            val environment = AndroidEnvironmentProvider(context)
+            val config = QonversionConfig(
+                sdkVersion = SDK_VERSION,
+                key = key,
+                trackingEnabled = autoTracking
+            )
             val repository = QonversionRepository.initialize(
                 context,
                 storage,
@@ -137,19 +141,8 @@ class Qonversion private constructor(
     }
 
     fun purchase(details: SkuDetails, p: Purchase) {
-        purchase(android.util.Pair.create(details, p), null)
-    }
-
-    fun purchase(details: SkuDetails, p: Purchase, callback: QonversionCallback?) {
-        purchase(android.util.Pair.create(details, p), callback)
-    }
-
-    private fun purchase(
-        purchaseInfo: android.util.Pair<SkuDetails, Purchase>,
-        callback: QonversionCallback?
-    ) {
-        val purchase = converter.convert(purchaseInfo)
-        repository.purchase(purchase, callback)
+        val purchase = converter.convert(android.util.Pair.create(details, p))
+        repository.purchase(purchase)
     }
 
     fun attribution(

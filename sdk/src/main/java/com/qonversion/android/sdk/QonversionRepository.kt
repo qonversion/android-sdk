@@ -1,18 +1,25 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import androidx.room.Room
 import com.qonversion.android.sdk.api.Api
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.device.AdsDto
-import com.qonversion.android.sdk.dto.purchase.Inapp
+import com.qonversion.android.sdk.api.RxErrorHandlingCallAdapterFactory
+import com.qonversion.android.sdk.dto.AttributionRequest
+import com.qonversion.android.sdk.dto.BaseResponse
+import com.qonversion.android.sdk.dto.QonversionRequest
+import com.qonversion.android.sdk.dto.Response
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.extractor.Extractor
-import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.extractor.TokenExtractor
+import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.Storage
+import com.qonversion.android.sdk.storage.db.QonversionDatabase
+import com.qonversion.android.sdk.storage.purchase.PurchaseLocalDataSource
 import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.Validator
 import com.squareup.moshi.Moshi
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -23,34 +30,48 @@ import java.util.concurrent.TimeUnit
 internal class QonversionRepository private constructor(
     private val api: Api,
     private var storage: Storage,
-    private val environmentProvider: EnvironmentProvider,
-    private val sdkVersion: String,
-    private val trackingEnabled: Boolean,
-    private val key: String,
     private val logger: Logger,
-    private val internalUserId: String,
     private val requestQueue: RequestsQueue,
     private val tokenExtractor: Extractor<retrofit2.Response<BaseResponse<Response>>>,
-    private val requestValidator: Validator<QonversionRequest>
+    private val requestValidator: Validator<QonversionRequest>,
+    private val requestFactory: RequestFactory,
+    private val purchaseSendingQueue: PurchaseSendingQueue
 ) {
 
+    private val disposable = CompositeDisposable()
+
+    init {
+        disposable.add(
+                purchaseSendingQueue.purchasesQueue()
+                .subscribe({
+                    kickRequestQueue()
+                }, {
+                    logger.log("onError: $it")
+                })
+        )
+    }
+
     fun init(callback: QonversionCallback?) {
-        initRequest(trackingEnabled, key, sdkVersion, callback, null)
+        initRequest(callback, null)
     }
 
     fun init(edfa: String, callback: QonversionCallback?) {
-        initRequest(trackingEnabled, key, sdkVersion, callback, edfa)
+        initRequest(callback, edfa)
     }
 
     fun purchase(
-        purchase: Purchase,
-        callback: QonversionCallback?
+        purchase: Purchase
     ) {
-        purchaseRequest(purchase, callback)
+        purchaseSendingQueue.addPurchase(purchase)
     }
 
     fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
-        val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
+        val attributionRequest = requestFactory.createAttributionRequest(
+            conversionInfo = conversionInfo,
+            from = from,
+            conversionUid = conversionUid,
+            uid = storage.load()
+        )
         if (requestValidator.valid(attributionRequest)) {
             logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
@@ -58,25 +79,6 @@ internal class QonversionRepository private constructor(
             logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
             requestQueue.add(attributionRequest)
         }
-    }
-
-    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
-        val uid = storage.load()
-        val adsDto = AdsDto(trackingEnabled, edfa = null)
-        return AttributionRequest(
-            d = environmentProvider.getInfo(
-                internalUserId,
-                adsDto
-            ),
-            v = sdkVersion,
-            accessToken = key,
-            clientUid = uid,
-            providerData = ProviderData(
-                data = conversionInfo,
-                provider = from,
-                uid = conversionUid
-            )
-        )
     }
 
     private fun sendQonversionRequest(request: QonversionRequest) {
@@ -109,79 +111,8 @@ internal class QonversionRepository private constructor(
         }
     }
 
-    private fun purchaseRequest(
-        purchase: Purchase,
-        callback: QonversionCallback?
-    ) {
-        val uid = storage.load()
-        val adsDto = AdsDto(trackingEnabled, edfa = null)
-        val purchaseRequest = PurchaseRequest(
-            d = environmentProvider.getInfo(
-                internalUserId,
-                adsDto
-            ),
-            v = sdkVersion,
-            accessToken = key,
-            clientUid = uid,
-            inapp = Inapp(
-                detailsToken = purchase.detailsToken,
-                title = purchase.title,
-                description = purchase.description,
-                productId = purchase.productId,
-                type = purchase.type,
-                originalPrice = purchase.originalPrice,
-                originalPriceAmountMicros = purchase.originalPriceAmountMicros,
-                priceCurrencyCode = purchase.priceCurrencyCode,
-                price = purchase.price,
-                priceAmountMicros = purchase.priceAmountMicros,
-                subscriptionPeriod = purchase.subscriptionPeriod,
-                freeTrialPeriod = purchase.freeTrialPeriod,
-                introductoryPriceAmountMicros = purchase.introductoryPriceAmountMicros,
-                introductoryPricePeriod = purchase.introductoryPricePeriod,
-                introductoryPrice = purchase.introductoryPrice,
-                introductoryPriceCycles = purchase.introductoryPriceCycles,
-                orderId = purchase.orderId,
-                packageName = purchase.packageName,
-                purchaseTime = purchase.purchaseTime,
-                purchaseState = purchase.purchaseState,
-                purchaseToken = purchase.purchaseToken,
-                acknowledged = purchase.acknowledged,
-                autoRenewing = purchase.autoRenewing
-            )
-        )
-
-        api.purchase(purchaseRequest).enqueue {
-            onResponse = {
-                logger.log("purchaseRequest - success - $it")
-                callback?.onSuccess(storage.load())
-                kickRequestQueue()
-            }
-            onFailure = {
-                logger.log("purchaseRequest - failure - $it")
-                if (it != null) {
-                    callback?.onError(it)
-                }
-            }
-        }
-    }
-
-    private fun initRequest(
-        trackingEnabled: Boolean,
-        key: String,
-        sdkVersion: String,
-        callback: QonversionCallback?,
-        edfa: String?
-    ) {
-
-        val uid = storage.load()
-        val adsDto = AdsDto(trackingEnabled, edfa)
-        val initRequest = InitRequest(
-            d = environmentProvider.getInfo(internalUserId, adsDto),
-            v = sdkVersion,
-            accessToken = key,
-            clientUid = uid
-        )
-
+    private fun initRequest(callback: QonversionCallback?, edfa: String?) {
+        val initRequest = requestFactory.createInitRequest(edfa, storage.load())
         api.init(initRequest).enqueue {
             onResponse = {
                 logger.log("initRequest - success - $it")
@@ -227,24 +158,55 @@ internal class QonversionRepository private constructor(
 
             val retrofit = Retrofit.Builder()
                 .addConverterFactory(MoshiConverterFactory.create(Moshi.Builder().build()))
+                .addCallAdapterFactory(RxErrorHandlingCallAdapterFactory.create())
                 .baseUrl(BASE_URL)
                 .client(client)
                 .build()
 
             val requestQueue = RequestsQueue(logger)
 
+            val database : QonversionDatabase = Room.databaseBuilder(
+                context,
+                QonversionDatabase::class.java,
+                QonversionDatabase.DATABASE_NAME
+            ).fallbackToDestructiveMigrationOnDowngrade()
+                .enableMultiInstanceInvalidation()
+                .build()
+
+            val purchaseLocalDataSource = PurchaseLocalDataSource(
+                database.purchaseInfo()
+            )
+
+            val requestFactory = RequestFactory(
+                environmentProvider = environmentProvider,
+                internalUserId = internalUserId,
+                key = config.key,
+                sdkVersion = config.sdkVersion,
+                trackingEnabled = config.trackingEnabled
+            )
+
+            val api =  retrofit.create(Api::class.java)
+
+            val purchaseSendingQueue =
+                PurchaseSendingQueue(
+                    purchaseLocalDataSource,
+                    api,
+                    requestFactory,
+                    storage,
+                    logger,
+                    Schedulers.io(),
+                    ErrorHandler(logger)
+                )
+
             return QonversionRepository(
-                retrofit.create(Api::class.java),
+                api,
                 storage,
-                environmentProvider,
-                config.key,
-                config.trackingEnabled,
-                config.sdkVersion,
                 logger,
-                internalUserId,
                 requestQueue,
                 TokenExtractor(),
-                RequestValidator()
+                RequestValidator(),
+                requestFactory,
+                purchaseSendingQueue
             )
         }
     }
