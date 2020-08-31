@@ -117,8 +117,8 @@ class Qonversion private constructor(
             val converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
-                override fun onSuccess(advertisingId: String, provider: String) {
-                    repository.init(advertisingId, callback)
+                override fun onSuccess(advertisingId: String) {
+                        repository.init(advertisingId, callback)
                 }
 
                 override fun onFailure(t: Throwable) {

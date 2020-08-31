@@ -144,8 +144,7 @@ dependencies {
     implementation network.moshiConverter
     implementation "androidx.preference:preference:1.1.1"
 
-    implementation 'androidx.ads:ads-identifier:1.0.0-alpha04'
-    implementation 'com.google.guava:guava:28.0-android'
+    implementation 'com.google.android.gms:play-services-ads:18.3.0'
 
     testImplementation 'junit:junit:4.13'
 
