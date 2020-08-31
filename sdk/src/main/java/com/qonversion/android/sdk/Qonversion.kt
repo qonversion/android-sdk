@@ -118,7 +118,7 @@ class Qonversion private constructor(
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
                 override fun onSuccess(advertisingId: String) {
-                        repository.init(advertisingId, callback)
+                    repository.init(advertisingId, callback)
                 }
 
                 override fun onFailure(t: Throwable) {

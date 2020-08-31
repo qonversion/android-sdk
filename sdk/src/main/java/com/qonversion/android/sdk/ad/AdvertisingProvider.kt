@@ -15,59 +15,6 @@ class AdvertisingProvider {
     }
 
     fun init(context: Context, callback: Callback) {
-        // Solution with reflection isn't working for some reasons:
-        // 1) it requires dependency on com.google.android.gms:play-services-ads to find
-        // com.google.android.gms.ads.identifier.AdvertisingIdClient class which requires additional
-        // initialization in its' turn,
-        // 2) reflections still can't call getAdvertisingIdInfo method of that class with null
-        // receiver even though it is static,
-        // 3) isGooglePlayServicesAvailable check also requires additional dependencies, but can be
-        // omitted, because getAdvertisingIdInfo should check GP services for itself.
-
-        try {
-            getAdvertisingIdViaReflection(context)?.let {
-                callback.onSuccess(it)
-            }
-        } catch (e: Exception) {
-            getAdvertisingIdViaService(context, callback)
-        }
-    }
-
-    @Throws(Exception::class)
-    fun getAdvertisingIdViaReflection(context: Context): String? {
-        if (!isGooglePlayServicesAvailable(context)) {
-            return null
-        }
-
-        val getAdvertisingIdInfo = ReflectionUtils.getMethod(
-            "com.google.android.gms.ads.identifier.AdvertisingIdClient",
-            "getAdvertisingIdInfo",
-            Context::class.java
-        ) ?: throw IllegalStateException("AdvertisingIdClient not found")
-
-        val advertisingInfo =
-            ReflectionUtils.invoke(null, getAdvertisingIdInfo, context)
-                ?: throw IllegalStateException("getAdvertisingIdInfo invocation failed")
-        val getId = ReflectionUtils.getMethod(advertisingInfo.javaClass, "getId")
-            ?: throw IllegalStateException("getId invocation failed")
-
-        return ReflectionUtils.invoke(advertisingInfo, getId) as String
-    }
-
-    private fun isGooglePlayServicesAvailable(context: Context): Boolean {
-        val method =
-            ReflectionUtils.getMethod(
-                "com.google.android.gms.common.GooglePlayServicesUtil",
-                "isGooglePlayServicesAvailable",
-                Context::class.java
-            ) ?: return false
-
-        val connectionResult = ReflectionUtils.invoke(null, method, context)
-        return connectionResult is Int && connectionResult == 0
-    }
-
-    @Throws(IllegalStateException::class)
-    fun getAdvertisingIdViaService(context: Context, callback: Callback) {
         Thread(Runnable {
             if (Looper.myLooper() == Looper.getMainLooper()) {
                 throw IllegalStateException("Cannot be called from the main thread")
