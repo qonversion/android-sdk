@@ -35,7 +35,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "1.0.5"
+        private const val SDK_VERSION = "1.0.6"
 
         @JvmStatic
         @Volatile
@@ -117,7 +117,7 @@ class Qonversion private constructor(
             val converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
-                override fun onSuccess(advertisingId: String, provider: String) {
+                override fun onSuccess(advertisingId: String) {
                     repository.init(advertisingId, callback)
                 }
 
