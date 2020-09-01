@@ -35,7 +35,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "1.0.5"
+        private const val SDK_VERSION = "1.0.6"
 
         @JvmStatic
         @Volatile

@@ -20,7 +20,7 @@ android {
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
-        version = '1.0.5'
+        version = '1.0.6'
     }
 
     buildTypes {
@@ -56,10 +56,10 @@ bintray {
         name = 'com.qonversion.android.sdk'
 
         version {
-            name = '1.0.5'
+            name = '1.0.6'
             desc = 'qonversion-android-sdk'
             released  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ENGLISH).format(new Date())
-            vcsTag = '1.0.5'
+            vcsTag = '1.0.6'
         }
 
         licenses = ['MIT']
@@ -72,7 +72,7 @@ bintray {
             MyPublication(MavenPublication) {
                 groupId 'com.qonversion.android.sdk'
                 artifactId 'sdk'
-                version '1.0.5'
+                version '1.0.6'
             }
         }
     }
@@ -102,7 +102,7 @@ ext {
 
     PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '1.0.5'
+    PUBLISH_VERSION = '1.0.6'
 
     kotlinVersion = '1.3.61'
     moshiVersion = '1.9.2'
