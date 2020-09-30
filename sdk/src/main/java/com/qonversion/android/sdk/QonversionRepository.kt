@@ -6,10 +6,11 @@ import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.extractor.Extractor
-import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.extractor.TokenExtractor
+import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.PropertiesStorage
+import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.Validator
 import com.squareup.moshi.Moshi
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit
 internal class QonversionRepository private constructor(
     private val api: Api,
     private var storage: Storage,
+    private var propertiesStorage: PropertiesStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val trackingEnabled: Boolean,
@@ -57,6 +59,16 @@ internal class QonversionRepository private constructor(
         } else {
             logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
             requestQueue.add(attributionRequest)
+        }
+    }
+
+    fun setProperty(key: String, value: String) {
+        propertiesStorage.save(key, value)
+    }
+
+    fun sendProperties() {
+        if (propertiesStorage.getProperties().isNotEmpty()) {
+            propertiesRequest()
         }
     }
 
@@ -198,6 +210,33 @@ internal class QonversionRepository private constructor(
         }
     }
 
+    private fun propertiesRequest() {
+        val uid = storage.load()
+        val adsDto = AdsDto(trackingEnabled, edfa = null)
+
+        val propertiesRequest = PropertiesRequest(
+            d = environmentProvider.getInfo(
+                internalUserId,
+                adsDto
+            ),
+            v = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            properties = propertiesStorage.getProperties()
+        )
+
+        api.properties(propertiesRequest).enqueue {
+            onResponse = {
+                logger.log("propertiesRequest - success - $it")
+                propertiesStorage.clear()
+                kickRequestQueue()
+            }
+            onFailure = {
+                logger.log("propertiesRequest - failure - $it")
+            }
+        }
+    }
+
     private fun saveUid(response: retrofit2.Response<BaseResponse<Response>>): String {
         val token = tokenExtractor.extract(response)
         storage.save(token)
@@ -213,6 +252,7 @@ internal class QonversionRepository private constructor(
         fun initialize(
             context: Application,
             storage: Storage,
+            propertiesStorage: PropertiesStorage,
             logger: Logger,
             environmentProvider: EnvironmentProvider,
             config: QonversionConfig,
@@ -236,6 +276,7 @@ internal class QonversionRepository private constructor(
             return QonversionRepository(
                 retrofit.create(Api::class.java),
                 storage,
+                propertiesStorage,
                 environmentProvider,
                 config.key,
                 config.trackingEnabled,
