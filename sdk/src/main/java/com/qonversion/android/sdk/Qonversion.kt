@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
-import com.qonversion.android.sdk.storage.DefinedUserProperties
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
@@ -40,7 +39,7 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "1.0.6"
+        private const val SDK_VERSION = "1.1.0"
         private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
 
         @JvmStatic
@@ -183,7 +182,7 @@ class Qonversion private constructor(
         repository.attribution(conversionInfo, from.id, conversionUid)
     }
 
-    fun setProperty(key: DefinedUserProperties, value: String) {
+    fun setProperty(key: QUserProperties, value: String) {
         repository.setProperty(key.userPropertyCode, value)
     }
 
