@@ -189,6 +189,10 @@ class Qonversion private constructor(
     fun setUserProperty(key: String, value: String) {
         repository.setProperty(key, value)
     }
+
+    fun setUserID(value: String){
+        repository.setProperty(QUserProperties.CustomUserId.userPropertyCode, value)
+    }
 }
 
 
