@@ -61,6 +61,14 @@ class Qonversion private constructor(
         @JvmStatic
         fun initialize(
             context: Application,
+            key: String
+        ): Qonversion {
+            return initialize(context, key, "", null, false, null)
+        }
+
+        @JvmStatic
+        fun initialize(
+            context: Application,
             key: String,
             internalUserId: String,
             callback: QonversionCallback?
@@ -72,11 +80,41 @@ class Qonversion private constructor(
         fun initialize(
             context: Application,
             key: String,
+            callback: QonversionCallback?
+        ): Qonversion {
+            return initialize(context, key, "", null, false, callback)
+        }
+
+        @JvmStatic
+        fun initialize(
+            context: Application,
+            key: String,
             internalUserId: String,
             billingBuilder: QonversionBillingBuilder?,
             autoTracking: Boolean
         ): Qonversion {
             return initialize(context, key, internalUserId, billingBuilder, autoTracking, null)
+        }
+
+        @JvmStatic
+        fun initialize(
+            context: Application,
+            key: String,
+            billingBuilder: QonversionBillingBuilder?,
+            autoTracking: Boolean
+        ): Qonversion {
+            return initialize(context, key, "", billingBuilder, autoTracking, null)
+        }
+
+        @JvmStatic
+        fun initialize(
+            context: Application,
+            key: String,
+            billingBuilder: QonversionBillingBuilder?,
+            autoTracking: Boolean,
+            callback: QonversionCallback?
+        ): Qonversion {
+            return initialize(context, key, "", billingBuilder, autoTracking, callback)
         }
 
         @JvmStatic
