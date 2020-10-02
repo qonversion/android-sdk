@@ -1,10 +1,13 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import android.util.Pair
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.s.LifecycleCallback
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
@@ -13,6 +16,7 @@ import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
+import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
 
 class Qonversion private constructor(
@@ -35,7 +39,8 @@ class Qonversion private constructor(
 
     companion object {
 
-        private const val SDK_VERSION = "1.0.5"
+        private const val SDK_VERSION = "1.1.0"
+        private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
 
         @JvmStatic
         @Volatile
@@ -104,11 +109,13 @@ class Qonversion private constructor(
                 PreferenceManager.getDefaultSharedPreferences(context),
                 TokenValidator()
             )
+            val propertiesStorage = UserPropertiesStorage()
             val environment = EnvironmentProvider(context)
             val config = QonversionConfig(SDK_VERSION, key, autoTracking)
             val repository = QonversionRepository.initialize(
                 context,
                 storage,
+                propertiesStorage,
                 logger,
                 environment,
                 config,
@@ -117,7 +124,7 @@ class Qonversion private constructor(
             val converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
-                override fun onSuccess(advertisingId: String, provider: String) {
+                override fun onSuccess(advertisingId: String) {
                     repository.init(advertisingId, callback)
                 }
 
@@ -130,9 +137,24 @@ class Qonversion private constructor(
             } else {
                 null
             }
+
+            val lifecycleCallback = LifecycleCallback(repository)
+            context.registerActivityLifecycleCallbacks(lifecycleCallback)
+            sendPropertiesAtPeriod(repository)
+
             return Qonversion(billingClient, repository, converter).also {
                 instance = it
             }
+        }
+
+        private fun sendPropertiesAtPeriod(repository: QonversionRepository){
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed(object : Runnable {
+                override fun run() {
+                    repository.sendProperties()
+                    handler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
+                }
+            }, PROPERTY_UPLOAD_PERIOD.toLong())
         }
     }
 
@@ -158,6 +180,18 @@ class Qonversion private constructor(
         conversionUid: String
     ) {
         repository.attribution(conversionInfo, from.id, conversionUid)
+    }
+
+    fun setProperty(key: QUserProperties, value: String) {
+        repository.setProperty(key.userPropertyCode, value)
+    }
+
+    fun setUserProperty(key: String, value: String) {
+        repository.setProperty(key, value)
+    }
+
+    fun setUserID(value: String){
+        repository.setProperty(QUserProperties.CustomUserId.userPropertyCode, value)
     }
 }
 

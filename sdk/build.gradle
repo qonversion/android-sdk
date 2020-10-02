@@ -20,7 +20,7 @@ android {
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
-        version = '1.0.5'
+        version = '1.1.0'
     }
 
     buildTypes {
@@ -56,10 +56,10 @@ bintray {
         name = 'com.qonversion.android.sdk'
 
         version {
-            name = '1.0.5'
+            name = '1.1.0'
             desc = 'qonversion-android-sdk'
             released  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ENGLISH).format(new Date())
-            vcsTag = '1.0.5'
+            vcsTag = '1.1.0'
         }
 
         licenses = ['MIT']
@@ -72,7 +72,7 @@ bintray {
             MyPublication(MavenPublication) {
                 groupId 'com.qonversion.android.sdk'
                 artifactId 'sdk'
-                version '1.0.5'
+                version '1.1.0'
             }
         }
     }
@@ -102,7 +102,7 @@ ext {
 
     PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '1.0.5'
+    PUBLISH_VERSION = '1.1.0'
 
     kotlinVersion = '1.3.61'
     moshiVersion = '1.9.2'
@@ -143,9 +143,6 @@ dependencies {
     implementation network.okhttp
     implementation network.moshiConverter
     implementation "androidx.preference:preference:1.1.1"
-
-    implementation 'androidx.ads:ads-identifier:1.0.0-alpha04'
-    implementation 'com.google.guava:guava:28.0-android'
 
     testImplementation 'junit:junit:4.13'
 
