@@ -40,7 +40,7 @@ class Qonversion private constructor(
     companion object {
 
         private const val SDK_VERSION = "1.1.0"
-        private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
+        private const val PROPERTY_UPLOAD_PERIOD = 5 * 1000
 
         @JvmStatic
         @Volatile
@@ -174,6 +174,13 @@ class Qonversion private constructor(
                 QonversionBilling(context, billingBuilder, logger, autoTracking)
             } else {
                 null
+            }
+
+            val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
+            fbAttributionId?.let {
+                repository.setProperty(QUserProperties.FacebookAttribution.userPropertyCode,
+                    it
+                )
             }
 
             val lifecycleCallback = LifecycleCallback(repository)
