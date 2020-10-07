@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionCallback
 import com.qonversion.android.sdk.billing.Billing
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initBilling() {
-        billingClient = Qonversion.instance?.billingClient
+        billingClient = Qonversion.billingClient
 
         billingClient?.startConnection(object : BillingClientStateListener {
             override fun onBillingServiceDisconnected() {

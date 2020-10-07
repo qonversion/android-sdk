@@ -8,7 +8,6 @@ import com.qonversion.android.sdk.Qonversion;
 
 public class JavaClient {
     void test(Application application, SkuDetails details, Purchase purchase) {
-        Qonversion qonversion = Qonversion.getInstance();
-        qonversion.purchase(details, purchase);
+        Qonversion.purchase(details, purchase);
     }
 }
