@@ -17,4 +17,7 @@ interface Api {
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>
 
+    @POST("v1/properties")
+    fun properties(@Body request: PropertiesRequest): Call<BaseResponse<Response>>
+
 }
