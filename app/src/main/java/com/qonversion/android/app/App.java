@@ -3,7 +3,6 @@ package com.qonversion.android.app;
 import androidx.annotation.Nullable;
 import androidx.multidex.MultiDexApplication;
 
-import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -24,12 +23,11 @@ public class App extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        Qonversion.initialize(
+
+        Qonversion.launch(
                 this,
                 "projectKey",
-                "yourSideUserID",
                 buildBilling(),
-                true,
                 new QonversionCallback() {
                     @Override
                     public void onSuccess(@NotNull String uid) {
@@ -47,7 +45,7 @@ public class App extends MultiDexApplication {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
-                Qonversion.getInstance().attribution(conversionData, AttributionSource.APPSFLYER, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
+                Qonversion.attribution(conversionData, AttributionSource.APPSFLYER, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
             }
 
             @Override
