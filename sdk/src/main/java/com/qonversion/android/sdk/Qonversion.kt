@@ -101,6 +101,13 @@ object Qonversion {
         }
         billingClient = billing
 
+        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
+            fbAttributionId?.let {
+                repository.setProperty(QUserProperties.FacebookAttribution.userPropertyCode,
+                    it
+                )
+            }
+      
         val lifecycleCallback = LifecycleCallback(repository)
         context.registerActivityLifecycleCallbacks(lifecycleCallback)
         sendPropertiesAtPeriod(repository)
