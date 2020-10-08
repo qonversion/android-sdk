@@ -1,13 +1,11 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import android.util.Pair
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.s.LifecycleCallback
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
@@ -19,7 +17,7 @@ import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
 
-object Qonversion {
+object Qonversion : LifecycleDelegate{
 
     private var billing: QonversionBilling? = null
         private set(value) {
@@ -36,6 +34,9 @@ object Qonversion {
     private lateinit var repository: QonversionRepository
     private lateinit var converter: PurchaseConverter<Pair<SkuDetails, Purchase>>
 
+    private val lifecycleHandler: AppLifecycleHandler by lazy {
+        AppLifecycleHandler(this)
+    }
 
     @Volatile
     var billingClient: Billing? = billing
@@ -43,7 +44,14 @@ object Qonversion {
         @Synchronized get
 
     private const val SDK_VERSION = "1.1.0"
-    private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
+
+    init {
+        ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
+    }
+
+    override fun onAppBackgrounded() {
+        userPropertiesManager.forceSendProperties()
+    }
 
     @JvmOverloads
     @JvmStatic
@@ -57,7 +65,6 @@ object Qonversion {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        userPropertiesManager = QUserPropertiesManager()
         attributionManager = QAttributionManager()
         productCenterManager = QProductCenterManager()
 
@@ -82,6 +89,8 @@ object Qonversion {
             config,
             "internalUserId"
         )
+        userPropertiesManager = QUserPropertiesManager(context, repository)
+
         converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
         val adProvider = AdvertisingProvider()
         adProvider.init(context, object : AdvertisingProvider.Callback {
@@ -100,27 +109,6 @@ object Qonversion {
             null
         }
         billingClient = billing
-
-        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
-            fbAttributionId?.let {
-                repository.setProperty(QUserProperties.FacebookAttribution.userPropertyCode,
-                    it
-                )
-            }
-      
-        val lifecycleCallback = LifecycleCallback(repository)
-        context.registerActivityLifecycleCallbacks(lifecycleCallback)
-        sendPropertiesAtPeriod(repository)
-    }
-
-    private fun sendPropertiesAtPeriod(repository: QonversionRepository) {
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                repository.sendProperties()
-                handler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
-            }
-        }, PROPERTY_UPLOAD_PERIOD.toLong())
     }
 
     @JvmStatic
@@ -152,17 +140,17 @@ object Qonversion {
 
     @JvmStatic
     fun setProperty(key: QUserProperties, value: String) {
-        repository.setProperty(key.userPropertyCode, value)
+        userPropertiesManager.setProperty(key, value)
     }
 
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
-        repository.setProperty(key, value)
+        userPropertiesManager.setUserProperty(key, value)
     }
 
     @JvmStatic
     fun setUserID(value: String) {
-        repository.setProperty(QUserProperties.CustomUserId.userPropertyCode, value)
+        userPropertiesManager.setUserID(value)
     }
 }
 
