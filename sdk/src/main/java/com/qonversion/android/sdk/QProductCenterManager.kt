@@ -21,15 +21,15 @@ class QProductCenterManager internal constructor(
         @Synchronized private set
         @Synchronized get
 
-    @Volatile
-    var billing: QonversionBilling? = null
-        @Synchronized private set
-        @Synchronized get
+    private var billing: QonversionBilling? = null
+        set(value) {
+            value?.setReadyListener { purchase, details ->
+                purchase(Pair.create(details, purchase), null)
+            }
+            field = value
+        }
 
-    @Volatile
     lateinit var converter: PurchaseConverter<Pair<SkuDetails, Purchase>>
-        @Synchronized private set
-        @Synchronized get
 
     fun launch(
         context: Application,
@@ -53,13 +53,7 @@ class QProductCenterManager internal constructor(
         } else {
             null
         }
-        billing?.setReadyListener { purchase, details ->
-            purchase(Pair.create(details, purchase), null)
-        }
         billingClient = billing
-
-        val lifecycleCallback = LifecycleCallback(repository)
-        context.registerActivityLifecycleCallbacks(lifecycleCallback)
     }
 
     fun purchase(

@@ -18,14 +18,6 @@ object Qonversion {
 
     private const val SDK_VERSION = "1.1.0"
 
-    private var billing: QonversionBilling? = null
-        private set(value) {
-            field = value
-            billing?.setReadyListener { purchase, details ->
-                purchase(details, purchase)
-            }
-        }
-
     private lateinit var repository: QonversionRepository
     private lateinit var userPropertiesManager: QUserPropertiesManager
     private lateinit var attributionManager: QAttributionManager
@@ -33,9 +25,8 @@ object Qonversion {
 
 
     @Volatile
-    var billingClient: Billing? = billing
-        @Synchronized private set
-        @Synchronized get
+    var billingClient: Billing? = null
+        @Synchronized get() = productCenterManager.billingClient
 
     private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
 
