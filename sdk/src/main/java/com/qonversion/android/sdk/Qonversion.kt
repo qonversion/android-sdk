@@ -78,6 +78,17 @@ object Qonversion {
         productCenterManager = QProductCenterManager(repository, logger)
 
         productCenterManager.launch(context, billingBuilder, callback)
+
+        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
+            fbAttributionId?.let {
+                repository.setProperty(QUserProperties.FacebookAttribution.userPropertyCode,
+                    it
+                )
+            }
+      
+        val lifecycleCallback = LifecycleCallback(repository)
+        context.registerActivityLifecycleCallbacks(lifecycleCallback)
+        sendPropertiesAtPeriod(repository)
     }
 
     private fun sendPropertiesAtPeriod(repository: QonversionRepository) {
