@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
+import com.qonversion.android.s.LifecycleCallback
 
 object Qonversion {
 
