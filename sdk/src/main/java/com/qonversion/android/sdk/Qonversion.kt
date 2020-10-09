@@ -1,14 +1,10 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
-import android.util.Pair
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
@@ -30,11 +26,8 @@ object Qonversion : LifecycleDelegate{
     var billingClient: Billing? = null
         @Synchronized get() = productCenterManager.billingClient
 
-    private val lifecycleHandler: AppLifecycleHandler by lazy {
-        AppLifecycleHandler(this)
-    }
-
     init {
+        val lifecycleHandler = AppLifecycleHandler(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
     }
 
