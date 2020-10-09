@@ -3,46 +3,31 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
-import android.util.Pair
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.s.LifecycleCallback
-import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
-import com.qonversion.android.sdk.converter.GooglePurchaseConverter
-import com.qonversion.android.sdk.converter.PurchaseConverter
-import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
+import com.qonversion.android.s.LifecycleCallback
 
 object Qonversion {
 
-    private var billing: QonversionBilling? = null
-        private set(value) {
-            field = value
-            billing?.setReadyListener { purchase, details ->
-                purchase(details, purchase)
-            }
-        }
+    private const val SDK_VERSION = "1.1.0"
 
+    private lateinit var repository: QonversionRepository
     private lateinit var userPropertiesManager: QUserPropertiesManager
     private lateinit var attributionManager: QAttributionManager
     private lateinit var productCenterManager: QProductCenterManager
 
-    private lateinit var repository: QonversionRepository
-    private lateinit var converter: PurchaseConverter<Pair<SkuDetails, Purchase>>
-
 
     @Volatile
-    var billingClient: Billing? = billing
-        @Synchronized private set
-        @Synchronized get
+    var billingClient: Billing? = null
+        @Synchronized get() = productCenterManager.billingClient
 
-    private const val SDK_VERSION = "1.1.0"
     private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
 
     @JvmOverloads
@@ -57,10 +42,6 @@ object Qonversion {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        userPropertiesManager = QUserPropertiesManager()
-        attributionManager = QAttributionManager()
-        productCenterManager = QProductCenterManager()
-
         val logger = if (BuildConfig.DEBUG) {
             ConsoleLogger()
         } else {
@@ -72,8 +53,8 @@ object Qonversion {
         )
         val propertiesStorage = UserPropertiesStorage()
         val environment = EnvironmentProvider(context)
-        val config = QonversionConfig(SDK_VERSION, key, true)
-        repository = QonversionRepository.initialize(
+        val config = QonversionConfig(key, Qonversion.SDK_VERSION, true)
+        val repository = QonversionRepository.initialize(
             context,
             storage,
             propertiesStorage,
@@ -82,24 +63,13 @@ object Qonversion {
             config,
             "internalUserId"
         )
-        converter = GooglePurchaseConverter(SkuDetailsTokenExtractor())
-        val adProvider = AdvertisingProvider()
-        adProvider.init(context, object : AdvertisingProvider.Callback {
-            override fun onSuccess(advertisingId: String) {
-                repository.init(advertisingId, callback)
-            }
 
-            override fun onFailure(t: Throwable) {
-                repository.init(callback)
-            }
-        })
+        this.repository = repository
+        userPropertiesManager = QUserPropertiesManager()
+        attributionManager = QAttributionManager()
+        productCenterManager = QProductCenterManager(repository, logger)
 
-        billing = if (billingBuilder != null) {
-            QonversionBilling(context, billingBuilder, logger, true)
-        } else {
-            null
-        }
-        billingClient = billing
+        productCenterManager.launch(context, billingBuilder, callback)
 
         val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
             fbAttributionId?.let {
@@ -137,8 +107,7 @@ object Qonversion {
         purchaseInfo: android.util.Pair<SkuDetails, Purchase>,
         callback: QonversionCallback?
     ) {
-        val purchase = converter.convert(purchaseInfo)
-        repository.purchase(purchase, callback)
+        productCenterManager.purchase(purchaseInfo, callback)
     }
 
     @JvmStatic
