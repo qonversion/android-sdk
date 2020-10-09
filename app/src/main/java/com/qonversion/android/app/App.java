@@ -26,7 +26,7 @@ public class App extends MultiDexApplication {
 
         Qonversion.launch(
                 this,
-                "projectKey",
+                "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
                 buildBilling(),
                 new QonversionCallback() {
                     @Override
