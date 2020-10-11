@@ -1,12 +1,12 @@
 package com.qonversion.android.sdk
 
-import android.app.Application
+import android.content.ContentResolver
 import android.os.Handler
-import android.os.Looper
 
 class QUserPropertiesManager internal constructor(
-    private val context: Application,
-    private val repository: QonversionRepository
+    private val repository: QonversionRepository,
+    private val contentResolver: ContentResolver,
+    private val mainHandler: Handler
 ) {
 
     companion object {
@@ -14,7 +14,7 @@ class QUserPropertiesManager internal constructor(
     }
 
     init {
-        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
+        val fbAttributionId = FacebookAttribution().getAttributionId(contentResolver)
 
         fbAttributionId?.let {
             repository.setProperty(
@@ -27,11 +27,10 @@ class QUserPropertiesManager internal constructor(
     }
 
     private fun sendPropertiesAtPeriod() {
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed(object : Runnable {
+        mainHandler.postDelayed(object : Runnable {
             override fun run() {
                 repository.sendProperties()
-                handler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
+                mainHandler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
             }
         }, PROPERTY_UPLOAD_PERIOD.toLong())
     }

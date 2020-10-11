@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
@@ -70,7 +71,7 @@ object Qonversion : LifecycleDelegate{
         )
 
         this.repository = repository
-        userPropertiesManager = QUserPropertiesManager(context, Qonversion.repository)
+        userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
         productCenterManager = QProductCenterManager(repository, logger)
         productCenterManager.launch(context, billingBuilder, callback)
