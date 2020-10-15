@@ -15,11 +15,10 @@ class QUserPropertiesManager internal constructor(
 
     init {
         val fbAttributionId = FacebookAttribution().getAttributionId(contentResolver)
-
-        fbAttributionId?.let {
+        if (fbAttributionId != null){
             repository.setProperty(
                 QUserProperties.FacebookAttribution.userPropertyCode,
-                it
+                fbAttributionId
             )
         }
 
