@@ -135,6 +135,7 @@ dependencies {
 
     implementation moshi.core
     implementation moshi.adapters
+    implementation 'androidx.lifecycle:lifecycle-process:2.2.0'
     kapt moshi.koltin_codegen
 
     implementation billing.billingClient
@@ -157,6 +158,8 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.3.1"
 
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
+
+    testImplementation 'io.mockk:mockk:1.10.0'
 }
 
 apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
