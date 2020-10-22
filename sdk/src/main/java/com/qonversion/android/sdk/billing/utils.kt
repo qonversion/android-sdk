@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 fun BillingResult.toReadableDescription() =
-    "DebugMessage: $debugMessage; ResponseCode: ${responseCode.getBillingResponseCodeName()}."
+    "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getBillingResponseCodeName()}"
 
 fun PurchaseHistoryRecord.toReadableDescription() =
     "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
