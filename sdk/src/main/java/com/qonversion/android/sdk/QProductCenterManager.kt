@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Pair
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.s.LifecycleCallback
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter

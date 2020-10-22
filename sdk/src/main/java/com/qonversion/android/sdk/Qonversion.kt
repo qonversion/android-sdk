@@ -2,7 +2,7 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.os.Handler
-import android.os.Looper
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
@@ -12,9 +12,8 @@ import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
-import com.qonversion.android.s.LifecycleCallback
 
-object Qonversion {
+object Qonversion : LifecycleDelegate{
 
     private const val SDK_VERSION = "1.1.0"
 
@@ -28,7 +27,14 @@ object Qonversion {
     var billingClient: Billing? = null
         @Synchronized get() = productCenterManager.billingClient
 
-    private const val PROPERTY_UPLOAD_PERIOD = 15 * 1000
+    init {
+        val lifecycleHandler = AppLifecycleHandler(this)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
+    }
+
+    override fun onAppBackgrounded() {
+        userPropertiesManager.forceSendProperties()
+    }
 
     @JvmOverloads
     @JvmStatic
@@ -65,32 +71,10 @@ object Qonversion {
         )
 
         this.repository = repository
-        userPropertiesManager = QUserPropertiesManager()
+        userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
         productCenterManager = QProductCenterManager(repository, logger)
-
         productCenterManager.launch(context, billingBuilder, callback)
-
-        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
-            fbAttributionId?.let {
-                repository.setProperty(QUserProperties.FacebookAttribution.userPropertyCode,
-                    it
-                )
-            }
-      
-        val lifecycleCallback = LifecycleCallback(repository)
-        context.registerActivityLifecycleCallbacks(lifecycleCallback)
-        sendPropertiesAtPeriod(repository)
-    }
-
-    private fun sendPropertiesAtPeriod(repository: QonversionRepository) {
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                repository.sendProperties()
-                handler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
-            }
-        }, PROPERTY_UPLOAD_PERIOD.toLong())
     }
 
     @JvmStatic
@@ -121,17 +105,17 @@ object Qonversion {
 
     @JvmStatic
     fun setProperty(key: QUserProperties, value: String) {
-        repository.setProperty(key.userPropertyCode, value)
+        userPropertiesManager.setProperty(key, value)
     }
 
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
-        repository.setProperty(key, value)
+        userPropertiesManager.setUserProperty(key, value)
     }
 
     @JvmStatic
     fun setUserID(value: String) {
-        repository.setProperty(QUserProperties.CustomUserId.userPropertyCode, value)
+        userPropertiesManager.setUserID(value)
     }
 }
 
