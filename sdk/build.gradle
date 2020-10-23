@@ -109,7 +109,7 @@ ext {
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.8'
     billing = '3.0.0'
-
+    lifecycle_version = '2.1.0'
 
     kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
@@ -128,6 +128,12 @@ ext {
             moshiConverter    : "com.squareup.retrofit2:converter-moshi:$retrofit_version",
             okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version"
     ]
+
+    lifecycle = [
+            runtime   : "androidx.lifecycle:lifecycle-runtime:$lifecycle_version",
+            extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycle_version",
+            compiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    ]
 }
 
 dependencies {
@@ -135,7 +141,6 @@ dependencies {
 
     implementation moshi.core
     implementation moshi.adapters
-    implementation 'androidx.lifecycle:lifecycle-process:2.2.0'
     kapt moshi.koltin_codegen
 
     implementation billing.billingClient
@@ -144,6 +149,10 @@ dependencies {
     implementation network.okhttp
     implementation network.moshiConverter
     implementation "androidx.preference:preference:1.1.1"
+
+    implementation lifecycle.runtime
+    implementation lifecycle.extensions
+    kapt lifecycle.compiler
 
     testImplementation 'junit:junit:4.13'
 
