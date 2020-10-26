@@ -39,4 +39,10 @@ internal interface BillingService {
         purchaseToken: String,
         onAcknowledgeFailed: (error: BillingError) -> Unit
     )
+
+    fun getSkuDetailsFromPurchases(
+        purchases: List<Purchase>,
+        onCompleted: (List<SkuDetails>) -> Unit,
+        onFailed: (BillingError) -> Unit
+    )
 }

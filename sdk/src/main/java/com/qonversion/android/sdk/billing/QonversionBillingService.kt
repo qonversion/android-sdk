@@ -170,6 +170,38 @@ class QonversionBillingService(
         }
     }
 
+    override fun getSkuDetailsFromPurchases(
+        purchases: List<Purchase>,
+        onCompleted: (List<SkuDetails>) -> Unit,
+        onFailed: (BillingError) -> Unit
+    ) {
+        val skuList = purchases.map { it.sku }
+
+        querySkuDetailsAsync(
+            BillingClient.SkuType.SUBS,
+            skuList,
+            { skuDetailsSubs ->
+                val skuSubs = skuDetailsSubs.map { it.sku }
+                val skuInApp = skuList - skuSubs
+
+                if (skuInApp.isNotEmpty()) {
+                    querySkuDetailsAsync(
+                        BillingClient.SkuType.INAPP,
+                        skuInApp,
+                        { skuDetailsInApp ->
+                            onCompleted(skuDetailsSubs + skuDetailsInApp)
+                        }, {
+                            onFailed(it)
+                        }
+                    )
+                } else {
+                    onCompleted(skuDetailsSubs)
+                }
+            }, {
+                onFailed(it)
+            })
+    }
+
     override fun purchase(
         activity: Activity,
         skuDetails: SkuDetails,
