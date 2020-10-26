@@ -36,6 +36,10 @@ object Qonversion : LifecycleDelegate{
         userPropertiesManager.forceSendProperties()
     }
 
+    override fun onAppForegrounded() {
+
+    }
+
     @JvmOverloads
     @JvmStatic
     fun launch(

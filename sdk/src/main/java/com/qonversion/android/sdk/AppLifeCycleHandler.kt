@@ -7,6 +7,11 @@ import androidx.lifecycle.OnLifecycleEvent
 internal class AppLifecycleHandler(private val lifecycleDelegate: LifecycleDelegate) :
     LifecycleObserver {
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onMoveToForeground() {
+        lifecycleDelegate.onAppForegrounded()
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onMoveToBackground() {
         lifecycleDelegate.onAppBackgrounded()
@@ -15,4 +20,5 @@ internal class AppLifecycleHandler(private val lifecycleDelegate: LifecycleDeleg
 
 internal interface LifecycleDelegate {
     fun onAppBackgrounded()
+    fun onAppForegrounded()
 }
