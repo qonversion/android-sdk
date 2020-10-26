@@ -7,13 +7,13 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun BillingResult.toReadableDescription() =
+fun BillingResult.getDescription() =
     "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getBillingResponseCodeName()}"
 
-fun PurchaseHistoryRecord.toReadableDescription() =
+fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
 
-fun Purchase.toReadableDescription() =
+fun Purchase.getDescription() =
     "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
 private fun Long.convertLongToTime(): String {

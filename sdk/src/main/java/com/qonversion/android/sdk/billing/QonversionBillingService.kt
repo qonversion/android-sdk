@@ -6,8 +6,6 @@ import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.logger.Logger
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class QonversionBillingService(
@@ -19,7 +17,7 @@ class QonversionBillingService(
 
     private var billingClient: BillingClient? = null
 
-    private val serviceRequests = ConcurrentLinkedQueue<(connectionError: BillingError?) -> Unit>()
+    private val requestsQueue = ConcurrentLinkedQueue<(connectionError: BillingError?) -> Unit>()
 
     init {
         billingClient = BillingClient
@@ -39,17 +37,17 @@ class QonversionBillingService(
         )
     }
 
-    override fun restore(
-        onRestoreCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
-        onRestoreFailed: (error: BillingError) -> Unit
+    override fun queryPurchasesHistory(
+        onQueryHistoryCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryFailed: (error: BillingError) -> Unit
     ) {
-        queryAllPurchases(
+        queryAllPurchasesHistory(
             { allPurchases ->
-                onRestoreCompleted(allPurchases)
+                onQueryHistoryCompleted(allPurchases)
             },
             { error ->
                 logger.log(error.toString())
-                onRestoreFailed(error)
+                onQueryHistoryFailed(error)
             }
         )
     }
@@ -71,33 +69,29 @@ class QonversionBillingService(
         )
     }
 
-    override fun purchase(
-        activity: Activity,
-        skuDetails: SkuDetails
-    ) {
-        logger.log("Start purchasing for sku: ${skuDetails.sku}")
-
-        executeRequestOnUIThread {
-            val params = BillingFlowParams.newBuilder()
-                .setSkuDetails(skuDetails)
-                .build()
-
-            this@QonversionBillingService.launchBillingFlow(activity, params)
-        }
-    }
-
     override fun consume(
         purchaseToken: String,
-        onConsumed: (billingResult: BillingResult, purchaseToken: String) -> Unit
+        onConsumeFailed: (error: BillingError) -> Unit
     ) {
-        logger.log("Consume purchase with token $purchaseToken")
-        executeRequestOnUIThread { connectionError ->
+        logger.log("Consuming purchase with token $purchaseToken")
+        executeOnMainThread { connectionError ->
             if (connectionError == null) {
-                withConnectedClient {
+                val params = ConsumeParams
+                    .newBuilder()
+                    .setPurchaseToken(purchaseToken)
+                    .build()
+
+                withReadyClient {
                     consumeAsync(
-                        ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(),
-                        onConsumed
-                    )
+                        params
+                    ) { billingResult, purchaseToken ->
+                        if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                            val errorMessage =
+                                "Failed to consume purchase with token $purchaseToken ${billingResult.getDescription()}"
+                            onConsumeFailed(BillingError(billingResult.responseCode, errorMessage))
+                            logger.log(errorMessage)
+                        }
+                    }
                 }
             }
         }
@@ -105,19 +99,171 @@ class QonversionBillingService(
 
     override fun acknowledge(
         purchaseToken: String,
-        onAcknowledged: (billingResult: BillingResult, purchaseToken: String) -> Unit
+        onAcknowledgeFailed: (error: BillingError) -> Unit
     ) {
-        logger.log("Acknowledge purchase with token $purchaseToken")
-        executeRequestOnUIThread { connectionError ->
+        logger.log("Acknowledging purchase with token $purchaseToken")
+        executeOnMainThread { connectionError ->
             if (connectionError == null) {
-                withConnectedClient {
+                val params = AcknowledgePurchaseParams
+                    .newBuilder()
+                    .setPurchaseToken(purchaseToken)
+                    .build()
+
+                withReadyClient {
                     acknowledgePurchase(
-                        AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken)
-                            .build()
+                        params
                     ) { billingResult ->
-                        onAcknowledged(billingResult, purchaseToken)
+                        if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                            val errorMessage =
+                                "Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"
+                            onAcknowledgeFailed(
+                                BillingError(
+                                    billingResult.responseCode,
+                                    errorMessage
+                                )
+                            )
+                            logger.log(errorMessage)
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    override fun queryPurchases(
+        onQueryCompleted: (purchases: List<Purchase>) -> Unit,
+        onQueryFailed: (error: BillingError) -> Unit
+    ) {
+        logger.log("queryPurchases - querying for subs and inapp")
+        executeOnMainThread { connectionError ->
+            if (connectionError == null) {
+                withReadyClient {
+                    val activeSubs = queryPurchases(BillingClient.SkuType.SUBS)
+                    val unconsumedInApp = queryPurchases(BillingClient.SkuType.INAPP)
+                    val purchasesResult = mutableListOf<Purchase>()
+
+                    if (activeSubs?.responseCode == BillingClient.BillingResponseCode.OK
+                        && unconsumedInApp?.responseCode == BillingClient.BillingResponseCode.OK
+                    ) {
+                        purchasesResult.addAll(activeSubs.purchasesList ?: emptyList())
+                        purchasesResult.addAll(unconsumedInApp.purchasesList ?: emptyList())
+                        onQueryCompleted(purchasesResult)
+
+                        purchasesResult
+                            .takeUnless { it.isEmpty() }
+                            ?.forEach {
+                                logger.log("queryPurchases - purchases cache is retrieved ${it.getDescription()}")
+                            }
+                            ?: logger.log("queryPurchases - purchases cache is empty.")
+                    } else {
+                        onQueryFailed(
+                            BillingError(
+                                activeSubs.responseCode,
+                                "Failed to handle pending purchase queue"
+                            )
+                        )
+                    }
+                }
+            } else {
+                onQueryFailed(connectionError)
+            }
+        }
+    }
+
+    override fun purchase(
+        activity: Activity,
+        skuDetails: SkuDetails,
+        oldSkuDetails: SkuDetails?,
+        @BillingFlowParams.ProrationMode prorationMode: Int?
+    ) {
+        if (oldSkuDetails != null) {
+            replaceOldPurchase(activity, skuDetails, oldSkuDetails, prorationMode)
+        } else {
+            makePurchase(
+                activity,
+                skuDetails
+            )
+        }
+    }
+
+    private fun replaceOldPurchase(
+        activity: Activity,
+        skuDetails: SkuDetails,
+        oldSkuDetails: SkuDetails,
+        @BillingFlowParams.ProrationMode prorationMode: Int?
+    ) {
+        getPurchaseHistoryFrom(oldSkuDetails)
+        { billingResult, oldPurchase ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                if (oldPurchase != null) {
+                    logger.log("Purchase was found successfully for sku: ${oldSkuDetails.sku}")
+                    makePurchase(
+                        activity,
+                        skuDetails,
+                        UpdatePurchaseInfo(
+                            oldPurchase.sku,
+                            oldPurchase.purchaseToken,
+                            prorationMode
+                        )
+                    )
+                } else {
+                    val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
+                    logger.log(errorMessage)
+                    purchasesListener.onPurchasesFailed(
+                        null,
+                        BillingError(billingResult.responseCode, errorMessage)
+                    )
+                }
+            } else {
+                val errorMessage =
+                    "Failed to update purchase: ${billingResult.getDescription()}"
+                logger.log(errorMessage)
+                purchasesListener.onPurchasesFailed(
+                    null,
+                    BillingError(billingResult.responseCode, errorMessage)
+                )
+            }
+        }
+    }
+
+    private fun getPurchaseHistoryFrom(
+        skuDetails: SkuDetails,
+        completion: (BillingResult, PurchaseHistoryRecord?) -> Unit
+    ) {
+        withReadyClient {
+            logger.log("Querying Purchase with ${skuDetails.sku} and type ${skuDetails.type}")
+            queryPurchaseHistoryAsync(skuDetails.type) { billingResult, purchasesList ->
+                completion(
+                    billingResult,
+                    purchasesList?.firstOrNull { skuDetails.sku == it.sku }?.let {
+                        it
+                    }
+                )
+            }
+        }
+    }
+
+    private fun makePurchase(
+        activity: Activity,
+        skuDetails: SkuDetails,
+        updatePurchaseInfo: UpdatePurchaseInfo? = null
+    ) {
+        logger.log("Purchasing for sku: ${skuDetails.sku}")
+
+        executeOnMainThread { connectionError ->
+            if (connectionError == null) {
+                val params = BillingFlowParams.newBuilder()
+                    .setSkuDetails(skuDetails)
+                    .apply {
+                        if (updatePurchaseInfo != null) {
+                            setOldSku(updatePurchaseInfo.oldSku, updatePurchaseInfo.purchaseToken)
+                            updatePurchaseInfo.prorationMode?.let { prorationMode ->
+                                setReplaceSkusProrationMode(prorationMode)
+                            }
+                        }
+                    }.build()
+
+                this@QonversionBillingService.launchBillingFlow(activity, params)
             }
         }
     }
@@ -127,18 +273,18 @@ class QonversionBillingService(
         activity: Activity,
         params: BillingFlowParams
     ) {
-        withConnectedClient {
+        withReadyClient {
             launchBillingFlow(activity, params)
                 .takeIf { billingResult -> billingResult?.responseCode != BillingClient.BillingResponseCode.OK }
                 ?.let { billingResult ->
-                    logger.log("Failed to launch billing flow. ${billingResult.toReadableDescription()}")
+                    logger.log("Failed to launch billing flow. ${billingResult.getDescription()}")
                 }
         }
     }
 
-    private fun queryAllPurchases(
-        onPurchaseHistoryCompleted: (List<PurchaseHistoryRecord>) -> Unit,
-        onPurchaseHistoryFailed: (BillingError) -> Unit
+    private fun queryAllPurchasesHistory(
+        onReceiveHistoryCompleted: (List<PurchaseHistoryRecord>) -> Unit,
+        onReceiveHistoryFailed: (BillingError) -> Unit
     ) {
         queryPurchaseHistoryAsync(
             BillingClient.SkuType.SUBS,
@@ -146,14 +292,14 @@ class QonversionBillingService(
                 queryPurchaseHistoryAsync(
                     BillingClient.SkuType.INAPP,
                     { inAppPurchasesList ->
-                        onPurchaseHistoryCompleted(
+                        onReceiveHistoryCompleted(
                             subsPurchasesList + inAppPurchasesList
                         )
                     },
-                    onPurchaseHistoryFailed
+                    onReceiveHistoryFailed
                 )
             },
-            onPurchaseHistoryFailed
+            onReceiveHistoryFailed
         )
     }
 
@@ -194,29 +340,29 @@ class QonversionBillingService(
     ) {
         logger.log("queryPurchaseHistoryAsync - for type $skuType")
 
-        executeRequestOnUIThread { connectionError ->
+        executeOnMainThread { connectionError ->
             if (connectionError == null) {
-                withConnectedClient {
-                    queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistoryRecordList ->
-                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistoryRecordList != null) {
-                            purchaseHistoryRecordList
+                withReadyClient {
+                    queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistory ->
+                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistory != null) {
+                            purchaseHistory
                                 .takeUnless { it.isEmpty() }
                                 ?.forEach {
-                                    logger.log("queryPurchaseHistoryAsync - purchase history for $skuType is retrieved ${it.toReadableDescription()}")
+                                    logger.log("queryPurchaseHistoryAsync - purchase history for $skuType is retrieved ${it.getDescription()}")
                                 }
                                 ?: logger.log("queryPurchaseHistoryAsync - purchase history for $skuType is empty.")
 
-                            onPurchaseHistoryReceive(purchaseHistoryRecordList)
+                            onPurchaseHistoryReceive(purchaseHistory)
                         } else {
-                            var errorMessage = "Error receiving purchase history."
-                            if (purchaseHistoryRecordList == null) {
-                                errorMessage += " purchaseHistoryRecordList for $skuType is null."
+                            var errorMessage = "Failed to receive purchase history."
+                            if (purchaseHistory == null) {
+                                errorMessage += " history Purchases list for $skuType is null."
                             }
 
                             onError(
                                 BillingError(
                                     billingResult.responseCode,
-                                    "$errorMessage ${billingResult.toReadableDescription()}"
+                                    "$errorMessage ${billingResult.getDescription()}"
                                 )
                             )
                         }
@@ -234,16 +380,16 @@ class QonversionBillingService(
         onSkuDetailsReceive: (List<SkuDetails>) -> Unit,
         onError: (BillingError) -> Unit
     ) {
-        logger.log("querySkuDetailsAsync - for type $productType, identifiers: ${skuList.joinToString()}")
+        logger.log("querySkuDetailsAsync - querying for type $productType, identifiers: ${skuList.joinToString()}")
 
-        executeRequestOnUIThread { connectionError ->
+        executeOnMainThread { connectionError ->
             if (connectionError == null) {
                 val params = SkuDetailsParams.newBuilder()
                     .setType(productType)
                     .setSkusList(skuList)
                     .build()
 
-                withConnectedClient {
+                withReadyClient {
                     querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
                         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
                             skuDetailsList
@@ -251,19 +397,19 @@ class QonversionBillingService(
                                 ?.forEach {
                                     logger.log("querySkuDetailsAsync - $it")
                                 }
-                                ?: logger.log("querySkuDetailsAsync - skuDetailsList for $skuList is empty.")
+                                ?: logger.log("querySkuDetailsAsync - SkuDetails list for $skuList is empty.")
 
                             onSkuDetailsReceive(skuDetailsList)
                         } else {
-                            var errorMessage = "Error fetching products."
+                            var errorMessage = "Failed to fetch products."
                             if (skuDetailsList == null) {
-                                errorMessage += " SkuDetailsList for $skuList is null."
+                                errorMessage += " SkuDetails list for $skuList is null."
                             }
 
                             onError(
                                 BillingError(
                                     billingResult.responseCode,
-                                    "$errorMessage ${billingResult.toReadableDescription()}"
+                                    "$errorMessage ${billingResult.getDescription()}"
                                 )
                             )
                         }
@@ -286,21 +432,21 @@ class QonversionBillingService(
         }
     }
 
-    private fun executeRequestOnUIThread(request: (BillingError?) -> Unit) {
+    private fun executeOnMainThread(request: (BillingError?) -> Unit) {
         synchronized(this@QonversionBillingService) {
-            serviceRequests.add(request)
+            requestsQueue.add(request)
             if (billingClient?.isReady == false) {
                 startConnection()
             } else {
-                executePendingRequests()
+                executeRequestsFromQueue()
             }
         }
     }
 
-    private fun executePendingRequests() {
+    private fun executeRequestsFromQueue() {
         synchronized(this@QonversionBillingService) {
-            while (billingClient?.isReady == true && !serviceRequests.isEmpty()) {
-                serviceRequests.remove()
+            while (billingClient?.isReady == true && !requestsQueue.isEmpty()) {
+                requestsQueue.remove()
                     .let {
                         mainHandler.post {
                             it(null)
@@ -310,69 +456,63 @@ class QonversionBillingService(
         }
     }
 
-    private fun withConnectedClient(receivingFunction: BillingClient.() -> Unit) {
+    private fun withReadyClient(receivingFunction: BillingClient.() -> Unit) {
         billingClient
             ?.takeIf { it.isReady }
             ?.let {
                 it.receivingFunction()
             }
-            ?: logger.log("Warning: billing client is not ready, BillingClient methods won't work. Stacktrace: ${getStackTrace()}")
+            ?: logger.log("Connection to the BillingClient was lost")
     }
 
-    private fun getStackTrace(): String {
-        val stringWriter = StringWriter()
-        val printWriter = PrintWriter(stringWriter)
-        Throwable().printStackTrace(printWriter)
-        return stringWriter.toString()
-    }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            logger.log("onPurchasesUpdated - purchases updated. ${billingResult.toReadableDescription()} ")
+            logger.log("onPurchasesUpdated - purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
-            logger.log("onPurchasesUpdated - purchases failed to update. ${billingResult.toReadableDescription()}" +
-                    "${purchases
-                        ?.takeUnless { it.isEmpty() }
-                        ?.let { purchase ->
-                            "Purchases:" + purchase.joinToString(
-                                ", ",
-                                transform = { it.toReadableDescription() }
-                            )
-                        }}"
-            )
+            val errorMessage =
+                "onPurchasesUpdated - error ${billingResult.getDescription()}"
+            logger.log(errorMessage)
+            if (!purchases.isNullOrEmpty()) {
+                logger.log(
+                    "Purchases: " + purchases.joinToString(
+                        ", ",
+                        transform = { it.getDescription() })
+                )
+            }
 
             purchasesListener.onPurchasesFailed(
                 purchases ?: emptyList(), BillingError(
                     billingResult.responseCode,
-                    "Error updating purchases. ${billingResult.toReadableDescription()}"
+                    errorMessage
                 )
             )
         }
     }
 
     override fun onBillingServiceDisconnected() {
-        logger.log("Billing Service disconnected for ${billingClient?.toString()}")
+        logger.log("onBillingServiceDisconnected for ${billingClient?.toString()}")
     }
 
     override fun onBillingSetupFinished(billingResult: BillingResult) {
         when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
-                logger.log("Billing Setup finished for ${billingClient?.toString()}.")
-                executePendingRequests()
+                logger.log("onBillingSetupFinished successfully for ${billingClient?.toString()}.")
+                executeRequestsFromQueue()
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
             BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                logger.log("Billing is not available in this device. ${billingResult.toReadableDescription()}")
+                logger.log("onBillingSetupFinished with error: ${billingResult.getDescription()}")
                 synchronized(this@QonversionBillingService) {
-                    while (!serviceRequests.isEmpty()) {
-                        serviceRequests.remove()
-                            .let { serviceRequest ->
+                    while (!requestsQueue.isEmpty()) {
+                        requestsQueue.remove()
+                            .let { billingRequest ->
                                 mainHandler.post {
-                                    serviceRequest(
+                                    billingRequest(
                                         BillingError(
                                             billingResult.responseCode,
-                                            "Billing is not available in this device. ${billingResult.toReadableDescription()}"
+                                            "Billing is not available on this device. ${billingResult.getDescription()}"
                                         )
                                     )
                                 }
@@ -380,21 +520,9 @@ class QonversionBillingService(
                     }
                 }
             }
-            BillingClient.BillingResponseCode.SERVICE_DISCONNECTED,
-            BillingClient.BillingResponseCode.USER_CANCELED,
-            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
-            BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
-            BillingClient.BillingResponseCode.ERROR,
-            BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED,
-            BillingClient.BillingResponseCode.SERVICE_TIMEOUT,
-            BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> {
-                logger.log("Billing Setup finished with error code: ${billingResult.toReadableDescription()}")
-            }
-            BillingClient.BillingResponseCode.DEVELOPER_ERROR -> {
-                // Billing service is already trying to connect. Don't do anything.
+            else -> {
+                logger.log("onBillingSetupFinished with error: ${billingResult.getDescription()}")
             }
         }
     }
 }
-
-

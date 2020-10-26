@@ -1,17 +1,28 @@
 package com.qonversion.android.sdk.billing
 
 import android.app.Activity
-import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
 
 internal interface BillingService {
-    fun restore(
-        onRestoreCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
-        onRestoreFailed: (error: BillingError) -> Unit
+    fun queryPurchasesHistory(
+        onQueryHistoryCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryFailed: (error: BillingError) -> Unit
     )
 
-    fun purchase(activity: Activity, skuDetails: SkuDetails)
+    fun queryPurchases(
+        onQueryCompleted: (purchases: List<Purchase>) -> Unit,
+        onQueryFailed: (error: BillingError) -> Unit
+    )
+
+    fun purchase(
+        activity: Activity,
+        skuDetails: SkuDetails,
+        oldSkuDetails: SkuDetails? = null,
+        @BillingFlowParams.ProrationMode prorationMode: Int? = null
+    )
 
     fun loadProducts(
         products: Set<Product>,
@@ -21,11 +32,11 @@ internal interface BillingService {
 
     fun consume(
         purchaseToken: String,
-        onConsumed: (billingResult: BillingResult, purchaseToken: String) -> Unit
+        onConsumeFailed: (error: BillingError) -> Unit
     )
 
     fun acknowledge(
         purchaseToken: String,
-        onAcknowledged: (billingResult: BillingResult, purchaseToken: String) -> Unit
+        onAcknowledgeFailed: (error: BillingError) -> Unit
     )
 }
