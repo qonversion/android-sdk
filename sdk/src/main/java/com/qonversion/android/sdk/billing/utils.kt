@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 fun BillingResult.getDescription() =
-    "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getBillingResponseCodeName()}"
+    "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getDescription()}"
 
 fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
@@ -22,8 +22,9 @@ private fun Long.convertLongToTime(): String {
     return format.format(date)
 }
 
-private fun @receiver:BillingClient.BillingResponseCode Int.getBillingResponseCodeName(): String {
+private fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {
     return when (this) {
+        BillingClient.BillingResponseCode.SERVICE_TIMEOUT -> "SERVICE_TIMEOUT"
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> "FEATURE_NOT_SUPPORTED"
         BillingClient.BillingResponseCode.SERVICE_DISCONNECTED -> "SERVICE_DISCONNECTED"
         BillingClient.BillingResponseCode.OK -> "OK"
@@ -35,7 +36,6 @@ private fun @receiver:BillingClient.BillingResponseCode Int.getBillingResponseCo
         BillingClient.BillingResponseCode.ERROR -> "ERROR"
         BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> "ITEM_ALREADY_OWNED"
         BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> "ITEM_NOT_OWNED"
-        BillingClient.BillingResponseCode.SERVICE_TIMEOUT -> "SERVICE_TIMEOUT"
         else -> "$this"
     }
 }

@@ -1,6 +1,8 @@
 package com.qonversion.android.sdk.billing
 
+import com.android.billingclient.api.BillingClient
+
 data class BillingError(
-    val billingResponseCode: Int,
+    @BillingClient.BillingResponseCode val billingResponseCode: Int,
     val message: String
 )
