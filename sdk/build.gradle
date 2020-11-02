@@ -110,6 +110,8 @@ ext {
     okhttp_version = '3.12.8'
     billing = '3.0.0'
     lifecycle_version = '2.1.0'
+    assertj_version = '3.16.1'
+    junit_version = '5.6.2'
 
     kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
@@ -134,6 +136,15 @@ ext {
             extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycle_version",
             compiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     ]
+
+    assertj = [
+            core: "org.assertj:assertj-core:$assertj_version"
+    ]
+
+    junit = [
+          api   : "org.junit.jupiter:junit-jupiter-api:$junit_version",
+          engine: "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+    ]
 }
 
 dependencies {
@@ -155,6 +166,10 @@ dependencies {
     kapt lifecycle.compiler
 
     testImplementation 'junit:junit:4.13'
+
+    testImplementation junit.api
+    testRuntimeOnly junit.engine
+    testImplementation assertj.core
 
     testImplementation 'androidx.test:core:1.2.0'
 
