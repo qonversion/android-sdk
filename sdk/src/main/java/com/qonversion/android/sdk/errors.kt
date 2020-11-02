@@ -7,52 +7,55 @@ import org.json.JSONObject
 import retrofit2.Response
 import java.io.IOException
 
-fun BillingError.toQonversionError(): QError {
+fun BillingError.toQonversionError(): QonversionError {
     val errorCode = when (this.billingResponseCode) {
         BillingClient.BillingResponseCode.SERVICE_TIMEOUT,
         BillingClient.BillingResponseCode.SERVICE_DISCONNECTED,
         BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
-        BillingClient.BillingResponseCode.ERROR -> QErrorCode.PlayStoreError
+        BillingClient.BillingResponseCode.ERROR -> QonversionErrorCode.PlayStoreError
 
-        BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QErrorCode.FeatureNotSupported
-        BillingClient.BillingResponseCode.OK -> QErrorCode.UnknownError
-        BillingClient.BillingResponseCode.USER_CANCELED -> QErrorCode.CanceledPurchase
+        BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QonversionErrorCode.FeatureNotSupported
+        BillingClient.BillingResponseCode.OK -> QonversionErrorCode.UnknownError
+        BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.CanceledPurchase
 
-        BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> QErrorCode.BillingUnavailable
-        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QErrorCode.ProductUnavailable
+        BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> QonversionErrorCode.BillingUnavailable
+        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QonversionErrorCode.ProductUnavailable
 
-        BillingClient.BillingResponseCode.DEVELOPER_ERROR -> QErrorCode.PurchaseInvalid
-        BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> QErrorCode.ProductAlreadyOwned
-        BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> QErrorCode.ProductNotOwned
-        else -> QErrorCode.UnknownError
+        BillingClient.BillingResponseCode.DEVELOPER_ERROR -> QonversionErrorCode.PurchaseInvalid
+        BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> QonversionErrorCode.ProductAlreadyOwned
+        BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> QonversionErrorCode.ProductNotOwned
+        else -> QonversionErrorCode.UnknownError
     }
 
-    return QError(errorCode, this.message)
+    return QonversionError(errorCode, this.message)
 }
 
-fun Throwable.toQonversionError(): QError {
+fun Throwable.toQonversionError(): QonversionError {
     return when (this) {
         is JSONException ->{
-            QError(QErrorCode.ParseResponseFailed, localizedMessage ?: "")
+            QonversionError(QonversionErrorCode.ParseResponseFailed, localizedMessage ?: "")
         }
 
         is IOException -> {
-            QError( QErrorCode.NetworkConnectionFailed,  localizedMessage ?: "")
+            QonversionError( QonversionErrorCode.NetworkConnectionFailed,  localizedMessage ?: "")
         }
 
-        else -> QError(QErrorCode.UnknownError, localizedMessage ?: "")
+        else -> QonversionError(QonversionErrorCode.UnknownError, localizedMessage ?: "")
     }
 }
 
-fun <T> Response<T>.toQonversionError(): QError {
+fun <T> Response<T>.toQonversionError(): QonversionError {
+    val data = "data"
+    val message = "message"
     var errorMessage = ""
-    errorBody()?.let {errorBody ->
-        val errorBodyJson = JSONObject(errorBody.string())
-        if (errorBodyJson.has("data")) {
-            val dataJson = errorBodyJson.getJSONObject("data")
-            errorMessage += if (dataJson.has("message")) dataJson.getString("message") else ""
+
+    errorBody()?.let {
+        val jsonObjError = JSONObject(it.string())
+        if (jsonObjError.has(data)) {
+            val jsonObjData = jsonObjError.getJSONObject(data)
+            errorMessage += if (jsonObjData.has(message)) jsonObjData.getString(message) else ""
         }
     }
 
-    return QError(QErrorCode.BackendError,  "HTTP status code=${this.code()}, errorMessage=$errorMessage")
+    return QonversionError(QonversionErrorCode.BackendError,  "HTTP status code=${this.code()}, errorMessage=$errorMessage")
 }

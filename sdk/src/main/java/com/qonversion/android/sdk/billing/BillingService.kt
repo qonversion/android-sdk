@@ -25,7 +25,7 @@ internal interface BillingService {
     )
 
     fun loadProducts(
-        products: Set<Product>,
+        productIDs: Set<String>,
         onLoadCompleted: (products: List<SkuDetails>) -> Unit,
         onLoadFailed: (error: BillingError) -> Unit
     )

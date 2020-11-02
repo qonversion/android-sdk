@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk
 
-class QError(
-    val code: QErrorCode,
+class QonversionError(
+    val code: QonversionErrorCode,
     val additionalMessage: String = ""
 ) {
     val description: String = code.specification
@@ -11,7 +11,7 @@ class QError(
     }
 }
 
-enum class QErrorCode(val specification: String) {
+enum class QonversionErrorCode(val specification: String) {
     UnknownError("Unknown error"),
     PlayStoreError("There was an issue with Play Store service"),
     BillingUnavailable("Billing API version is not supported for the type requested"),
