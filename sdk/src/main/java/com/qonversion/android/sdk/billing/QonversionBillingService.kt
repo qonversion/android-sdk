@@ -372,16 +372,15 @@ internal class QonversionBillingService(
                         skuInApp,
                         { skuDetailsInApp ->
                             onQuerySkuCompleted(skuDetailsSubs + skuDetailsInApp)
-                        }, {
-                            onQuerySkuFailed
-                        }
+                        },
+                        onQuerySkuFailed
                     )
                 } else {
                     onQuerySkuCompleted(skuDetailsSubs)
                 }
-            }, {
+            },
                 onQuerySkuFailed
-            })
+            )
     }
 
     private fun querySkuDetailsAsync(
