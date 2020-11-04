@@ -37,7 +37,7 @@ internal class QonversionBillingService(
     interface PurchasesListener {
         fun onPurchasesCompleted(purchases: List<Purchase>)
         fun onPurchasesFailed(
-            purchases: List<Purchase>?,
+            purchases: List<Purchase>,
             error: BillingError
         )
     }
@@ -224,7 +224,7 @@ internal class QonversionBillingService(
                 } else {
                     val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
                     purchasesListener.onPurchasesFailed(
-                        null,
+                        emptyList(),
                         BillingError(billingResult.responseCode, errorMessage)
                     )
                     logger.log("replaceOldPurchase() -> $errorMessage")
@@ -233,7 +233,7 @@ internal class QonversionBillingService(
                 val errorMessage =
                     "Failed to update purchase: ${billingResult.getDescription()}"
                 purchasesListener.onPurchasesFailed(
-                    null,
+                    emptyList(),
                     BillingError(billingResult.responseCode, errorMessage)
                 )
                 logger.log("replaceOldPurchase() -> $errorMessage")
