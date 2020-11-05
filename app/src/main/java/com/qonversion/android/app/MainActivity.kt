@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.billing.Billing
+import com.qonversion.android.sdk.dto.QPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -20,7 +22,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         billing_flow_purchase.setOnClickListener {
-            launchBilling(sku_purchase, BillingClient.SkuType.INAPP)
+            Qonversion.purchaseProduct("mostly_main", this, callback = object: QonversionPermissionsCallback {
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    val dsa = permissions
+                }
+
+                override fun onError(t: Throwable) {
+                    val dsa = t
+                }
+
+            })
+//            launchBilling(sku_purchase, BillingClient.SkuType.INAPP)
         }
 
         billing_flow_subscription.setOnClickListener {
@@ -57,18 +69,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initBilling() {
-        billingClient = Qonversion.billingClient
-
-        billingClient?.startConnection(object : BillingClientStateListener {
-            override fun onBillingServiceDisconnected() {
-                monitor.text = "Billing Connection failed"
-            }
-
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    monitor.text = "Billing Connection successful"
-                }
-            }
-        })
+//        billingClient = Qonversion.billingClient
+//
+//        billingClient?.startConnection(object : BillingClientStateListener {
+//            override fun onBillingServiceDisconnected() {
+//                monitor.text = "Billing Connection failed"
+//            }
+//
+//            override fun onBillingSetupFinished(billingResult: BillingResult) {
+//                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+//                    monitor.text = "Billing Connection successful"
+//                }
+//            }
+//        })
     }
 }

@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk
 
+import android.app.Activity
 import android.app.Application
 import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -22,11 +23,6 @@ object Qonversion : LifecycleDelegate{
     private lateinit var attributionManager: QAttributionManager
     private lateinit var productCenterManager: QProductCenterManager
 
-
-    @Volatile
-    var billingClient: Billing? = null
-        @Synchronized get() = productCenterManager.billingClient
-
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
@@ -37,7 +33,7 @@ object Qonversion : LifecycleDelegate{
     }
 
     override fun onAppForegrounded() {
-
+        productCenterManager.onAppForegrounded()
     }
 
     @JvmOverloads
@@ -45,8 +41,8 @@ object Qonversion : LifecycleDelegate{
     fun launch(
         context: Application,
         key: String,
-        billingBuilder: QonversionBillingBuilder? = null,
-        callback: QonversionCallback? = null
+        observeMode: Boolean,
+        callback: QonversionInitCallback? = null
     ) {
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
@@ -71,31 +67,45 @@ object Qonversion : LifecycleDelegate{
             logger,
             environment,
             config,
-            "internalUserId"
+            null
         )
 
         this.repository = repository
         userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
-        productCenterManager = QProductCenterManager(repository, logger)
-        productCenterManager.launch(context, billingBuilder, callback)
+        productCenterManager = QProductCenterManager(context, observeMode, repository, logger)
+        productCenterManager.launch(context, callback)
     }
 
     @JvmStatic
-    fun purchase(details: SkuDetails, p: Purchase) {
-        purchase(android.util.Pair.create(details, p), null)
+    fun purchaseProduct(id: String, activity: Activity, callback: QonversionPermissionsCallback) {
+        productCenterManager.purchaseProduct(id, activity, callback)
     }
 
     @JvmStatic
-    fun purchase(details: SkuDetails, p: Purchase, callback: QonversionCallback?) {
-        purchase(android.util.Pair.create(details, p), callback)
-    }
-
-    private fun purchase(
-        purchaseInfo: android.util.Pair<SkuDetails, Purchase>,
-        callback: QonversionCallback?
+    fun products(
+        context: Application,
+        callback: QonversionProductsCallback
     ) {
-        productCenterManager.purchase(purchaseInfo, callback)
+        productCenterManager.loadProducts(context, callback)
+    }
+
+    @JvmStatic
+    fun permissions(
+        context: Application,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager.checkPermissions(context, callback)
+    }
+
+    @JvmStatic
+    fun restore(callback: QonversionPermissionsCallback) {
+        productCenterManager.restore(callback)
+    }
+
+    @JvmStatic
+    fun syncPurchases() {
+        productCenterManager.syncPurchases()
     }
 
     @JvmStatic
