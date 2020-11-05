@@ -9,7 +9,7 @@ interface QonversionCallback {
    fun onError(t: Throwable)
 }
 
-interface QonversionInitCallback {
+interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
    fun onError(t: Throwable)
 }

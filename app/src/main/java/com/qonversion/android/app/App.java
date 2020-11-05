@@ -11,7 +11,7 @@ import com.appsflyer.AppsFlyerLib;
 import com.qonversion.android.sdk.AttributionSource;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionBillingBuilder;
-import com.qonversion.android.sdk.QonversionInitCallback;
+import com.qonversion.android.sdk.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +29,7 @@ public class App extends MultiDexApplication {
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
                 false,
-                buildBilling(),
-                new QonversionInitCallback() {
+                new QonversionLaunchCallback() {
                     @Override
                     public void onSuccess(@NotNull QLaunchResult launchResult) {
                         System.out.println("lala");

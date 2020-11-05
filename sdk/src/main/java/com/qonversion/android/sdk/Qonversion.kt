@@ -5,9 +5,6 @@ import android.app.Application
 import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
-import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.billing.Billing
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
@@ -42,7 +39,7 @@ object Qonversion : LifecycleDelegate{
         context: Application,
         key: String,
         observeMode: Boolean,
-        callback: QonversionInitCallback? = null
+        callback: QonversionLaunchCallback? = null
     ) {
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")

@@ -14,7 +14,7 @@ interface Api {
     fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/restore")
-    fun restore(@Body request: RestoreRequest): Call<BaseResponse<Response>>
+    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>
 
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>

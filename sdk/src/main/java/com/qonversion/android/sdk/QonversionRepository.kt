@@ -16,14 +16,11 @@ import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.Validator
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 internal class QonversionRepository private constructor(
@@ -42,18 +39,23 @@ internal class QonversionRepository private constructor(
 ) {
     private var advertisingId: String? = null
 
-    fun init(installDate: Long, edfa: String? = null, purchases: List<Purchase>? = null, callback: QonversionInitCallback?) {
-        advertisingId = edfa
-        initRequest(installDate, trackingEnabled, key, sdkVersion, edfa, purchases, callback)
+    // Public functions
+
+    fun init(installDate: Long, idfa: String? = null, purchases: List<Purchase>? = null, callback: QonversionLaunchCallback?) {
+        advertisingId = idfa
+        initRequest(installDate, trackingEnabled, key, sdkVersion, idfa, purchases, callback)
     }
 
     fun purchase(
         installDate: Long,
         purchase: Purchase,
-        edfa: String?,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionPermissionsCallback
     ) {
-        purchaseRequest(installDate, purchase, edfa, callback)
+        purchaseRequest(installDate, purchase, callback)
+    }
+
+    fun restore(installDate: Long, historyRecords: List<PurchaseHistoryRecord>, callback: QonversionPermissionsCallback?) {
+        restoreRequest(installDate, historyRecords, callback)
     }
 
     fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
@@ -76,6 +78,8 @@ internal class QonversionRepository private constructor(
             propertiesRequest()
         }
     }
+
+    // Private functions
 
     private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
         val uid = storage.load()
@@ -128,14 +132,13 @@ internal class QonversionRepository private constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
-        edfa: String?,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionPermissionsCallback
     ) {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0
         val purchaseRequest = PurchaseRequest(
             installDate,
-            device = environmentProvider.getInfo(tracking, edfa),
+            device = environmentProvider.getInfo(tracking, advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
@@ -147,14 +150,7 @@ internal class QonversionRepository private constructor(
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 logger.log("purchaseRequest - success - $it")
-                var body = it.body()
-                if (body != null && body.success) {
-                    storage.save(body.data.uid)
-                    callback?.onSuccess(body.data.permissions)
-                } else {
-                    callback?.onError(error("lalala"))
-                }
-                kickRequestQueue()
+                handlePermissionsResponse(it, callback)
             }
             onFailure = {
                 logger.log("purchaseRequest - failure - $it")
@@ -232,14 +228,10 @@ internal class QonversionRepository private constructor(
         return histories.toList()
     }
 
-    fun restore(installDate: Long, historyRecords: List<PurchaseHistoryRecord>, callback: QonversionPermissionsCallback) {
-        restoreRequest(installDate, historyRecords, callback)
-    }
-
     private fun restoreRequest(
         installDate: Long,
         historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionPermissionsCallback
+        callback: QonversionPermissionsCallback?
     ) {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0
@@ -256,17 +248,26 @@ internal class QonversionRepository private constructor(
 
         api.restore(request).enqueue {
             onResponse = {
-                logger.log("purchaseRequest - success - $it")
-//                callback?.onSuccess(storage.load())
-                kickRequestQueue()
+                logger.log("restoreRequest - success - $it")
+                handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.log("purchaseRequest - failure - $it")
+                logger.log("restoreRequest - failure - $it")
                 if (it != null) {
                     callback?.onError(it)
                 }
             }
         }
+    }
+
+    private fun handlePermissionsResponse(response: retrofit2.Response<BaseResponse<QLaunchResult>>, callback: QonversionPermissionsCallback?) {
+        val body = response.body()
+        if (body != null && body.success) {
+            callback?.onSuccess(body.data.permissions)
+        } else {
+            callback?.onError(error("lalala"))
+        }
+        kickRequestQueue()
     }
 
     private fun initRequest(
@@ -276,7 +277,7 @@ internal class QonversionRepository private constructor(
         sdkVersion: String,
         edfa: String?,
         purchases: List<Purchase>?,
-        callback: QonversionInitCallback?
+        callback: QonversionLaunchCallback?
     ) {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0

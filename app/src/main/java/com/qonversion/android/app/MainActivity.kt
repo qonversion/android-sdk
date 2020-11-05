@@ -36,7 +36,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         billing_flow_subscription.setOnClickListener {
-            launchBilling(sku_subscription, BillingClient.SkuType.SUBS)
+            Qonversion.restore(object : QonversionPermissionsCallback {
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    val per = permissions
+                    TODO("Not yet implemented")
+                }
+
+                override fun onError(t: Throwable) {
+                    val err = t
+                }
+
+            })
+//            launchBilling(sku_subscription, BillingClient.SkuType.SUBS)
         }
 
         initBilling()

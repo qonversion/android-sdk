@@ -45,7 +45,6 @@ class QProductCenterManager internal constructor(
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
     private var installDate: Long = 0
-    private var advertisingId: String? = null
 
     private val listener: QonversionBillingService.PurchasesListener = getPurchasesListener()
 
@@ -105,12 +104,12 @@ class QProductCenterManager internal constructor(
         return installDate
     }
 
-    private fun continueLaunchWithPurchasesInfo(context: Application, advertisingId: String? = null, callback: QonversionInitCallback?) {
+    private fun continueLaunchWithPurchasesInfo(context: Application, advertisingId: String? = null, callback: QonversionLaunchCallback?) {
         val installDate = getInstallDate()
         billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
-                    repository.init(installDate = installDate, edfa = advertisingId, callback = callback)
+                    repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
                     return@queryPurchases
                 }
 
@@ -122,16 +121,16 @@ class QProductCenterManager internal constructor(
                         repository.init(installDate, advertisingId, purchasesInfo, callback)
                     },
                     onFailed = {
-                        repository.init(installDate = installDate, edfa = advertisingId, callback = callback)
+                        repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
                     })
             },
             onQueryFailed = {
-                repository.init(installDate = installDate, edfa = advertisingId, callback = callback)
+                repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
             })
     }
 
-    private fun getLaunchCallback(callback: QonversionInitCallback?): QonversionInitCallback {
-        return object: QonversionInitCallback {
+    private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
+        return object: QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 isLaunchingFinished = true
                 this@QProductCenterManager.launchResult = launchResult
@@ -297,11 +296,11 @@ class QProductCenterManager internal constructor(
 
     private fun purchase(
         purchaseInfo: android.util.Pair<SkuDetails, Purchase>,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionPermissionsCallback
     ) {
         val purchase = converter.convert(purchaseInfo)
         val installDate = getInstallDate()
-        repository.purchase(installDate, purchase, advertisingId, callback)
+        repository.purchase(installDate, purchase, callback)
     }
 
     // Public functions
@@ -312,19 +311,18 @@ class QProductCenterManager internal constructor(
 
     fun launch(
         context: Application,
-        callback: QonversionInitCallback?
+        callback: QonversionLaunchCallback?
     ) {
         val adProvider = AdvertisingProvider()
-        val initCallback: QonversionInitCallback = getLaunchCallback(callback)
+        val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
 
         adProvider.init(context, object : AdvertisingProvider.Callback {
             override fun onSuccess(advertisingId: String) {
-                this@QProductCenterManager.advertisingId = advertisingId
-                continueLaunchWithPurchasesInfo(context, advertisingId, initCallback)
+                continueLaunchWithPurchasesInfo(context, advertisingId, launchCallback)
             }
 
             override fun onFailure(t: Throwable) {
-                continueLaunchWithPurchasesInfo(context, callback = initCallback)
+                continueLaunchWithPurchasesInfo(context, callback = launchCallback)
             }
         })
     }
