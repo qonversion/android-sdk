@@ -506,6 +506,152 @@ class QonversionBillingServiceTest {
         }
     }
 
+    @Nested
+    inner class Purchase {
+        @Test
+        fun `launch billing flow completed`() {
+            val activity: Activity = mockk()
+            val skuDetails: SkuDetails = mockk(relaxed = true)
+
+            every {
+                billingClient.launchBillingFlow(any(), any())
+            } returns buildResult(BillingClient.BillingResponseCode.OK)
+
+            billingService.purchase(activity, skuDetails)
+
+            verify {
+                billingClient.launchBillingFlow(
+                    activity,
+                    any()
+                )
+            }
+        }
+
+        @Test
+        fun `launch billing flow failed`() {
+            val activity: Activity = mockk()
+            val skuDetails: SkuDetails = mockk(relaxed = true)
+
+            every {
+                billingClient.launchBillingFlow(any(), any())
+            } returns buildResult(BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE)
+
+            billingService.purchase(activity, skuDetails)
+
+            verify {
+                billingClient.launchBillingFlow(
+                    activity,
+                    any()
+                ) wasNot Called
+            }
+        }
+
+        @Test
+        fun `make purchase sets params correctly`() {
+            val activity: Activity = mockk()
+            val skuType = BillingClient.SkuType.SUBS
+            val prorationMode = BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE
+
+            val oldSku = "weekly"
+            val newSku = "monthly"
+            val newSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns newSku
+                every { it.type } returns skuType
+            }
+            val oldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns oldSku
+                every { it.type } returns skuType
+            }
+
+            every {
+                billingClient.queryPurchaseHistoryAsync(
+                    any(),
+                    any()
+                )
+            } just runs
+
+            val slot = slot<BillingFlowParams>()
+            every {
+                billingClient.launchBillingFlow(eq(activity), capture(slot))
+            } answers {
+                val billingParams = slot.captured
+                assertThat(billingParams.sku).isEqualTo(newSku)
+                assertThat(billingParams.skuType).isEqualTo(skuType)
+                assertThat(billingParams.oldSku).isEqualTo(oldSku)
+                assertThat(billingParams.replaceSkusProrationMode).isEqualTo(prorationMode)
+                buildResult(BillingClient.BillingResponseCode.OK)
+            }
+
+            billingService.purchase(
+                activity,
+                newSkuDetails,
+                oldSkuDetails,
+                prorationMode
+            )
+        }
+
+        @Test
+        fun `launch billing flow deferred until billing connected`() {
+            val activity: Activity = mockk()
+            val skuDetails: SkuDetails = mockk(relaxed = true)
+
+            every {
+                billingClient.launchBillingFlow(any(), any())
+            } returns buildResult(BillingClient.BillingResponseCode.OK)
+            every { billingClient.isReady } returns false
+
+            billingService.purchase(activity, skuDetails)
+            verify {
+                billingClient.launchBillingFlow(eq(activity), any()) wasNot Called
+            }
+
+            every { billingClient.isReady } returns true
+            billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
+
+            verify(exactly = 1) {
+                billingClient.launchBillingFlow(eq(activity), any())
+            }
+        }
+
+        @Test
+        fun `purchases listener completed`() {
+            every {
+                purchasesListener.onPurchasesCompleted(any())
+            } just Runs
+
+            val purchase = mockk<com.android.billingclient.api.Purchase>()
+            purchasesUpdatedListener.onPurchasesUpdated(
+                buildResult(BillingClient.BillingResponseCode.OK),
+                listOf(purchase)
+            )
+
+            verify {
+                purchasesListener.onPurchasesCompleted(
+                    listOf(purchase)
+                )
+            }
+        }
+
+        @Test
+        fun `purchases listener failed`() {
+            every {
+                purchasesListener.onPurchasesFailed(any(), any())
+            } just Runs
+
+            purchasesUpdatedListener.onPurchasesUpdated(
+                buildResult(BillingClient.BillingResponseCode.OK),
+                null
+            )
+
+            verify {
+                purchasesListener.onPurchasesFailed(
+                    emptyList(),
+                    any()
+                )
+            }
+        }
+    }
+
     private fun mockSkuDetailsResponse(@BillingClient.BillingResponseCode responseCode: Int) {
         val skuDetailsResponse = slot<SkuDetailsResponseListener>()
         every {
