@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.*
+import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -43,7 +44,7 @@ internal class QonversionBillingService(
     }
 
     override fun queryPurchasesHistory(
-        onQueryHistoryCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryCompleted: (purchases: List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (error: BillingError) -> Unit
     ) {
         queryAllPurchasesHistory(
@@ -293,7 +294,7 @@ internal class QonversionBillingService(
     }
 
     private fun queryAllPurchasesHistory(
-        onQueryHistoryCompleted: (List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (BillingError) -> Unit
     ) {
         queryPurchaseHistoryAsync(
@@ -315,7 +316,7 @@ internal class QonversionBillingService(
 
     private fun queryPurchaseHistoryAsync(
         @BillingClient.SkuType skuType: String,
-        onQueryHistoryCompleted: (List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (BillingError) -> Unit
     ) {
         logger.log("queryPurchaseHistoryAsync() -> Querying purchase history for type $skuType")
@@ -325,14 +326,16 @@ internal class QonversionBillingService(
                 withReadyClient {
                     queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistory ->
                         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistory != null) {
+                            val purchaseHistoryRecords = mutableListOf<PurchaseHistory>()
                             purchaseHistory
                                 .takeUnless { it.isEmpty() }
-                                ?.forEach {
-                                    logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${it.getDescription()}")
+                                ?.forEach {record ->
+                                    purchaseHistoryRecords.add(PurchaseHistory(skuType, record))
+                                    logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
                                 }
                                 ?: logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
 
-                            onQueryHistoryCompleted(purchaseHistory)
+                            onQueryHistoryCompleted(purchaseHistoryRecords)
                         } else {
                             var errorMessage = "Failed to retrieve purchase history. "
                             if (purchaseHistory == null) {

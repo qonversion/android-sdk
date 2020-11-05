@@ -3,12 +3,12 @@ package com.qonversion.android.sdk.billing
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.entity.PurchaseHistory
 
 internal interface BillingService {
     fun queryPurchasesHistory(
-        onQueryHistoryCompleted: (purchases: List<PurchaseHistoryRecord>) -> Unit,
+        onQueryHistoryCompleted: (purchases: List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (error: BillingError) -> Unit
     )
 
