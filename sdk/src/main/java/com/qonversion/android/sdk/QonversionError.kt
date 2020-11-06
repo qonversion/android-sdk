@@ -23,5 +23,7 @@ enum class QonversionErrorCode(val specification: String) {
     ProductUnavailable("Requested product is not available for purchase"),
     NetworkConnectionFailed("There was a network issue"),
     ParseResponseFailed("A problem occurs when serializing or deserializing data"),
-    BackendError("There was a backend error")
+    BackendError("There was a backend error"),
+    ProductNotFound("Failure to purchase since product not found"),
+    LaunchError("There was a launch error")
 }

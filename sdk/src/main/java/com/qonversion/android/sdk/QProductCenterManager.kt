@@ -64,7 +64,7 @@ class QProductCenterManager internal constructor(
             override fun onPurchasesFailed(purchases: List<Purchase>, error: BillingError) {
                 purchases.forEach { purchase ->
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
-//                    purchaseCallback.onError(error)
+                    purchaseCallback?.onError(error.toQonversionError())
                 }
             }
         }
@@ -209,7 +209,7 @@ class QProductCenterManager internal constructor(
             }
         } ?: launchError.let {
             permissionsCallbacks.forEach {
-                it.onError(error("lala"))
+                it.onError(QonversionError(QonversionErrorCode.LaunchError))
             }
         }
 
@@ -286,9 +286,7 @@ class QProductCenterManager internal constructor(
 
                 override fun onError(error: QonversionError) {
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
-                    purchaseCallback?.let {
-
-                    }
+                    purchaseCallback?.onError(error)
                 }
 
             })
@@ -352,7 +350,7 @@ class QProductCenterManager internal constructor(
     ) {
         val product: QProduct? = productForID(id)
         if (product == null) {
-            callback.onError(error("lala"))
+            callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
 
@@ -379,7 +377,7 @@ class QProductCenterManager internal constructor(
                         callback.onError(billingError.toQonversionError())
                     })
             } ?: run {
-                callback.onError(error("lala"))
+                callback.onError(QonversionError(QonversionErrorCode.LaunchError))
             }
         }
     }
@@ -411,7 +409,7 @@ class QProductCenterManager internal constructor(
             })
         },
             onQueryHistoryFailed = {
-
+                callback?.onError(it.toQonversionError())
             })
     }
 
