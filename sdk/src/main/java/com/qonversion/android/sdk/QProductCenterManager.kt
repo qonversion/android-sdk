@@ -328,7 +328,6 @@ class QProductCenterManager internal constructor(
     }
 
     fun loadProducts(
-        context: Application,
         callback: QonversionProductsCallback
     ) {
         if (!isProductsLoaded || !isLaunchingFinished) {
@@ -385,7 +384,6 @@ class QProductCenterManager internal constructor(
     }
 
     fun checkPermissions(
-        context: Application,
         callback: QonversionPermissionsCallback
     ) {
         permissionsCallbacks.add(callback)

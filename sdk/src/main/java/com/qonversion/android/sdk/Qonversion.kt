@@ -81,18 +81,16 @@ object Qonversion : LifecycleDelegate{
 
     @JvmStatic
     fun products(
-        context: Application,
         callback: QonversionProductsCallback
     ) {
-        productCenterManager.loadProducts(context, callback)
+        productCenterManager.loadProducts(callback)
     }
 
     @JvmStatic
     fun permissions(
-        context: Application,
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager.checkPermissions(context, callback)
+        productCenterManager.checkPermissions(callback)
     }
 
     @JvmStatic
