@@ -99,13 +99,9 @@ object Qonversion : LifecycleDelegate{
         productCenterManager?.restore(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
-    private fun logLaunchErrorForFunctionName(functionName: String?) {
-        logger.log("$functionName function can not be executed. Looks like launch was not called")
-    }
-
     @JvmStatic
     fun syncPurchases() {
-        productCenterManager?.syncPurchases() ?: logLaunchErrorForFunctionName("syncPurchases")
+        productCenterManager?.syncPurchases() ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic
@@ -130,6 +126,12 @@ object Qonversion : LifecycleDelegate{
     @JvmStatic
     fun setUserID(value: String) {
         userPropertiesManager.setUserID(value)
+    }
+
+    // Private functions
+
+    private fun logLaunchErrorForFunctionName(functionName: String?) {
+        logger.log("$functionName function can not be executed. It looks like launch was not called.")
     }
 }
 
