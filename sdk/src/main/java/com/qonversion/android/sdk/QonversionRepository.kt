@@ -74,7 +74,7 @@ internal class QonversionRepository private constructor(
     }
 
     fun sendProperties() {
-        if (propertiesStorage.getProperties().isNotEmpty()) {
+        if (propertiesStorage.getProperties().isNotEmpty() && storage.load().isNotEmpty()) {
             propertiesRequest()
         }
     }
@@ -153,9 +153,9 @@ internal class QonversionRepository private constructor(
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.log("purchaseRequest - failure - $it")
+                logger.log("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback?.onError(it)
+                    callback.onError(it.toQonversionError())
                 }
             }
         }
@@ -252,9 +252,9 @@ internal class QonversionRepository private constructor(
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.log("restoreRequest - failure - $it")
+                logger.log("restoreRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback?.onError(it)
+                    callback?.onError(it.toQonversionError())
                 }
             }
         }
@@ -265,7 +265,7 @@ internal class QonversionRepository private constructor(
         if (body != null && body.success) {
             callback?.onSuccess(body.data.permissions)
         } else {
-            callback?.onError(error("lalala"))
+            callback?.onError(response.toQonversionError())
         }
         kickRequestQueue()
     }
@@ -300,14 +300,14 @@ internal class QonversionRepository private constructor(
                     storage.save(body.data.uid)
                     callback?.onSuccess(body.data)
                 } else {
-                    callback?.onError(error("lalala"))
+                    callback?.onError(it.toQonversionError())
                 }
                 kickRequestQueue()
             }
             onFailure = {
+                logger.log("initRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    logger.log("initRequest - failure - $it")
-                    callback?.onError(it)
+                    callback?.onError(it.toQonversionError())
                 }
             }
         }
@@ -328,12 +328,14 @@ internal class QonversionRepository private constructor(
 
         api.properties(propertiesRequest).enqueue {
             onResponse = {
-                logger.log("propertiesRequest - success - $it")
+                val logMessage =  if(it.isSuccessful) "success - $it" else  "failure - ${it.toQonversionError()}"
+                logger.log("propertiesRequest - $logMessage")
+
                 propertiesStorage.clear()
                 kickRequestQueue()
             }
             onFailure = {
-                logger.log("propertiesRequest - failure - $it")
+                logger.log("propertiesRequest - failure - ${it?.toQonversionError()}")
             }
         }
     }
@@ -345,7 +347,7 @@ internal class QonversionRepository private constructor(
     }
 
     companion object {
-        
+
         private const val BASE_URL = "https://api.qonversion.io/"
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L //10 MB

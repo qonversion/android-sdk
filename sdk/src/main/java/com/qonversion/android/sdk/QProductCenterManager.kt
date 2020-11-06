@@ -8,8 +8,9 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.billing.*
+import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -38,7 +39,7 @@ class QProductCenterManager internal constructor(
     private var skuDetails = mapOf<String, SkuDetails>()
 
     private var launchResult: QLaunchResult? = null
-    private lateinit var launchError: QLaunchResult
+    private var launchError: QLaunchResult? = null
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
     private var permissionsCallbacks = mutableListOf<QonversionPermissionsCallback>()
@@ -142,7 +143,7 @@ class QProductCenterManager internal constructor(
                 callback?.onSuccess(launchResult)
             }
 
-            override fun onError(t: Throwable) {
+            override fun onError(error: QonversionError) {
                 isLaunchingFinished = true
                 executePermissionsBlock()
             }
@@ -283,7 +284,7 @@ class QProductCenterManager internal constructor(
                     purchaseCallback?.onSuccess(permissions)
                 }
 
-                override fun onError(t: Throwable) {
+                override fun onError(error: QonversionError) {
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
                     purchaseCallback?.let {
 
@@ -374,8 +375,8 @@ class QProductCenterManager internal constructor(
                         if (skuDetail != null) {
                             billingService.purchase(context, skuDetail)
                         }
-                    }, onLoadFailed = {
-                        callback.onError(error("lala"))
+                    }, onLoadFailed = {billingError->
+                        callback.onError(billingError.toQonversionError())
                     })
             } ?: run {
                 callback.onError(error("lala"))
@@ -404,8 +405,8 @@ class QProductCenterManager internal constructor(
                     callback?.onSuccess(permissions)
                 }
 
-                override fun onError(t: Throwable) {
-                    callback?.onError(t)
+                override fun onError(error: QonversionError) {
+                    callback?.onError(error)
                 }
             })
         },

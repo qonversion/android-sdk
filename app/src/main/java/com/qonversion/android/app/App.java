@@ -1,22 +1,17 @@
 package com.qonversion.android.app;
 
-import androidx.annotation.Nullable;
 import androidx.multidex.MultiDexApplication;
 
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.qonversion.android.sdk.AttributionSource;
 import com.qonversion.android.sdk.Qonversion;
-import com.qonversion.android.sdk.QonversionBillingBuilder;
+import com.qonversion.android.sdk.QonversionError;
 import com.qonversion.android.sdk.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Map;
 
 public class App extends MultiDexApplication {
@@ -32,12 +27,10 @@ public class App extends MultiDexApplication {
                 new QonversionLaunchCallback() {
                     @Override
                     public void onSuccess(@NotNull QLaunchResult launchResult) {
-                        System.out.println("lala");
                     }
 
                     @Override
-                    public void onError(@NotNull Throwable t) {
-
+                    public void onError(@NotNull QonversionError error) {
                     }
                 }
         );
@@ -68,16 +61,5 @@ public class App extends MultiDexApplication {
         AppsFlyerLib.getInstance().init("afDevKey", conversionListener, this);
         AppsFlyerLib.getInstance().setDebugLog(true);
         AppsFlyerLib.getInstance().startTracking(this);
-    }
-
-    private QonversionBillingBuilder buildBilling() {
-        return new QonversionBillingBuilder()
-                .enablePendingPurchases()
-                .setListener(new PurchasesUpdatedListener() {
-                    @Override
-                    public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-                        // your purchases update logic
-                    }
-                });
     }
 }
