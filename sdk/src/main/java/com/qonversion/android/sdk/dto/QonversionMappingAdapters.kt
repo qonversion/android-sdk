@@ -11,7 +11,7 @@ class QProductDurationAdapter {
     }
 
     @FromJson
-    fun fromJson(type: Int): QProductDuration {
+    fun fromJson(type: Int): QProductDuration? {
         return QProductDuration.fromType(type)
     }
 }

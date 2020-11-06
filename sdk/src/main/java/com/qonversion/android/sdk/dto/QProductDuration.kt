@@ -8,14 +8,14 @@ enum class QProductDuration(val type: Int) {
     Annual(5);
 
     companion object {
-        fun fromType(type: Int): QProductDuration {
+        fun fromType(type: Int): QProductDuration? {
             return when (type) {
                 1 -> Weekly
                 2-> Monthly
                 3-> ThreeMonthly
                 4-> SixMonthly
                 5-> Annual
-                else -> throw IllegalArgumentException("Undefined enum type")
+                else -> null
             }
         }
     }
