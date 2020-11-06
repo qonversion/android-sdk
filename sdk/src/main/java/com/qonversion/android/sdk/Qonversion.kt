@@ -18,7 +18,8 @@ object Qonversion : LifecycleDelegate{
     private lateinit var repository: QonversionRepository
     private lateinit var userPropertiesManager: QUserPropertiesManager
     private lateinit var attributionManager: QAttributionManager
-    private lateinit var productCenterManager: QProductCenterManager
+    private var productCenterManager: QProductCenterManager? = null
+    private var logger = if (BuildConfig.DEBUG) ConsoleLogger() else StubLogger()
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -30,7 +31,7 @@ object Qonversion : LifecycleDelegate{
     }
 
     override fun onAppForegrounded() {
-        productCenterManager.onAppForegrounded()
+        productCenterManager?.onAppForegrounded()
     }
 
     @JvmOverloads
@@ -71,36 +72,40 @@ object Qonversion : LifecycleDelegate{
         userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
         productCenterManager = QProductCenterManager(context, observeMode, repository, logger)
-        productCenterManager.launch(context, callback)
+        productCenterManager?.launch(context, callback)
     }
 
     @JvmStatic
     fun purchaseProduct(id: String, activity: Activity, callback: QonversionPermissionsCallback) {
-        productCenterManager.purchaseProduct(id, activity, callback)
+        productCenterManager?.purchaseProduct(id, activity, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic
     fun products(
         callback: QonversionProductsCallback
     ) {
-        productCenterManager.loadProducts(callback)
+        productCenterManager?.loadProducts(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic
     fun permissions(
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager.checkPermissions(callback)
+        productCenterManager?.checkPermissions(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager.restore(callback)
+        productCenterManager?.restore(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    }
+
+    private fun logLaunchErrorForFunctionName(functionName: String?) {
+        logger.log("$functionName function can not be executed. Looks like launch was not called")
     }
 
     @JvmStatic
     fun syncPurchases() {
-        productCenterManager.syncPurchases()
+        productCenterManager?.syncPurchases() ?: logLaunchErrorForFunctionName("syncPurchases")
     }
 
     @JvmStatic
