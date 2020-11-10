@@ -221,7 +221,7 @@ internal class QonversionRepository private constructor(
             val history = History(
                 it.sku,
                 it.purchaseToken,
-                it.purchaseTime
+                it.purchaseTime / 1000
             )
             histories.add(history)
         }
