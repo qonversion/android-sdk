@@ -28,10 +28,10 @@ internal class QonversionBillingService(
     internal class BillingBuilder(private val context: Application) {
         @UiThread
         fun build(listener: PurchasesUpdatedListener): BillingClient {
-            return BillingClient.newBuilder(context)
-                .enablePendingPurchases()
-                .setListener(listener)
-                .build()
+            val builder =  BillingClient.newBuilder(context)
+            builder.enablePendingPurchases()
+            builder.setListener(listener)
+            return builder.build()
         }
     }
 
@@ -76,8 +76,7 @@ internal class QonversionBillingService(
     }
 
     override fun consume(
-        purchaseToken: String,
-        onConsumeFailed: (error: BillingError) -> Unit
+        purchaseToken: String
     ) {
         logger.log("consume() -> Consuming purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
@@ -93,7 +92,6 @@ internal class QonversionBillingService(
                         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                             val errorMessage =
                                 "Failed to consume purchase with token $purchaseToken ${billingResult.getDescription()}"
-                            onConsumeFailed(BillingError(billingResult.responseCode, errorMessage))
                             logger.log("consume() -> $errorMessage")
                         }
                     }
@@ -103,8 +101,7 @@ internal class QonversionBillingService(
     }
 
     override fun acknowledge(
-        purchaseToken: String,
-        onAcknowledgeFailed: (error: BillingError) -> Unit
+        purchaseToken: String
     ) {
         logger.log("acknowledge() -> Acknowledging purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
@@ -120,12 +117,6 @@ internal class QonversionBillingService(
                         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                             val errorMessage =
                                 "Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"
-                            onAcknowledgeFailed(
-                                BillingError(
-                                    billingResult.responseCode,
-                                    errorMessage
-                                )
-                            )
                             logger.log("acknowledge() -> $errorMessage")
                         }
                     }
