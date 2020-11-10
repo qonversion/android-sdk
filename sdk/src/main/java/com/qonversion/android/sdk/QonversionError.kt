@@ -25,5 +25,6 @@ enum class QonversionErrorCode(val specification: String) {
     ParseResponseFailed("A problem occurs when serializing or deserializing data"),
     BackendError("There was a backend error"),
     ProductNotFound("Failure to purchase since product not found"),
-    LaunchError("There was a launch error")
+    LaunchError("There was a launch error"),
+    SkuDetailsError("There was a SkuDetails error. Please be sure SkuDetails configured correctly")
 }

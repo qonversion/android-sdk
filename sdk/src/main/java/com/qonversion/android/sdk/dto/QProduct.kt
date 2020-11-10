@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class QProduct(
     @Json(name = "id") val qonversionID: String,
-    @Json(name = "store_id") val storeID: String,
+    @Json(name = "store_id") val storeID: String?,
     @Json(name = "type") val type: QProductType,
     @Json(name = "duration") val duration: QProductDuration?
 ) {

@@ -11,6 +11,7 @@ data class Inapp(
 
 @JsonClass(generateAdapter = true)
 data class PurchaseDetails(
+    @Json(name = "product") val productId: String,
     @Json(name = "purchase_token") val purchaseToken: String,
     @Json(name = "purchase_time") val purchaseTime: Long,
     @Json(name = "currency") val priceCurrencyCode: String,

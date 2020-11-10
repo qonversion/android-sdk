@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
+import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
@@ -76,8 +77,16 @@ object Qonversion : LifecycleDelegate{
     }
 
     @JvmStatic
-    fun purchaseProduct(id: String, activity: Activity, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(id, activity, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    fun purchase(activity: Activity, id: String, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(activity, id, null, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    }
+
+    fun updatePurchase(context: Activity, productId: String, oldProductId: String, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    }
+
+    fun updatePurchase(context: Activity, productId: String, oldProductId: String, @BillingFlowParams.ProrationMode prorationMode: Int?, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(context, productId, oldProductId, prorationMode, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic

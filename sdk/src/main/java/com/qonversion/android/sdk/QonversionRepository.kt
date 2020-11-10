@@ -199,6 +199,7 @@ internal class QonversionRepository private constructor(
 
     private fun convertPurchaseDetails(purchase: Purchase): PurchaseDetails {
         val purchaseDetail = PurchaseDetails(
+            purchase.productId,
             purchase.purchaseToken,
             purchase.purchaseTime,
             purchase.priceCurrencyCode,
@@ -315,12 +316,8 @@ internal class QonversionRepository private constructor(
 
     private fun propertiesRequest() {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
+
         val propertiesRequest = PropertiesRequest(
-            d = environmentProvider.getInfo(
-                tracking
-            ),
-            v = sdkVersion,
             accessToken = key,
             clientUid = uid,
             properties = propertiesStorage.getProperties()
@@ -331,7 +328,10 @@ internal class QonversionRepository private constructor(
                 val logMessage =  if(it.isSuccessful) "success - $it" else  "failure - ${it.toQonversionError()}"
                 logger.log("propertiesRequest - $logMessage")
 
-                propertiesStorage.clear()
+                if (it.isSuccessful) {
+                    propertiesStorage.clear()
+                }
+
                 kickRequestQueue()
             }
             onFailure = {

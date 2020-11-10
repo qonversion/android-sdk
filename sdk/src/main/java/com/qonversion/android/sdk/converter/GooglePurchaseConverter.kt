@@ -4,12 +4,8 @@ import android.util.Pair
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.Extractor
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.text.NumberFormat
-import kotlin.math.round
 
-private const val priceMicrosDevider = 1000000
+private const val priceMicrosDivider: Double = 1000000.0
 
 class GooglePurchaseConverter(
     private val extractor: Extractor<String>
@@ -68,8 +64,8 @@ class GooglePurchaseConverter(
     }
 
     private fun formatPrice(price: Long): String {
-        val deviderResult = (price / priceMicrosDevider).toDouble()
-        val result = String.format("%.2f", deviderResult)
+        val divideResult = price.toDouble() / (priceMicrosDivider)
+        val result = String.format("%.2f", divideResult)
 
         return result
     }
