@@ -161,6 +161,8 @@ dependencies {
     implementation network.moshiConverter
     implementation "androidx.preference:preference:1.1.1"
 
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
     implementation lifecycle.runtime
     implementation lifecycle.extensions
     kapt lifecycle.compiler
