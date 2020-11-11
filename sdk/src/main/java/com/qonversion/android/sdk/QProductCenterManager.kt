@@ -21,10 +21,10 @@ import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 
 class QProductCenterManager internal constructor(
-    private var context: Application,
-    private var isObserveMode: Boolean,
-    private var repository: QonversionRepository,
-    logger: Logger
+    private val context: Application,
+    private val isObserveMode: Boolean,
+    private val repository: QonversionRepository,
+    private val logger: Logger
 ) {
     @Volatile
     private var isLaunchingFinished: Boolean = false
@@ -167,9 +167,6 @@ class QProductCenterManager internal constructor(
     private fun loadStoreProductsIfPossible(launchResult: QLaunchResult,
                                     onLoadCompleted: ((products: List<SkuDetails>) -> Unit)?,
                                     onLoadFailed: ((error: BillingError) -> Unit)?) {
-        if (onLoadCompleted == null) {
-            return
-        }
         val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
@@ -362,6 +359,7 @@ class QProductCenterManager internal constructor(
                         callback: QonversionPermissionsCallback) {
         val product: QProduct? = productForID(id)
         val oldProduct: QProduct? = productForID(oldProductId)
+
         if (product?.storeID == null) {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
@@ -369,7 +367,7 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            // purchasing in progress
+            logger.log("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
             return
         }
 

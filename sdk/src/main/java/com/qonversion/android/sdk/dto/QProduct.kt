@@ -12,8 +12,4 @@ data class QProduct(
     @Json(name = "duration") val duration: QProductDuration?
 ) {
     @Transient var skuDetail: SkuDetails? = null
-
-//    fun getPrettyPrice(): String {
-//        return ""
-//    }
 }
