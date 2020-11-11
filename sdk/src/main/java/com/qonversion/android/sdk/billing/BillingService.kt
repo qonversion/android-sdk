@@ -31,13 +31,11 @@ internal interface BillingService {
     )
 
     fun consume(
-        purchaseToken: String,
-        onConsumeFailed: (error: BillingError) -> Unit
+        purchaseToken: String
     )
 
     fun acknowledge(
-        purchaseToken: String,
-        onAcknowledgeFailed: (error: BillingError) -> Unit
+        purchaseToken: String
     )
 
     fun getSkuDetailsFromPurchases(

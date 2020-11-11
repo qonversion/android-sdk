@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk
 
-class QonversionError(
+data class QonversionError(
     val code: QonversionErrorCode,
     val additionalMessage: String = ""
 ) {
