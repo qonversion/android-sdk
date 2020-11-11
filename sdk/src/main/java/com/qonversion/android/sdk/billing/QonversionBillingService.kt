@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
 internal class QonversionBillingService(
-    private val billingBuilder: BillingBuilder,
+    billingBuilder: BillingBuilder,
     private val mainHandler: Handler,
     private val purchasesListener: PurchasesListener,
     private val logger: Logger
@@ -28,7 +28,7 @@ internal class QonversionBillingService(
     internal class BillingBuilder(private val context: Application) {
         @UiThread
         fun build(listener: PurchasesUpdatedListener): BillingClient {
-            val builder =  BillingClient.newBuilder(context)
+            val builder = BillingClient.newBuilder(context)
             builder.enablePendingPurchases()
             builder.setListener(listener)
             return builder.build()
@@ -315,21 +315,16 @@ internal class QonversionBillingService(
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
                 withReadyClient {
-                    queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistory ->
-                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistory != null) {
-                            val purchaseHistoryRecords = mutableListOf<PurchaseHistory>()
-                            purchaseHistory
-                                .takeUnless { it.isEmpty() }
-                                ?.forEach {record ->
-                                    purchaseHistoryRecords.add(PurchaseHistory(skuType, record))
-                                    logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
-                                }
-                                ?: logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
-
-                            onQueryHistoryCompleted(purchaseHistoryRecords)
+                    queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistoryRecords ->
+                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistoryRecords != null) {
+                            val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
+                                skuType,
+                                purchaseHistoryRecords
+                            )
+                            onQueryHistoryCompleted(purchaseHistory)
                         } else {
                             var errorMessage = "Failed to retrieve purchase history. "
-                            if (purchaseHistory == null) {
+                            if (purchaseHistoryRecords == null) {
                                 errorMessage += "Purchase history for $skuType is null. "
                             }
 
@@ -346,6 +341,22 @@ internal class QonversionBillingService(
                 onQueryHistoryFailed(billingSetupError)
             }
         }
+    }
+
+    private fun getPurchaseHistoryFromHistoryRecords(
+        @BillingClient.SkuType skuType: String,
+        historyRecords: List<PurchaseHistoryRecord>
+    ): List<PurchaseHistory> {
+        val purchaseHistory = mutableListOf<PurchaseHistory>()
+        historyRecords
+            .takeUnless { it.isEmpty() }
+            ?.forEach { record ->
+                purchaseHistory.add(PurchaseHistory(skuType, record))
+                logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
+            }
+            ?: logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
+
+        return purchaseHistory
     }
 
     private fun loadAllProducts(
@@ -373,8 +384,8 @@ internal class QonversionBillingService(
                     onQuerySkuCompleted(skuDetailsSubs)
                 }
             },
-                onQuerySkuFailed
-            )
+            onQuerySkuFailed
+        )
     }
 
     private fun querySkuDetailsAsync(
@@ -387,21 +398,12 @@ internal class QonversionBillingService(
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                val params = SkuDetailsParams.newBuilder()
-                    .setType(productType)
-                    .setSkusList(skuList)
-                    .build()
+                val params = buildSkuDetailsParams(productType, skuList)
 
                 withReadyClient {
                     querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
                         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
-                            skuDetailsList
-                                .takeUnless { it.isEmpty() }
-                                ?.forEach {
-                                    logger.log("querySkuDetailsAsync() -> $it")
-                                }
-                                ?: logger.log("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
-
+                            logSkuDetails(skuDetailsList, skuList)
                             onQuerySkuCompleted(skuDetailsList)
                         } else {
                             var errorMessage = "Failed to fetch products. "
@@ -422,6 +424,28 @@ internal class QonversionBillingService(
                 onQuerySkuFailed(billingSetupError)
             }
         }
+    }
+
+    private fun buildSkuDetailsParams(
+        @BillingClient.SkuType productType: String,
+        skuList: List<String>
+    ): SkuDetailsParams{
+        return SkuDetailsParams.newBuilder()
+            .setType(productType)
+            .setSkusList(skuList)
+            .build()
+    }
+
+    private fun logSkuDetails(
+        skuDetailsList: List<SkuDetails>,
+        skuList: List<String>
+    ) {
+        skuDetailsList
+            .takeUnless { it.isEmpty() }
+            ?.forEach {
+                logger.log("querySkuDetailsAsync() -> $it")
+            }
+            ?: logger.log("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
     }
 
     private fun startConnection() {
