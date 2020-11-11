@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.converter
 
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.Extractor
 
@@ -14,7 +15,6 @@ class GooglePurchaseConverter(
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
-//        details.introd
         return Purchase(
             detailsToken = extractor.extract(details.originalJson),
             title = details.title,
@@ -38,7 +38,7 @@ class GooglePurchaseConverter(
             orderId = purchase.orderId,
             originalOrderId = formatOriginalTransactionId(purchase.orderId),
             packageName = purchase.packageName,
-            purchaseTime = purchase.purchaseTime / 1000,
+            purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
             purchaseState = purchase.purchaseState,
             purchaseToken = purchase.purchaseToken,
             acknowledged = purchase.isAcknowledged,

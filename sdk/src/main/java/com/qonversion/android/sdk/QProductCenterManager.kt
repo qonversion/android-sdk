@@ -107,8 +107,7 @@ class QProductCenterManager internal constructor(
             return installDate
         }
 
-        val date = context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime / 1000
-        installDate = date
+        installDate = context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime.milliSecondsToSeconds()
 
         return installDate
     }
@@ -143,6 +142,7 @@ class QProductCenterManager internal constructor(
             override fun onSuccess(launchResult: QLaunchResult) {
                 isLaunchingFinished = true
                 this@QProductCenterManager.launchResult = launchResult
+                launchError = null
 
                 loadStoreProductsIfPossible(launchResult)
 
@@ -153,6 +153,7 @@ class QProductCenterManager internal constructor(
 
             override fun onError(error: QonversionError) {
                 isLaunchingFinished = true
+                launchResult = null
                 launchError = error
                 callback?.onError(error)
                 executePermissionsBlock()
@@ -289,6 +290,7 @@ class QProductCenterManager internal constructor(
             val purchaseInfo = Pair.create(skuDetail, purchase)
             purchase(purchaseInfo, object: QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
+                    launchResult?.permissions = permissions
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
                     purchasingCallbacks.remove(purchase.sku)
                     purchaseCallback?.onSuccess(permissions)
@@ -418,6 +420,7 @@ class QProductCenterManager internal constructor(
             val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
             repository.restore(installDate, purchaseHistoryRecords, callback = object: QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
+                    launchResult?.permissions = permissions
                     callback?.onSuccess(permissions)
                 }
 

@@ -16,6 +16,10 @@ fun PurchaseHistoryRecord.getDescription() =
 fun Purchase.getDescription() =
     "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
+fun Long.milliSecondsToSeconds(): Long = this / 1000
+
+fun Long.secondsToMilliSeconds(): Long = this * 1000
+
 private fun Long.convertLongToTime(): String {
     val date = Date(this)
     val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())

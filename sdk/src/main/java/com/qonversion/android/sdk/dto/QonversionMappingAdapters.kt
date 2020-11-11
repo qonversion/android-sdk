@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.dto
 
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -43,12 +45,12 @@ class QProductRenewStateAdapter {
 class QDateAdapter {
     @ToJson
     private fun toJson(date: Date): Long {
-        return date.time / 1000
+        return date.time.milliSecondsToSeconds()
     }
 
     @FromJson
     fun fromJson(date: Long): Date {
-        return Date(date * 1000)
+        return Date(date.secondsToMilliSeconds())
     }
 }
 

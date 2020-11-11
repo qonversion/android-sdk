@@ -3,14 +3,13 @@ package com.qonversion.android.sdk
 import android.app.Application
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.extractor.Extractor
-import com.qonversion.android.sdk.extractor.TokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
@@ -34,7 +33,6 @@ internal class QonversionRepository private constructor(
     private val logger: Logger,
     private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
-    private val tokenExtractor: Extractor<retrofit2.Response<BaseResponse<Response>>>,
     private val requestValidator: Validator<QonversionRequest>
 ) {
     private var advertisingId: String? = null
@@ -221,7 +219,7 @@ internal class QonversionRepository private constructor(
             val history = History(
                 it.sku,
                 it.purchaseToken,
-                it.purchaseTime / 1000
+                it.purchaseTime.milliSecondsToSeconds()
             )
             histories.add(history)
         }
@@ -340,12 +338,6 @@ internal class QonversionRepository private constructor(
         }
     }
 
-    private fun saveUid(response: retrofit2.Response<BaseResponse<Response>>): String {
-        val token = tokenExtractor.extract(response)
-        storage.save(token)
-        return token
-    }
-
     companion object {
 
         private const val BASE_URL = "https://api.qonversion.io/"
@@ -396,7 +388,6 @@ internal class QonversionRepository private constructor(
                 logger,
                 internalUserId,
                 requestQueue,
-                TokenExtractor(),
                 RequestValidator()
             )
         }

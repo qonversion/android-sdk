@@ -26,6 +26,7 @@ class GooglePurchaseConverterTest {
                 )
             )
 
+        // TODO: Update test for new Purchase fields
         assertEquals("conversion-test-purchase", converted.description)
         assertEquals("XXXXXXX", converted.detailsToken)
         assertEquals("GPA.0000-0000-0000-00000", converted.orderId)
@@ -45,8 +46,6 @@ class GooglePurchaseConverterTest {
         assertEquals("", converted.introductoryPrice)
         assertEquals(0, converted.introductoryPriceAmountMicros)
         assertEquals("0", converted.introductoryPriceCycles)
-        assertEquals("", converted.introductoryPricePeriod)
-        assertEquals("", converted.subscriptionPeriod)
         assertFalse(converted.acknowledged)
         assertFalse(converted.autoRenewing)
 
@@ -62,13 +61,13 @@ class GooglePurchaseConverterTest {
                 )
             )
 
+        // TODO: Update test for new Purchase fields
         assertEquals("conversion-test-subscribe", converted.description)
         assertEquals("XXXXXXX", converted.detailsToken)
         assertEquals("P3D", converted.freeTrialPeriod)
         assertEquals("RUB 100.00", converted.introductoryPrice)
         assertEquals(100000000, converted.introductoryPriceAmountMicros)
         assertEquals("1", converted.introductoryPriceCycles)
-        assertEquals("P1M", converted.introductoryPricePeriod)
         assertEquals("GPA.0000-0000-0000-00000", converted.orderId)
         assertEquals("RUB 200.00", converted.originalPrice)
         assertEquals(200000000, converted.originalPriceAmountMicros)
@@ -80,7 +79,6 @@ class GooglePurchaseConverterTest {
         assertEquals(1, converted.purchaseState)
         assertEquals(1575404669520, converted.purchaseTime)
         assertEquals("XXXXXXX", converted.purchaseToken)
-        assertEquals("P1M", converted.subscriptionPeriod)
         assertEquals("conversion-test-subscribe (Qonversion)", converted.title)
         assertEquals("subs", converted.type)
         assertFalse(converted.acknowledged)
