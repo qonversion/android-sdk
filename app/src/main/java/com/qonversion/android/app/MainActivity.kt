@@ -13,23 +13,18 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val skuDetailsMap = mutableMapOf<String, SkuDetails?>()
-    private val sku_purchase = "qonversion_sample_purchase"
-    private val sku_subscription = "qonversion_sample_subscription"
-    private var billingClient : Billing? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         billing_flow_purchase.setOnClickListener {
-            Qonversion.purchaseProduct("mostly_main", this, callback = object: QonversionPermissionsCallback {
+            Qonversion.purchase(this,"main", callback = object: QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
-                    val dsa = permissions
+                    val result = permissions
                 }
 
                 override fun onError(error: QonversionError) {
-                    val dsa = error
+                    val result = error
                 }
 
             })

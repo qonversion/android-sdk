@@ -248,13 +248,9 @@ class QProductCenterManager internal constructor(
 
     private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
         if (type == BillingClient.SkuType.INAPP) {
-            billingService.consume(purchaseToken, onConsumeFailed = {
-
-            })
+            billingService.consume(purchaseToken)
         } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
-            billingService.acknowledge(purchaseToken, onAcknowledgeFailed = {
-
-            })
+            billingService.acknowledge(purchaseToken)
         }
     }
 
