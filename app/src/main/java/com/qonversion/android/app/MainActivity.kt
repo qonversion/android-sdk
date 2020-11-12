@@ -33,8 +33,7 @@ class MainActivity : AppCompatActivity() {
         billing_flow_subscription.setOnClickListener {
             Qonversion.restore(object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
-                    val per = permissions
-                    TODO("Not yet implemented")
+                    val result = permissions
                 }
 
                 override fun onError(error: QonversionError) {

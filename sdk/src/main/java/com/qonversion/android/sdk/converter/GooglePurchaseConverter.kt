@@ -9,7 +9,9 @@ import com.qonversion.android.sdk.extractor.Extractor
 class GooglePurchaseConverter(
     private val extractor: Extractor<String>
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
-    private val priceMicrosDivider: Double = 1000000.0
+    companion object {
+        private const val priceMicrosDivider: Double = 1000000.0
+    }
 
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first

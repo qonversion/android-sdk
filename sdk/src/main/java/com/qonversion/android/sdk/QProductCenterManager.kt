@@ -49,9 +49,144 @@ class QProductCenterManager internal constructor(
 
     private val listener: QonversionBillingService.PurchasesListener = getPurchasesListener()
 
-    private val billingService: BillingService = QonversionBillingService(QonversionBillingService.BillingBuilder(context), Handler(context.mainLooper), listener, logger)
+    private val billingService: BillingService = QonversionBillingService(
+        QonversionBillingService.BillingBuilder(context),
+        Handler(context.mainLooper),
+        listener,
+        logger
+    )
 
-    private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> = GooglePurchaseConverter(SkuDetailsTokenExtractor())
+    private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
+        GooglePurchaseConverter(SkuDetailsTokenExtractor())
+
+    // Public functions
+
+    fun onAppForeground() {
+        handlePendingPurchases()
+    }
+
+    fun launch(
+        context: Application,
+        callback: QonversionLaunchCallback?
+    ) {
+        val adProvider = AdvertisingProvider()
+        val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
+
+        adProvider.init(context, object : AdvertisingProvider.Callback {
+            override fun onSuccess(advertisingId: String) {
+                continueLaunchWithPurchasesInfo(advertisingId, launchCallback)
+            }
+
+            override fun onFailure(t: Throwable) {
+                continueLaunchWithPurchasesInfo(callback = launchCallback)
+            }
+        })
+    }
+
+    fun loadProducts(
+        callback: QonversionProductsCallback
+    ) {
+        productsCallbacks.add(callback)
+        if (!isProductsLoaded || !isLaunchingFinished) {
+            return
+        }
+
+        if (launchError == null) {
+            executeProductsBlocks()
+        } else {
+            val launchCallback = getLaunchCallback(null)
+            launch(context, launchCallback)
+        }
+    }
+
+    fun purchaseProduct(
+        context: Activity,
+        id: String,
+        oldProductId: String?,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        val product: QProduct? = productForID(id)
+        val oldProduct: QProduct? = productForID(oldProductId)
+
+        if (product?.storeID == null) {
+            callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
+            return
+        }
+
+        val purchasingCallback = purchasingCallbacks[product.storeID]
+        purchasingCallback?.let {
+            logger.log("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
+            return
+        }
+
+        val skuDetail = skuDetails[product.storeID]
+        val oldSkuDetail = skuDetails[oldProduct?.storeID]
+        if (skuDetail != null) {
+            purchasingCallbacks[product.storeID] = callback
+            billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
+        } else {
+            val launchResult = launchResult
+            if (isProductsLoaded || launchResult == null) {
+                val error = QonversionError(QonversionErrorCode.SkuDetailsError)
+                callback.onError(error)
+                return
+            }
+
+            loadStoreProductsIfPossible(
+                launchResult,
+                onLoadCompleted = { skuDetailsList ->
+                    val sku = skuDetailsList.find { detail ->
+                        detail.sku == product.storeID
+                    }
+                    if (sku != null) {
+                        purchasingCallbacks[product.storeID] = callback
+                        billingService.purchase(context, sku)
+                    }
+                }, onLoadFailed = { error ->
+                    callback.onError(error.toQonversionError())
+                })
+        }
+    }
+
+    fun checkPermissions(
+        callback: QonversionPermissionsCallback
+    ) {
+        permissionsCallbacks.add(callback)
+
+        if (!isLaunchingFinished) {
+            return
+        }
+
+        executePermissionsBlock()
+    }
+
+    fun restore(callback: QonversionPermissionsCallback? = null) {
+        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
+            consumeHistoryRecords(historyRecords)
+            val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
+            repository.restore(
+                installDate,
+                purchaseHistoryRecords,
+                callback = object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                        launchResult?.permissions = permissions
+                        callback?.onSuccess(permissions)
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        callback?.onError(error)
+                    }
+                })
+        },
+            onQueryHistoryFailed = {
+                callback?.onError(it.toQonversionError())
+            })
+    }
+
+    fun syncPurchases() {
+        restore()
+    }
 
     // Private functions
 
@@ -78,7 +213,10 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun configurePurchaseInfo(skuDetails: Map<String, SkuDetails>, purchases: List<Purchase>): List<com.qonversion.android.sdk.entity.Purchase> {
+    private fun configurePurchaseInfo(
+        skuDetails: Map<String, SkuDetails>,
+        purchases: List<Purchase>
+    ): List<com.qonversion.android.sdk.entity.Purchase> {
         val result = mutableListOf<com.qonversion.android.sdk.entity.Purchase>()
 
         purchases.forEach {
@@ -107,38 +245,57 @@ class QProductCenterManager internal constructor(
             return installDate
         }
 
-        installDate = context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime.milliSecondsToSeconds()
+        installDate = context.packageManager.getPackageInfo(
+            context.packageName,
+            0
+        ).firstInstallTime.milliSecondsToSeconds()
 
         return installDate
     }
 
-    private fun continueLaunchWithPurchasesInfo(advertisingId: String? = null, callback: QonversionLaunchCallback?) {
+    private fun continueLaunchWithPurchasesInfo(
+        advertisingId: String? = null,
+        callback: QonversionLaunchCallback?
+    ) {
         val installDate = getInstallDate()
         billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
-                    repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
+                    repository.init(
+                        installDate = installDate,
+                        idfa = advertisingId,
+                        callback = callback
+                    )
                     return@queryPurchases
                 }
 
                 billingService.getSkuDetailsFromPurchases(
                     purchases,
                     onCompleted = { skuDetails ->
-                        val formattedSkuDetails: Map<String, SkuDetails> = configureSkuDetails(skuDetails)
+                        val formattedSkuDetails: Map<String, SkuDetails> =
+                            configureSkuDetails(skuDetails)
                         val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, purchases)
                         repository.init(installDate, advertisingId, purchasesInfo, callback)
                     },
                     onFailed = {
-                        repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
+                        repository.init(
+                            installDate = installDate,
+                            idfa = advertisingId,
+                            callback = callback
+                        )
                     })
             },
             onQueryFailed = {
-                repository.init(installDate = installDate, idfa = advertisingId, callback = callback)
+                repository.init(
+                    installDate = installDate,
+                    idfa = advertisingId,
+                    callback = callback
+                )
             })
     }
 
     private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
-        return object: QonversionLaunchCallback {
+        return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 isLaunchingFinished = true
                 this@QProductCenterManager.launchResult = launchResult
@@ -167,9 +324,11 @@ class QProductCenterManager internal constructor(
         loadStoreProductsIfPossible(launchResult, null, null)
     }
 
-    private fun loadStoreProductsIfPossible(launchResult: QLaunchResult,
-                                    onLoadCompleted: ((products: List<SkuDetails>) -> Unit)?,
-                                    onLoadFailed: ((error: BillingError) -> Unit)?) {
+    private fun loadStoreProductsIfPossible(
+        launchResult: QLaunchResult,
+        onLoadCompleted: ((products: List<SkuDetails>) -> Unit)?,
+        onLoadFailed: ((error: BillingError) -> Unit)?
+    ) {
         val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
@@ -237,7 +396,7 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        purchases.forEach {purchase ->
+        purchases.forEach { purchase ->
             val skuDetail = skuDetails[purchase.sku]
             skuDetail?.let { sku ->
                 if (purchase.purchaseState != Purchase.PurchaseState.PENDING) {
@@ -285,7 +444,7 @@ class QProductCenterManager internal constructor(
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
-            purchase(purchaseInfo, object: QonversionPermissionsCallback {
+            purchase(purchaseInfo, object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     launchResult?.permissions = permissions
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
@@ -309,129 +468,5 @@ class QProductCenterManager internal constructor(
         val purchase = converter.convert(purchaseInfo)
         val installDate = getInstallDate()
         repository.purchase(installDate, purchase, callback)
-    }
-
-    // Public functions
-
-    fun onAppForeground() {
-        handlePendingPurchases()
-    }
-
-    fun launch(
-        context: Application,
-        callback: QonversionLaunchCallback?
-    ) {
-        val adProvider = AdvertisingProvider()
-        val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
-
-        adProvider.init(context, object : AdvertisingProvider.Callback {
-            override fun onSuccess(advertisingId: String) {
-                continueLaunchWithPurchasesInfo(advertisingId, launchCallback)
-            }
-
-            override fun onFailure(t: Throwable) {
-                continueLaunchWithPurchasesInfo(callback = launchCallback)
-            }
-        })
-    }
-
-    fun loadProducts(
-        callback: QonversionProductsCallback
-    ) {
-        productsCallbacks.add(callback)
-        if (!isProductsLoaded || !isLaunchingFinished) {
-            return
-        }
-
-        if (launchError == null) {
-            executeProductsBlocks()
-        } else {
-            val launchCallback = getLaunchCallback(null)
-            launch(context, launchCallback)
-        }
-    }
-
-    fun purchaseProduct(context: Activity,
-                        id: String,
-                        oldProductId: String?,
-                        @BillingFlowParams.ProrationMode prorationMode: Int?,
-                        callback: QonversionPermissionsCallback) {
-        val product: QProduct? = productForID(id)
-        val oldProduct: QProduct? = productForID(oldProductId)
-
-        if (product?.storeID == null) {
-            callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
-            return
-        }
-
-        val purchasingCallback = purchasingCallbacks[product.storeID]
-        purchasingCallback?.let {
-            logger.log("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
-            return
-        }
-
-        val skuDetail = skuDetails[product.storeID]
-        val oldSkuDetail = skuDetails[oldProduct?.storeID]
-        if (skuDetail != null) {
-            purchasingCallbacks[product.storeID] = callback
-            billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
-        } else {
-            val launchResult = launchResult
-            if (isProductsLoaded || launchResult == null) {
-                val error = QonversionError(QonversionErrorCode.SkuDetailsError)
-                callback.onError(error)
-                return
-            }
-
-            loadStoreProductsIfPossible(
-                launchResult,
-                onLoadCompleted = { skuDetailsList ->
-                    val sku = skuDetailsList.find { detail ->
-                        detail.sku == product.storeID
-                    }
-                    if (sku != null) {
-                        purchasingCallbacks[product.storeID] = callback
-                        billingService.purchase(context, sku)
-                    }
-                }, onLoadFailed = { error ->
-                    callback.onError(error.toQonversionError())
-                })
-        }
-    }
-
-    fun checkPermissions(
-        callback: QonversionPermissionsCallback
-    ) {
-        permissionsCallbacks.add(callback)
-
-        if (!isLaunchingFinished) {
-            return
-        }
-
-        executePermissionsBlock()
-    }
-
-    fun restore(callback: QonversionPermissionsCallback? = null) {
-        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
-            consumeHistoryRecords(historyRecords)
-            val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
-            repository.restore(installDate, purchaseHistoryRecords, callback = object: QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    launchResult?.permissions = permissions
-                    callback?.onSuccess(permissions)
-                }
-
-                override fun onError(error: QonversionError) {
-                    callback?.onError(error)
-                }
-            })
-        },
-            onQueryHistoryFailed = {
-                callback?.onError(it.toQonversionError())
-            })
-    }
-
-    fun syncPurchases() {
-        restore()
     }
 }

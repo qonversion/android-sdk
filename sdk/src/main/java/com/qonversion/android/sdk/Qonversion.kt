@@ -35,6 +35,15 @@ object Qonversion : LifecycleDelegate{
         productCenterManager?.onAppForeground()
     }
 
+    /**
+     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
+     * @param context Application object
+     * @param key project key to setup the SDK
+     * @param observeMode set true if you are using observer mode only
+     * @param callback - callback that will be called when response is received
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/android)
+     */
     @JvmOverloads
     @JvmStatic
     fun launch(
@@ -76,19 +85,50 @@ object Qonversion : LifecycleDelegate{
         productCenterManager?.launch(context, callback)
     }
 
+    /**
+     * Make a purchase and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param id Qonversion product identifier for purchase
+     * @param callback - callback that will be called when response is received
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     @JvmStatic
-    fun purchase(activity: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(activity, id, null, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(context, id, null, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param productId Qonversion product identifier for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param callback - callback that will be called when response is received
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     fun updatePurchase(context: Activity, productId: String, oldProductId: String, callback: QonversionPermissionsCallback) {
         productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param productId Qonversion product identifier for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param prorationMode proration mode
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.ProrationMode)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     fun updatePurchase(context: Activity, productId: String, oldProductId: String, @BillingFlowParams.ProrationMode prorationMode: Int?, callback: QonversionPermissionsCallback) {
         productCenterManager?.purchaseProduct(context, productId, oldProductId, prorationMode, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Return Qonversion Products in assoсiation with Google Play Store Products
+     * If you get an empty SkuDetails be sure your products are correctly setted up in Google Play Store.
+     * @param callback - callback that will be called when response is received
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     @JvmStatic
     fun products(
         callback: QonversionProductsCallback
@@ -96,6 +136,11 @@ object Qonversion : LifecycleDelegate{
         productCenterManager?.loadProducts(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Check user permissions based on product center details
+     * @param callback - callback that will be called when response is received
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     @JvmStatic
     fun permissions(
         callback: QonversionPermissionsCallback
@@ -103,16 +148,32 @@ object Qonversion : LifecycleDelegate{
         productCenterManager?.checkPermissions(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Restore user Products
+     * @param callback - callback that will be called when response is received
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
         productCenterManager?.restore(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
+     * @warning This function should only be called if you're using Qonversion SDK in observer mode.
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     */
     @JvmStatic
     fun syncPurchases() {
         productCenterManager?.syncPurchases() ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Send your attribution data
+     * @param conversionInfo map received by the attribution source
+     * @param from Attribution source
+     * @param conversionUid conversion uid
+     */
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
@@ -122,16 +183,30 @@ object Qonversion : LifecycleDelegate{
         repository.attribution(conversionInfo, from.id, conversionUid)
     }
 
+    /**
+     * Sets Qonversion reserved user properties, like email or one-signal id
+     * @param key defined enum key that will be transformed to string
+     * @param value property value
+     */
     @JvmStatic
     fun setProperty(key: QUserProperties, value: String) {
         userPropertiesManager.setProperty(key, value)
     }
 
+    /**
+     * Sets custom user properties
+     * @param key custom user property key
+     * @param value property value
+     */
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
         userPropertiesManager.setUserProperty(key, value)
     }
 
+    /**
+     * Associate a user with their unique ID in your system
+     * @param value your database user ID
+     */
     @JvmStatic
     fun setUserID(value: String) {
         userPropertiesManager.setUserID(value)
