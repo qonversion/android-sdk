@@ -4,11 +4,6 @@ import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QProduct
 
-interface QonversionCallback {
-   fun onSuccess(uid: String)
-   fun onError(error: QonversionError)
-}
-
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
    fun onError(error: QonversionError)
@@ -21,10 +16,5 @@ interface QonversionProductsCallback {
 
 interface QonversionPermissionsCallback {
    fun onSuccess(permissions: Map<String, QPermission>)
-   fun onError(error: QonversionError)
-}
-
-interface QonversionPurchasesCallback {
-   fun onSuccess(uid: String)
    fun onError(error: QonversionError)
 }

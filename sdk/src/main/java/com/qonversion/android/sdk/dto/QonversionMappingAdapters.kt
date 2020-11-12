@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.dto
 
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.billing.toBoolean
+import com.qonversion.android.sdk.billing.toInt
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -85,15 +87,3 @@ class QPermissionsAdapter {
         return result
     }
 }
-
-//class QBoolAdapter {
-//    @ToJson
-//    private fun toJson(value: Boolean): Int {
-//        return if (value) 1 else 0
-//    }
-//
-//    @FromJson
-//    fun fromJson(value: Int): Boolean {
-//        return value > 0
-//    }
-//}
