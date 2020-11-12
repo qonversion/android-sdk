@@ -213,18 +213,15 @@ internal class QonversionRepository private constructor(
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
-        val histories: MutableList<History> = mutableListOf()
-
-        historyRecords.forEach {
-            val history = History(
+        val histories: List<History> = historyRecords.map {
+            History(
                 it.sku,
                 it.purchaseToken,
                 it.purchaseTime.milliSecondsToSeconds()
             )
-            histories.add(history)
         }
 
-        return histories.toList()
+        return histories
     }
 
     private fun restoreRequest(

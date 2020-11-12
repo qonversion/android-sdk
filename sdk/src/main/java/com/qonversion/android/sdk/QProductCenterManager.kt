@@ -155,8 +155,10 @@ class QProductCenterManager internal constructor(
                 isLaunchingFinished = true
                 launchResult = null
                 launchError = error
-                callback?.onError(error)
+
                 executePermissionsBlock()
+
+                callback?.onError(error)
             }
         }
     }
@@ -238,19 +240,10 @@ class QProductCenterManager internal constructor(
         purchases.forEach {purchase ->
             val skuDetail = skuDetails[purchase.sku]
             skuDetail?.let { sku ->
-                if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
-                    return
+                if (purchase.purchaseState != Purchase.PurchaseState.PENDING) {
+                    consume(sku.type, purchase.purchaseToken, purchase.isAcknowledged)
                 }
-                consume(sku.type, purchase.purchaseToken, purchase.isAcknowledged)
             }
-        }
-    }
-
-    private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
-        if (type == BillingClient.SkuType.INAPP) {
-            billingService.consume(purchaseToken)
-        } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
-            billingService.acknowledge(purchaseToken)
         }
     }
 
@@ -261,6 +254,14 @@ class QProductCenterManager internal constructor(
 
         records.forEach { record ->
             consume(record.type, record.historyRecord.purchaseToken, false)
+        }
+    }
+
+    private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
+        if (type == BillingClient.SkuType.INAPP) {
+            billingService.consume(purchaseToken)
+        } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
+            billingService.acknowledge(purchaseToken)
         }
     }
 
@@ -312,7 +313,7 @@ class QProductCenterManager internal constructor(
 
     // Public functions
 
-    fun onAppForegrounded() {
+    fun onAppForeground() {
         handlePendingPurchases()
     }
 

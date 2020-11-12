@@ -27,12 +27,12 @@ object Qonversion : LifecycleDelegate{
         ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
     }
 
-    override fun onAppBackgrounded() {
+    override fun onAppBackground() {
         userPropertiesManager.forceSendProperties()
     }
 
-    override fun onAppForegrounded() {
-        productCenterManager?.onAppForegrounded()
+    override fun onAppForeground() {
+        productCenterManager?.onAppForeground()
     }
 
     @JvmOverloads

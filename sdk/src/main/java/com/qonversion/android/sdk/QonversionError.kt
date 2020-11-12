@@ -22,9 +22,9 @@ enum class QonversionErrorCode(val specification: String) {
     FeatureNotSupported("Requested feature is not supported by Play Store on the current device"),
     ProductUnavailable("Requested product is not available for purchase"),
     NetworkConnectionFailed("There was a network issue"),
-    ParseResponseFailed("A problem occurs when serializing or deserializing data"),
+    ParseResponseFailed("A problem occurred when serializing or deserializing data"),
     BackendError("There was a backend error"),
     ProductNotFound("Failure to purchase since product not found"),
     LaunchError("There was a launch error"),
-    SkuDetailsError("There was a SkuDetails error. Please be sure SkuDetails configured correctly")
+    SkuDetailsError("There was a SkuDetails error. Please make sure Products configured correctly")
 }
