@@ -38,7 +38,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
         details: SkuDetails,
         purchase: Purchase
     ) {
-        Qonversion.purchase(details, purchase)
+        Qonversion.syncPurchases()
     }
 
     private fun launchBilling() {
