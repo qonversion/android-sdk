@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate{
 
-    private const val SDK_VERSION = "2.0.0"
+    private const val SDK_VERSION = "2.0.1"
 
     private lateinit var repository: QonversionRepository
     private lateinit var userPropertiesManager: QUserPropertiesManager
@@ -45,6 +45,7 @@ object Qonversion : LifecycleDelegate{
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      */
     @JvmStatic
+    @JvmOverloads
     fun launch(
         context: Application,
         key: String,
@@ -145,7 +146,7 @@ object Qonversion : LifecycleDelegate{
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     @JvmStatic
-    fun permissions(
+    fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
         productCenterManager?.checkPermissions(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
