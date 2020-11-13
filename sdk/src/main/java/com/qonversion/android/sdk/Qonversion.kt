@@ -42,7 +42,7 @@ object Qonversion : LifecycleDelegate{
      * @param observeMode set true if you are using observer mode only
      * @param callback - callback that will be called when response is received
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
-     * @see [Installing the Android SDK](https://qonversion.io/docs/android)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      */
     @JvmOverloads
     @JvmStatic
