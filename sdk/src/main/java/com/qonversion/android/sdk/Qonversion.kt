@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate{
 
-    private const val SDK_VERSION = "1.1.0"
+    private const val SDK_VERSION = "2.0.0"
 
     private lateinit var repository: QonversionRepository
     private lateinit var userPropertiesManager: QUserPropertiesManager
@@ -117,7 +117,7 @@ object Qonversion : LifecycleDelegate{
      * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
      * @param prorationMode proration mode
      * @param callback - callback that will be called when response is received
-     * @see [Proration mode](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.ProrationMode)
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     @JvmOverloads

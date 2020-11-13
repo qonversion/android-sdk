@@ -1,20 +1,20 @@
 package com.qonversion.android.sdk.dto
 
 enum class QProductDuration(val type: Int) {
-    Weekly(1),
-    Monthly(2),
-    ThreeMonthly(3),
-    SixMonthly(4),
-    Annual(5);
+    Weekly(0),
+    Monthly(1),
+    ThreeMonthly(2),
+    SixMonthly(3),
+    Annual(4);
 
     companion object {
         fun fromType(type: Int): QProductDuration? {
             return when (type) {
-                1 -> Weekly
-                2-> Monthly
-                3-> ThreeMonthly
-                4-> SixMonthly
-                5-> Annual
+                0 -> Weekly
+                1-> Monthly
+                2-> ThreeMonthly
+                3-> SixMonthly
+                4-> Annual
                 else -> null
             }
         }
