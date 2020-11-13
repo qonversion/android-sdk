@@ -6,7 +6,17 @@ import com.qonversion.android.sdk.dto.app.App
 import com.qonversion.android.sdk.dto.device.Device
 @JsonClass(generateAdapter = true)
 data class Environment(
-    @Json(name = "internalUserID") val internalUserID: String,
-    @Json(name = "app") val app: App,
-    @Json(name = "device") val device: Device
+    @Json(name = "app_version") val app_version: String,
+    @Json(name = "carrier") val carrier: String,
+    @Json(name = "device_id") val deviceId: String,
+    @Json(name = "locale") val locale: String,
+    @Json(name = "manufacturer") val manufacturer: String,
+    @Json(name = "model") val model: String,
+    @Json(name = "os") val os: String,
+    @Json(name = "os_version") val osVersion: String,
+    @Json(name = "timezone") val timezone: String,
+    @Json(name = "platform") val platform: String,
+    @Json(name = "country") val country: String,
+    @Json(name = "tracking_enabled") val trackingEnabled: Int,
+    @Json(name = "advertiser_id") val advertiserId: String?
 )

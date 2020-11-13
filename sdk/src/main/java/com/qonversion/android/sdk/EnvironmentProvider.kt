@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.device.Device
 import com.qonversion.android.sdk.dto.device.Os
 import com.qonversion.android.sdk.dto.device.Screen
+import java.time.ZoneId
 import java.util.*
 
 class EnvironmentProvider(private val context: Context) {
@@ -21,7 +22,21 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(internalUserId: String, ads: AdsDto): Environment = Environment(internalUserId, getAppInfo(), getDeviceInfo(ads))
+    fun getInfo(trackingEnabled: Int, edfa: String? = null): Environment = Environment(
+        getVersionName(),
+        getCarrier(),
+        getDeviceId(),
+        getLocale(),
+        Build.MANUFACTURER,
+        Build.MODEL,
+        Os().name,
+        Os().version,
+        getTimeZone(),
+        "android",
+        getCountry(),
+        trackingEnabled,
+        edfa
+    )
 
     private fun getAppInfo(): App = App(
         name = getAppName(),
@@ -95,5 +110,7 @@ class EnvironmentProvider(private val context: Context) {
 
     private fun getLocale() = Locale.getDefault().language
 
-    private fun getTimeZone() = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
+    private fun getCountry() = Locale.getDefault().country
+
+    private fun getTimeZone() = TimeZone.getDefault().id
 }
