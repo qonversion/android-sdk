@@ -1,6 +1,5 @@
 package com.qonversion.android.app;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
@@ -57,7 +56,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
     }
 
     private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
-        Qonversion.getInstance().purchase(details, purchase);
+        Qonversion.syncPurchases();
     }
 
     private void launchBilling() {

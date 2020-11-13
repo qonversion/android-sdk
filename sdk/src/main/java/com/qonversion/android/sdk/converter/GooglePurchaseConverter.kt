@@ -2,12 +2,16 @@ package com.qonversion.android.sdk.converter
 
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.Extractor
 
 class GooglePurchaseConverter(
     private val extractor: Extractor<String>
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
+    companion object {
+        private const val priceMicrosDivider: Double = 1000000.0
+    }
 
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
@@ -21,21 +25,85 @@ class GooglePurchaseConverter(
             originalPrice = details.originalPrice ?: "",
             originalPriceAmountMicros = details.originalPriceAmountMicros,
             priceCurrencyCode = details.priceCurrencyCode,
-            price = details.price,
+            price = formatPrice(details.priceAmountMicros),
             priceAmountMicros = details.priceAmountMicros,
-            subscriptionPeriod = details.subscriptionPeriod ?: "",
+            periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
+            periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
             freeTrialPeriod = details.freeTrialPeriod ?: "",
+            introductoryAvailable = details.introductoryPrice.isNotEmpty(),
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
-            introductoryPricePeriod = details.introductoryPricePeriod ?: "",
-            introductoryPrice = details.introductoryPrice ?: "",
-            introductoryPriceCycles = details.introductoryPriceCycles.toString(),
+            introductoryPrice = getIntroductoryPrice(details),
+            introductoryPriceCycles = getIntroductoryPriceCycles(details),
+            introductoryPeriodUnit = getUnitsTypeFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
+            introductoryPeriodUnitsCount = getUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
             orderId = purchase.orderId,
+            originalOrderId = formatOriginalTransactionId(purchase.orderId),
             packageName = purchase.packageName,
-            purchaseTime = purchase.purchaseTime,
+            purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
             purchaseState = purchase.purchaseState,
             purchaseToken = purchase.purchaseToken,
             acknowledged = purchase.isAcknowledged,
-            autoRenewing = purchase.isAutoRenewing
+            autoRenewing = purchase.isAutoRenewing,
+            paymentMode = getPaymentMode(details)
         )
     }
+
+    private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
+        return if (details.freeTrialPeriod.isNullOrEmpty()) details.introductoryPriceCycles else 0
+    }
+
+    private fun getIntroductoryPrice(details: SkuDetails): String {
+        if (details.freeTrialPeriod.isNullOrEmpty()) {
+            return formatPrice(details.introductoryPriceAmountMicros)
+        }
+
+        return "0.0"
+    }
+
+    private fun getPaymentMode(details: SkuDetails): Int {
+        return if (details.freeTrialPeriod.isNotEmpty()) 2 else 0
+    }
+
+    private fun formatPrice(price: Long): String {
+        val divideResult = price.toDouble() / (priceMicrosDivider)
+        val result = String.format("%.2f", divideResult)
+
+        return result
+    }
+
+    private fun formatOriginalTransactionId(transactionId: String): String {
+        val regex = Regex("\\.{2}.*")
+        val result = regex.replace(transactionId, "")
+
+        return result
+    }
+
+    private fun getUnitsTypeFromPeriod(period: String?): Int? {
+        if (period.isNullOrEmpty()) {
+            return null
+        }
+
+        val result = period.last().toString()
+
+        val periodUnit = when (result) {
+            "Y" -> 3
+            "M" -> 2
+            "W" -> 1
+            "D" -> 0
+            else -> null
+        }
+
+        return periodUnit
+    }
+
+    private fun getUnitsCountFromPeriod(period: String?): Int? {
+        if (period.isNullOrEmpty()) {
+            return null
+        }
+
+        val unitsCount = period.substring(1..period.length - 2)
+
+        return unitsCount.toInt()
+    }
+
 }

@@ -5,7 +5,6 @@ import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.Qonversion.Companion.instance
 import java.util.*
 
 class ManualTrackingActivityKt : AppCompatActivity() {
@@ -39,7 +38,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
         details: SkuDetails,
         purchase: Purchase
     ) {
-        Qonversion.instance!!.purchase(details, purchase)
+        Qonversion.syncPurchases()
     }
 
     private fun launchBilling() {
