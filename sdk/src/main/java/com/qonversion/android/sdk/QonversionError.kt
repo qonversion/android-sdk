@@ -26,5 +26,5 @@ enum class QonversionErrorCode(val specification: String) {
     BackendError("There was a backend error"),
     ProductNotFound("Failure to purchase since the product was not found"),
     LaunchError("There was a launch error"),
-    SkuDetailsError("There was a SkuDetails error. Please make sure that the products were configured correctly")
+    SkuDetailsError("There was a SkuDetails error. Please make sure that the products were configured correctly in Google Play Console")
 }

@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.logger;
 
 import android.util.Log;
 
+import com.qonversion.android.sdk.BuildConfig;
+
 public class ConsoleLogger implements Logger {
 
     private static final String TAG = "Qonversion";
@@ -14,6 +16,12 @@ public class ConsoleLogger implements Logger {
     @Override
     public void log(String message) {
         log(TAG, message);
+    }
+
+    public void debug(String message) {
+        if (BuildConfig.DEBUG) {
+            log(TAG, message);
+        }
     }
 
     private String format(final String message) {

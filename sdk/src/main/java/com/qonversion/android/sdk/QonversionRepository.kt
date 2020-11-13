@@ -321,7 +321,7 @@ internal class QonversionRepository private constructor(
         api.properties(propertiesRequest).enqueue {
             onResponse = {
                 val logMessage =  if(it.isSuccessful) "success - $it" else  "failure - ${it.toQonversionError()}"
-                logger.log("propertiesRequest - $logMessage")
+                logger.debug("propertiesRequest - $logMessage")
 
                 if (it.isSuccessful) {
                     propertiesStorage.clear()
@@ -330,7 +330,7 @@ internal class QonversionRepository private constructor(
                 kickRequestQueue()
             }
             onFailure = {
-                logger.log("propertiesRequest - failure - ${it?.toQonversionError()}")
+                logger.debug("propertiesRequest - failure - ${it?.toQonversionError()}")
             }
         }
     }

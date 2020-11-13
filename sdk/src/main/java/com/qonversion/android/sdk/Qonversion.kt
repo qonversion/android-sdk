@@ -7,7 +7,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
@@ -20,7 +19,7 @@ object Qonversion : LifecycleDelegate {
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
-    private var logger = if (BuildConfig.DEBUG) ConsoleLogger() else StubLogger()
+    private var logger = ConsoleLogger()
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -57,11 +56,6 @@ object Qonversion : LifecycleDelegate {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        val logger = if (BuildConfig.DEBUG) {
-            ConsoleLogger()
-        } else {
-            StubLogger()
-        }
         val storage = TokenStorage(
             PreferenceManager.getDefaultSharedPreferences(context),
             TokenValidator()
