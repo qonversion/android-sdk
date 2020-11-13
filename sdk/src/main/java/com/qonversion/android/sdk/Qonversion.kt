@@ -44,7 +44,6 @@ object Qonversion : LifecycleDelegate{
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      */
-    @JvmOverloads
     @JvmStatic
     fun launch(
         context: Application,
@@ -105,6 +104,8 @@ object Qonversion : LifecycleDelegate{
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
+    @JvmOverloads
+    @JvmStatic
     fun updatePurchase(context: Activity, productId: String, oldProductId: String, callback: QonversionPermissionsCallback) {
         productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
@@ -119,6 +120,8 @@ object Qonversion : LifecycleDelegate{
      * @see [Proration mode](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.ProrationMode)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
+    @JvmOverloads
+    @JvmStatic
     fun updatePurchase(context: Activity, productId: String, oldProductId: String, @BillingFlowParams.ProrationMode prorationMode: Int?, callback: QonversionPermissionsCallback) {
         productCenterManager?.purchaseProduct(context, productId, oldProductId, prorationMode, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
     }
