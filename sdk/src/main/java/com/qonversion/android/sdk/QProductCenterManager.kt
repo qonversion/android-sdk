@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.os.Handler
 import android.util.Pair
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
@@ -24,6 +23,7 @@ class QProductCenterManager internal constructor(
     private val context: Application,
     private val isObserveMode: Boolean,
     private val repository: QonversionRepository,
+    private val billingServiceCreator: BillingServiceCreator,
     private val logger: Logger
 ) {
     @Volatile
@@ -38,7 +38,7 @@ class QProductCenterManager internal constructor(
 
     private var skuDetails = mapOf<String, SkuDetails>()
 
-    private var launchResult: QLaunchResult? = null
+    internal var launchResult: QLaunchResult? = null
     private var launchError: QonversionError? = null
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
@@ -46,15 +46,11 @@ class QProductCenterManager internal constructor(
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
     private var installDate: Long = 0
+    private var billingService: BillingService? = null
 
-    private val listener: QonversionBillingService.PurchasesListener = getPurchasesListener()
-
-    private val billingService: BillingService = QonversionBillingService(
-        QonversionBillingService.BillingBuilder(context),
-        Handler(context.mainLooper),
-        listener,
-        logger
-    )
+    init {
+        billingService = billingServiceCreator.create(getPurchasesListener())
+    }
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
@@ -124,7 +120,7 @@ class QProductCenterManager internal constructor(
         val oldSkuDetail = skuDetails[oldProduct?.storeID]
         if (skuDetail != null) {
             purchasingCallbacks[product.storeID] = callback
-            billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
+            billingService?.purchase(context, skuDetail, oldSkuDetail, prorationMode)
         } else {
             val launchResult = launchResult
             if (isProductsLoaded || launchResult == null) {
@@ -141,7 +137,7 @@ class QProductCenterManager internal constructor(
                     }
                     if (sku != null) {
                         purchasingCallbacks[product.storeID] = callback
-                        billingService.purchase(context, sku)
+                        billingService?.purchase(context, sku)
                     }
                 }, onLoadFailed = { error ->
                     callback.onError(error.toQonversionError())
@@ -162,7 +158,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
-        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
+        billingService?.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
             consumeHistoryRecords(historyRecords)
             val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
             repository.restore(
@@ -258,7 +254,7 @@ class QProductCenterManager internal constructor(
         callback: QonversionLaunchCallback?
     ) {
         val installDate = getInstallDate()
-        billingService.queryPurchases(
+        billingService?.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
                     repository.init(
@@ -269,7 +265,7 @@ class QProductCenterManager internal constructor(
                     return@queryPurchases
                 }
 
-                billingService.getSkuDetailsFromPurchases(
+                billingService?.getSkuDetailsFromPurchases(
                     purchases,
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
@@ -333,7 +329,7 @@ class QProductCenterManager internal constructor(
             it.storeID
         }.toSet()
         if (!isProductsLoaded && !productStoreIds.isNullOrEmpty()) {
-            billingService.loadProducts(productStoreIds,
+            billingService?.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
                     val formattedDetails: Map<String, SkuDetails> = configureSkuDetails(details)
@@ -418,16 +414,16 @@ class QProductCenterManager internal constructor(
 
     private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
         if (type == BillingClient.SkuType.INAPP) {
-            billingService.consume(purchaseToken)
+            billingService?.consume(purchaseToken)
         } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
-            billingService.acknowledge(purchaseToken)
+            billingService?.acknowledge(purchaseToken)
         }
     }
 
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
 
-        billingService.queryPurchases(
+        billingService?.queryPurchases(
             onQueryCompleted = { purchases ->
                 handlePurchases(purchases)
             },

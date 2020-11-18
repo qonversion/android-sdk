@@ -81,7 +81,8 @@ object Qonversion : LifecycleDelegate{
         this.repository = repository
         userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
-        productCenterManager = QProductCenterManager(context, observeMode, repository, logger)
+        val billingCreator = BillingServiceCreator(context, logger)
+        productCenterManager = QProductCenterManager(context, observeMode, repository, billingCreator, logger)
         productCenterManager?.launch(context, callback)
     }
 
