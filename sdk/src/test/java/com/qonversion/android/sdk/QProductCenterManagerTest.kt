@@ -51,7 +51,6 @@ class QProductCenterManagerTest {
 
     private val fieldIsLaunchingFinished = "isLaunchingFinished"
     private val fieldSkuDetails = "skuDetails"
-    private val fieldIsObserveMode = "isObserveMode"
 
     @Before
     fun setUp() {
@@ -64,7 +63,7 @@ class QProductCenterManagerTest {
             purchasesListener = purchasesUpdatedSlot.captured
             mockBillingService
         }
-
+        mockkConstructor(Consumer::class)
         mockkConstructor(Utils::class)
         every { anyConstructed<Utils>().getInstallDate() } returns installDate
 
@@ -106,75 +105,29 @@ class QProductCenterManagerTest {
             mockBillingService.acknowledge(any())
 
             mockRepository.purchase(any(), any(), any())
-
-            mockContext.packageManager.getPackageInfo(
-                mockContext.packageName,
-                0
-            ).firstInstallTime
+            val utils = Utils(mockContext)
+            utils.getInstallDate()
         }
     }
 
     @Test
-    fun `consume purchases when observe mode is true`() {
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED)
-        productCenterManager.mockPrivateField(fieldIsObserveMode, true)
-
-        productCenterManager.onAppForeground()
-
-        verify(exactly = 0) {
-            mockBillingService.acknowledge(any())
-            mockBillingService.consume(any())
+    fun `handle pending purchases when launching is finished and query purchases success`() {
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        val purchases = listOf(purchase)
+        val skuDetails = mockSkuDetailsField(skuTypeInApp)
+        every {
+            mockBillingService.queryPurchases(captureLambda(), any())
+        } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(
+                purchases
+            )
         }
-    }
-
-    @Test
-    fun `consume purchases with pending state`() {
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PENDING)
-
-        productCenterManager.onAppForeground()
-
-        verify(exactly = 0) {
-            mockBillingService.consume(any())
-            mockBillingService.acknowledge(any())
-        }
-    }
-
-    @Test
-    fun `consume purchases for inapp`() {
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED)
-        mockSkuDetailsField(skuTypeInApp)
-
         every { mockBillingService.consume(any()) } just Runs
-
         productCenterManager.onAppForeground()
-
-        verify(exactly = 1) {
-            mockBillingService.consume(purchaseToken)
-        }
-    }
-
-    @Test
-    fun `consume purchases for acknowledged subs`() {
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED, true)
-
-        productCenterManager.onAppForeground()
-
-        verify(exactly = 0) {
-            mockBillingService.acknowledge(any())
-        }
-    }
-
-    @Test
-    fun `consume purchases for unacknowledged subs`() {
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED)
-        mockSkuDetailsField(skuTypeSubs)
-
-        every { mockBillingService.acknowledge(any()) } just Runs
-
-        productCenterManager.onAppForeground()
-
-        verify(exactly = 1) {
-            mockBillingService.acknowledge(purchaseToken)
+        val consumer = Consumer(mockBillingService, false)
+        verify (exactly = 1){
+            mockBillingService.queryPurchases(any(), any())
+            consumer.consumePurchases(purchases, skuDetails)
         }
     }
 
@@ -278,11 +231,13 @@ class QProductCenterManagerTest {
         }
     }
 
-    private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String) {
+    private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
         val skuDetails = mockSkuDetails(skuType)
         val mapSkuDetails = mutableMapOf<String, SkuDetails>()
         mapSkuDetails[sku] = skuDetails
         productCenterManager.mockPrivateField(fieldSkuDetails, mapSkuDetails)
+
+        return mapSkuDetails
     }
 
     private fun mockPurchasingCallbacks(callback:QonversionPermissionsCallback, isSuccess: Boolean){
@@ -342,13 +297,11 @@ class QProductCenterManagerTest {
         return purchase
     }
 
-    private fun Any.mockPrivateField(fieldName: String, field: Any): Any {
+    private fun Any.mockPrivateField(fieldName: String, field: Any) {
         javaClass.declaredFields
             .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
             .firstOrNull { it.name == fieldName }
             ?.also { it.isAccessible = true }
             ?.set(this, field)
-
-        return this
     }
 }

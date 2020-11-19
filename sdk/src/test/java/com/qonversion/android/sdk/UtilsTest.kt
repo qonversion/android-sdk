@@ -51,7 +51,7 @@ class UtilsTest {
     }
 
     private fun mockInstallDate(){
-        val info = mockk<PackageInfo>()
+        val mockInfo = mockk<PackageInfo>()
 
         every {
             mockContext.packageName
@@ -61,10 +61,10 @@ class UtilsTest {
             mockContext.packageManager
         } returns mockManager
 
-        info.firstInstallTime = installDate
+        mockInfo.firstInstallTime = installDate
 
         every {
             mockManager.getPackageInfo(packageName, 0)
-        } returns info
+        } returns mockInfo
     }
 }

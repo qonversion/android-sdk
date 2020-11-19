@@ -3,7 +3,6 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import android.app.Application
 import android.util.Pair
-import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
@@ -16,7 +15,6 @@ import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QProduct
-import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 
@@ -46,14 +44,17 @@ class QProductCenterManager internal constructor(
     private var permissionsCallbacks = mutableListOf<QonversionPermissionsCallback>()
     internal var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
-    private val utils: Utils = Utils(context)
-    private var billingService: BillingService? = null
+    private val utils = Utils(context)
+    private var consumer: Consumer
+
+    private var billingService: BillingService
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
     init {
         billingService = billingServiceCreator.create(getPurchasesListener())
+        consumer = Consumer(billingService, isObserveMode)
     }
     // Public functions
 
@@ -120,7 +121,7 @@ class QProductCenterManager internal constructor(
         val oldSkuDetail = skuDetails[oldProduct?.storeID]
         if (skuDetail != null) {
             purchasingCallbacks[product.storeID] = callback
-            billingService?.purchase(context, skuDetail, oldSkuDetail, prorationMode)
+            billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
         } else {
             val launchResult = launchResult
             if (isProductsLoaded || launchResult == null) {
@@ -137,7 +138,7 @@ class QProductCenterManager internal constructor(
                     }
                     if (sku != null) {
                         purchasingCallbacks[product.storeID] = callback
-                        billingService?.purchase(context, sku)
+                        billingService.purchase(context, sku)
                     }
                 }, onLoadFailed = { error ->
                     callback.onError(error.toQonversionError())
@@ -158,8 +159,8 @@ class QProductCenterManager internal constructor(
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
-        billingService?.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
-            consumeHistoryRecords(historyRecords)
+        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
+            consumer.consumeHistoryRecords(historyRecords)
             val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
             repository.restore(
                 utils.getInstallDate(),
@@ -241,7 +242,7 @@ class QProductCenterManager internal constructor(
         callback: QonversionLaunchCallback?
     ) {
         val installDate = utils.getInstallDate()
-        billingService?.queryPurchases(
+        billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
                     repository.init(
@@ -252,7 +253,7 @@ class QProductCenterManager internal constructor(
                     return@queryPurchases
                 }
 
-                billingService?.getSkuDetailsFromPurchases(
+                billingService.getSkuDetailsFromPurchases(
                     purchases,
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
@@ -316,7 +317,7 @@ class QProductCenterManager internal constructor(
             it.storeID
         }.toSet()
         if (!isProductsLoaded && !productStoreIds.isNullOrEmpty()) {
-            billingService?.loadProducts(productStoreIds,
+            billingService.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
                     val formattedDetails: Map<String, SkuDetails> = configureSkuDetails(details)
@@ -374,43 +375,10 @@ class QProductCenterManager internal constructor(
         return launchResult?.products?.get(id)
     }
 
-    private fun consumePurchases(purchases: List<Purchase>) {
-        if (isObserveMode) {
-            return
-        }
-
-        purchases.forEach { purchase ->
-            val skuDetail = skuDetails[purchase.sku]
-            skuDetail?.let { sku ->
-                if (purchase.purchaseState != Purchase.PurchaseState.PENDING) {
-                    consume(sku.type, purchase.purchaseToken, purchase.isAcknowledged)
-                }
-            }
-        }
-    }
-
-    private fun consumeHistoryRecords(records: List<PurchaseHistory>) {
-        if (isObserveMode) {
-            return
-        }
-
-        records.forEach { record ->
-            consume(record.type, record.historyRecord.purchaseToken, false)
-        }
-    }
-
-    private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
-        if (type == BillingClient.SkuType.INAPP) {
-            billingService?.consume(purchaseToken)
-        } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
-            billingService?.acknowledge(purchaseToken)
-        }
-    }
-
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
 
-        billingService?.queryPurchases(
+        billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 handlePurchases(purchases)
             },
@@ -421,7 +389,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun handlePurchases(purchases: List<Purchase>) {
-        consumePurchases(purchases)
+        consumer.consumePurchases(purchases, skuDetails)
 
         purchases.forEach { purchase ->
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
