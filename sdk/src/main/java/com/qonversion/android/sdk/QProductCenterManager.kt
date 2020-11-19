@@ -357,7 +357,6 @@ class QProductCenterManager internal constructor(
         launchResult?.products?.let { products ->
             products.values.forEach { product ->
                 product.skuDetail = skuDetails[product.storeID]
-                product.prettyPrice = skuDetails[product.storeID]?.price
             }
 
             productsCallbacks.forEach {

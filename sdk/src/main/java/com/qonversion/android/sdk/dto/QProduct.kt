@@ -11,6 +11,13 @@ data class QProduct(
     @Json(name = "type") val type: QProductType,
     @Json(name = "duration") val duration: QProductDuration?
 ) {
-    @Transient var skuDetail: SkuDetails? = null
-    @Transient var prettyPrice: String? = null
+    @Transient
+    var skuDetail: SkuDetails? = null
+        set(value) {
+            prettyPrice = value?.price
+            field = value
+        }
+
+    @Transient
+    var prettyPrice: String? = null
 }
