@@ -8,8 +8,9 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.billing.*
+import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -43,18 +44,17 @@ class QProductCenterManager internal constructor(
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
     private var permissionsCallbacks = mutableListOf<QonversionPermissionsCallback>()
-    private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
+    internal var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
-    private var installDate: Long = 0
+    private val utils: Utils = Utils(context)
     private var billingService: BillingService? = null
-
-    init {
-        billingService = billingServiceCreator.create(getPurchasesListener())
-    }
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
+    init {
+        billingService = billingServiceCreator.create(getPurchasesListener())
+    }
     // Public functions
 
     fun onAppForeground() {
@@ -162,7 +162,7 @@ class QProductCenterManager internal constructor(
             consumeHistoryRecords(historyRecords)
             val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
             repository.restore(
-                installDate,
+                utils.getInstallDate(),
                 purchaseHistoryRecords,
                 callback = object : QonversionPermissionsCallback {
                     override fun onSuccess(permissions: Map<String, QPermission>) {
@@ -236,24 +236,11 @@ class QProductCenterManager internal constructor(
         return formattedData
     }
 
-    private fun getInstallDate(): Long {
-        if (installDate > 0) {
-            return installDate
-        }
-
-        installDate = context.packageManager.getPackageInfo(
-            context.packageName,
-            0
-        ).firstInstallTime.milliSecondsToSeconds()
-
-        return installDate
-    }
-
-    private fun continueLaunchWithPurchasesInfo(
+    internal fun continueLaunchWithPurchasesInfo(
         advertisingId: String? = null,
         callback: QonversionLaunchCallback?
     ) {
-        val installDate = getInstallDate()
+        val installDate = utils.getInstallDate()
         billingService?.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
@@ -462,7 +449,7 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         val purchase = converter.convert(purchaseInfo)
-        val installDate = getInstallDate()
+        val installDate = utils.getInstallDate()
         repository.purchase(installDate, purchase, callback)
     }
 }
