@@ -12,14 +12,12 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 class QonversionBillingServiceTest {
     private val skuSubs = "subs"
     private val skuInapp = "inapp"
-    private val requestQueue = "requestsQueue"
 
     private val billingBuilder: QonversionBillingService.BillingBuilder = mockk()
     private val billingClient: BillingClient = mockk()
@@ -973,72 +971,6 @@ class QonversionBillingServiceTest {
             handler.post(any())
             billingClient.startConnection(billingClientStateListener)
         }
-    }
-
-    @Nested
-    inner class ExecuteOnMainThread{
-        @Test
-        fun `execute on main thread billing client is ready`() {
-            val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-            every { billingClient.isReady } returns false
-
-            mockStandartHistoryResponse()
-            spykBillingService.queryPurchasesHistory({}, {})
-
-            val memberProperty =
-                QonversionBillingService::class.memberProperties.find { it.name == requestQueue }
-            memberProperty?.let {
-                it.isAccessible = true
-                val fieldRequestsQueue = it.get(spykBillingService) as ConcurrentLinkedQueue<*>
-                assertThat(fieldRequestsQueue.size).isEqualTo(1)
-            }
-
-            verify {
-                spykBillingService["startConnection"]()
-            }
-        }
-
-        @Test
-        fun `execute on main thread billing client is not ready`() {
-            val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-
-            mockStandartHistoryResponse()
-            spykBillingService.queryPurchasesHistory({}, {})
-
-            verify {
-                spykBillingService["executeRequestsFromQueue"]()
-            }
-        }
-    }
-
-    @Test
-    fun executeRequestsFromQueue() {
-        val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-
-        mockStandartHistoryResponse()
-        spykBillingService.queryPurchasesHistory({}, {})
-
-        val memberProperty =
-            QonversionBillingService::class.memberProperties.find { it.name == requestQueue }
-        memberProperty?.let {
-            it.isAccessible = true
-            val fieldRequestsQueue = it.get(spykBillingService) as ConcurrentLinkedQueue<*>
-            assertThat(fieldRequestsQueue.size).isEqualTo(0)
-        }
-
-        verify(exactly = 2) {
-            handler.post(any())
-        }
-    }
-
-    private fun mockStandartHistoryResponse() {
-        val purchaseHistoryResponse = slot<PurchaseHistoryResponseListener>()
-        every {
-            billingClient.queryPurchaseHistoryAsync(
-                any(),
-                capture(purchaseHistoryResponse)
-            )
-        } just Runs
     }
 
     private fun mockSkuDetailsResponse(

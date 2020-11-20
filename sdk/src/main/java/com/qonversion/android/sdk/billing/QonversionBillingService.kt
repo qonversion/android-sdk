@@ -16,7 +16,7 @@ internal class QonversionBillingService(
     private val logger: Logger
 ) : PurchasesUpdatedListener, BillingClientStateListener, BillingService {
 
-    private var billingClient: BillingClient? = null
+    private var billingClient: BillingClient
     private val requestsQueue = ConcurrentLinkedQueue<(billingSetupError: BillingError?) -> Unit>()
 
     init {
@@ -461,10 +461,8 @@ internal class QonversionBillingService(
     private fun startConnection() {
         mainHandler.post {
             synchronized(this@QonversionBillingService) {
-                billingClient?.let {
-                    it.startConnection(this)
-                    logger.debug("startConnection() -> for $it")
-                }
+                billingClient.startConnection(this)
+                logger.debug("startConnection() -> for $billingClient")
             }
         }
     }
@@ -472,7 +470,7 @@ internal class QonversionBillingService(
     private fun executeOnMainThread(request: (BillingError?) -> Unit) {
         synchronized(this@QonversionBillingService) {
             requestsQueue.add(request)
-            if (billingClient?.isReady == false) {
+            if (!billingClient.isReady) {
                 startConnection()
             } else {
                 executeRequestsFromQueue()
@@ -482,7 +480,7 @@ internal class QonversionBillingService(
 
     private fun executeRequestsFromQueue() {
         synchronized(this@QonversionBillingService) {
-            while (billingClient?.isReady == true && requestsQueue.isNotEmpty()) {
+            while (billingClient.isReady && requestsQueue.isNotEmpty()) {
                 requestsQueue.remove()
                     .let {
                         mainHandler.post {
@@ -495,7 +493,7 @@ internal class QonversionBillingService(
 
     private fun withReadyClient(billingFunction: BillingClient.() -> Unit) {
         billingClient
-            ?.takeIf { it.isReady }
+            .takeIf { it.isReady }
             ?.let {
                 it.billingFunction()
             }
@@ -527,13 +525,13 @@ internal class QonversionBillingService(
     }
 
     override fun onBillingServiceDisconnected() {
-        logger.debug("onBillingServiceDisconnected() -> for ${billingClient?.toString()}")
+        logger.debug("onBillingServiceDisconnected() -> for $billingClient")
     }
 
     override fun onBillingSetupFinished(billingResult: BillingResult) {
         when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
-                logger.debug("onBillingSetupFinished() -> successfully for ${billingClient?.toString()}.")
+                logger.debug("onBillingSetupFinished() -> successfully for $billingClient.")
                 executeRequestsFromQueue()
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
