@@ -53,7 +53,7 @@ internal class QonversionBillingService(
             },
             { error ->
                 onQueryHistoryFailed(error)
-                logger.log("queryPurchasesHistory() -> $error")
+                logger.release("queryPurchasesHistory() -> $error")
             }
         )
     }
@@ -70,7 +70,7 @@ internal class QonversionBillingService(
             },
             { error ->
                 onLoadFailed(error)
-                logger.log("loadProducts() -> $error")
+                logger.release("loadProducts() -> $error")
             }
         )
     }
@@ -78,7 +78,7 @@ internal class QonversionBillingService(
     override fun consume(
         purchaseToken: String
     ) {
-        logger.log("consume() -> Consuming purchase with token $purchaseToken")
+        logger.debug("consume() -> Consuming purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
                 val params = ConsumeParams.newBuilder()
@@ -92,7 +92,7 @@ internal class QonversionBillingService(
                         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                             val errorMessage =
                                 "Failed to consume purchase with token $purchaseToken ${billingResult.getDescription()}"
-                            logger.log("consume() -> $errorMessage")
+                            logger.debug("consume() -> $errorMessage")
                         }
                     }
                 }
@@ -103,7 +103,7 @@ internal class QonversionBillingService(
     override fun acknowledge(
         purchaseToken: String
     ) {
-        logger.log("acknowledge() -> Acknowledging purchase with token $purchaseToken")
+        logger.debug("acknowledge() -> Acknowledging purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
                 val params = AcknowledgePurchaseParams.newBuilder()
@@ -117,7 +117,7 @@ internal class QonversionBillingService(
                         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                             val errorMessage =
                                 "Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"
-                            logger.log("acknowledge() -> $errorMessage")
+                            logger.debug("acknowledge() -> $errorMessage")
                         }
                     }
                 }
@@ -129,7 +129,7 @@ internal class QonversionBillingService(
         onQueryCompleted: (purchases: List<Purchase>) -> Unit,
         onQueryFailed: (error: BillingError) -> Unit
     ) {
-        logger.log("queryPurchases() -> Querying purchases from cache for subs and inapp")
+        logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
                 withReadyClient {
@@ -147,9 +147,9 @@ internal class QonversionBillingService(
                         purchasesResult
                             .takeUnless { it.isEmpty() }
                             ?.forEach {
-                                logger.log("queryPurchases() -> purchases cache is retrieved ${it.getDescription()}")
+                                logger.debug("queryPurchases() -> purchases cache is retrieved ${it.getDescription()}")
                             }
-                            ?: logger.log("queryPurchases() -> purchases cache is empty.")
+                            ?: logger.release("queryPurchases() -> purchases cache is empty.")
                     } else {
                         val errorMessage =
                             "Failed to query purchases from cache ${activeSubs.billingResult.getDescription()}"
@@ -159,7 +159,7 @@ internal class QonversionBillingService(
                                 errorMessage
                             )
                         )
-                        logger.log("queryPurchases() -> $errorMessage")
+                        logger.release("queryPurchases() -> $errorMessage")
                     }
                 }
             } else {
@@ -174,7 +174,17 @@ internal class QonversionBillingService(
         onFailed: (BillingError) -> Unit
     ) {
         val skuList = purchases.map { it.sku }
-        loadAllProducts(skuList, onCompleted, onFailed)
+
+        loadAllProducts(
+            skuList,
+            { skuDetailsList ->
+                onCompleted(skuDetailsList)
+            },
+            { error ->
+                onFailed(error)
+                logger.release("loadProducts() -> $error")
+            }
+        )
     }
 
     override fun purchase(
@@ -203,7 +213,7 @@ internal class QonversionBillingService(
         { billingResult, oldPurchase ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 if (oldPurchase != null) {
-                    logger.log("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
+                    logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
                     makePurchase(
                         activity,
                         skuDetails,
@@ -219,7 +229,7 @@ internal class QonversionBillingService(
                         emptyList(),
                         BillingError(billingResult.responseCode, errorMessage)
                     )
-                    logger.log("replaceOldPurchase() -> $errorMessage")
+                    logger.release("replaceOldPurchase() -> $errorMessage")
                 }
             } else {
                 val errorMessage =
@@ -228,7 +238,7 @@ internal class QonversionBillingService(
                     emptyList(),
                     BillingError(billingResult.responseCode, errorMessage)
                 )
-                logger.log("replaceOldPurchase() -> $errorMessage")
+                logger.release("replaceOldPurchase() -> $errorMessage")
             }
         }
     }
@@ -237,7 +247,7 @@ internal class QonversionBillingService(
         skuDetails: SkuDetails,
         onQueryHistoryCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
     ) = withReadyClient {
-        logger.log("getPurchaseHistoryFromSkuDetails() -> Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")
+        logger.debug("getPurchaseHistoryFromSkuDetails() -> Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")
 
         queryPurchaseHistoryAsync(skuDetails.type) { billingResult, purchasesList ->
             onQueryHistoryCompleted(
@@ -252,7 +262,7 @@ internal class QonversionBillingService(
         skuDetails: SkuDetails,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
     ) {
-        logger.log("makePurchase() -> Purchasing for sku: ${skuDetails.sku}")
+        logger.debug("makePurchase() -> Purchasing for sku: ${skuDetails.sku}")
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
@@ -280,7 +290,7 @@ internal class QonversionBillingService(
         launchBillingFlow(activity, params)
             .takeIf { billingResult -> billingResult?.responseCode != BillingClient.BillingResponseCode.OK }
             ?.let { billingResult ->
-                logger.log("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
+                logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
             }
     }
 
@@ -310,7 +320,7 @@ internal class QonversionBillingService(
         onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (BillingError) -> Unit
     ) {
-        logger.log("queryPurchaseHistoryAsync() -> Querying purchase history for type $skuType")
+        logger.debug("queryPurchaseHistoryAsync() -> Querying purchase history for type $skuType")
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
@@ -352,9 +362,9 @@ internal class QonversionBillingService(
             .takeUnless { it.isEmpty() }
             ?.forEach { record ->
                 purchaseHistory.add(PurchaseHistory(skuType, record))
-                logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
+                logger.debug("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
             }
-            ?: logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
+            ?: logger.release("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
 
         return purchaseHistory
     }
@@ -394,7 +404,7 @@ internal class QonversionBillingService(
         onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
-        logger.log("querySkuDetailsAsync() -> Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")
+        logger.debug("querySkuDetailsAsync() -> Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
@@ -443,9 +453,9 @@ internal class QonversionBillingService(
         skuDetailsList
             .takeUnless { it.isEmpty() }
             ?.forEach {
-                logger.log("querySkuDetailsAsync() -> $it")
+                logger.debug("querySkuDetailsAsync() -> $it")
             }
-            ?: logger.log("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+            ?: logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
     }
 
     private fun startConnection() {
@@ -453,7 +463,7 @@ internal class QonversionBillingService(
             synchronized(this@QonversionBillingService) {
                 billingClient?.let {
                     it.startConnection(this)
-                    logger.log("startConnection() -> for $it")
+                    logger.debug("startConnection() -> for $it")
                 }
             }
         }
@@ -489,12 +499,12 @@ internal class QonversionBillingService(
             ?.let {
                 it.billingFunction()
             }
-            ?: logger.log("Connection to the BillingClient was lost")
+            ?: logger.debug("Connection to the BillingClient was lost")
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            logger.log("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
+            logger.debug("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
             val errorMessage = billingResult.getDescription()
@@ -505,9 +515,9 @@ internal class QonversionBillingService(
                 )
             )
 
-            logger.log("onPurchasesUpdated() -> failed to update purchases $errorMessage")
+            logger.release("onPurchasesUpdated() -> failed to update purchases $errorMessage")
             if (!purchases.isNullOrEmpty()) {
-                logger.log(
+                logger.release(
                     "Purchases: " + purchases.joinToString(
                         ", ",
                         transform = { it.getDescription() })
@@ -517,18 +527,18 @@ internal class QonversionBillingService(
     }
 
     override fun onBillingServiceDisconnected() {
-        logger.log("onBillingServiceDisconnected() -> for ${billingClient?.toString()}")
+        logger.debug("onBillingServiceDisconnected() -> for ${billingClient?.toString()}")
     }
 
     override fun onBillingSetupFinished(billingResult: BillingResult) {
         when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
-                logger.log("onBillingSetupFinished() -> successfully for ${billingClient?.toString()}.")
+                logger.debug("onBillingSetupFinished() -> successfully for ${billingClient?.toString()}.")
                 executeRequestsFromQueue()
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
             BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                logger.log("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
+                logger.release("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
                 synchronized(this@QonversionBillingService) {
                     while (!requestsQueue.isEmpty()) {
                         requestsQueue.remove()
@@ -545,8 +555,11 @@ internal class QonversionBillingService(
                     }
                 }
             }
+            BillingClient.BillingResponseCode.DEVELOPER_ERROR -> {
+                // Client is already in the process of connecting to billing service
+            }
             else -> {
-                logger.log("onBillingSetupFinished with error: ${billingResult.getDescription()}")
+                logger.release("onBillingSetupFinished with error: ${billingResult.getDescription()}")
             }
         }
     }

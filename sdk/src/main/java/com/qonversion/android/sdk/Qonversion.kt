@@ -7,20 +7,19 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.logger.StubLogger
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.validator.TokenValidator
 
-object Qonversion : LifecycleDelegate{
+object Qonversion : LifecycleDelegate {
 
     private const val SDK_VERSION = "2.0.1"
 
     private lateinit var repository: QonversionRepository
-    private lateinit var userPropertiesManager: QUserPropertiesManager
-    private lateinit var attributionManager: QAttributionManager
+    private var userPropertiesManager: QUserPropertiesManager? = null
+    private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
-    private var logger = if (BuildConfig.DEBUG) ConsoleLogger() else StubLogger()
+    private var logger = ConsoleLogger()
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -28,7 +27,8 @@ object Qonversion : LifecycleDelegate{
     }
 
     override fun onAppBackground() {
-        userPropertiesManager.forceSendProperties()
+        userPropertiesManager?.forceSendProperties()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun onAppForeground() {
@@ -56,11 +56,6 @@ object Qonversion : LifecycleDelegate{
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        val logger = if (BuildConfig.DEBUG) {
-            ConsoleLogger()
-        } else {
-            StubLogger()
-        }
         val storage = TokenStorage(
             PreferenceManager.getDefaultSharedPreferences(context),
             TokenValidator()
@@ -79,7 +74,8 @@ object Qonversion : LifecycleDelegate{
         )
 
         this.repository = repository
-        userPropertiesManager = QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
+        userPropertiesManager =
+            QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
         productCenterManager = QProductCenterManager(context, observeMode, repository, logger)
         productCenterManager?.launch(context, callback)
@@ -94,7 +90,8 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, id, null, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+        productCenterManager?.purchaseProduct(context, id, null, null, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -107,8 +104,14 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmOverloads
     @JvmStatic
-    fun updatePurchase(context: Activity, productId: String, oldProductId: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    fun updatePurchase(
+        context: Activity,
+        productId: String,
+        oldProductId: String,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -123,8 +126,20 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmOverloads
     @JvmStatic
-    fun updatePurchase(context: Activity, productId: String, oldProductId: String, @BillingFlowParams.ProrationMode prorationMode: Int?, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, productId, oldProductId, prorationMode, callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+    fun updatePurchase(
+        context: Activity,
+        productId: String,
+        oldProductId: String,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager?.purchaseProduct(
+            context,
+            productId,
+            oldProductId,
+            prorationMode,
+            callback
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -137,7 +152,8 @@ object Qonversion : LifecycleDelegate{
     fun products(
         callback: QonversionProductsCallback
     ) {
-        productCenterManager?.loadProducts(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+        productCenterManager?.loadProducts(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -149,7 +165,8 @@ object Qonversion : LifecycleDelegate{
     fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager?.checkPermissions(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+        productCenterManager?.checkPermissions(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -159,7 +176,8 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager?.restore(callback) ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+        productCenterManager?.restore(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -169,7 +187,8 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun syncPurchases() {
-        productCenterManager?.syncPurchases() ?: logLaunchErrorForFunctionName(object{}.javaClass.enclosingMethod?.name)
+        productCenterManager?.syncPurchases()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -194,7 +213,8 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun setProperty(key: QUserProperties, value: String) {
-        userPropertiesManager.setProperty(key, value)
+        userPropertiesManager?.setProperty(key, value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -204,7 +224,8 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
-        userPropertiesManager.setUserProperty(key, value)
+        userPropertiesManager?.setUserProperty(key, value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -213,13 +234,14 @@ object Qonversion : LifecycleDelegate{
      */
     @JvmStatic
     fun setUserID(value: String) {
-        userPropertiesManager.setUserID(value)
+        userPropertiesManager?.setUserID(value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     // Private functions
 
     private fun logLaunchErrorForFunctionName(functionName: String?) {
-        logger.log("$functionName function can not be executed. It looks like launch was not called.")
+        logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 }
 

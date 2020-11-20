@@ -25,11 +25,11 @@ class QonversionUpdatedListener implements PurchasesUpdatedListener {
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
         original.onPurchasesUpdated(billingResult, purchases);
-        logger.log("onPurchasesUpdated - response code - " + billingResult.getResponseCode());
+        logger.debug("onPurchasesUpdated - response code - " + billingResult.getResponseCode());
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
             if (purchases != null && purchases.size() > 0) {
                 callback.onPurchases(purchases);
-                logger.log("onPurchasesUpdated - purchases size - " + purchases.size());
+                logger.debug("onPurchasesUpdated - purchases size - " + purchases.size());
             }
         }
     }

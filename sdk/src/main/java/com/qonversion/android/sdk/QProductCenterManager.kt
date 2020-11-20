@@ -9,8 +9,10 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.billing.*
+import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.QonversionBillingService
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -116,7 +118,7 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            logger.log("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
+            logger.release("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
             return
         }
 
