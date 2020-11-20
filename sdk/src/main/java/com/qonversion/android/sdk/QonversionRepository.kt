@@ -59,10 +59,10 @@ internal class QonversionRepository private constructor(
     fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
         val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
         if (requestValidator.valid(attributionRequest)) {
-            logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
+            logger.release("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
         } else {
-            logger.log("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
+            logger.release("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
             requestQueue.add(attributionRequest)
         }
     }
@@ -102,12 +102,12 @@ internal class QonversionRepository private constructor(
             is AttributionRequest -> {
                 api.attribution(request).enqueue {
                     onResponse = {
-                        logger.log("QonversionRequest - success - $it")
+                        logger.release("QonversionRequest - success - $it")
                         kickRequestQueue()
                     }
 
                     onFailure = {
-                        logger.log("QonversionRequest - failure - $it")
+                        logger.release("QonversionRequest - failure - $it")
                     }
                 }
             }
@@ -117,9 +117,9 @@ internal class QonversionRepository private constructor(
     private fun kickRequestQueue() {
         val clientUid = storage.load()
         if (clientUid.isNotEmpty() && !requestQueue.isEmpty()) {
-            logger.log("QonversionRepository: kickRequestQueue queue is not empty")
+            logger.release("QonversionRepository: kickRequestQueue queue is not empty")
             val request = requestQueue.poll()
-            logger.log("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
+            logger.release("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
             if (request != null) {
                 request.authorize(clientUid)
                 sendQonversionRequest(request)
@@ -147,11 +147,11 @@ internal class QonversionRepository private constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-                logger.log("purchaseRequest - success - $it")
+                logger.release("purchaseRequest - success - $it")
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.log("purchaseRequest - failure - ${it?.toQonversionError()}")
+                logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
                     callback.onError(it.toQonversionError())
                 }
@@ -244,11 +244,11 @@ internal class QonversionRepository private constructor(
 
         api.restore(request).enqueue {
             onResponse = {
-                logger.log("restoreRequest - success - $it")
+                logger.release("restoreRequest - success - $it")
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.log("restoreRequest - failure - ${it?.toQonversionError()}")
+                logger.release("restoreRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
                     callback?.onError(it.toQonversionError())
                 }
@@ -290,7 +290,7 @@ internal class QonversionRepository private constructor(
 
         api.init(initRequest).enqueue {
             onResponse = {
-                logger.log("initRequest - success - $it")
+                logger.release("initRequest - success - $it")
                 val body = it.body()
                 if (body != null && body.success) {
                     storage.save(body.data.uid)
@@ -301,7 +301,7 @@ internal class QonversionRepository private constructor(
                 kickRequestQueue()
             }
             onFailure = {
-                logger.log("initRequest - failure - ${it?.toQonversionError()}")
+                logger.release("initRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
                     callback?.onError(it.toQonversionError())
                 }

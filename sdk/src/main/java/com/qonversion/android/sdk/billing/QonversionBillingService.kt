@@ -53,7 +53,7 @@ internal class QonversionBillingService(
             },
             { error ->
                 onQueryHistoryFailed(error)
-                logger.log("queryPurchasesHistory() -> $error")
+                logger.release("queryPurchasesHistory() -> $error")
             }
         )
     }
@@ -70,7 +70,7 @@ internal class QonversionBillingService(
             },
             { error ->
                 onLoadFailed(error)
-                logger.log("loadProducts() -> $error")
+                logger.release("loadProducts() -> $error")
             }
         )
     }
@@ -149,7 +149,7 @@ internal class QonversionBillingService(
                             ?.forEach {
                                 logger.debug("queryPurchases() -> purchases cache is retrieved ${it.getDescription()}")
                             }
-                            ?: logger.log("queryPurchases() -> purchases cache is empty.")
+                            ?: logger.release("queryPurchases() -> purchases cache is empty.")
                     } else {
                         val errorMessage =
                             "Failed to query purchases from cache ${activeSubs.billingResult.getDescription()}"
@@ -159,7 +159,7 @@ internal class QonversionBillingService(
                                 errorMessage
                             )
                         )
-                        logger.log("queryPurchases() -> $errorMessage")
+                        logger.release("queryPurchases() -> $errorMessage")
                     }
                 }
             } else {
@@ -182,7 +182,7 @@ internal class QonversionBillingService(
             },
             { error ->
                 onFailed(error)
-                logger.log("loadProducts() -> $error")
+                logger.release("loadProducts() -> $error")
             }
         )
     }
@@ -229,7 +229,7 @@ internal class QonversionBillingService(
                         emptyList(),
                         BillingError(billingResult.responseCode, errorMessage)
                     )
-                    logger.log("replaceOldPurchase() -> $errorMessage")
+                    logger.release("replaceOldPurchase() -> $errorMessage")
                 }
             } else {
                 val errorMessage =
@@ -238,7 +238,7 @@ internal class QonversionBillingService(
                     emptyList(),
                     BillingError(billingResult.responseCode, errorMessage)
                 )
-                logger.log("replaceOldPurchase() -> $errorMessage")
+                logger.release("replaceOldPurchase() -> $errorMessage")
             }
         }
     }
@@ -290,7 +290,7 @@ internal class QonversionBillingService(
         launchBillingFlow(activity, params)
             .takeIf { billingResult -> billingResult?.responseCode != BillingClient.BillingResponseCode.OK }
             ?.let { billingResult ->
-                logger.log("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
+                logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
             }
     }
 
@@ -364,7 +364,7 @@ internal class QonversionBillingService(
                 purchaseHistory.add(PurchaseHistory(skuType, record))
                 logger.debug("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")
             }
-            ?: logger.log("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
+            ?: logger.release("queryPurchaseHistoryAsync() -> purchase history for $skuType is empty.")
 
         return purchaseHistory
     }
@@ -455,7 +455,7 @@ internal class QonversionBillingService(
             ?.forEach {
                 logger.debug("querySkuDetailsAsync() -> $it")
             }
-            ?: logger.log("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+            ?: logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
     }
 
     private fun startConnection() {
@@ -515,9 +515,9 @@ internal class QonversionBillingService(
                 )
             )
 
-            logger.log("onPurchasesUpdated() -> failed to update purchases $errorMessage")
+            logger.release("onPurchasesUpdated() -> failed to update purchases $errorMessage")
             if (!purchases.isNullOrEmpty()) {
-                logger.log(
+                logger.release(
                     "Purchases: " + purchases.joinToString(
                         ", ",
                         transform = { it.getDescription() })
@@ -538,7 +538,7 @@ internal class QonversionBillingService(
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
             BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                logger.log("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
+                logger.release("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
                 synchronized(this@QonversionBillingService) {
                     while (!requestsQueue.isEmpty()) {
                         requestsQueue.remove()
@@ -559,7 +559,7 @@ internal class QonversionBillingService(
                 // Client is already in the process of connecting to billing service
             }
             else -> {
-                logger.log("onBillingSetupFinished with error: ${billingResult.getDescription()}")
+                logger.release("onBillingSetupFinished with error: ${billingResult.getDescription()}")
             }
         }
     }

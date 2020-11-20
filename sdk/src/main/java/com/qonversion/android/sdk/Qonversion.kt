@@ -241,7 +241,7 @@ object Qonversion : LifecycleDelegate {
     // Private functions
 
     private fun logLaunchErrorForFunctionName(functionName: String?) {
-        logger.log("$functionName function can not be executed. It looks like launch was not called.")
+        logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 }
 

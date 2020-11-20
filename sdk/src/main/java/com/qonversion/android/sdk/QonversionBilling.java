@@ -46,7 +46,7 @@ public class QonversionBilling implements Billing {
                     readyListener.onReady(p, skuDetails);
                 }
             }
-            logger.log(
+            logger.debug(
                     "onPurchases - purchases size - " + purchases.size() +
                     " details size - " + details.size()
             );
@@ -106,9 +106,9 @@ public class QonversionBilling implements Billing {
                 public void onSkuDetailsResponse(BillingResult billingResult, List<SkuDetails> skuDetailsList) {
                     listener.onSkuDetailsResponse(billingResult, skuDetailsList);
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && autoTracking) {
-                        logger.log("querySkuDetailsAsync - response code - " + billingResult.getResponseCode());
+                        logger.debug("querySkuDetailsAsync - response code - " + billingResult.getResponseCode());
                         if (skuDetailsList != null && skuDetailsList.size() > 0) {
-                            logger.log("querySkuDetailsAsync - detail size - " + skuDetailsList.size());
+                            logger.debug("querySkuDetailsAsync - detail size - " + skuDetailsList.size());
                             for (SkuDetails d : skuDetailsList) {
                                 details.put(d.getSku(), d);
                             }

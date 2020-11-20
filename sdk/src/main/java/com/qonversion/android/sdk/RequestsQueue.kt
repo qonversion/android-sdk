@@ -10,7 +10,7 @@ class RequestsQueue(private val logger: Logger) {
 
     @Synchronized fun add(request: QonversionRequest) {
         queue.add(request)
-        logger.log("RequestsQueue: add: [${request.javaClass.simpleName}] size: [${queue.size}]")
+        logger.debug("RequestsQueue: add: [${request.javaClass.simpleName}] size: [${queue.size}]")
     }
 
     @Synchronized fun isEmpty() : Boolean {
@@ -19,7 +19,7 @@ class RequestsQueue(private val logger: Logger) {
 
     @Synchronized fun poll() : QonversionRequest? {
         val request = queue.poll()
-        logger.log("RequestsQueue: poll: [${request?.javaClass?.simpleName}] size: [${queue.size}]")
+        logger.debug("RequestsQueue: poll: [${request?.javaClass?.simpleName}] size: [${queue.size}]")
         return request
     }
 
