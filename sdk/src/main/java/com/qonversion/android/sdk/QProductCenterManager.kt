@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.Handler
 import android.util.Pair
-import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
@@ -18,13 +17,12 @@ import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QProduct
-import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 
 class QProductCenterManager internal constructor(
     private val context: Application,
-    private val isObserveMode: Boolean,
+    isObserveMode: Boolean,
     private val repository: QonversionRepository,
     private val logger: Logger
 ) {
@@ -60,6 +58,15 @@ class QProductCenterManager internal constructor(
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
+
+    private val consumer = Consumer(billingService, isObserveMode)
+
+    init{
+        installDate = context.packageManager.getPackageInfo(
+            context.packageName,
+            0
+        ).firstInstallTime.milliSecondsToSeconds()
+    }
 
     // Public functions
 
@@ -165,7 +172,7 @@ class QProductCenterManager internal constructor(
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
         billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
-            consumeHistoryRecords(historyRecords)
+            consumer.consumeHistoryRecords(historyRecords)
             val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
             repository.restore(
                 installDate,
@@ -242,24 +249,10 @@ class QProductCenterManager internal constructor(
         return formattedData
     }
 
-    private fun getInstallDate(): Long {
-        if (installDate > 0) {
-            return installDate
-        }
-
-        installDate = context.packageManager.getPackageInfo(
-            context.packageName,
-            0
-        ).firstInstallTime.milliSecondsToSeconds()
-
-        return installDate
-    }
-
     private fun continueLaunchWithPurchasesInfo(
         advertisingId: String? = null,
         callback: QonversionLaunchCallback?
     ) {
-        val installDate = getInstallDate()
         billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
@@ -393,39 +386,6 @@ class QProductCenterManager internal constructor(
         return launchResult?.products?.get(id)
     }
 
-    private fun consumePurchases(purchases: List<Purchase>) {
-        if (isObserveMode) {
-            return
-        }
-
-        purchases.forEach { purchase ->
-            val skuDetail = skuDetails[purchase.sku]
-            skuDetail?.let { sku ->
-                if (purchase.purchaseState != Purchase.PurchaseState.PENDING) {
-                    consume(sku.type, purchase.purchaseToken, purchase.isAcknowledged)
-                }
-            }
-        }
-    }
-
-    private fun consumeHistoryRecords(records: List<PurchaseHistory>) {
-        if (isObserveMode) {
-            return
-        }
-
-        records.forEach { record ->
-            consume(record.type, record.historyRecord.purchaseToken, false)
-        }
-    }
-
-    private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
-        if (type == BillingClient.SkuType.INAPP) {
-            billingService.consume(purchaseToken)
-        } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {
-            billingService.acknowledge(purchaseToken)
-        }
-    }
-
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
 
@@ -440,7 +400,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun handlePurchases(purchases: List<Purchase>) {
-        consumePurchases(purchases)
+        consumer.consumePurchases(purchases, skuDetails)
 
         purchases.forEach { purchase ->
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
@@ -468,7 +428,6 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         val purchase = converter.convert(purchaseInfo)
-        val installDate = getInstallDate()
         repository.purchase(installDate, purchase, callback)
     }
 }
