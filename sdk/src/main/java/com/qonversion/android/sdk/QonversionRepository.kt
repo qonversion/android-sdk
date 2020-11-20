@@ -59,10 +59,10 @@ internal class QonversionRepository private constructor(
     fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
         val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
         if (requestValidator.valid(attributionRequest)) {
-            logger.release("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
+            logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
         } else {
-            logger.release("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
+            logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
             requestQueue.add(attributionRequest)
         }
     }
@@ -117,9 +117,9 @@ internal class QonversionRepository private constructor(
     private fun kickRequestQueue() {
         val clientUid = storage.load()
         if (clientUid.isNotEmpty() && !requestQueue.isEmpty()) {
-            logger.release("QonversionRepository: kickRequestQueue queue is not empty")
+            logger.debug("QonversionRepository: kickRequestQueue queue is not empty")
             val request = requestQueue.poll()
-            logger.release("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
+            logger.debug("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
             if (request != null) {
                 request.authorize(clientUid)
                 sendQonversionRequest(request)
