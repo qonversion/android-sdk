@@ -13,6 +13,13 @@ class GooglePurchaseConverter(
         private const val priceMicrosDivider: Double = 1000000.0
     }
 
+    private val multipliers = mapOf<String, Int>(
+        "Y" to 365,
+        "M" to 30,
+        "W" to 7,
+        "D" to 1
+    )
+
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
@@ -27,14 +34,14 @@ class GooglePurchaseConverter(
             priceCurrencyCode = details.priceCurrencyCode,
             price = formatPrice(details.priceAmountMicros),
             priceAmountMicros = details.priceAmountMicros,
-            periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
+            periodUnit = 0,
             periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
             freeTrialPeriod = details.freeTrialPeriod ?: "",
             introductoryAvailable = details.introductoryPrice.isNotEmpty(),
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
             introductoryPrice = getIntroductoryPrice(details),
             introductoryPriceCycles = getIntroductoryPriceCycles(details),
-            introductoryPeriodUnit = getUnitsTypeFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
+            introductoryPeriodUnit = 0,
             introductoryPeriodUnitsCount = getUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
             orderId = purchase.orderId,
             originalOrderId = formatOriginalTransactionId(purchase.orderId),
@@ -78,32 +85,26 @@ class GooglePurchaseConverter(
         return result
     }
 
-    private fun getUnitsTypeFromPeriod(period: String?): Int? {
-        if (period.isNullOrEmpty()) {
-            return null
-        }
-
-        val result = period.last().toString()
-
-        val periodUnit = when (result) {
-            "Y" -> 3
-            "M" -> 2
-            "W" -> 1
-            "D" -> 0
-            else -> null
-        }
-
-        return periodUnit
-    }
-
     private fun getUnitsCountFromPeriod(period: String?): Int? {
         if (period.isNullOrEmpty()) {
             return null
         }
 
-        val unitsCount = period.substring(1..period.length - 2)
+        var totalCount = 0
+        val regex = Regex("\\d+[a-zA-Z]")
+        val results = regex.findAll(period, 0)
+        results.forEach { result ->
+            val value = result.groupValues.first()
+            val digits = value.filter { it -> it.isDigit() }.toInt()
+            val letter = value.filter { it -> it.isLetter() }
 
-        return unitsCount.toInt()
+            val multiplier = multipliers[letter]
+            multiplier?.let {
+                totalCount += it * digits
+            }
+        }
+
+        return totalCount
     }
 
 }
