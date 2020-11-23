@@ -62,7 +62,7 @@ object Qonversion : LifecycleDelegate {
         )
         val propertiesStorage = UserPropertiesStorage()
         val environment = EnvironmentProvider(context)
-        val config = QonversionConfig(key, Qonversion.SDK_VERSION, true)
+        val config = QonversionConfig(key, SDK_VERSION, true)
         val repository = QonversionRepository.initialize(
             context,
             storage,
@@ -77,8 +77,13 @@ object Qonversion : LifecycleDelegate {
         userPropertiesManager =
             QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
-        productCenterManager = QProductCenterManager(context, observeMode, repository, logger)
-        productCenterManager?.launch(context, callback)
+
+        val factory = QonversionFactory(context, logger)
+        productCenterManager = QProductCenterManager(context, repository, logger)
+        val billingService = factory.createBillingService(productCenterManager!!)
+        productCenterManager?.billingService = billingService
+        productCenterManager?.consumer = Consumer(billingService, observeMode)
+        productCenterManager?.launch(callback)
     }
 
     /**
@@ -102,7 +107,6 @@ object Qonversion : LifecycleDelegate {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmOverloads
     @JvmStatic
     fun updatePurchase(
         context: Activity,
@@ -124,7 +128,6 @@ object Qonversion : LifecycleDelegate {
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmOverloads
     @JvmStatic
     fun updatePurchase(
         context: Activity,

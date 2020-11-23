@@ -9,7 +9,7 @@ import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
-internal class QonversionBillingService(
+class QonversionBillingService internal constructor(
     billingBuilder: BillingBuilder,
     private val mainHandler: Handler,
     private val purchasesListener: PurchasesListener,

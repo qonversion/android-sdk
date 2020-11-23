@@ -2,16 +2,12 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.os.Handler
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.billing.BillingError
-import com.qonversion.android.sdk.billing.BillingService
-import com.qonversion.android.sdk.billing.QonversionBillingService
-import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -22,19 +18,12 @@ import com.qonversion.android.sdk.logger.Logger
 
 class QProductCenterManager internal constructor(
     private val context: Application,
-    isObserveMode: Boolean,
     private val repository: QonversionRepository,
     private val logger: Logger
-) {
-    @Volatile
-    private var isLaunchingFinished: Boolean = false
-        @Synchronized set
-        @Synchronized get
+): QonversionBillingService.PurchasesListener {
 
-    @Volatile
+    private var isLaunchingFinished: Boolean = false
     private var isProductsLoaded: Boolean = false
-        @Synchronized set
-        @Synchronized get
 
     private var skuDetails = mapOf<String, SkuDetails>()
 
@@ -47,19 +36,18 @@ class QProductCenterManager internal constructor(
 
     private var installDate: Long = 0
 
-    private val listener: QonversionBillingService.PurchasesListener = getPurchasesListener()
-
-    private val billingService: BillingService = QonversionBillingService(
-        QonversionBillingService.BillingBuilder(context),
-        Handler(context.mainLooper),
-        listener,
-        logger
-    )
-
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
-    private val consumer = Consumer(billingService, isObserveMode)
+    @Volatile
+    lateinit var billingService: BillingService
+        @Synchronized set
+        @Synchronized get
+
+    @Volatile
+    lateinit var consumer: Consumer
+        @Synchronized set
+        @Synchronized get
 
     init{
         installDate = context.packageManager.getPackageInfo(
@@ -75,7 +63,6 @@ class QProductCenterManager internal constructor(
     }
 
     fun launch(
-        context: Application,
         callback: QonversionLaunchCallback?
     ) {
         val adProvider = AdvertisingProvider()
@@ -104,7 +91,7 @@ class QProductCenterManager internal constructor(
             executeProductsBlocks()
         } else {
             val launchCallback = getLaunchCallback(null)
-            launch(context, launchCallback)
+            launch(launchCallback)
         }
     }
 
@@ -197,30 +184,26 @@ class QProductCenterManager internal constructor(
         restore()
     }
 
-    // Private functions
+    override fun onPurchasesCompleted(purchases: List<Purchase>) {
+        handlePurchases(purchases)
+    }
 
-    private fun getPurchasesListener(): QonversionBillingService.PurchasesListener {
-        return object : QonversionBillingService.PurchasesListener {
-            override fun onPurchasesCompleted(purchases: List<Purchase>) {
-                handlePurchases(purchases)
+    override fun onPurchasesFailed(purchases: List<Purchase>, error: BillingError) {
+        if (purchases.isNotEmpty()) {
+            purchases.forEach { purchase ->
+                val purchaseCallback = purchasingCallbacks[purchase.sku]
+                purchasingCallbacks.remove(purchase.sku)
+                purchaseCallback?.onError(error.toQonversionError())
             }
-
-            override fun onPurchasesFailed(purchases: List<Purchase>, error: BillingError) {
-                if (purchases.isNotEmpty()) {
-                    purchases.forEach { purchase ->
-                        val purchaseCallback = purchasingCallbacks[purchase.sku]
-                        purchasingCallbacks.remove(purchase.sku)
-                        purchaseCallback?.onError(error.toQonversionError())
-                    }
-                } else {
-                    purchasingCallbacks.values.forEach {
-                        it.onError(error.toQonversionError())
-                    }
-                    purchasingCallbacks.clear()
-                }
+        } else {
+            purchasingCallbacks.values.forEach {
+                it.onError(error.toQonversionError())
             }
+            purchasingCallbacks.clear()
         }
     }
+
+    // Private functions
 
     private fun configurePurchaseInfo(
         skuDetails: Map<String, SkuDetails>,
