@@ -2,10 +2,13 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.os.Build
+import com.android.billingclient.api.BillingClient
+import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.logger.Logger
 import io.mockk.*
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -33,6 +36,30 @@ class QProductCenterManagerTest {
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
         productCenterManager.mockPrivateField(fieldIsLaunchingFinished, true)
+    }
+
+    @Test
+    fun `handle pending purchases when launching is finished and query purchases failed`() {
+        every {
+            mockBillingService.queryPurchases(any(), captureLambda())
+        } answers {
+            lambda<(BillingError) -> Unit>().captured.invoke(
+                BillingError(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE, "")
+            )
+        }
+
+        productCenterManager.onAppForeground()
+
+        verify(exactly = 1) {
+            mockBillingService.queryPurchases(any(), any())
+        }
+
+        verify(exactly = 0) {
+            mockBillingService.consume(any())
+            mockBillingService.acknowledge(any())
+
+            mockRepository.purchase(any(), any(), any())
+        }
     }
 
     private fun Any.mockPrivateField(fieldName: String, field: Any) {
