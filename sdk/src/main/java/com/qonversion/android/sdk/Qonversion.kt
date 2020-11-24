@@ -79,10 +79,8 @@ object Qonversion : LifecycleDelegate {
         attributionManager = QAttributionManager()
 
         val factory = QonversionFactory(context, logger)
-        productCenterManager = QProductCenterManager(context, repository, logger)
-        val billingService = factory.createBillingService(productCenterManager!!)
-        productCenterManager?.billingService = billingService
-        productCenterManager?.consumer = Consumer(billingService, observeMode)
+
+        productCenterManager = factory.createProductCenterManager(repository, observeMode)
         productCenterManager?.launch(callback)
     }
 

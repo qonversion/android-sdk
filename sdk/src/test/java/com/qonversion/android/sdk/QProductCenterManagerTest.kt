@@ -1,12 +1,18 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.QonversionBillingService
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.logger.Logger
 import io.mockk.*
+import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,10 +32,19 @@ class QProductCenterManagerTest {
     private lateinit var productCenterManager: QProductCenterManager
 
     private val fieldIsLaunchingFinished = "isLaunchingFinished"
+    private val fieldSkuDetails = "skuDetails"
+
+    private val skuTypeInApp = BillingClient.SkuType.INAPP
+    private val skuTypeSubs = BillingClient.SkuType.SUBS
+    private val sku = "sku"
+    private val purchaseToken = "purchaseToken"
+    private val installDate: Long = 1605608753
 
     @Before
     fun setUp() {
         clearAllMocks()
+
+        mockInstallDate()
 
         productCenterManager =
             QProductCenterManager(mockContext, mockRepository, mockLogger)
@@ -55,11 +70,102 @@ class QProductCenterManagerTest {
         }
 
         verify(exactly = 0) {
-            mockBillingService.consume(any())
-            mockBillingService.acknowledge(any())
-
+            mockConsumer.consumePurchases(any(), any())
             mockRepository.purchase(any(), any(), any())
         }
+    }
+
+    @Test
+    fun `handle pending purchases when launching is finished and query purchases success`() {
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        val purchases = listOf(purchase)
+        val skuDetails = mockSkuDetailsField(skuTypeInApp)
+        every {
+            mockBillingService.queryPurchases(captureLambda(), any())
+        } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(
+                purchases
+            )
+        }
+        every { mockBillingService.consume(any()) } just Runs
+        productCenterManager.onAppForeground()
+
+        verify(exactly = 1) {
+            mockBillingService.queryPurchases(any(), any())
+            mockConsumer.consumePurchases(purchases, skuDetails)
+        }
+    }
+
+    @Test
+    fun `handle purchases repository purchase method called with properly params`(){
+        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED)
+        mockSkuDetailsField(skuTypeInApp)
+
+        val installDateSlot = slot<Long>()
+        val callbackSlot = slot<QonversionPermissionsCallback>()
+        val entityPurchaseSlot = slot<com.qonversion.android.sdk.entity.Purchase>()
+        every {
+            mockRepository.purchase(capture(installDateSlot), capture(entityPurchaseSlot), capture(callbackSlot))
+        } just Runs
+
+        every { mockBillingService.consume(any()) } just Runs
+
+        productCenterManager.onAppForeground()
+        Assertions.assertThat(entityPurchaseSlot.captured.productId).isEqualTo(sku)
+        Assertions.assertThat(entityPurchaseSlot.captured.purchaseToken).isEqualTo(purchaseToken)
+        Assertions.assertThat(entityPurchaseSlot.captured.type).isEqualTo(skuTypeInApp)
+
+        Assertions.assertThat(installDateSlot.captured).isEqualTo(installDate.milliSecondsToSeconds())
+    }
+
+    private fun mockQueryPurchasesSuccess(
+        @Purchase.PurchaseState purchaseState: Int,
+        isAcknowledged: Boolean = false
+    ) {
+        val purchase = mockPurchase(purchaseState, isAcknowledged)
+        val purchases = listOf(purchase)
+
+        every {
+            mockBillingService.queryPurchases(captureLambda(), any())
+        } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(
+                purchases
+            )
+        }
+    }
+
+    private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
+        val skuDetails = mockSkuDetails(skuType)
+        val mapSkuDetails = mutableMapOf<String, SkuDetails>()
+        mapSkuDetails[sku] = skuDetails
+        productCenterManager.mockPrivateField(fieldSkuDetails, mapSkuDetails)
+
+        return mapSkuDetails
+    }
+
+    private fun mockSkuDetails(
+        @BillingClient.SkuType skuType: String
+    ): SkuDetails {
+
+        return mockk<SkuDetails>(relaxed = true).also {
+            every { it.sku } returns sku
+            every { it.type } returns skuType
+        }
+    }
+
+    private fun mockPurchase(
+        @Purchase.PurchaseState purchaseState: Int,
+        isAcknowledged: Boolean
+    ): Purchase {
+
+        val purchase = mockk<Purchase>(relaxed = true)
+
+        every { purchase.sku } returns sku
+        every { purchase.purchaseToken } returns purchaseToken
+        every { purchase.purchaseState } returns purchaseState
+        every { purchase.isAcknowledged } returns isAcknowledged
+
+        return purchase
     }
 
     private fun Any.mockPrivateField(fieldName: String, field: Any) {
@@ -68,5 +174,26 @@ class QProductCenterManagerTest {
             .firstOrNull { it.name == fieldName }
             ?.also { it.isAccessible = true }
             ?.set(this, field)
+    }
+
+    private fun mockInstallDate() {
+        val packageName = "packageName"
+
+        val mockManager = mockk<PackageManager>()
+        val mockInfo = mockk<PackageInfo>()
+
+        every {
+            mockContext.packageName
+        } returns packageName
+
+        every {
+            mockContext.packageManager
+        } returns mockManager
+
+        mockInfo.firstInstallTime = installDate
+
+        every {
+            mockManager.getPackageInfo(packageName, 0)
+        } returns mockInfo
     }
 }

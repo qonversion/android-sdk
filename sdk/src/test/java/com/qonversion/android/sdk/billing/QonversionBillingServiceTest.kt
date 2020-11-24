@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.billing
 
 import android.app.Activity
-import android.app.Application
 import android.os.Handler
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.entity.PurchaseHistory
@@ -12,22 +11,16 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 class QonversionBillingServiceTest {
     private val skuSubs = "subs"
     private val skuInapp = "inapp"
-    private val requestQueue = "requestsQueue"
 
-    private val billingBuilder: QonversionBillingService.BillingBuilder = mockk()
-    private val billingClient: BillingClient = mockk()
-    private val handler: Handler = mockk()
-    private val purchasesListener: QonversionBillingService.PurchasesListener = mockk()
-    private val logger: Logger = mockk(relaxed = true)
+    private val mockBillingClient: BillingClient = mockk(relaxed = true)
+    private val mockHandler: Handler = mockk()
+    private val mockPurchasesListener: QonversionBillingService.PurchasesListener = mockk()
+    private val mockLogger: Logger = mockk(relaxed = true)
 
-    private lateinit var purchasesUpdatedListener: PurchasesUpdatedListener
     private lateinit var billingClientStateListener: BillingClientStateListener
     private lateinit var billingService: QonversionBillingService
 
@@ -37,74 +30,26 @@ class QonversionBillingServiceTest {
 
         val slot = slot<Runnable>()
         every {
-            handler.post(capture(slot))
+            mockHandler.post(capture(slot))
         } answers {
             slot.captured.run()
             true
         }
 
-        val purchasesUpdatedSlot = slot<PurchasesUpdatedListener>()
-        every {
-            billingBuilder.build(capture(purchasesUpdatedSlot))
-        } answers {
-            purchasesUpdatedListener = purchasesUpdatedSlot.captured
-            billingClient
-        }
-
         val billingClientStateSlot = slot<BillingClientStateListener>()
         every {
-            billingClient.startConnection(capture(billingClientStateSlot))
+            mockBillingClient.startConnection(capture(billingClientStateSlot))
         } answers {
             billingClientStateListener = billingClientStateSlot.captured
         }
 
         every {
-            billingClient.isReady
+            mockBillingClient.isReady
         } returns true
 
         billingService =
-            QonversionBillingService(billingBuilder, handler, purchasesListener, logger)
-    }
-
-    @Nested
-    inner class Init {
-        private val fieldName = "billingClient"
-
-        @Test
-        fun `init completed`() {
-            verify(exactly = 1) {
-                billingBuilder.build(purchasesUpdatedListener)
-                billingClient.startConnection(billingClientStateListener)
-            }
-
-            val memberProperty =
-                QonversionBillingService::class.memberProperties.find { it.name == fieldName }
-
-            memberProperty?.let {
-                it.isAccessible = true
-                val fieldBillingClient = it.get(billingService) as BillingClient?
-                assertThat(fieldBillingClient).isEqualTo(billingClient)
-            }
-        }
-    }
-
-    @Nested
-    inner class BillingBuilder {
-        @Test
-        fun build() {
-            val context = mockk<Application>()
-            mockkStatic(BillingClient::class)
-            val mockBuilder = mockk<BillingClient.Builder>(relaxed = true)
-            every {
-                BillingClient.newBuilder(context)
-            } returns mockBuilder
-
-            QonversionBillingService.BillingBuilder(context).build(purchasesUpdatedListener)
-            verify(exactly = 1) {
-                mockBuilder.enablePendingPurchases()
-                mockBuilder.setListener(purchasesUpdatedListener)
-            }
-        }
+            QonversionBillingService(mockHandler, mockPurchasesListener, mockLogger)
+        billingService.billingClient = mockBillingClient
     }
 
     @Nested
@@ -192,7 +137,7 @@ class QonversionBillingServiceTest {
                 BillingClient.BillingResponseCode.OK
             )
 
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var purchaseHistory: List<PurchaseHistory>? = null
             billingService.queryPurchasesHistory(
@@ -205,7 +150,7 @@ class QonversionBillingServiceTest {
             )
             assertThat(purchaseHistory).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(purchaseHistory).isNotNull
@@ -213,7 +158,7 @@ class QonversionBillingServiceTest {
 
         @Test
         fun `query purchases history deferred until billing connected with error`() {
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var billingError: BillingError? = null
             billingService.queryPurchasesHistory(
@@ -226,7 +171,7 @@ class QonversionBillingServiceTest {
             )
             assertThat(billingError).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))
 
             assertThat(billingError).isNotNull
@@ -240,7 +185,7 @@ class QonversionBillingServiceTest {
         ) {
             val purchaseHistoryResponse = slot<PurchaseHistoryResponseListener>()
             every {
-                billingClient.queryPurchaseHistoryAsync(
+                mockBillingClient.queryPurchaseHistoryAsync(
                     skuType,
                     capture(purchaseHistoryResponse)
                 )
@@ -335,7 +280,7 @@ class QonversionBillingServiceTest {
         @Test
         fun `load products deferred until billing connected`() {
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK)
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var skuDetailsList: List<SkuDetails>? = null
             billingService.loadProducts(setOf(sku),
@@ -347,7 +292,7 @@ class QonversionBillingServiceTest {
                 })
             assertThat(skuDetailsList).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(skuDetailsList).isNotNull
@@ -355,7 +300,7 @@ class QonversionBillingServiceTest {
 
         @Test
         fun `load products deferred until billing connected with error`() {
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var billingError: BillingError? = null
             billingService.loadProducts(setOf(sku),
@@ -367,7 +312,7 @@ class QonversionBillingServiceTest {
                 })
             assertThat(billingError).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))
 
             assertThat(billingError).isNotNull
@@ -394,12 +339,12 @@ class QonversionBillingServiceTest {
             val consumeParams = slot<ConsumeParams>()
             mockConsumeResponse(consumeParams)
 
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
             billingService.consume(purchaseToken)
 
             assertThat(consumeParams.isCaptured).isFalse()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(consumeParams.isCaptured).isTrue()
@@ -411,7 +356,7 @@ class QonversionBillingServiceTest {
         ) {
             val consumeResponse = slot<ConsumeResponseListener>()
             every {
-                billingClient.consumeAsync(
+                mockBillingClient.consumeAsync(
                     capture(consumeParams),
                     capture(consumeResponse)
                 )
@@ -442,12 +387,12 @@ class QonversionBillingServiceTest {
             val acknowledgeParams = slot<AcknowledgePurchaseParams>()
             mockAcknowledgeResponse(acknowledgeParams)
 
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             billingService.acknowledge(purchaseToken)
             assertThat(acknowledgeParams.isCaptured).isFalse()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(acknowledgeParams.isCaptured).isTrue()
@@ -459,7 +404,7 @@ class QonversionBillingServiceTest {
         ) {
             val acknowledgeResponse = slot<AcknowledgePurchaseResponseListener>()
             every {
-                billingClient.acknowledgePurchase(
+                mockBillingClient.acknowledgePurchase(
                     capture(acknowledgeParams),
                     capture(acknowledgeResponse)
                 )
@@ -557,7 +502,7 @@ class QonversionBillingServiceTest {
                 BillingClient.SkuType.INAPP,
                 BillingClient.BillingResponseCode.OK
             )
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var purchases: List<com.android.billingclient.api.Purchase>? = null
             billingService.queryPurchases(
@@ -569,7 +514,7 @@ class QonversionBillingServiceTest {
                 })
             assertThat(purchases).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(purchases).isNotNull
@@ -577,7 +522,7 @@ class QonversionBillingServiceTest {
 
         @Test
         fun `query purchases deferred until billing connected with error`() {
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var billingError: BillingError? = null
             billingService.queryPurchases(
@@ -589,7 +534,7 @@ class QonversionBillingServiceTest {
                 })
             assertThat(billingError).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))
 
             assertThat(billingError).isNotNull
@@ -612,7 +557,7 @@ class QonversionBillingServiceTest {
                 purchases = listOf(purchase)
             }
             every {
-                billingClient.queryPurchases(skuType)
+                mockBillingClient.queryPurchases(skuType)
             } returns com.android.billingclient.api.Purchase.PurchasesResult(
                 buildResult(responseCode),
                 purchases
@@ -688,7 +633,7 @@ class QonversionBillingServiceTest {
         @Test
         fun `get skuDetails from purchases deferred until billing connected`() {
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK)
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             var skuDetailsList: List<SkuDetails>? = null
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
@@ -703,7 +648,7 @@ class QonversionBillingServiceTest {
 
             assertThat(skuDetailsList).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             assertThat(skuDetailsList).isNotNull
@@ -711,7 +656,7 @@ class QonversionBillingServiceTest {
 
         @Test
         fun `get skuDetails from purchases deferred until billing connected with error`() {
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
 
@@ -727,7 +672,7 @@ class QonversionBillingServiceTest {
 
             assertThat(billingError).isNull()
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))
 
             assertThat(billingError).isNotNull
@@ -751,7 +696,7 @@ class QonversionBillingServiceTest {
             val slot = slot<BillingFlowParams>()
             var billingParams: BillingFlowParams? = null
             every {
-                billingClient.launchBillingFlow(eq(activity), capture(slot))
+                mockBillingClient.launchBillingFlow(eq(activity), capture(slot))
             } answers {
                 billingParams = slot.captured
                 buildResult(BillingClient.BillingResponseCode.OK)
@@ -788,7 +733,7 @@ class QonversionBillingServiceTest {
             val slot = slot<BillingFlowParams>()
             var billingParams: BillingFlowParams? = null
             every {
-                billingClient.launchBillingFlow(eq(activity), capture(slot))
+                mockBillingClient.launchBillingFlow(eq(activity), capture(slot))
             } answers {
                 billingParams = slot.captured
 
@@ -824,7 +769,7 @@ class QonversionBillingServiceTest {
             mockQueryPurchaseHistoryResponse(BillingClient.SkuType.SUBS)
 
             every {
-                billingClient.launchBillingFlow(any(), any())
+                mockBillingClient.launchBillingFlow(any(), any())
             } returns buildResult(BillingClient.BillingResponseCode.OK)
 
             billingService.purchase(
@@ -835,7 +780,7 @@ class QonversionBillingServiceTest {
             )
 
             verify {
-                billingClient.launchBillingFlow(
+                mockBillingClient.launchBillingFlow(
                     activity,
                     any()
                 )
@@ -848,13 +793,13 @@ class QonversionBillingServiceTest {
             val skuDetails: SkuDetails = mockk(relaxed = true)
 
             every {
-                billingClient.launchBillingFlow(any(), any())
+                mockBillingClient.launchBillingFlow(any(), any())
             } returns buildResult(BillingClient.BillingResponseCode.OK)
 
             billingService.purchase(activity, skuDetails)
 
             verify {
-                billingClient.launchBillingFlow(
+                mockBillingClient.launchBillingFlow(
                     activity,
                     any()
                 )
@@ -867,13 +812,13 @@ class QonversionBillingServiceTest {
             val skuDetails: SkuDetails = mockk(relaxed = true)
 
             every {
-                billingClient.launchBillingFlow(any(), any())
+                mockBillingClient.launchBillingFlow(any(), any())
             } returns buildResult(BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE)
 
             billingService.purchase(activity, skuDetails)
 
             verify {
-                billingClient.launchBillingFlow(
+                mockBillingClient.launchBillingFlow(
                     activity,
                     any()
                 ) wasNot Called
@@ -886,37 +831,37 @@ class QonversionBillingServiceTest {
             val skuDetails: SkuDetails = mockk(relaxed = true)
 
             every {
-                billingClient.launchBillingFlow(any(), any())
+                mockBillingClient.launchBillingFlow(any(), any())
             } returns buildResult(BillingClient.BillingResponseCode.OK)
-            every { billingClient.isReady } returns false
+            every { mockBillingClient.isReady } returns false
 
             billingService.purchase(activity, skuDetails)
             verify {
-                billingClient.launchBillingFlow(eq(activity), any()) wasNot Called
+                mockBillingClient.launchBillingFlow(eq(activity), any()) wasNot Called
             }
 
-            every { billingClient.isReady } returns true
+            every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
             verify(exactly = 1) {
-                billingClient.launchBillingFlow(eq(activity), any())
+                mockBillingClient.launchBillingFlow(eq(activity), any())
             }
         }
 
         @Test
         fun `purchases listener completed`() {
             every {
-                purchasesListener.onPurchasesCompleted(any())
+                mockPurchasesListener.onPurchasesCompleted(any())
             } just Runs
 
             val purchase = mockk<com.android.billingclient.api.Purchase>()
-            purchasesUpdatedListener.onPurchasesUpdated(
+            billingService.onPurchasesUpdated(
                 buildResult(BillingClient.BillingResponseCode.OK),
                 listOf(purchase)
             )
 
             verify {
-                purchasesListener.onPurchasesCompleted(
+                mockPurchasesListener.onPurchasesCompleted(
                     listOf(purchase)
                 )
             }
@@ -925,16 +870,16 @@ class QonversionBillingServiceTest {
         @Test
         fun `purchases listener failed`() {
             every {
-                purchasesListener.onPurchasesFailed(any(), any())
+                mockPurchasesListener.onPurchasesFailed(any(), any())
             } just Runs
 
-            purchasesUpdatedListener.onPurchasesUpdated(
+            billingService.onPurchasesUpdated(
                 buildResult(BillingClient.BillingResponseCode.OK),
                 null
             )
 
             verify {
-                purchasesListener.onPurchasesFailed(
+                mockPurchasesListener.onPurchasesFailed(
                     emptyList(),
                     any()
                 )
@@ -943,21 +888,21 @@ class QonversionBillingServiceTest {
 
         private fun mockQueryPurchaseHistoryResponse(
             @BillingClient.SkuType skuType: String,
-            sku: String ? = null
+            sku: String? = null
         ) {
             val purchaseHistoryResponse = slot<PurchaseHistoryResponseListener>()
             every {
-                billingClient.queryPurchaseHistoryAsync(
+                mockBillingClient.queryPurchaseHistoryAsync(
                     skuType,
                     capture(purchaseHistoryResponse)
                 )
             } answers {
                 val historyRecord: PurchaseHistoryRecord = mockk(relaxed = true)
-                if(sku!=null){
+                if (sku != null) {
                     every { historyRecord.sku } returns sku
                 }
 
-               val historyRecordList = listOf(historyRecord)
+                val historyRecordList = listOf(historyRecord)
 
                 purchaseHistoryResponse.captured.onPurchaseHistoryResponse(
                     buildResult(BillingClient.BillingResponseCode.OK),
@@ -970,75 +915,9 @@ class QonversionBillingServiceTest {
     @Test
     fun startConnection() {
         verify(exactly = 1) {
-            handler.post(any())
-            billingClient.startConnection(billingClientStateListener)
+            mockHandler.post(any())
+            mockBillingClient.startConnection(billingClientStateListener)
         }
-    }
-
-    @Nested
-    inner class ExecuteOnMainThread{
-        @Test
-        fun `execute on main thread billing client is ready`() {
-            val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-            every { billingClient.isReady } returns false
-
-            mockStandartHistoryResponse()
-            spykBillingService.queryPurchasesHistory({}, {})
-
-            val memberProperty =
-                QonversionBillingService::class.memberProperties.find { it.name == requestQueue }
-            memberProperty?.let {
-                it.isAccessible = true
-                val fieldRequestsQueue = it.get(spykBillingService) as ConcurrentLinkedQueue<*>
-                assertThat(fieldRequestsQueue.size).isEqualTo(1)
-            }
-
-            verify {
-                spykBillingService["startConnection"]()
-            }
-        }
-
-        @Test
-        fun `execute on main thread billing client is not ready`() {
-            val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-
-            mockStandartHistoryResponse()
-            spykBillingService.queryPurchasesHistory({}, {})
-
-            verify {
-                spykBillingService["executeRequestsFromQueue"]()
-            }
-        }
-    }
-
-    @Test
-    fun executeRequestsFromQueue() {
-        val spykBillingService = spyk(billingService, recordPrivateCalls = true)
-
-        mockStandartHistoryResponse()
-        spykBillingService.queryPurchasesHistory({}, {})
-
-        val memberProperty =
-            QonversionBillingService::class.memberProperties.find { it.name == requestQueue }
-        memberProperty?.let {
-            it.isAccessible = true
-            val fieldRequestsQueue = it.get(spykBillingService) as ConcurrentLinkedQueue<*>
-            assertThat(fieldRequestsQueue.size).isEqualTo(0)
-        }
-
-        verify(exactly = 2) {
-            handler.post(any())
-        }
-    }
-
-    private fun mockStandartHistoryResponse() {
-        val purchaseHistoryResponse = slot<PurchaseHistoryResponseListener>()
-        every {
-            billingClient.queryPurchaseHistoryAsync(
-                any(),
-                capture(purchaseHistoryResponse)
-            )
-        } just Runs
     }
 
     private fun mockSkuDetailsResponse(
@@ -1049,7 +928,7 @@ class QonversionBillingServiceTest {
         val skuDetailsParamsSlot = slot<SkuDetailsParams>()
 
         every {
-            billingClient.querySkuDetailsAsync(
+            mockBillingClient.querySkuDetailsAsync(
                 capture(skuDetailsParamsSlot),
                 capture(skuDetailsResponseSlot)
             )
