@@ -38,6 +38,8 @@ class QProductCenterManager internal constructor(
         @Synchronized set
         @Synchronized get
 
+    private var isProductsLoadingFailed: Boolean = false
+
     private var skuDetails = mapOf<String, SkuDetails>()
 
     private var launchResult: QLaunchResult? = null
@@ -334,10 +336,13 @@ class QProductCenterManager internal constructor(
         val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
-        if (!isProductsLoaded && !productStoreIds.isNullOrEmpty()) {
+
+        if (!productStoreIds.isNullOrEmpty() && (!isProductsLoaded || !isProductsLoadingFailed)) {
             billingService.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
+                    isProductsLoadingFailed = false
+
                     val formattedDetails: Map<String, SkuDetails> = configureSkuDetails(details)
                     skuDetails = formattedDetails.toMutableMap()
 
@@ -346,6 +351,8 @@ class QProductCenterManager internal constructor(
                     onLoadCompleted?.let { it(details) }
                 },
                 onLoadFailed = { error ->
+                    isProductsLoaded = true
+                    isProductsLoadingFailed = true
                     onLoadFailed?.let { it(error) }
                 })
         }
