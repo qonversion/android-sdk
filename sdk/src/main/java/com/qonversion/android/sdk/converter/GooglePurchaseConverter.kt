@@ -11,6 +11,7 @@ class GooglePurchaseConverter(
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
     companion object {
         private const val priceMicrosDivider: Double = 1000000.0
+        private const val daysPeriodUnit = 0
     }
 
     private val multipliers = mapOf<String, Int>(
@@ -34,15 +35,15 @@ class GooglePurchaseConverter(
             priceCurrencyCode = details.priceCurrencyCode,
             price = formatPrice(details.priceAmountMicros),
             priceAmountMicros = details.priceAmountMicros,
-            periodUnit = 0,
+            periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
             periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
             freeTrialPeriod = details.freeTrialPeriod ?: "",
             introductoryAvailable = details.introductoryPrice.isNotEmpty(),
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
             introductoryPrice = getIntroductoryPrice(details),
             introductoryPriceCycles = getIntroductoryPriceCycles(details),
-            introductoryPeriodUnit = 0,
-            introductoryPeriodUnitsCount = getUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
+            introductoryPeriodUnit = daysPeriodUnit,
+            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
             orderId = purchase.orderId,
             originalOrderId = formatOriginalTransactionId(purchase.orderId),
             packageName = purchase.packageName,
@@ -85,7 +86,35 @@ class GooglePurchaseConverter(
         return result
     }
 
+    private fun getUnitsTypeFromPeriod(period: String?): Int? {
+        if (period.isNullOrEmpty()) {
+            return null
+        }
+
+        val result = period.last().toString()
+
+        val periodUnit = when (result) {
+            "Y" -> 3
+            "M" -> 2
+            "W" -> 1
+            "D" -> 0
+            else -> null
+        }
+
+        return periodUnit
+    }
+
     private fun getUnitsCountFromPeriod(period: String?): Int? {
+        if (period.isNullOrEmpty()) {
+            return null
+        }
+
+        val unitsCount = period.substring(1..period.length - 2)
+
+        return unitsCount.toInt()
+    }
+
+    private fun getIntrodactoryUnitsCountFromPeriod(period: String?): Int? {
         if (period.isNullOrEmpty()) {
             return null
         }
