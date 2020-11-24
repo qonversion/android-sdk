@@ -46,11 +46,20 @@ class QProductCenterManagerTest {
 
         mockInstallDate()
 
-        productCenterManager =
-            QProductCenterManager(mockContext, mockRepository, mockLogger)
+        productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger)
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
         productCenterManager.mockPrivateField(fieldIsLaunchingFinished, true)
+    }
+
+    @Test
+    fun `handle pending purchases when launching is not finished`() {
+        productCenterManager.mockPrivateField(fieldIsLaunchingFinished, false)
+
+        productCenterManager.onAppForeground()
+        verify(exactly = 0) {
+            mockBillingService.queryPurchases(any(), any())
+        }
     }
 
     @Test
@@ -76,7 +85,7 @@ class QProductCenterManagerTest {
     }
 
     @Test
-    fun `handle pending purchases when launching is finished and query purchases success`() {
+    fun `handle pending purchases when launching is finished and query purchases completed`() {
         val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
         val purchases = listOf(purchase)
         val skuDetails = mockSkuDetailsField(skuTypeInApp)
@@ -87,51 +96,32 @@ class QProductCenterManagerTest {
                 purchases
             )
         }
+
+        val installDateSlot = slot<Long>()
+        val callbackSlot = slot<QonversionPermissionsCallback>()
+        val entityPurchaseSlot = slot<com.qonversion.android.sdk.entity.Purchase>()
+        every {
+            mockRepository.purchase(
+                capture(installDateSlot),
+                capture(entityPurchaseSlot),
+                capture(callbackSlot)
+            )
+        } just Runs
+
         every { mockBillingService.consume(any()) } just Runs
+
         productCenterManager.onAppForeground()
 
         verify(exactly = 1) {
             mockBillingService.queryPurchases(any(), any())
             mockConsumer.consumePurchases(purchases, skuDetails)
         }
-    }
 
-    @Test
-    fun `handle purchases repository purchase method called with properly params`(){
-        mockQueryPurchasesSuccess(Purchase.PurchaseState.PURCHASED)
-        mockSkuDetailsField(skuTypeInApp)
-
-        val installDateSlot = slot<Long>()
-        val callbackSlot = slot<QonversionPermissionsCallback>()
-        val entityPurchaseSlot = slot<com.qonversion.android.sdk.entity.Purchase>()
-        every {
-            mockRepository.purchase(capture(installDateSlot), capture(entityPurchaseSlot), capture(callbackSlot))
-        } just Runs
-
-        every { mockBillingService.consume(any()) } just Runs
-
-        productCenterManager.onAppForeground()
         Assertions.assertThat(entityPurchaseSlot.captured.productId).isEqualTo(sku)
         Assertions.assertThat(entityPurchaseSlot.captured.purchaseToken).isEqualTo(purchaseToken)
         Assertions.assertThat(entityPurchaseSlot.captured.type).isEqualTo(skuTypeInApp)
 
         Assertions.assertThat(installDateSlot.captured).isEqualTo(installDate.milliSecondsToSeconds())
-    }
-
-    private fun mockQueryPurchasesSuccess(
-        @Purchase.PurchaseState purchaseState: Int,
-        isAcknowledged: Boolean = false
-    ) {
-        val purchase = mockPurchase(purchaseState, isAcknowledged)
-        val purchases = listOf(purchase)
-
-        every {
-            mockBillingService.queryPurchases(captureLambda(), any())
-        } answers {
-            lambda<(List<Purchase>) -> Unit>().captured.invoke(
-                purchases
-            )
-        }
     }
 
     private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
@@ -168,14 +158,6 @@ class QProductCenterManagerTest {
         return purchase
     }
 
-    private fun Any.mockPrivateField(fieldName: String, field: Any) {
-        javaClass.declaredFields
-            .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
-            .firstOrNull { it.name == fieldName }
-            ?.also { it.isAccessible = true }
-            ?.set(this, field)
-    }
-
     private fun mockInstallDate() {
         val packageName = "packageName"
 
@@ -195,5 +177,13 @@ class QProductCenterManagerTest {
         every {
             mockManager.getPackageInfo(packageName, 0)
         } returns mockInfo
+    }
+
+    private fun Any.mockPrivateField(fieldName: String, field: Any) {
+        javaClass.declaredFields
+            .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
+            .firstOrNull { it.name == fieldName }
+            ?.also { it.isAccessible = true }
+            ?.set(this, field)
     }
 }
