@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.0.1"
+    private const val SDK_VERSION = "2.0.2"
 
     private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
