@@ -18,7 +18,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.lang.reflect.Modifier
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
@@ -177,13 +176,5 @@ class QProductCenterManagerTest {
         every {
             mockManager.getPackageInfo(packageName, 0)
         } returns mockInfo
-    }
-
-    private fun Any.mockPrivateField(fieldName: String, field: Any) {
-        javaClass.declaredFields
-            .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
-            .firstOrNull { it.name == fieldName }
-            ?.also { it.isAccessible = true }
-            ?.set(this, field)
     }
 }

@@ -9,7 +9,6 @@ import com.qonversion.android.sdk.entity.PurchaseHistory
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
-import java.lang.reflect.Modifier
 
 class ConsumerTest {
     private val sku = "sku"
@@ -188,13 +187,5 @@ class ConsumerTest {
         every { purchaseHistoryRecord.purchaseToken } returns purchaseToken
 
         return purchaseHistoryRecord
-    }
-
-    private fun Any.mockPrivateField(fieldName: String, field: Any) {
-        javaClass.declaredFields
-            .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
-            .firstOrNull { it.name == fieldName }
-            ?.also { it.isAccessible = true }
-            ?.set(this, field)
     }
 }
