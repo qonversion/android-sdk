@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.billing
 
 import android.app.Activity
-import android.app.Application
 import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.*
@@ -9,31 +8,21 @@ import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
-internal class QonversionBillingService(
-    billingBuilder: BillingBuilder,
+class QonversionBillingService internal constructor(
     private val mainHandler: Handler,
     private val purchasesListener: PurchasesListener,
     private val logger: Logger
 ) : PurchasesUpdatedListener, BillingClientStateListener, BillingService {
 
-    private var billingClient: BillingClient? = null
-    private val requestsQueue = ConcurrentLinkedQueue<(billingSetupError: BillingError?) -> Unit>()
-
-    init {
-        billingClient = billingBuilder.build(this)
-
-        startConnection()
-    }
-
-    internal class BillingBuilder(private val context: Application) {
-        @UiThread
-        fun build(listener: PurchasesUpdatedListener): BillingClient {
-            val builder = BillingClient.newBuilder(context)
-            builder.enablePendingPurchases()
-            builder.setListener(listener)
-            return builder.build()
+    @Volatile
+    var billingClient: BillingClient? = null
+        @Synchronized set(value) {
+            field = value
+            startConnection()
         }
-    }
+        @Synchronized get
+
+    private val requestsQueue = ConcurrentLinkedQueue<(billingSetupError: BillingError?) -> Unit>()
 
     interface PurchasesListener {
         fun onPurchasesCompleted(purchases: List<Purchase>)

@@ -22,7 +22,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
-internal class QonversionRepository private constructor(
+class QonversionRepository private constructor(
     private val api: Api,
     private var storage: Storage,
     private var propertiesStorage: PropertiesStorage,
