@@ -11,7 +11,15 @@ class GooglePurchaseConverter(
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
     companion object {
         private const val priceMicrosDivider: Double = 1000000.0
+        private const val daysPeriodUnit = 0
     }
+
+    private val multipliers = mapOf<String, Int>(
+        "Y" to 365,
+        "M" to 30,
+        "W" to 7,
+        "D" to 1
+    )
 
     override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
@@ -34,8 +42,8 @@ class GooglePurchaseConverter(
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
             introductoryPrice = getIntroductoryPrice(details),
             introductoryPriceCycles = getIntroductoryPriceCycles(details),
-            introductoryPeriodUnit = getUnitsTypeFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
-            introductoryPeriodUnitsCount = getUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
+            introductoryPeriodUnit = daysPeriodUnit,
+            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
             orderId = purchase.orderId,
             originalOrderId = formatOriginalTransactionId(purchase.orderId),
             packageName = purchase.packageName,
@@ -104,6 +112,28 @@ class GooglePurchaseConverter(
         val unitsCount = period.substring(1..period.length - 2)
 
         return unitsCount.toInt()
+    }
+
+    private fun getIntrodactoryUnitsCountFromPeriod(period: String?): Int? {
+        if (period.isNullOrEmpty()) {
+            return null
+        }
+
+        var totalCount = 0
+        val regex = Regex("\\d+[a-zA-Z]")
+        val results = regex.findAll(period, 0)
+        results.forEach { result ->
+            val value = result.groupValues.first()
+            val digits = value.filter { it -> it.isDigit() }.toInt()
+            val letter = value.filter { it -> it.isLetter() }
+
+            val multiplier = multipliers[letter]
+            multiplier?.let {
+                totalCount += it * digits
+            }
+        }
+
+        return totalCount
     }
 
 }
