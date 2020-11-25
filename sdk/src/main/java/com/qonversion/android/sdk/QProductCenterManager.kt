@@ -9,8 +9,10 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.billing.*
+import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.QonversionBillingService
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -35,6 +37,8 @@ class QProductCenterManager internal constructor(
     private var isProductsLoaded: Boolean = false
         @Synchronized set
         @Synchronized get
+
+    private var isProductsLoadingFailed: Boolean = false
 
     private var skuDetails = mapOf<String, SkuDetails>()
 
@@ -116,7 +120,7 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            logger.log("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
+            logger.release("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
             return
         }
 
@@ -332,10 +336,13 @@ class QProductCenterManager internal constructor(
         val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
-        if (!isProductsLoaded && !productStoreIds.isNullOrEmpty()) {
+
+        if (!productStoreIds.isNullOrEmpty() && (!isProductsLoaded || !isProductsLoadingFailed)) {
             billingService.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
+                    isProductsLoadingFailed = false
+
                     val formattedDetails: Map<String, SkuDetails> = configureSkuDetails(details)
                     skuDetails = formattedDetails.toMutableMap()
 
@@ -344,6 +351,8 @@ class QProductCenterManager internal constructor(
                     onLoadCompleted?.let { it(details) }
                 },
                 onLoadFailed = { error ->
+                    isProductsLoaded = true
+                    isProductsLoadingFailed = true
                     onLoadFailed?.let { it(error) }
                 })
         }
