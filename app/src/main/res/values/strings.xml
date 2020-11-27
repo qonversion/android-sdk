@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">qonversion-android-sdk</string>
+    <string name="app_name">Qonversion Sample App</string>
+    <string name="build_in_app_subscriptions_without_server_code">Build in-app subscriptions\n without server code</string>
+    <string name="subscribe_for">Subscribe for</string>
+    <string name="buy_for">Buy for</string>
+    <string name="loading">Loading...</string>
+    <string name="check_active_permissions">Check active permissions</string>
+    <string name="restore_purchases">Restore purchases</string>
+    <string name="purchased">Purchased</string>
+    <string name="nothing_to_restore">Nothing to restore</string>
+    <string name="permission_id">Permission Id</string>
+    <string name="product_id">Product Id</string>
+    <string name="renew_state">Renew state</string>
+    <string name="active_permissions">Active permissions</string>
+
 </resources>
