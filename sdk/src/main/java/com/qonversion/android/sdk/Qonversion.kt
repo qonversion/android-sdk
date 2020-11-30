@@ -76,7 +76,7 @@ object Qonversion : LifecycleDelegate {
         this.repository = repository
         userPropertiesManager =
             QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
-        attributionManager = QAttributionManager()
+        attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)
 
@@ -204,7 +204,8 @@ object Qonversion : LifecycleDelegate {
         from: AttributionSource,
         conversionUid: String
     ) {
-        repository.attribution(conversionInfo, from.id, conversionUid)
+        attributionManager?.attribution(conversionInfo, from, conversionUid)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**

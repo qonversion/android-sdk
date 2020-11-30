@@ -10,31 +10,32 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class QUserPropertiesManagerTest {
-    private lateinit var propertiesManagerMock: QUserPropertiesManager
-    private var contentResolver = mockk<Application>(relaxed = true).contentResolver
-    private val repositoryMock = mockk<QonversionRepository>(relaxed = true)
-    private var handler: Handler = mockk(relaxed = true)
+    private var mockContentResolver = mockk<Application>(relaxed = true).contentResolver
+    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private var mockHandler: Handler = mockk(relaxed = true)
+
+    private lateinit var propertiesManager: QUserPropertiesManager
 
     @Before
     fun setUp() {
         val slot = slot<Runnable>()
         every {
-            handler.post(capture(slot))
+            mockHandler.post(capture(slot))
         } answers {
             slot.captured.run()
             true
         }
 
-        propertiesManagerMock =
-            QUserPropertiesManager(repositoryMock, contentResolver, handler)
+        propertiesManager =
+            QUserPropertiesManager(mockRepository, mockContentResolver, mockHandler)
     }
 
     @Test
     fun forceSendProperties() {
-        propertiesManagerMock.forceSendProperties()
+        propertiesManager.forceSendProperties()
 
         verify(exactly = 1) {
-            repositoryMock.sendProperties()
+            mockRepository.sendProperties()
         }
     }
 
@@ -42,10 +43,10 @@ class QUserPropertiesManagerTest {
     fun setUserID() {
         val userId = "userId"
 
-        propertiesManagerMock.setUserID(userId)
+        propertiesManager.setUserID(userId)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(QUserProperties.CustomUserId.userPropertyCode, userId)
+            mockRepository.setProperty(QUserProperties.CustomUserId.userPropertyCode, userId)
         }
     }
 
@@ -54,10 +55,10 @@ class QUserPropertiesManagerTest {
         val key = QUserProperties.Email
         val email = "me@qonvesrion.io"
 
-        propertiesManagerMock.setProperty(key, email)
+        propertiesManager.setProperty(key, email)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(QUserProperties.Email.userPropertyCode, email)
+            mockRepository.setProperty(QUserProperties.Email.userPropertyCode, email)
         }
     }
 
@@ -66,10 +67,10 @@ class QUserPropertiesManagerTest {
         val key = "key"
         val value = "value"
 
-        propertiesManagerMock.setUserProperty(key, value)
+        propertiesManager.setUserProperty(key, value)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(key, value)
+            mockRepository.setProperty(key, value)
         }
     }
 
@@ -78,7 +79,40 @@ class QUserPropertiesManagerTest {
         val delayMillis: Long = 5 * 1000
 
         verify(exactly = 1) {
-            handler.postDelayed(any(), delayMillis)
+            mockHandler.postDelayed(any(), delayMillis)
+        }
+    }
+
+    @Test
+    fun `init when fbAttributionId is not null`() {
+        val fbAttributionId = "fbAttributionId"
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
+
+        propertiesManager =
+            QUserPropertiesManager(mockRepository, mockContentResolver, mockHandler)
+
+        verify {
+            mockRepository.setProperty(
+                QUserProperties.FacebookAttribution.userPropertyCode,
+                fbAttributionId
+            )
+        }
+    }
+
+    @Test
+    fun `init when fbAttributionId is null`() {
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
+
+        propertiesManager =
+            QUserPropertiesManager(mockRepository, mockContentResolver, mockHandler)
+
+        verify(exactly = 0) {
+            mockRepository.setProperty(
+                any(),
+                any()
+            )
         }
     }
 }
