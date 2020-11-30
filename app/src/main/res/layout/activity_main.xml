@@ -12,6 +12,7 @@
 
         <ImageView
             android:id="@+id/imageView"
+            android:contentDescription="@string/application_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
@@ -64,7 +65,7 @@
             app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonBuy"
+            android:id="@+id/buttonInApp"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -94,7 +95,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonBuy" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonInApp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonPermissions"

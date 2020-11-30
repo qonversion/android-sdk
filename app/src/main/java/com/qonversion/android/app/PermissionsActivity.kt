@@ -3,6 +3,7 @@ package com.qonversion.android.app
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
@@ -26,6 +27,7 @@ class PermissionsActivity : AppCompatActivity() {
             }
 
             override fun onError(error: QonversionError) {
+                Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
                 Log.e(TAG, error.toString())
             }
         })

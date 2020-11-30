@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
@@ -32,7 +33,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onError(error: QonversionError) {
-                Log.e(TAG, error.toString())
+                showLoading(false)
+                showError(error)
             }
         })
 
@@ -40,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             purchase(productIdSubs)
         }
 
-        buttonBuy.setOnClickListener {
+        buttonInApp.setOnClickListener {
             purchase(productIdInApp)
         }
 
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onError(error: QonversionError) {
                     showLoading(false)
-                    Log.e(TAG, error.toString())
+                    showError(error)
                 }
             })
         }
@@ -79,7 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         val inApp = products[productIdInApp]
         if (inApp != null) {
-            buttonBuy.text = String.format(
+            buttonInApp.text = String.format(
                 "%s %s", getString(R.string.buy_for),
                 inApp.prettyPrice
             )
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         }
         val permissionStandart = permissions[permissionStandart]
         if (permissionStandart != null && permissionStandart.isActive()) {
-            buttonBuy.text = getString(R.string.purchased)
+            buttonInApp.text = getString(R.string.purchased)
             isNothingToRestore = false
         }
 
@@ -110,11 +112,14 @@ class MainActivity : AppCompatActivity() {
             productId,
             callback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
-                    // handle permissions here
+                    when (productId) {
+                        productIdInApp -> buttonInApp.text = getString(R.string.purchased)
+                        productIdSubs -> buttonSubscribe.text = getString(R.string.purchased)
+                    }
                 }
 
                 override fun onError(error: QonversionError) {
-                    Log.e(TAG, error.toString())
+                    showError(error)
                 }
             })
     }
@@ -125,5 +130,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             ProgressBar.INVISIBLE
         }
+    }
+
+    private fun showError(error: QonversionError){
+        Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
+        Log.e(TAG, error.toString())
     }
 }
