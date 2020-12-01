@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
@@ -15,7 +14,6 @@ object Qonversion : LifecycleDelegate {
 
     private const val SDK_VERSION = "2.0.2"
 
-    private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
@@ -73,9 +71,7 @@ object Qonversion : LifecycleDelegate {
             null
         )
 
-        this.repository = repository
-        userPropertiesManager =
-            QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
+        userPropertiesManager = QUserPropertiesManager(context, repository)
         attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)
