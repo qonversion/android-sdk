@@ -201,10 +201,9 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource,
-        conversionUid: String
+        from: AttributionSource
     ) {
-        repository.attribution(conversionInfo, from.id, conversionUid)
+        repository.attribution(conversionInfo, from.id)
     }
 
     /**
