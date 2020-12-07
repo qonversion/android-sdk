@@ -6,6 +6,5 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class ProviderData(
     @Json(name = "d") val data: Map<String, Any>,
-    @Json(name = "provider") val provider: String,
-    @Json(name = "uid") val uid: String
+    @Json(name = "provider") val provider: String
 )
