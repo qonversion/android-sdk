@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5dp"
+    android:divider="?android:dividerHorizontal"
+    android:orientation="horizontal"
+    android:showDividers="middle"
+    android:weightSum="3">
+
+    <TextView
+        android:id="@+id/txtPermissionId"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/permission_id"
+        android:textColor="@color/colorQonversionBlue" />
+
+    <TextView
+        android:id="@+id/txtProductId"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/product_id"
+        android:textColor="@color/colorQonversionBlue" />
+
+    <TextView
+        android:id="@+id/txtRenewStateLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:divider="?android:dividerHorizontal"
+        android:gravity="center"
+        android:text="@string/renew_state"
+        android:textColor="@color/colorQonversionBlue" />
+
+</LinearLayout>

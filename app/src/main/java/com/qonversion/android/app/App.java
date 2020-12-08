@@ -5,6 +5,7 @@ import androidx.multidex.MultiDexApplication;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.qonversion.android.sdk.AttributionSource;
+import com.qonversion.android.sdk.QUserProperties;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionError;
 import com.qonversion.android.sdk.QonversionLaunchCallback;
@@ -34,12 +35,12 @@ public class App extends MultiDexApplication {
                     }
                 }
         );
-
+        Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(this));
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
-                Qonversion.attribution(conversionData, AttributionSource.APPSFLYER, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
+                Qonversion.attribution(conversionData, AttributionSource.AppsFlyer);
             }
 
             @Override

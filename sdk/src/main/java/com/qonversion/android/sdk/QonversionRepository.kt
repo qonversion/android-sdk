@@ -22,7 +22,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
-internal class QonversionRepository private constructor(
+class QonversionRepository private constructor(
     private val api: Api,
     private var storage: Storage,
     private var propertiesStorage: PropertiesStorage,
@@ -56,8 +56,8 @@ internal class QonversionRepository private constructor(
         restoreRequest(installDate, historyRecords, callback)
     }
 
-    fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
-        val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
+    fun attribution(conversionInfo: Map<String, Any>, from: String) {
+        val attributionRequest = createAttributionRequest(conversionInfo, from)
         if (requestValidator.valid(attributionRequest)) {
             logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
@@ -79,7 +79,7 @@ internal class QonversionRepository private constructor(
 
     // Private functions
 
-    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
+    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String): QonversionRequest {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0
         return AttributionRequest(
@@ -91,8 +91,7 @@ internal class QonversionRepository private constructor(
             clientUid = uid,
             providerData = ProviderData(
                 data = conversionInfo,
-                provider = from,
-                uid = conversionUid
+                provider = from
             )
         )
     }
