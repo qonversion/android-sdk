@@ -40,7 +40,7 @@ public class App extends MultiDexApplication {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
-                Qonversion.attribution(conversionData, AttributionSource.APPSFLYER);
+                Qonversion.attribution(conversionData, AttributionSource.AppsFlyer);
             }
 
             @Override
