@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk
 
 enum class AttributionSource(val id: String) {
-    APPSFLYER("appsflyer")
+    AppsFlyer("appsflyer"),
+    Branch("branch"),
+    Adjust("adjust")
 }
