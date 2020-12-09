@@ -35,11 +35,12 @@ public class App extends MultiDexApplication {
                     }
                 }
         );
-        Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(this));
+
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
+                Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
                 Qonversion.attribution(conversionData, AttributionSource.AppsFlyer);
             }
 
