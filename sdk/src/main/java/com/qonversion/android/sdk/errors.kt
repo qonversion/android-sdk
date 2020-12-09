@@ -47,7 +47,7 @@ fun Throwable.toQonversionError(): QonversionError {
 fun <T> Response<T>.toQonversionError(): QonversionError {
     val data = "data"
     val message = "message"
-    var errorMessage = "failed to get error message from the backend response"
+    var errorMessage = "failed to parse the backend response"
 
 
     errorBody()?.let {
