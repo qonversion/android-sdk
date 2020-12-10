@@ -8,4 +8,5 @@ abstract class RequestData {
     abstract val clientUid: String?
     abstract val customUid: String?
     abstract val receipt: String
+    abstract val debugMode: String
 }

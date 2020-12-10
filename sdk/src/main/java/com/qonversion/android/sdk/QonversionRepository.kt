@@ -33,13 +33,19 @@ class QonversionRepository private constructor(
     private val logger: Logger,
     private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
-    private val requestValidator: Validator<QonversionRequest>
+    private val requestValidator: Validator<QonversionRequest>,
+    isDebugMode: Boolean
 ) {
     private var advertisingId: String? = null
-
+    private val debugMode = if (isDebugMode) "1" else "0"
     // Public functions
 
-    fun init(installDate: Long, idfa: String? = null, purchases: List<Purchase>? = null, callback: QonversionLaunchCallback?) {
+    fun init(
+        installDate: Long,
+        idfa: String? = null,
+        purchases: List<Purchase>? = null,
+        callback: QonversionLaunchCallback?
+    ) {
         advertisingId = idfa
         initRequest(installDate, trackingEnabled, key, sdkVersion, idfa, purchases, callback)
     }
@@ -52,7 +58,11 @@ class QonversionRepository private constructor(
         purchaseRequest(installDate, purchase, callback)
     }
 
-    fun restore(installDate: Long, historyRecords: List<PurchaseHistoryRecord>, callback: QonversionPermissionsCallback?) {
+    fun restore(
+        installDate: Long,
+        historyRecords: List<PurchaseHistoryRecord>,
+        callback: QonversionPermissionsCallback?
+    ) {
         restoreRequest(installDate, historyRecords, callback)
     }
 
@@ -79,7 +89,10 @@ class QonversionRepository private constructor(
 
     // Private functions
 
-    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String): QonversionRequest {
+    private fun createAttributionRequest(
+        conversionInfo: Map<String, Any>,
+        from: String
+    ): QonversionRequest {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0
         return AttributionRequest(
@@ -140,6 +153,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = debugMode,
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
@@ -195,7 +209,7 @@ class QonversionRepository private constructor(
     }
 
     private fun convertPurchaseDetails(purchase: Purchase): PurchaseDetails {
-        val purchaseDetail = PurchaseDetails(
+        return PurchaseDetails(
             purchase.productId,
             purchase.purchaseToken,
             purchase.purchaseTime,
@@ -207,20 +221,16 @@ class QonversionRepository private constructor(
             purchase.periodUnitsCount,
             null
         )
-
-        return purchaseDetail
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
-        val histories: List<History> = historyRecords.map {
+        return historyRecords.map {
             History(
                 it.sku,
                 it.purchaseToken,
                 it.purchaseTime.milliSecondsToSeconds()
             )
         }
-
-        return histories
     }
 
     private fun restoreRequest(
@@ -238,6 +248,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = debugMode,
             history = history
         )
 
@@ -255,7 +266,10 @@ class QonversionRepository private constructor(
         }
     }
 
-    private fun handlePermissionsResponse(response: retrofit2.Response<BaseResponse<QLaunchResult>>, callback: QonversionPermissionsCallback?) {
+    private fun handlePermissionsResponse(
+        response: retrofit2.Response<BaseResponse<QLaunchResult>>,
+        callback: QonversionPermissionsCallback?
+    ) {
         val body = response.body()
         if (body != null && body.success) {
             callback?.onSuccess(body.data.permissions)
@@ -284,6 +298,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = debugMode,
             purchases = inapps
         )
 
@@ -347,7 +362,8 @@ class QonversionRepository private constructor(
             logger: Logger,
             environmentProvider: EnvironmentProvider,
             config: QonversionConfig,
-            internalUserId: String?
+            internalUserId: String?,
+            isDebugMode: Boolean
         ): QonversionRepository {
 
             val client = OkHttpClient.Builder()
@@ -384,7 +400,8 @@ class QonversionRepository private constructor(
                 logger,
                 internalUserId,
                 requestQueue,
-                RequestValidator()
+                RequestValidator(),
+                isDebugMode
             )
         }
     }
