@@ -13,13 +13,14 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.1.1"
+    private const val SDK_VERSION = "2.2.0"
 
     private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
     private var logger = ConsoleLogger()
+    private var isDebugMode = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -70,7 +71,8 @@ object Qonversion : LifecycleDelegate {
             logger,
             environment,
             config,
-            null
+            null,
+            isDebugMode
         )
 
         this.repository = repository
@@ -235,6 +237,11 @@ object Qonversion : LifecycleDelegate {
     fun setUserID(value: String) {
         userPropertiesManager?.setUserID(value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    @JvmStatic
+    fun setDebugMode() {
+        isDebugMode = true
     }
 
     // Private functions

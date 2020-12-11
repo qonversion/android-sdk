@@ -49,7 +49,6 @@ fun <T> Response<T>.toQonversionError(): QonversionError {
     val message = "message"
     var errorMessage = "failed to parse the backend response"
 
-
     errorBody()?.let {
         try {
             val jsonObjError = JSONObject(it.string())
