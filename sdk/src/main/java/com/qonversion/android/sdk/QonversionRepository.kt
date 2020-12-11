@@ -4,6 +4,7 @@ import android.app.Application
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
@@ -34,10 +35,10 @@ class QonversionRepository private constructor(
     private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    isDebugMode: Boolean
+    private val isDebugMode: Boolean
 ) {
     private var advertisingId: String? = null
-    private val debugMode = if (isDebugMode) "1" else "0"
+
     // Public functions
 
     fun init(
@@ -153,7 +154,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
-            debugMode = debugMode,
+            debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
@@ -248,7 +249,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
-            debugMode = debugMode,
+            debugMode = isDebugMode.stringValue(),
             history = history
         )
 
@@ -298,7 +299,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
-            debugMode = debugMode,
+            debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
 
