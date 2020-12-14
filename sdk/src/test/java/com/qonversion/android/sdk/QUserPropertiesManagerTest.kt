@@ -105,7 +105,7 @@ class QUserPropertiesManagerTest {
 
         propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
 
-        verify {
+        verify(exactly = 1) {
             mockRepository.setProperty(
                 QUserProperties.FacebookAttribution.userPropertyCode,
                 fbAttributionId
