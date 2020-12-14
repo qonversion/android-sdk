@@ -23,16 +23,15 @@ class QAttributionManagerTest {
 
     @Test
     fun attribution() {
-        val appsFlyerUID = "appsFlyerUID"
         val key = "key"
         val value = "value"
         val conversionInfo = mutableMapOf<String, String>()
         conversionInfo[key] = value
 
-        attributionManager.attribution(conversionInfo, AttributionSource.APPSFLYER, appsFlyerUID)
+        attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
 
         verify(exactly = 1) {
-            mockRepository.attribution(conversionInfo, AttributionSource.APPSFLYER.id, appsFlyerUID)
+            mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
         }
     }
 }
