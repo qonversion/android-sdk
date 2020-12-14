@@ -15,7 +15,6 @@ object Qonversion : LifecycleDelegate {
 
     private const val SDK_VERSION = "2.2.0"
 
-    private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
@@ -75,10 +74,8 @@ object Qonversion : LifecycleDelegate {
             isDebugMode
         )
 
-        this.repository = repository
-        userPropertiesManager =
-            QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
-        attributionManager = QAttributionManager()
+        userPropertiesManager = QUserPropertiesManager(context, repository)
+        attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)
 
@@ -204,7 +201,8 @@ object Qonversion : LifecycleDelegate {
         conversionInfo: Map<String, Any>,
         from: AttributionSource
     ) {
-        repository.attribution(conversionInfo, from.id)
+        attributionManager?.attribution(conversionInfo, from)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
