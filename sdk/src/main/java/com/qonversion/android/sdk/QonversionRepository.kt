@@ -4,6 +4,7 @@ import android.app.Application
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
@@ -33,13 +34,19 @@ class QonversionRepository private constructor(
     private val logger: Logger,
     private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
-    private val requestValidator: Validator<QonversionRequest>
+    private val requestValidator: Validator<QonversionRequest>,
+    private val isDebugMode: Boolean
 ) {
     private var advertisingId: String? = null
 
     // Public functions
 
-    fun init(installDate: Long, idfa: String? = null, purchases: List<Purchase>? = null, callback: QonversionLaunchCallback?) {
+    fun init(
+        installDate: Long,
+        idfa: String? = null,
+        purchases: List<Purchase>? = null,
+        callback: QonversionLaunchCallback?
+    ) {
         advertisingId = idfa
         initRequest(installDate, trackingEnabled, key, sdkVersion, idfa, purchases, callback)
     }
@@ -52,12 +59,16 @@ class QonversionRepository private constructor(
         purchaseRequest(installDate, purchase, callback)
     }
 
-    fun restore(installDate: Long, historyRecords: List<PurchaseHistoryRecord>, callback: QonversionPermissionsCallback?) {
+    fun restore(
+        installDate: Long,
+        historyRecords: List<PurchaseHistoryRecord>,
+        callback: QonversionPermissionsCallback?
+    ) {
         restoreRequest(installDate, historyRecords, callback)
     }
 
-    fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
-        val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
+    fun attribution(conversionInfo: Map<String, Any>, from: String) {
+        val attributionRequest = createAttributionRequest(conversionInfo, from)
         if (requestValidator.valid(attributionRequest)) {
             logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
@@ -79,7 +90,10 @@ class QonversionRepository private constructor(
 
     // Private functions
 
-    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
+    private fun createAttributionRequest(
+        conversionInfo: Map<String, Any>,
+        from: String
+    ): QonversionRequest {
         val uid = storage.load()
         val tracking = if(trackingEnabled) 1 else 0
         return AttributionRequest(
@@ -91,8 +105,7 @@ class QonversionRepository private constructor(
             clientUid = uid,
             providerData = ProviderData(
                 data = conversionInfo,
-                provider = from,
-                uid = conversionUid
+                provider = from
             )
         )
     }
@@ -141,6 +154,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
@@ -196,7 +210,7 @@ class QonversionRepository private constructor(
     }
 
     private fun convertPurchaseDetails(purchase: Purchase): PurchaseDetails {
-        val purchaseDetail = PurchaseDetails(
+        return PurchaseDetails(
             purchase.productId,
             purchase.purchaseToken,
             purchase.purchaseTime,
@@ -208,20 +222,16 @@ class QonversionRepository private constructor(
             purchase.periodUnitsCount,
             null
         )
-
-        return purchaseDetail
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
-        val histories: List<History> = historyRecords.map {
+        return historyRecords.map {
             History(
                 it.sku,
                 it.purchaseToken,
                 it.purchaseTime.milliSecondsToSeconds()
             )
         }
-
-        return histories
     }
 
     private fun restoreRequest(
@@ -239,6 +249,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             history = history
         )
 
@@ -256,7 +267,10 @@ class QonversionRepository private constructor(
         }
     }
 
-    private fun handlePermissionsResponse(response: retrofit2.Response<BaseResponse<QLaunchResult>>, callback: QonversionPermissionsCallback?) {
+    private fun handlePermissionsResponse(
+        response: retrofit2.Response<BaseResponse<QLaunchResult>>,
+        callback: QonversionPermissionsCallback?
+    ) {
         val body = response.body()
         if (body != null && body.success) {
             callback?.onSuccess(body.data.permissions)
@@ -285,6 +299,7 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
 
@@ -348,7 +363,8 @@ class QonversionRepository private constructor(
             logger: Logger,
             environmentProvider: EnvironmentProvider,
             config: QonversionConfig,
-            internalUserId: String?
+            internalUserId: String?,
+            isDebugMode: Boolean
         ): QonversionRepository {
 
             val client = OkHttpClient.Builder()
@@ -385,7 +401,8 @@ class QonversionRepository private constructor(
                 logger,
                 internalUserId,
                 requestQueue,
-                RequestValidator()
+                RequestValidator(),
+                isDebugMode
             )
         }
     }

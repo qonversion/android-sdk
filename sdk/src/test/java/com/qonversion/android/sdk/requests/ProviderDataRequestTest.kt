@@ -28,19 +28,17 @@ class ProviderDataRequestTest {
             data = mutableMapOf(
                 "any_string_key" to "any_string_value",
                 "any_boolean_key" to true,
-                "any_int_key" to 100.toInt(),
+                "any_int_key" to 100,
                 "any_long_key" to Long.MAX_VALUE,
-                "any_double_key" to 1000000.0000.toDouble()
+                "any_double_key" to 1000000.0000
             ),
-            provider = "provider_name",
-            uid = "provider_uid"
+            provider = "provider_name"
         ))
 
         val jsonObj = JSONObject(json)
 
         Assert.assertTrue(jsonObj.has("d"))
         Assert.assertTrue(jsonObj.has("provider"))
-        Assert.assertTrue(jsonObj.has("uid"))
 
         val data : JSONObject = jsonObj.get("d") as JSONObject
 
@@ -54,6 +52,6 @@ class ProviderDataRequestTest {
         Assert.assertEquals(data["any_boolean_key"] as Boolean, true)
         Assert.assertEquals(data["any_int_key"] as Int, 100)
         Assert.assertEquals(data["any_long_key"] as Long, Long.MAX_VALUE)
-        Assert.assertEquals(data["any_double_key"] as Double, 1000000.0000.toDouble(), 0.0.toDouble())
+        Assert.assertEquals(data["any_double_key"] as Double, 1000000.0000, 0.0)
     }
 }

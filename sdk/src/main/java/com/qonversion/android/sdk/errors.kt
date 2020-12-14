@@ -47,14 +47,18 @@ fun Throwable.toQonversionError(): QonversionError {
 fun <T> Response<T>.toQonversionError(): QonversionError {
     val data = "data"
     val message = "message"
-    var errorMessage = ""
+    var errorMessage = "failed to parse the backend response"
 
     errorBody()?.let {
-        val jsonObjError = JSONObject(it.string())
-        if (jsonObjError.has(data)) {
-            val jsonObjData = jsonObjError.getJSONObject(data)
-            errorMessage += if (jsonObjData.has(message)) jsonObjData.getString(message) else ""
-        }
+        try {
+            val jsonObjError = JSONObject(it.string())
+            if (jsonObjError.has(data)) {
+                val jsonObjData = jsonObjError.getJSONObject(data)
+                if (jsonObjData.has(message)) {
+                    errorMessage = jsonObjData.getString(message)
+                }
+            }
+        } catch (e: JSONException) { }
     }
 
     return QonversionError(QonversionErrorCode.BackendError,  "HTTP status code=${this.code()}, errorMessage=$errorMessage")

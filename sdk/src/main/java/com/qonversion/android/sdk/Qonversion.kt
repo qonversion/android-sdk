@@ -2,6 +2,7 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
+import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
@@ -12,12 +13,13 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.0.2"
+    private const val SDK_VERSION = "2.2.0"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
     private var logger = ConsoleLogger()
+    private var isDebugMode = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -68,7 +70,8 @@ object Qonversion : LifecycleDelegate {
             logger,
             environment,
             config,
-            null
+            null,
+            isDebugMode
         )
 
         userPropertiesManager = QUserPropertiesManager(context, repository)
@@ -192,15 +195,13 @@ object Qonversion : LifecycleDelegate {
      * Send your attribution data
      * @param conversionInfo map received by the attribution source
      * @param from Attribution source
-     * @param conversionUid conversion uid
      */
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource,
-        conversionUid: String
+        from: AttributionSource
     ) {
-        attributionManager?.attribution(conversionInfo, from, conversionUid)
+        attributionManager?.attribution(conversionInfo, from)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -234,6 +235,11 @@ object Qonversion : LifecycleDelegate {
     fun setUserID(value: String) {
         userPropertiesManager?.setUserID(value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    @JvmStatic
+    fun setDebugMode() {
+        isDebugMode = true
     }
 
     // Private functions
