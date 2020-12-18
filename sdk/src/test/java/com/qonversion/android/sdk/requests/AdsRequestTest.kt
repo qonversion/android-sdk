@@ -23,21 +23,17 @@ class AdsRequestTest {
 
     @Test
     fun adsRequestWithNullEdfa() {
-        val json = adapter.toJson(AdsDto(trackingEnabled = true, edfa = null))
+        val json = adapter.toJson(AdsDto(edfa = null))
         val jsonObj = JSONObject(json)
-        Assert.assertTrue(jsonObj.has("trackingEnabled"))
         Assert.assertFalse(jsonObj.has("edfa"))
-        Assert.assertEquals(true, jsonObj.get("trackingEnabled"))
         Assert.assertTrue(jsonObj.isNull("edfa"))
     }
 
     @Test
     fun adsRequestWithCorrectData() {
-        val json = adapter.toJson(AdsDto(trackingEnabled = true, edfa = "edfa"))
+        val json = adapter.toJson(AdsDto(edfa = "edfa"))
         val jsonObj = JSONObject(json)
-        Assert.assertTrue(jsonObj.has("trackingEnabled"))
         Assert.assertTrue(jsonObj.has("edfa"))
-        Assert.assertEquals(true, jsonObj.get("trackingEnabled"))
         Assert.assertEquals("edfa", jsonObj.get("edfa"))
     }
 }

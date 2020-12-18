@@ -28,7 +28,7 @@ class DeviceRequestTest {
     fun deviceRequestWithCorrectData() {
         val json = adapter.toJson(Device(
             os = Os(),
-            ads = AdsDto(true, "edfa"),
+            ads = AdsDto("edfa"),
             deviceId = "user_device_id",
             model = "user_device_model",
             carrier = "user_device_carrier",

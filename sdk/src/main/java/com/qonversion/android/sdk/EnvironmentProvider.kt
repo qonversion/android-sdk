@@ -13,7 +13,6 @@ import com.qonversion.android.sdk.dto.device.AdsDto
 import com.qonversion.android.sdk.dto.device.Device
 import com.qonversion.android.sdk.dto.device.Os
 import com.qonversion.android.sdk.dto.device.Screen
-import java.time.ZoneId
 import java.util.*
 
 class EnvironmentProvider(private val context: Context) {
@@ -22,7 +21,7 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(trackingEnabled: Int, edfa: String? = null): Environment = Environment(
+    fun getInfo(edfa: String? = null): Environment = Environment(
         getVersionName(),
         getCarrier(),
         getDeviceId(),
@@ -34,7 +33,6 @@ class EnvironmentProvider(private val context: Context) {
         getTimeZone(),
         "android",
         getCountry(),
-        trackingEnabled,
         edfa
     )
 
