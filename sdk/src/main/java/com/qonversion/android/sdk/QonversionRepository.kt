@@ -32,7 +32,6 @@ class QonversionRepository private constructor(
     private val trackingEnabled: Boolean,
     private val key: String,
     private val logger: Logger,
-    private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
     private val isDebugMode: Boolean
@@ -153,7 +152,6 @@ class QonversionRepository private constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
@@ -248,7 +246,6 @@ class QonversionRepository private constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             history = history
         )
@@ -298,7 +295,6 @@ class QonversionRepository private constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
@@ -363,7 +359,6 @@ class QonversionRepository private constructor(
             logger: Logger,
             environmentProvider: EnvironmentProvider,
             config: QonversionConfig,
-            internalUserId: String?,
             isDebugMode: Boolean
         ): QonversionRepository {
 
@@ -399,7 +394,6 @@ class QonversionRepository private constructor(
                 config.trackingEnabled,
                 config.key,
                 logger,
-                internalUserId,
                 requestQueue,
                 RequestValidator(),
                 isDebugMode

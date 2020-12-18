@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
@@ -70,7 +69,6 @@ object Qonversion : LifecycleDelegate {
             logger,
             environment,
             config,
-            null,
             isDebugMode
         )
 
