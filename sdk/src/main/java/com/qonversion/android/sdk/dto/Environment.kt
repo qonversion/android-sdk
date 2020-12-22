@@ -2,8 +2,7 @@ package com.qonversion.android.sdk.dto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import com.qonversion.android.sdk.dto.app.App
-import com.qonversion.android.sdk.dto.device.Device
+
 @JsonClass(generateAdapter = true)
 data class Environment(
     @Json(name = "app_version") val app_version: String,
@@ -18,5 +17,6 @@ data class Environment(
     @Json(name = "platform") val platform: String,
     @Json(name = "country") val country: String,
     @Json(name = "tracking_enabled") val trackingEnabled: Int,
-    @Json(name = "advertiser_id") val advertiserId: String?
+    @Json(name = "advertiser_id") val advertiserId: String?,
+    @Json(name = "push_token") val pushToken: String?
 )

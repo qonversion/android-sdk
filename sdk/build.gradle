@@ -108,10 +108,12 @@ ext {
     moshiVersion = '1.9.2'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.8'
+    interceptor_version = '4.2.2'
     billing = '3.0.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
+    dagger_version = '2.24'
 
     kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
@@ -128,7 +130,8 @@ ext {
     network = [
             core              : "com.squareup.retrofit2:retrofit:$retrofit_version",
             moshiConverter    : "com.squareup.retrofit2:converter-moshi:$retrofit_version",
-            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version"
+            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version",
+            interceptor       : "com.squareup.okhttp3:logging-interceptor:$interceptor_version"
     ]
 
     lifecycle = [
@@ -145,47 +148,75 @@ ext {
           api   : "org.junit.jupiter:junit-jupiter-api:$junit_version",
           engine: "org.junit.jupiter:junit-jupiter-engine:$junit_version"
     ]
+
+    dagger = [
+            core   : "com.google.dagger:dagger:$dagger_version",
+            compiler: "com.google.dagger:dagger-compiler:$dagger_version"
+    ]
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    // Moshi
     implementation moshi.core
     implementation moshi.adapters
     kapt moshi.koltin_codegen
 
+    // UI
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+
+    // Billing
     implementation billing.billingClient
 
+    // Network
     implementation network.core
     implementation network.okhttp
     implementation network.moshiConverter
-    implementation "androidx.preference:preference:1.1.1"
+    implementation network.interceptor
 
-    implementation "org.jetbrains.kotlin:kotlin-reflect"
 
+    // Lifecycle components
     implementation lifecycle.runtime
     implementation lifecycle.extensions
     kapt lifecycle.compiler
 
-    testImplementation 'junit:junit:4.13'
+    // Dagger
+    implementation dagger.core
+    kapt dagger.compiler
 
+    // Preference
+    implementation "androidx.preference:preference:1.1.1"
+
+    // Kotlin Reflect
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    // JUnit
+    testImplementation 'junit:junit:4.13'
     testImplementation junit.api
     testRuntimeOnly junit.engine
+
+    // AssertJ
     testImplementation assertj.core
 
-    testImplementation 'androidx.test:core:1.2.0'
+    // Robolectric
+    testImplementation "org.robolectric:robolectric:4.3.1"
 
+    // MockK
+    testImplementation 'io.mockk:mockk:1.10.0'
+
+    // Mockito
     testImplementation 'org.mockito:mockito-core:2.23.0'
+
+    testImplementation 'androidx.test:core:1.2.0'
 
     testImplementation 'androidx.test.ext:junit:1.1.1'
 
     testImplementation "org.json:json:20140107"
 
-    testImplementation "org.robolectric:robolectric:4.3.1"
-
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 
-    testImplementation 'io.mockk:mockk:1.10.0'
 }
 
 apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'

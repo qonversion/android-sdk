@@ -2,8 +2,7 @@ package com.qonversion.android.sdk.api
 
 import com.qonversion.android.sdk.dto.*
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface Api {
 
@@ -21,5 +20,19 @@ interface Api {
 
     @POST("v1/properties")
     fun properties(@Body request: PropertiesRequest): Call<BaseResponse<Response>>
+
+    @GET("v2/screens/{id}")
+    fun screens(
+        @HeaderMap headers: ApiHeaders.Screens,
+        @Path("id") screenId: String
+    ): Call<ResponseV2<QScreen>>
+
+
+    @POST("/v2/screens/{id}/views")
+    fun views(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Path("id") screenId: String,
+        @Body request: ViewsRequest
+    ): Call<Void>
 
 }

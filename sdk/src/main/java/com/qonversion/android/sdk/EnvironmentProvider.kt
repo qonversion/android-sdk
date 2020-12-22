@@ -22,7 +22,7 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(trackingEnabled: Int, edfa: String? = null): Environment = Environment(
+    fun getInfo(trackingEnabled: Int, edfa: String? = null, pushToken: String? = null): Environment = Environment(
         getVersionName(),
         getCarrier(),
         getDeviceId(),
@@ -35,7 +35,8 @@ class EnvironmentProvider(private val context: Context) {
         "android",
         getCountry(),
         trackingEnabled,
-        edfa
+        edfa,
+        pushToken
     )
 
     private fun getAppInfo(): App = App(

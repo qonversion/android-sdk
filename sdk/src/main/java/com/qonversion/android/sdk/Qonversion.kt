@@ -4,21 +4,21 @@ import android.app.Activity
 import android.app.Application
 import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
+import com.qonversion.android.sdk.screens.QAutomationDelegate
+import com.qonversion.android.sdk.screens.QScreenManager
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.storage.TokenStorage
-import com.qonversion.android.sdk.storage.UserPropertiesStorage
-import com.qonversion.android.sdk.validator.TokenValidator
+import com.qonversion.android.sdk.di.QDependencyInjector
+import com.qonversion.android.sdk.dto.QLaunchResult
+
 
 object Qonversion : LifecycleDelegate {
-
-    private const val SDK_VERSION = "2.0.2"
 
     private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
+    private var screenManager: QScreenManager? = null
     private var logger = ConsoleLogger()
 
     init {
@@ -52,28 +52,13 @@ object Qonversion : LifecycleDelegate {
         observeMode: Boolean,
         callback: QonversionLaunchCallback? = null
     ) {
+        QDependencyInjector.buildAppComponent(context, key)
+
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        val storage = TokenStorage(
-            PreferenceManager.getDefaultSharedPreferences(context),
-            TokenValidator()
-        )
-        val propertiesStorage = UserPropertiesStorage()
-        val environment = EnvironmentProvider(context)
-        val config = QonversionConfig(key, SDK_VERSION, true)
-        val repository = QonversionRepository.initialize(
-            context,
-            storage,
-            propertiesStorage,
-            logger,
-            environment,
-            config,
-            null
-        )
-
-        this.repository = repository
+        this.repository = QDependencyInjector.appComponent.repository()
         userPropertiesManager =
             QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
         attributionManager = QAttributionManager()
@@ -81,7 +66,20 @@ object Qonversion : LifecycleDelegate {
         val factory = QonversionFactory(context, logger)
 
         productCenterManager = factory.createProductCenterManager(repository, observeMode)
-        productCenterManager?.launch(callback)
+        productCenterManager?.launch(object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                val screen = launchResult.userAutomations.firstOrNull()
+                if (screen != null) {
+                    screenManager?.loadScreen(screen.id)
+                }
+
+                callback?.onSuccess(launchResult)
+            }
+
+            override fun onError(error: QonversionError) {
+                callback?.onError(error)
+            }
+        })
     }
 
     /**
@@ -239,10 +237,33 @@ object Qonversion : LifecycleDelegate {
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    // Private functions
+    fun setScreenCallback(automationDelegate: QAutomationDelegate) {
+        QDependencyInjector.buildActionComponent(automationDelegate)
+        screenManager = QDependencyInjector.screenComponent.actionManager()
+    }
 
+    fun setPushToken(token: String) {
+        screenManager?.setPushToken(token)
+            ?: logScreenErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    fun handlePushIfPossible(url: String): Boolean {
+        val isPossibleToHandlePush = screenManager?.handlePushIfPossible(url)
+        if (isPossibleToHandlePush == null) {
+            logScreenErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return false
+        }
+
+        return isPossibleToHandlePush
+    }
+
+    // Private functions
     private fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
+    }
+
+    private fun logScreenErrorForFunctionName(functionName: String?) {
+        logger.release("$functionName function can not be executed. It looks like setActionCallback was not called.")
     }
 }
 

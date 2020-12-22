@@ -46,16 +46,35 @@ fun Throwable.toQonversionError(): QonversionError {
 
 fun <T> Response<T>.toQonversionError(): QonversionError {
     val data = "data"
-    val message = "message"
-    var errorMessage = ""
+    val error = "error"
+    val meta = "_meta"
+    var errorMessage = String()
 
     errorBody()?.let {
-        val jsonObjError = JSONObject(it.string())
-        if (jsonObjError.has(data)) {
-            val jsonObjData = jsonObjError.getJSONObject(data)
-            errorMessage += if (jsonObjData.has(message)) jsonObjData.getString(message) else ""
+        try {
+            val errorObj = JSONObject(it.string())
+
+            if (errorObj.has(data)) {
+                errorMessage = errorObj.getErrorMessage(data)
+            }
+            if (errorObj.has(error)) {
+                errorMessage = errorObj.getErrorMessage(error)
+            }
+            if (errorObj.has(meta)) {
+                errorMessage += errorObj.getErrorMessage(meta)
+            }
+
+        } catch (e: JSONException) {
+            errorMessage = formatError(error, "failed to parse the backend response")
         }
     }
 
-    return QonversionError(QonversionErrorCode.BackendError,  "HTTP status code=${this.code()}, errorMessage=$errorMessage")
+    return QonversionError(QonversionErrorCode.BackendError, "HTTP status code=${this.code()}$errorMessage")
 }
+
+private fun formatError(name: String, value: String) = String.format(", %s=%s", name, value)
+
+private fun JSONObject.getErrorMessage(field: String) = formatError(
+    field,
+    getJSONObject(field).toString()
+)
