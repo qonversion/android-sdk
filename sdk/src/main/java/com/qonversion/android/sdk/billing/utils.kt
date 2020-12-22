@@ -7,9 +7,11 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun Int.toBoolean() = if (this == 0) false else true
+fun Int.toBoolean() = this != 0
 
 fun Boolean.toInt() = if (this) 1 else 0
+
+fun Boolean.stringValue() = if (this) "1" else "0"
 
 fun BillingResult.getDescription() =
     "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getDescription()}"

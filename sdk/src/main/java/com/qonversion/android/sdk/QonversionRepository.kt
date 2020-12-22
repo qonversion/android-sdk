@@ -4,6 +4,7 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
@@ -21,12 +22,11 @@ class QonversionRepository internal constructor(
     private var propertiesStorage: PropertiesStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
-    private val trackingEnabled: Boolean,
     private val key: String,
     private val logger: Logger,
-    private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
+    private val isDebugMode: Boolean,
     private val headersProvider: ApiHeadersProvider
 ) {
     private var advertisingId: String? = null
@@ -34,10 +34,15 @@ class QonversionRepository internal constructor(
 
     // Public functions
 
-    fun init(installDate: Long, idfa: String? = null, purchases: List<Purchase>? = null, callback: QonversionLaunchCallback?) {
+    fun init(
+        installDate: Long,
+        idfa: String? = null,
+        purchases: List<Purchase>? = null,
+        callback: QonversionLaunchCallback?
+    ) {
         advertisingId = idfa
         this.installDate = installDate
-        initRequest(installDate, purchases, callback)
+        initRequest(installDate, idfa, purchases, callback)
     }
 
     fun purchase(
@@ -48,12 +53,16 @@ class QonversionRepository internal constructor(
         purchaseRequest(installDate, purchase, callback)
     }
 
-    fun restore(installDate: Long, historyRecords: List<PurchaseHistoryRecord>, callback: QonversionPermissionsCallback?) {
+    fun restore(
+        installDate: Long,
+        historyRecords: List<PurchaseHistoryRecord>,
+        callback: QonversionPermissionsCallback?
+    ) {
         restoreRequest(installDate, historyRecords, callback)
     }
 
-    fun attribution(conversionInfo: Map<String, Any>, from: String, conversionUid: String) {
-        val attributionRequest = createAttributionRequest(conversionInfo, from, conversionUid)
+    fun attribution(conversionInfo: Map<String, Any>, from: String) {
+        val attributionRequest = createAttributionRequest(conversionInfo, from)
         if (requestValidator.valid(attributionRequest)) {
             logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
             sendQonversionRequest(attributionRequest)
@@ -119,20 +128,19 @@ class QonversionRepository internal constructor(
 
     // Private functions
 
-    private fun createAttributionRequest(conversionInfo: Map<String, Any>, from: String, conversionUid: String): QonversionRequest {
+    private fun createAttributionRequest(
+        conversionInfo: Map<String, Any>,
+        from: String
+    ): QonversionRequest {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         return AttributionRequest(
-            d = environmentProvider.getInfo(
-                tracking
-            ),
+            d = environmentProvider.getInfo(),
             v = sdkVersion,
             accessToken = key,
             clientUid = uid,
             providerData = ProviderData(
                 data = conversionInfo,
-                provider = from,
-                uid = conversionUid
+                provider = from
             )
         )
     }
@@ -173,14 +181,13 @@ class QonversionRepository internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val purchaseRequest = PurchaseRequest(
             installDate,
-            device = environmentProvider.getInfo(tracking, advertisingId),
+            device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
@@ -236,7 +243,7 @@ class QonversionRepository internal constructor(
     }
 
     private fun convertPurchaseDetails(purchase: Purchase): PurchaseDetails {
-        val purchaseDetail = PurchaseDetails(
+        return PurchaseDetails(
             purchase.productId,
             purchase.purchaseToken,
             purchase.purchaseTime,
@@ -248,20 +255,16 @@ class QonversionRepository internal constructor(
             purchase.periodUnitsCount,
             null
         )
-
-        return purchaseDetail
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
-        val histories: List<History> = historyRecords.map {
+        return historyRecords.map {
             History(
                 it.sku,
                 it.purchaseToken,
                 it.purchaseTime.milliSecondsToSeconds()
             )
         }
-
-        return histories
     }
 
     private fun restoreRequest(
@@ -270,15 +273,14 @@ class QonversionRepository internal constructor(
         callback: QonversionPermissionsCallback?
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(tracking, advertisingId),
+            device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             history = history
         )
 
@@ -296,7 +298,10 @@ class QonversionRepository internal constructor(
         }
     }
 
-    private fun handlePermissionsResponse(response: retrofit2.Response<BaseResponse<QLaunchResult>>, callback: QonversionPermissionsCallback?) {
+    private fun handlePermissionsResponse(
+        response: retrofit2.Response<BaseResponse<QLaunchResult>>,
+        callback: QonversionPermissionsCallback?
+    ) {
         val body = response.body()
         if (body != null && body.success) {
             callback?.onSuccess(body.data.permissions)
@@ -313,15 +318,14 @@ class QonversionRepository internal constructor(
         token: String? = null
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(tracking, advertisingId, token),
+            device = environmentProvider.getInfo(advertisingId, token),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
+            debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
 

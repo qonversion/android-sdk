@@ -6,6 +6,6 @@ abstract class RequestData {
     abstract val version: String
     abstract val accessToken: String
     abstract val clientUid: String?
-    abstract val customUid: String?
     abstract val receipt: String
+    abstract val debugMode: String
 }
