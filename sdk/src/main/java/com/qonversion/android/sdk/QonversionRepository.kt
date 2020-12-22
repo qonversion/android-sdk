@@ -273,7 +273,7 @@ class QonversionRepository private constructor(
 
     private fun initRequest(
         installDate: Long,
-        edfa: String?,
+        idfa: String?,
         purchases: List<Purchase>?,
         callback: QonversionLaunchCallback?
     ) {
@@ -281,7 +281,7 @@ class QonversionRepository private constructor(
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(edfa),
+            device = environmentProvider.getInfo(idfa),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,

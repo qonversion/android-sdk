@@ -5,14 +5,8 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
-import android.util.DisplayMetrics
-import android.view.WindowManager
 import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.app.App
-import com.qonversion.android.sdk.dto.device.AdsDto
-import com.qonversion.android.sdk.dto.device.Device
 import com.qonversion.android.sdk.dto.device.Os
-import com.qonversion.android.sdk.dto.device.Screen
 import java.util.*
 
 class EnvironmentProvider(private val context: Context) {
@@ -21,7 +15,7 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(edfa: String? = null): Environment = Environment(
+    fun getInfo(idfa: String? = null): Environment = Environment(
         getVersionName(),
         getCarrier(),
         getDeviceId(),
@@ -33,67 +27,13 @@ class EnvironmentProvider(private val context: Context) {
         getTimeZone(),
         "android",
         getCountry(),
-        edfa
+        idfa
     )
-
-    private fun getAppInfo(): App = App(
-        name = getAppName(),
-        version = getVersionName(),
-        build = getBuildName(),
-        bundle = getAppId()
-    )
-
-    private fun getDeviceInfo(ads: AdsDto): Device = Device(
-        os = Os(),
-        screen = getScreenResolution(),
-        deviceId = getDeviceId(),
-        model = Build.MODEL,
-        carrier = getCarrier(),
-        locale = getLocale(),
-        timezone = getTimeZone(),
-        ads = ads
-    )
-
-    private fun getAppId(): String = context.packageName
 
     private fun getVersionName(): String = try {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName
     } catch (throwable: Throwable) {
         UNKNOWN
-    }
-
-    private fun getBuildName(): String = try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            context.packageManager
-                .getPackageInfo(context.packageName, 0).longVersionCode.toString()
-        } else {
-            context.packageManager
-                .getPackageInfo(context.packageName, 0).versionCode.toString()
-        }
-    } catch (throwable: Throwable) {
-        UNKNOWN
-    }
-
-    private fun getAppName(): String = try {
-        val applicationInfo = context.applicationInfo
-        val stringId = applicationInfo.labelRes
-        if (stringId == 0) {
-            applicationInfo.nonLocalizedLabel.toString()
-        } else {
-            context.getString(stringId)
-        }
-    } catch (throwable: Throwable) {
-        UNKNOWN
-    }
-
-    private fun getScreenResolution(): Screen {
-        val metrics = DisplayMetrics().apply {
-            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getMetrics(this)
-        }
-        val width = metrics.widthPixels
-        val height = metrics.heightPixels
-
-        return Screen(width.toString(), height.toString())
     }
 
     @SuppressLint("HardwareIds")
