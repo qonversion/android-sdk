@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.di.component
 
+import android.content.SharedPreferences
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.module.AppModule
 import com.qonversion.android.sdk.di.module.NetworkModule
@@ -13,8 +15,7 @@ import javax.inject.Named
 @Component(modules = [AppModule::class, RepositoryModule::class, NetworkModule::class])
 interface AppComponent {
     fun repository(): QonversionRepository
+    fun preferences(): SharedPreferences
     fun logger(): Logger
-
-    @Named("projectKey")
-    fun key(): String
+    fun config(): QonversionConfig
 }

@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.automation.ScreenData
 
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -19,5 +20,10 @@ interface QonversionPermissionsCallback {
 
 interface QonversionScreensCallback {
    fun onSuccess(htmlPage: String)
+   fun onError(error: QonversionError)
+}
+
+interface QonversionActionPointsCallback {
+   fun onSuccess(data: List<ResponseV2<ScreenData>>)
    fun onError(error: QonversionError)
 }

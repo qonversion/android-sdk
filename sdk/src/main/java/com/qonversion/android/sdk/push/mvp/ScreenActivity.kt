@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.screens.mvp
+package com.qonversion.android.sdk.push.mvp
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -14,21 +14,26 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.R
-
-import com.qonversion.android.sdk.screens.QScreenManager
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.push.QAutomationManager
 import kotlinx.android.synthetic.main.activity_screen.*
+import java.lang.Exception
 import javax.inject.Inject
+
 
 class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     @Inject
-    lateinit var screenManager: QScreenManager
+    lateinit var automationManager: QAutomationManager
 
     @Inject
     lateinit var presenter: ScreenPresenter
+
+    @Inject
+    lateinit var logger: Logger
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,19 +56,24 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun openLink(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(intent)
-        close()
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            logger.release("Couldn't find the Activity to handle Intent with deeplink")
+
+        }
+//        close()
     }
 
     override fun purchase(productId: String) {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                close()
+//                close()
             }
 
             override fun onError(error: QonversionError) {
-                close()
+//                close()
             }
         })
     }
@@ -71,11 +81,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                close()
+//                close()
             }
 
             override fun onError(error: QonversionError) {
-                close()
+//                close()
             }
         })
     }
@@ -95,7 +105,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     private fun injectDependencies() {
         DaggerActivityComponent.builder()
-            .screenComponent(QDependencyInjector.screenComponent)
+            .automationComponent(QDependencyInjector.automationComponent)
             .activityModule(ActivityModule(this))
             .build().inject(this)
     }

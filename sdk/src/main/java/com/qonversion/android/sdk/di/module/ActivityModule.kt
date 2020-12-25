@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.di.module
 
-import com.qonversion.android.sdk.screens.mvp.ScreenContract
+import com.qonversion.android.sdk.push.mvp.ScreenContract
 import com.qonversion.android.sdk.di.scope.ActivityScope
 import dagger.Module
 import dagger.Provides

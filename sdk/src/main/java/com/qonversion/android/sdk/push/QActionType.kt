@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.screens
+package com.qonversion.android.sdk.push
 
 enum class QActionType(val type: String) {
     Unknown("unknown"),

@@ -1,10 +1,10 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.automation
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class QScreen(
+data class Screen(
     @Json(name = "id") val id: String,
     @Json(name = "body") val htmlPage: String,
     @Json(name = "lang") val lang: String,

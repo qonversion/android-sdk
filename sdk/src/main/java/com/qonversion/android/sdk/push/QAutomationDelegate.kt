@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.screens
+package com.qonversion.android.sdk.push
 
 import android.app.Activity
 

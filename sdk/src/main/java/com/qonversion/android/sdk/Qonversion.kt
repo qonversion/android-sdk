@@ -4,12 +4,12 @@ import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
-import com.qonversion.android.sdk.screens.QAutomationDelegate
-import com.qonversion.android.sdk.screens.QScreenManager
+import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.dto.QLaunchResult
-
+import com.qonversion.android.sdk.push.QAutomationDelegate
+import com.qonversion.android.sdk.push.QAutomationManager
 
 object Qonversion : LifecycleDelegate {
 
@@ -17,7 +17,7 @@ object Qonversion : LifecycleDelegate {
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
-    private var screenManager: QScreenManager? = null
+    private var automationManager: QAutomationManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
 
@@ -28,7 +28,7 @@ object Qonversion : LifecycleDelegate {
 
     override fun onAppBackground() {
         userPropertiesManager?.forceSendProperties()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun onAppForeground() {
@@ -52,7 +52,7 @@ object Qonversion : LifecycleDelegate {
         observeMode: Boolean,
         callback: QonversionLaunchCallback? = null
     ) {
-        QDependencyInjector.buildAppComponent(context, key)
+        QDependencyInjector.buildAppComponent(context, key, isDebugMode)
 
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
@@ -67,14 +67,9 @@ object Qonversion : LifecycleDelegate {
         productCenterManager = factory.createProductCenterManager(repository, observeMode)
         productCenterManager?.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
-                val screen = launchResult.userAutomations.firstOrNull()
-                if (screen != null) {
-                    screenManager?.loadScreen(screen.id)
-                }
-
+                automationManager?.handleScreens(launchResult)
                 callback?.onSuccess(launchResult)
             }
-
             override fun onError(error: QonversionError) {
                 callback?.onError(error)
             }
@@ -91,7 +86,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
         productCenterManager?.purchaseProduct(context, id, null, null, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -110,7 +105,7 @@ object Qonversion : LifecycleDelegate {
         callback: QonversionPermissionsCallback
     ) {
         productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -137,7 +132,7 @@ object Qonversion : LifecycleDelegate {
             oldProductId,
             prorationMode,
             callback
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        ) ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -151,7 +146,7 @@ object Qonversion : LifecycleDelegate {
         callback: QonversionProductsCallback
     ) {
         productCenterManager?.loadProducts(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -164,7 +159,7 @@ object Qonversion : LifecycleDelegate {
         callback: QonversionPermissionsCallback
     ) {
         productCenterManager?.checkPermissions(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -175,7 +170,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
         productCenterManager?.restore(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -186,7 +181,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun syncPurchases() {
         productCenterManager?.syncPurchases()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -200,7 +195,7 @@ object Qonversion : LifecycleDelegate {
         from: AttributionSource
     ) {
         attributionManager?.attribution(conversionInfo, from)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -211,7 +206,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setProperty(key: QUserProperties, value: String) {
         userPropertiesManager?.setProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -222,7 +217,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
         userPropertiesManager?.setUserProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -232,42 +227,63 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setUserID(value: String) {
         userPropertiesManager?.setUserID(value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * You can set the flag to distinguish sandbox and production users.
+     * To see the sandbox users turn on the Viewing test Data toggle in Qonversion Dashboard
+     */
     @JvmStatic
     fun setDebugMode() {
         isDebugMode = true
     }
 
-    fun setScreenCallback(automationDelegate: QAutomationDelegate) {
-        QDependencyInjector.buildActionComponent(automationDelegate)
-        screenManager = QDependencyInjector.screenComponent.actionManager()
+    /**
+     *
+     */
+    @JvmStatic
+    fun setAutomationDelegate(delegate: QAutomationDelegate) {
+        QDependencyInjector.buildAutomationComponent(delegate)
+        automationManager = QDependencyInjector.automationComponent.automationManager()
     }
 
+    /**
+     *
+     */
+    @JvmStatic
     fun setPushToken(token: String) {
-        screenManager?.setPushToken(token)
-            ?: logScreenErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        automationManager?.setPushToken(token)
+            ?: logErrorForFunction(object {}.javaClass.enclosingMethod?.name, "setAutomationDelegate")
     }
 
-    fun handlePushIfPossible(url: String): Boolean {
-        val isPossibleToHandlePush = screenManager?.handlePushIfPossible(url)
+    /**
+     *
+     */
+    @JvmStatic
+    fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
+        val isPossibleToHandlePush = automationManager?.handlePushIfPossible(remoteMessage)
         if (isPossibleToHandlePush == null) {
-            logScreenErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            logErrorForFunction(object {}.javaClass.enclosingMethod?.name, "setAutomationDelegate")
             return false
         }
 
         return isPossibleToHandlePush
     }
 
+    private fun logErrorForFunction(executedFunction: String?, uncalledFunction: String = "launch"){
+        logger.release("$executedFunction function can not be executed. It looks like $uncalledFunction was not called.")
+    }
     // Private functions
     private fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
+//
+//    private fun logScreenErrorForFunctionName(functionName: String?) {
+//        logger.release("$functionName function can not be executed. It looks like setAutomationCallback was not called.")
+//    }
 
-    private fun logScreenErrorForFunctionName(functionName: String?) {
-        logger.release("$functionName function can not be executed. It looks like setActionCallback was not called.")
-    }
+
 }
 
 

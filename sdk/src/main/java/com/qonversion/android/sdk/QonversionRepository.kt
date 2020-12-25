@@ -6,6 +6,8 @@ import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.automation.ActionPointsRequest
+import com.qonversion.android.sdk.dto.automation.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -42,7 +44,7 @@ class QonversionRepository internal constructor(
     ) {
         advertisingId = idfa
         this.installDate = installDate
-        initRequest(installDate, idfa, purchases, callback)
+        initRequest(purchases, callback)
     }
 
     fun purchase(
@@ -83,7 +85,7 @@ class QonversionRepository internal constructor(
     }
 
     fun setPushToken(token: String) {
-        initRequest(installDate = installDate, token = token)
+        initRequest(token = token)
     }
 
     fun screens(
@@ -122,6 +124,35 @@ class QonversionRepository internal constructor(
             }
             onFailure = {
                 logger.release("viewsRequest - failure - ${it?.toQonversionError()}")
+            }
+        }
+    }
+
+    fun actionPoints(
+        actionType: String,
+        activeStatus: Int,
+        callback: QonversionActionPointsCallback
+    ) {
+        val uid = storage.load()
+        val actionPointsRequest = ActionPointsRequest(actionType, activeStatus)
+
+        api.actionPoints(headersProvider.getHeaders(), uid, actionPointsRequest).enqueue {
+            onResponse = {
+                val logMessage =
+                    if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
+                logger.release("viewsRequest - $logMessage")
+                val body = it.body()
+                if (body != null && it.isSuccessful) {
+                    callback.onSuccess(body)
+                } else {
+                    callback.onError(it.toQonversionError())
+                }
+            }
+            onFailure = {
+                logger.release("actionPointsRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    callback.onError(it.toQonversionError())
+                }
             }
         }
     }
@@ -312,7 +343,6 @@ class QonversionRepository internal constructor(
     }
 
     private fun initRequest(
-        installDate: Long? = null,
         purchases: List<Purchase>? = null,
         callback: QonversionLaunchCallback? = null,
         token: String? = null

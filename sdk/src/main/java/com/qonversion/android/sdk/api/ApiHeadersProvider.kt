@@ -6,7 +6,7 @@ import kotlin.collections.HashMap
 
 class ApiHeadersProvider {
 
-    private val projectKey: String = QDependencyInjector.appComponent.key()
+    private val projectKey: String = QDependencyInjector.appComponent.config().key
     private fun getLocale() = Locale.getDefault().language
 
     fun getScreenHeaders(): ApiHeaders.Screens =

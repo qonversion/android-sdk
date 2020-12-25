@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.screens.mvp
+package com.qonversion.android.sdk.push.mvp
 
 class ScreenContract {
     interface View {

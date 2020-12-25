@@ -1,18 +1,20 @@
 package com.qonversion.android.sdk.di.module
 
 import android.app.Application
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.Logger
 import dagger.Module
 import dagger.Provides
-import javax.inject.Named
 
 @Module
 class AppModule(
     private val application: Application,
-    private val projectKey: String
+    private val projectKey: String,
+    private val isDebugMode: Boolean
 ) {
     @ApplicationScope
     @Provides
@@ -29,17 +31,16 @@ class AppModule(
     @ApplicationScope
     @Provides
     fun provideConfig(): QonversionConfig {
-        return QonversionConfig(projectKey, SDK_VERSION, true)
+        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode)
     }
 
     @ApplicationScope
     @Provides
-    @Named("projectKey")
-    fun provideProjectKey(): String {
-        return projectKey
+    fun provideSharedPreferences(context: Application): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     companion object {
-        private const val SDK_VERSION = "2.0.2"
+        private const val SDK_VERSION = "2.2.0"
     }
 }

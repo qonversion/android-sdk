@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.di.module
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.api.Api
@@ -37,21 +38,20 @@ class RepositoryModule {
             propertiesStorage,
             environmentProvider,
             config.sdkVersion,
-            config.trackingEnabled,
             config.key,
             logger,
-            null,
             requestQueue,
             RequestValidator(),
+            config.isDebugMode,
             apiHeadersProvider
         )
     }
 
     @ApplicationScope
     @Provides
-    fun provideTokenStorage(context: Application): TokenStorage {
+    fun provideTokenStorage(preferences: SharedPreferences): TokenStorage {
         return TokenStorage(
-            PreferenceManager.getDefaultSharedPreferences(context),
+            preferences,
             TokenValidator()
         )
     }

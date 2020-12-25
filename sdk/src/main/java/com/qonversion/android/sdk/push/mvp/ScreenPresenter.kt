@@ -1,10 +1,10 @@
-package com.qonversion.android.sdk.screens.mvp
+package com.qonversion.android.sdk.push.mvp
 
 import android.net.Uri
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.QonversionScreensCallback
-import com.qonversion.android.sdk.screens.QActionType
+import com.qonversion.android.sdk.push.QActionType
 import javax.inject.Inject
 
 class ScreenPresenter @Inject constructor(
@@ -17,15 +17,20 @@ class ScreenPresenter @Inject constructor(
             return true
         }
 
-        when (getActionTypeFromUrl(url)) {
+        val uri = Uri.parse(url)
+        if (!uri.shouldOverrideUrlLoading()) {
+            return true
+        }
+
+        when (uri.getActionType()) {
             QActionType.Url -> {
-                val link = getParameterFromUrl(url, LINK)
+                val link = uri.getData()
                 if (link != null) {
                     view.openLink(link)
                 }
             }
             QActionType.DeepLink -> {
-                val deepLink = getParameterFromUrl(url, URL)
+                val deepLink = uri.getData()
                 if (deepLink != null) {
                     view.openLink(deepLink)
                 }
@@ -34,13 +39,13 @@ class ScreenPresenter @Inject constructor(
                 view.close()
             }
             QActionType.Navigate -> {
-                val screenId = getParameterFromUrl(url, TO)
+                val screenId = uri.getData()
                 if (screenId != null) {
                     getHtmlPageForScreen(screenId)
                 }
             }
             QActionType.Purchase -> {
-                val productId = getParameterFromUrl(url, PRODUCT)
+                val productId = uri.getData()
                 if (productId != null) {
                     view.purchase(productId)
                 }
@@ -53,22 +58,30 @@ class ScreenPresenter @Inject constructor(
         return true
     }
 
-    override fun screenShownWithId(screenId: String){
+    override fun screenShownWithId(screenId: String) {
         repository.views(screenId)
     }
 
-    private fun getActionTypeFromUrl(url: String): QActionType {
-        val uri = Uri.parse(url)
-        val actionType = uri.getQueryParameter(ACTION)
+    private fun Uri.getActionType(): QActionType {
+        val actionType = getQueryParameter(ACTION)
 
         return QActionType.fromType(actionType)
     }
 
-    private fun getParameterFromUrl(url: String, name: String): String? {
-        val uri = Uri.parse(url)
+    private fun Uri.getData() = getQueryParameter(DATA)
 
-        return uri.getQueryParameter(name)
+    private fun Uri.shouldOverrideUrlLoading() = isAutomationsHost() && isQScheme()
+
+    private fun Uri.isQScheme(): Boolean {
+        val uriScheme = scheme
+        if (uriScheme != null) {
+            val pattern = REGEX.toRegex()
+            return pattern.matches(uriScheme)
+        }
+        return false
     }
+
+    private fun Uri.isAutomationsHost() = host.equals(HOST)
 
     private fun getHtmlPageForScreen(screenId: String) {
         repository.screens(screenId, object : QonversionScreensCallback {
@@ -84,9 +97,9 @@ class ScreenPresenter @Inject constructor(
 
     companion object {
         private const val ACTION = "action"
-        private const val TO = "to"
-        private const val PRODUCT = "product"
-        private const val URL = "url"
-        private const val LINK = "link"
+        private const val DATA = "data"
+        private const val SCHEMA = "q-"
+        private const val HOST = "automations"
+        private const val REGEX = "$SCHEMA.+"
     }
 }

@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.api
 
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.automation.*
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -25,8 +26,7 @@ interface Api {
     fun screens(
         @HeaderMap headers: ApiHeaders.Screens,
         @Path("id") screenId: String
-    ): Call<ResponseV2<QScreen>>
-
+    ): Call<ResponseV2<Screen>>
 
     @POST("/v2/screens/{id}/views")
     fun views(
@@ -34,5 +34,12 @@ interface Api {
         @Path("id") screenId: String,
         @Body request: ViewsRequest
     ): Call<Void>
+
+    @GET("v2/users/{id}/action-points")
+    fun actionPoints(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Path("id") userId: String,
+        @Body request: ActionPointsRequest
+    ): Call<List<ResponseV2<ScreenData>>>
 
 }

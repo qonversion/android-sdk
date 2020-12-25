@@ -1,10 +1,10 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.automation
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class QAutomation(
+data class ActionPointsRequest (
     @Json(name = "type") val type: String,
-    @Json(name = "id") val id: String
+    @Json(name = "active") val active: Int
 )

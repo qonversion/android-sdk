@@ -192,6 +192,10 @@ dependencies {
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:26.1.0')
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+
     // JUnit
     testImplementation 'junit:junit:4.13'
     testImplementation junit.api
