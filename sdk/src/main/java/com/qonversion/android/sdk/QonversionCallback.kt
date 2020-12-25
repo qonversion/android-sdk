@@ -1,7 +1,8 @@
 package com.qonversion.android.sdk
 
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.automation.ScreenData
+import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QProduct
 
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -15,15 +16,5 @@ interface QonversionProductsCallback {
 
 interface QonversionPermissionsCallback {
    fun onSuccess(permissions: Map<String, QPermission>)
-   fun onError(error: QonversionError)
-}
-
-interface QonversionScreensCallback {
-   fun onSuccess(htmlPage: String)
-   fun onError(error: QonversionError)
-}
-
-interface QonversionActionPointsCallback {
-   fun onSuccess(data: List<ResponseV2<ScreenData>>)
    fun onError(error: QonversionError)
 }

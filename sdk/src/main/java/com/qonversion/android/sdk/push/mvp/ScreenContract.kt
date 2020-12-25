@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.push.mvp
 
+import com.qonversion.android.sdk.QonversionError
+
 class ScreenContract {
     interface View {
         fun openScreen(screenId: String, htmlPage: String)
@@ -12,7 +14,7 @@ class ScreenContract {
 
         fun close()
 
-        fun onError(message: String)
+        fun onError(error: QonversionError)
     }
 
     internal interface Presenter {

@@ -2,12 +2,13 @@ package com.qonversion.android.sdk.di.module
 
 import android.app.Application
 import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
-import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.EnvironmentProvider
+import com.qonversion.android.sdk.QonversionConfig
+import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.RequestsQueue
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.di.scope.ApplicationScope
-import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
@@ -26,10 +27,10 @@ class RepositoryModule {
         retrofit: Retrofit,
         tokenStorage: TokenStorage,
         propertiesStorage: PropertiesStorage,
-        logger: Logger,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
-        requestQueue: RequestsQueue,
+        requestsQueue: RequestsQueue,
+        requestValidator: RequestValidator,
         apiHeadersProvider: ApiHeadersProvider
     ): QonversionRepository {
         return QonversionRepository(
@@ -39,10 +40,9 @@ class RepositoryModule {
             environmentProvider,
             config.sdkVersion,
             config.key,
-            logger,
-            requestQueue,
-            RequestValidator(),
             config.isDebugMode,
+            requestsQueue,
+            requestValidator,
             apiHeadersProvider
         )
     }
@@ -70,10 +70,14 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideRequestQueue(
-        logger: Logger
-    ): RequestsQueue {
-        return RequestsQueue(logger)
+    fun provideRequestValidator(): RequestValidator {
+        return RequestValidator()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideRequestsQueue(): RequestsQueue {
+        return RequestsQueue()
     }
 
     @ApplicationScope

@@ -2,13 +2,11 @@ package com.qonversion.android.sdk.push.mvp
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
@@ -18,12 +16,12 @@ import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.push.QAction
+import com.qonversion.android.sdk.push.QActionType
 import com.qonversion.android.sdk.push.QAutomationManager
 import kotlinx.android.synthetic.main.activity_screen.*
-import java.lang.Exception
 import javax.inject.Inject
-
 
 class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     @Inject
@@ -32,8 +30,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     @Inject
     lateinit var presenter: ScreenPresenter
 
-    @Inject
-    lateinit var logger: Logger
+    private val logger = ConsoleLogger()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,19 +58,26 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             startActivity(intent)
         } catch (e: Exception) {
             logger.release("Couldn't find the Activity to handle Intent with deeplink")
-
         }
-//        close()
     }
 
     override fun purchase(productId: String) {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-//                close()
+                val map = mutableMapOf<String, String>()
+                map["productId"] = productId
+                automationManager.automationFlowFinishedWithAction(
+                    QAction(
+                        QActionType.Purchase,
+                        map
+                    )
+                )
+                close()
             }
 
             override fun onError(error: QonversionError) {
-//                close()
+                Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
+                logger.release("screen purchase() -> $error.description")
             }
         })
     }
@@ -81,11 +85,13 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-//                close()
+                automationManager.automationFlowFinishedWithAction(QAction(QActionType.Restore))
+                close()
             }
 
             override fun onError(error: QonversionError) {
-//                close()
+                logger.release("screen restore() -> $error.description")
+                Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
             }
         })
     }
@@ -94,10 +100,10 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         finish()
     }
 
-    override fun onError(message: String) {
+    override fun onError(error: QonversionError) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Screen show alert")
-        builder.setMessage("Failure to show screen.")
+        builder.setMessage("Failure to show screen. ${error.description}")
 
         builder.setPositiveButton(android.R.string.yes) { _, _ -> }
         builder.show()
@@ -105,7 +111,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     private fun injectDependencies() {
         DaggerActivityComponent.builder()
-            .automationComponent(QDependencyInjector.automationComponent)
+            .appComponent(QDependencyInjector.appComponent)
             .activityModule(ActivityModule(this))
             .build().inject(this)
     }
@@ -115,25 +121,6 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
-
-            override fun onPageStarted(
-                view: WebView?,
-                url: String?,
-                favicon: Bitmap?
-            ) {
-                super.onPageStarted(view, url, favicon)
-                progressBar.visibility = ProgressBar.VISIBLE
-            }
-
-            override fun onPageFinished(view: WebView?, url: String?) {
-                progressBar.visibility = ProgressBar.GONE
-            }
-
-        }
-        webView.webChromeClient = object : WebChromeClient() {
-            override fun onProgressChanged(view: WebView, progress: Int) {
-                progressBar.progress = progress
-            }
         }
     }
 
@@ -141,6 +128,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val extraHtmlPage = intent.getStringExtra(INTENT_HTML_PAGE)
         if (extraHtmlPage != null) {
             webView.loadData(extraHtmlPage, MIME_TYPE, ENCODING)
+        } else {
+            logger.release("loadWebView() -> Failure to fetch html page for screen")
         }
     }
 
@@ -148,6 +137,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val extraScreenId = intent.getStringExtra(INTENT_SCREEN_ID)
         if (extraScreenId != null) {
             presenter.screenShownWithId(extraScreenId)
+        } else {
+            logger.release("confirmScreenShow() -> Failure to confirm screen shown")
         }
     }
 

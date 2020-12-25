@@ -1,10 +1,11 @@
 package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.dto.QonversionRequest
-import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.logger.ConsoleLogger
 import java.util.*
 
-class RequestsQueue(private val logger: Logger) {
+class RequestsQueue {
+    private val logger = ConsoleLogger()
 
     private val queue: Queue<QonversionRequest> = LinkedList()
 

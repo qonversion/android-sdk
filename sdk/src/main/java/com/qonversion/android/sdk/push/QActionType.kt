@@ -13,10 +13,10 @@ enum class QActionType(val type: String) {
         fun fromType(type: String?): QActionType {
             return when (type) {
                 "url" -> Url
-                "deeplink"-> DeepLink
-                "navigate"-> Navigate
-                "purchase"-> Purchase
-                "restore"-> Restore
+                "deeplink" -> DeepLink
+                "navigate" -> Navigate
+                "purchase" -> Purchase
+                "restore" -> Restore
                 "close" -> Close
                 else -> Unknown
             }

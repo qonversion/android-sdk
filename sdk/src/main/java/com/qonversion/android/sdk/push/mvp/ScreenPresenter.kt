@@ -1,9 +1,8 @@
 package com.qonversion.android.sdk.push.mvp
 
 import android.net.Uri
-import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.QonversionScreensCallback
+import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.QActionType
 import javax.inject.Inject
 
@@ -12,7 +11,11 @@ class ScreenPresenter @Inject constructor(
     private val view: ScreenContract.View
 ) : ScreenContract.Presenter {
 
+    private val logger = ConsoleLogger()
+
     override fun shouldOverrideUrlLoading(url: String?): Boolean {
+        logger.debug("shouldOverrideUrlLoading() -> url:$url")
+
         if (url == null) {
             return true
         }
@@ -84,15 +87,14 @@ class ScreenPresenter @Inject constructor(
     private fun Uri.isAutomationsHost() = host.equals(HOST)
 
     private fun getHtmlPageForScreen(screenId: String) {
-        repository.screens(screenId, object : QonversionScreensCallback {
-            override fun onSuccess(htmlPage: String) {
+        repository.screens(screenId,
+            { htmlPage ->
                 view.openScreen(screenId, htmlPage)
+            },
+            {
+                view.onError(it)
             }
-
-            override fun onError(error: QonversionError) {
-                view.onError("Couldn't load the screen with id $screenId")
-            }
-        })
+        )
     }
 
     companion object {

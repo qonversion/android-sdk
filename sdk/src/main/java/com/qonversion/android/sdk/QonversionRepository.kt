@@ -6,14 +6,14 @@ import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.automation.ActionPointsRequest
+import com.qonversion.android.sdk.dto.automation.ActionPointScreen
 import com.qonversion.android.sdk.dto.automation.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
@@ -25,12 +25,12 @@ class QonversionRepository internal constructor(
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
-    private val logger: Logger,
+    private val isDebugMode: Boolean,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val isDebugMode: Boolean,
     private val headersProvider: ApiHeadersProvider
 ) {
+    private val logger = ConsoleLogger()
     private var advertisingId: String? = null
     private var installDate: Long? = null
 
@@ -85,29 +85,31 @@ class QonversionRepository internal constructor(
     }
 
     fun setPushToken(token: String) {
-        initRequest(token = token)
+        initRequest(pushToken = token)
     }
 
     fun screens(
         screenId: String,
-        callback: QonversionScreensCallback
+        onSuccess: (htmlPage: String) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
         api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
             onResponse = {
-                val logMessage = if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
+                val logMessage =
+                    if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
                 logger.release("screensRequest - $logMessage")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    callback.onSuccess(body.data.htmlPage)
+                    onSuccess(body.data.htmlPage)
                 } else {
-                    callback.onError(it.toQonversionError())
+                    onError(it.toQonversionError())
                 }
             }
             onFailure = {
                 logger.release("screensRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback.onError(it.toQonversionError())
+                    onError(it.toQonversionError())
                 }
             }
         }
@@ -129,29 +131,29 @@ class QonversionRepository internal constructor(
     }
 
     fun actionPoints(
-        actionType: String,
-        activeStatus: Int,
-        callback: QonversionActionPointsCallback
+        type: String,
+        status: Int,
+        onSuccess: (actionPoint: List<BaseResponseV2<ActionPointScreen>>) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
         val uid = storage.load()
-        val actionPointsRequest = ActionPointsRequest(actionType, activeStatus)
 
-        api.actionPoints(headersProvider.getHeaders(), uid, actionPointsRequest).enqueue {
+        api.actionPoints(headersProvider.getHeaders(), uid, type, status).enqueue {
             onResponse = {
                 val logMessage =
                     if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
-                logger.release("viewsRequest - $logMessage")
+                logger.release("actionPointsRequest - $logMessage")
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    callback.onSuccess(body)
+                    onSuccess(body)
                 } else {
-                    callback.onError(it.toQonversionError())
+                    onError(it.toQonversionError())
                 }
             }
             onFailure = {
                 logger.release("actionPointsRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback.onError(it.toQonversionError())
+                    onError(it.toQonversionError())
                 }
             }
         }
@@ -345,13 +347,13 @@ class QonversionRepository internal constructor(
     private fun initRequest(
         purchases: List<Purchase>? = null,
         callback: QonversionLaunchCallback? = null,
-        token: String? = null
+        pushToken: String? = null
     ) {
         val uid = storage.load()
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(advertisingId, token),
+            device = environmentProvider.getInfo(advertisingId, pushToken),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,

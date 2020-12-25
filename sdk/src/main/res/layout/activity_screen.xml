@@ -4,13 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".push.mvp.ScreenActivity">
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="15dp"
-        android:layout_marginTop="7dp"
-        android:indeterminate="true" />
 
     <WebView
         android:id="@+id/webView"
