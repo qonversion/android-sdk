@@ -11,7 +11,7 @@ object QDependencyInjector {
     internal lateinit var appComponent: AppComponent
         private set
 
-    fun buildAppComponent(
+    internal fun buildAppComponent(
         context: Application,
         projectKey: String,
         isDebugMode: Boolean

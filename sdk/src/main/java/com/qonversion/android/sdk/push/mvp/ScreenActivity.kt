@@ -42,7 +42,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
         loadWebView()
 
-        confirmScreenShow()
+        confirmScreenIsShown()
     }
 
     override fun openScreen(screenId: String, htmlPage: String) {
@@ -65,13 +65,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
                 val map = mutableMapOf<String, String>()
-                map["productId"] = productId
-                automationManager.automationFlowFinishedWithAction(
-                    QAction(
-                        QActionType.Purchase,
-                        map
-                    )
-                )
+                map["value"] = productId
+                automationManager.automationFlowFinishedWithAction(QAction(QActionType.Purchase, map))
                 close()
             }
 
@@ -133,10 +128,10 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         }
     }
 
-    private fun confirmScreenShow() {
+    private fun confirmScreenIsShown() {
         val extraScreenId = intent.getStringExtra(INTENT_SCREEN_ID)
         if (extraScreenId != null) {
-            presenter.screenShownWithId(extraScreenId)
+            presenter.screenIsShownWithId(extraScreenId)
         } else {
             logger.release("confirmScreenShow() -> Failure to confirm screen shown")
         }

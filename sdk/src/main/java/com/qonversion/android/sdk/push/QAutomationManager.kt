@@ -20,11 +20,12 @@ class QAutomationManager(
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
         val pickScreen = remoteMessage.data[PICK_SCREEN]
-        if (pickScreen == "1") {
-            logger.debug("handlePushIfPossible() -> Qonversion push was detected")
+        if (pickScreen.equals(PICK_SCREEN_VALUE)) {
+            logger.release("handlePushIfPossible() -> Qonversion push notification was received")
             loadScreenIfPossible()
+            return true
         }
-        return true
+        return false
     }
 
     fun setPushToken(token: String) {
@@ -35,14 +36,13 @@ class QAutomationManager(
         }
     }
 
-    fun automationFlowFinishedWithAction(action: QAction){
+    fun automationFlowFinishedWithAction(action: QAction) {
         automationDelegate?.automationFlowFinishedWithAction(action)
     }
 
     private fun loadScreenIfPossible() {
         repository.actionPoints(
-            ACTION_POINT_TYPE,
-            ACTION_POINT_STATUS,
+            getQueryParams(),
             { data ->
                 val actionPoint = data.lastOrNull()
                 if (actionPoint != null) {
@@ -54,6 +54,14 @@ class QAutomationManager(
                 logger.debug("loadScreenIfPossible() -> Failed to retrieve screenId to show")
             }
         )
+    }
+
+    private fun getQueryParams(): Map<String, String> {
+        val queryParams = HashMap<String, String>()
+        return queryParams.apply {
+            put(QUERY_PARAM_TYPE_KEY, QUERY_PARAM_TYPE_VALUE)
+            put(QUERY_PARAM_ACTIVE_KEY, QUERY_PARAM_ACTIVE_VALUE.toString())
+        }
     }
 
     private fun loadScreen(screenId: String) {
@@ -83,8 +91,11 @@ class QAutomationManager(
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
-        private const val ACTION_POINT_TYPE = "screen_view"
-        private const val ACTION_POINT_STATUS = 1
+        private const val PICK_SCREEN_VALUE = "1"
         private const val PUSH_TOKEN_KEY = "push_token_key"
+        private const val QUERY_PARAM_TYPE_KEY = "type"
+        private const val QUERY_PARAM_ACTIVE_KEY = "active"
+        private const val QUERY_PARAM_TYPE_VALUE = "screen_view"
+        private const val QUERY_PARAM_ACTIVE_VALUE = 1
     }
 }

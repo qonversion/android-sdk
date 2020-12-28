@@ -131,14 +131,13 @@ class QonversionRepository internal constructor(
     }
 
     fun actionPoints(
-        type: String,
-        status: Int,
+        queryParams: Map<String, String>,
         onSuccess: (actionPoint: List<BaseResponseV2<ActionPointScreen>>) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         val uid = storage.load()
 
-        api.actionPoints(headersProvider.getHeaders(), uid, type, status).enqueue {
+        api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
             onResponse = {
                 val logMessage =
                     if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"

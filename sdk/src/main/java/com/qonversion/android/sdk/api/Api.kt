@@ -41,8 +41,7 @@ interface Api {
     fun actionPoints(
         @HeaderMap headers: ApiHeaders.Default,
         @Path("id") userId: String,
-        @Query("type") type: String,
-        @Query("active") active: Int
+        @QueryMap queryParams: Map<String, String>
     ): Call<List<BaseResponseV2<ActionPointScreen>>>
 
 }
