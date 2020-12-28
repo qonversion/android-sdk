@@ -59,8 +59,8 @@ class QAutomationManager(
     private fun getQueryParams(): Map<String, String> {
         val queryParams = HashMap<String, String>()
         return queryParams.apply {
-            put(QUERY_PARAM_TYPE_KEY, QUERY_PARAM_TYPE_VALUE)
-            put(QUERY_PARAM_ACTIVE_KEY, QUERY_PARAM_ACTIVE_VALUE.toString())
+            put(QUERY_PARAM_TYPE, QUERY_PARAM_TYPE_VALUE)
+            put(QUERY_PARAM_ACTIVE, QUERY_PARAM_ACTIVE_VALUE.toString())
         }
     }
 
@@ -93,8 +93,8 @@ class QAutomationManager(
         private const val PICK_SCREEN = "qonv.pick_screen"
         private const val PICK_SCREEN_VALUE = "1"
         private const val PUSH_TOKEN_KEY = "push_token_key"
-        private const val QUERY_PARAM_TYPE_KEY = "type"
-        private const val QUERY_PARAM_ACTIVE_KEY = "active"
+        private const val QUERY_PARAM_TYPE = "type"
+        private const val QUERY_PARAM_ACTIVE = "active"
         private const val QUERY_PARAM_TYPE_VALUE = "screen_view"
         private const val QUERY_PARAM_ACTIVE_VALUE = 1
     }

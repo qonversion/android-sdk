@@ -132,7 +132,7 @@ class QonversionRepository internal constructor(
 
     fun actionPoints(
         queryParams: Map<String, String>,
-        onSuccess: (actionPoint: List<BaseResponseV2<ActionPointScreen>>) -> Unit,
+        onSuccess: (actionPoints: List<Data<ActionPointScreen>>) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         val uid = storage.load()
@@ -144,7 +144,7 @@ class QonversionRepository internal constructor(
                 logger.release("actionPointsRequest - $logMessage")
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body)
+                    onSuccess(body.data.items)
                 } else {
                     onError(it.toQonversionError())
                 }

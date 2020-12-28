@@ -65,7 +65,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
                 val map = mutableMapOf<String, String>()
-                map["value"] = productId
+                map[ACTION_MAP_KEY] = productId
                 automationManager.automationFlowFinishedWithAction(QAction(QActionType.Purchase, map))
                 close()
             }
@@ -133,7 +133,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         if (extraScreenId != null) {
             presenter.screenIsShownWithId(extraScreenId)
         } else {
-            logger.release("confirmScreenShow() -> Failure to confirm screen shown")
+            logger.release("confirmScreenIsShown() -> Failure to confirm screen shown")
         }
     }
 
@@ -142,5 +142,6 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         const val INTENT_SCREEN_ID = "screenId"
         private const val MIME_TYPE = "text/html"
         private const val ENCODING = "UTF-8"
+        private const val ACTION_MAP_KEY = "value"
     }
 }

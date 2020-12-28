@@ -63,7 +63,6 @@ fun <T> Response<T>.toQonversionError(): QonversionError {
             if (errorObj.has(meta)) {
                 errorMessage += errorObj.getErrorMessage(meta)
             }
-
         } catch (e: JSONException) {
             errorMessage = formatError(error, "failed to parse the backend response")
         }
