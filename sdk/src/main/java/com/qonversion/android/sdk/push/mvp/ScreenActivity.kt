@@ -122,7 +122,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     private fun loadWebView() {
         val extraHtmlPage = intent.getStringExtra(INTENT_HTML_PAGE)
         if (extraHtmlPage != null) {
-            webView.loadData(extraHtmlPage, MIME_TYPE, ENCODING)
+            webView.loadDataWithBaseURL(null, extraHtmlPage, MIME_TYPE, ENCODING, null)
         } else {
             logger.release("loadWebView() -> Failure to fetch html page for screen")
         }
