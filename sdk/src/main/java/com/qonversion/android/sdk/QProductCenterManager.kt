@@ -104,6 +104,45 @@ class QProductCenterManager internal constructor(
         @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionPermissionsCallback
     ) {
+        if (launchError != null) {
+            val launchCallback = getLaunchCallback(object: QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    if (isProductsLoaded && !isProductsLoadingFailed) {
+                        processPurchase(context, id, oldProductId, prorationMode, callback)
+                    } else {
+                        val productsCallback = object : QonversionProductsCallback {
+                            override fun onSuccess(products: Map<String, QProduct>) {
+                                processPurchase(context, id, oldProductId, prorationMode, callback)
+                            }
+
+                            override fun onError(error: QonversionError) {
+                                callback.onError(error)
+                            }
+                        }
+
+                        productsCallbacks.add(productsCallback)
+                    }
+                }
+
+                override fun onError(error: QonversionError) {
+                    callback.onError(error)
+                }
+            })
+
+            launch(launchCallback)
+        } else {
+            processPurchase(context, id, oldProductId, prorationMode, callback)
+        }
+
+    }
+
+    private fun processPurchase(
+        context: Activity,
+        id: String,
+        oldProductId: String?,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
         val product: QProduct? = productForID(id)
         val oldProduct: QProduct? = productForID(oldProductId)
 
@@ -313,7 +352,7 @@ class QProductCenterManager internal constructor(
             it.storeID
         }.toSet()
 
-        if (!productStoreIds.isNullOrEmpty() && (!isProductsLoaded || !isProductsLoadingFailed)) {
+        if (!productStoreIds.isNullOrEmpty() && (!isProductsLoaded || isProductsLoadingFailed)) {
             billingService.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
