@@ -133,7 +133,6 @@ class QProductCenterManager internal constructor(
         } else {
             processPurchase(context, id, oldProductId, prorationMode, callback)
         }
-
     }
 
     private fun processPurchase(
