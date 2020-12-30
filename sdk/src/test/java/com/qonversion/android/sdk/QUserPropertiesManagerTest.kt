@@ -1,7 +1,9 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
+import android.content.ContentResolver
 import android.os.Handler
+import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.*
 import org.junit.Before
@@ -10,31 +12,44 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class QUserPropertiesManagerTest {
-    private lateinit var propertiesManagerMock: QUserPropertiesManager
-    private var contentResolver = mockk<Application>(relaxed = true).contentResolver
-    private val repositoryMock = mockk<QonversionRepository>(relaxed = true)
-    private var handler: Handler = mockk(relaxed = true)
+    private val mockContext = mockk<Application>(relaxed = true)
+    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
+
+    private lateinit var mockHandler: Handler
+    private lateinit var propertiesManager: QUserPropertiesManager
 
     @Before
     fun setUp() {
+        every {
+            mockContext.contentResolver
+        } returns mockContentResolver
+
+        val mockLooper = mockk<Looper>()
+        every {
+            mockContext.mainLooper
+        } returns mockLooper
+
+        mockkConstructor(Handler::class)
+        mockHandler = Handler(mockLooper)
+
         val slot = slot<Runnable>()
         every {
-            handler.post(capture(slot))
+            mockHandler.post(capture(slot))
         } answers {
             slot.captured.run()
             true
         }
 
-        propertiesManagerMock =
-            QUserPropertiesManager(repositoryMock, contentResolver, handler)
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
     }
 
     @Test
     fun forceSendProperties() {
-        propertiesManagerMock.forceSendProperties()
+        propertiesManager.forceSendProperties()
 
         verify(exactly = 1) {
-            repositoryMock.sendProperties()
+            mockRepository.sendProperties()
         }
     }
 
@@ -42,10 +57,10 @@ class QUserPropertiesManagerTest {
     fun setUserID() {
         val userId = "userId"
 
-        propertiesManagerMock.setUserID(userId)
+        propertiesManager.setUserID(userId)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(QUserProperties.CustomUserId.userPropertyCode, userId)
+            mockRepository.setProperty(QUserProperties.CustomUserId.userPropertyCode, userId)
         }
     }
 
@@ -54,10 +69,10 @@ class QUserPropertiesManagerTest {
         val key = QUserProperties.Email
         val email = "me@qonvesrion.io"
 
-        propertiesManagerMock.setProperty(key, email)
+        propertiesManager.setProperty(key, email)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(QUserProperties.Email.userPropertyCode, email)
+            mockRepository.setProperty(QUserProperties.Email.userPropertyCode, email)
         }
     }
 
@@ -66,10 +81,10 @@ class QUserPropertiesManagerTest {
         val key = "key"
         val value = "value"
 
-        propertiesManagerMock.setUserProperty(key, value)
+        propertiesManager.setUserProperty(key, value)
 
         verify(exactly = 1) {
-            repositoryMock.setProperty(key, value)
+            mockRepository.setProperty(key, value)
         }
     }
 
@@ -78,7 +93,38 @@ class QUserPropertiesManagerTest {
         val delayMillis: Long = 5 * 1000
 
         verify(exactly = 1) {
-            handler.postDelayed(any(), delayMillis)
+            mockHandler.postDelayed(any(), delayMillis)
+        }
+    }
+
+    @Test
+    fun `init when fbAttributionId is not null`() {
+        val fbAttributionId = "fbAttributionId"
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
+
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+
+        verify(exactly = 1) {
+            mockRepository.setProperty(
+                QUserProperties.FacebookAttribution.userPropertyCode,
+                fbAttributionId
+            )
+        }
+    }
+
+    @Test
+    fun `init when fbAttributionId is null`() {
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
+
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+
+        verify(exactly = 0) {
+            mockRepository.setProperty(
+                any(),
+                any()
+            )
         }
     }
 }

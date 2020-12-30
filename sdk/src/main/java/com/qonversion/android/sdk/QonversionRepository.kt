@@ -29,10 +29,8 @@ class QonversionRepository private constructor(
     private var propertiesStorage: PropertiesStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
-    private val trackingEnabled: Boolean,
     private val key: String,
     private val logger: Logger,
-    private val internalUserId: String?,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
     private val isDebugMode: Boolean
@@ -48,7 +46,7 @@ class QonversionRepository private constructor(
         callback: QonversionLaunchCallback?
     ) {
         advertisingId = idfa
-        initRequest(installDate, trackingEnabled, key, sdkVersion, idfa, purchases, callback)
+        initRequest(installDate, idfa, purchases, callback)
     }
 
     fun purchase(
@@ -95,11 +93,8 @@ class QonversionRepository private constructor(
         from: String
     ): QonversionRequest {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         return AttributionRequest(
-            d = environmentProvider.getInfo(
-                tracking
-            ),
+            d = environmentProvider.getInfo(),
             v = sdkVersion,
             accessToken = key,
             clientUid = uid,
@@ -146,14 +141,12 @@ class QonversionRepository private constructor(
         callback: QonversionPermissionsCallback
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val purchaseRequest = PurchaseRequest(
             installDate,
-            device = environmentProvider.getInfo(tracking, advertisingId),
+            device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
@@ -240,15 +233,13 @@ class QonversionRepository private constructor(
         callback: QonversionPermissionsCallback?
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(tracking, advertisingId),
+            device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             history = history
         )
@@ -282,23 +273,18 @@ class QonversionRepository private constructor(
 
     private fun initRequest(
         installDate: Long,
-        trackingEnabled: Boolean,
-        key: String,
-        sdkVersion: String,
-        edfa: String?,
+        idfa: String?,
         purchases: List<Purchase>?,
         callback: QonversionLaunchCallback?
     ) {
         val uid = storage.load()
-        val tracking = if(trackingEnabled) 1 else 0
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(tracking, edfa),
+            device = environmentProvider.getInfo(idfa),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
-            customUid = internalUserId,
             debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
@@ -362,9 +348,7 @@ class QonversionRepository private constructor(
             propertiesStorage: PropertiesStorage,
             logger: Logger,
             environmentProvider: EnvironmentProvider,
-            config: QonversionConfig,
-            internalUserId: String?,
-            isDebugMode: Boolean
+            config: QonversionConfig
         ): QonversionRepository {
 
             val client = OkHttpClient.Builder()
@@ -396,13 +380,11 @@ class QonversionRepository private constructor(
                 propertiesStorage,
                 environmentProvider,
                 config.sdkVersion,
-                config.trackingEnabled,
                 config.key,
                 logger,
-                internalUserId,
                 requestQueue,
                 RequestValidator(),
-                isDebugMode
+                config.isDebugMode
             )
         }
     }

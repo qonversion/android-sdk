@@ -1,9 +1,9 @@
 package com.qonversion.android.sdk.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class PurchaseRequest(
@@ -12,7 +12,6 @@ data class PurchaseRequest(
     @Json(name = "version") override val version: String,
     @Json(name = "access_token") override val accessToken: String,
     @Json(name = "q_uid") override  val clientUid: String?,
-    @Json(name = "custom_uid") override  val customUid: String?,
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "purchase") val purchase: PurchaseDetails,

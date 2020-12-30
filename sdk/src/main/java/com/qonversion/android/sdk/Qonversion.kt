@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.os.Handler
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
@@ -13,9 +12,8 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.2.0"
+    private const val SDK_VERSION = "2.2.1"
 
-    private lateinit var repository: QonversionRepository
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
@@ -63,22 +61,18 @@ object Qonversion : LifecycleDelegate {
         )
         val propertiesStorage = UserPropertiesStorage()
         val environment = EnvironmentProvider(context)
-        val config = QonversionConfig(key, SDK_VERSION, true)
+        val config = QonversionConfig(key, SDK_VERSION, isDebugMode)
         val repository = QonversionRepository.initialize(
             context,
             storage,
             propertiesStorage,
             logger,
             environment,
-            config,
-            null,
-            isDebugMode
+            config
         )
 
-        this.repository = repository
-        userPropertiesManager =
-            QUserPropertiesManager(repository, context.contentResolver, Handler(context.mainLooper))
-        attributionManager = QAttributionManager()
+        userPropertiesManager = QUserPropertiesManager(context, repository)
+        attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)
 
@@ -204,7 +198,8 @@ object Qonversion : LifecycleDelegate {
         conversionInfo: Map<String, Any>,
         from: AttributionSource
     ) {
-        repository.attribution(conversionInfo, from.id)
+        attributionManager?.attribution(conversionInfo, from)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
