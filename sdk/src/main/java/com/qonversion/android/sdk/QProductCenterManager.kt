@@ -110,7 +110,7 @@ class QProductCenterManager internal constructor(
                     if (isProductsLoaded && !isProductsLoadingFailed) {
                         processPurchase(context, id, oldProductId, prorationMode, callback)
                     } else {
-                        val productsCallback = object : QonversionProductsCallback {
+                        productsCallbacks.add(object : QonversionProductsCallback {
                             override fun onSuccess(products: Map<String, QProduct>) {
                                 processPurchase(context, id, oldProductId, prorationMode, callback)
                             }
@@ -118,9 +118,7 @@ class QProductCenterManager internal constructor(
                             override fun onError(error: QonversionError) {
                                 callback.onError(error)
                             }
-                        }
-
-                        productsCallbacks.add(productsCallback)
+                        })
                     }
                 }
 
@@ -163,7 +161,7 @@ class QProductCenterManager internal constructor(
             billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
         } else {
             val launchResult = launchResult
-            if (isProductsLoaded || launchResult == null) {
+            if ((isProductsLoaded && !isProductsLoadingFailed) || launchResult == null) {
                 val error = QonversionError(QonversionErrorCode.SkuDetailsError)
                 callback.onError(error)
                 return
