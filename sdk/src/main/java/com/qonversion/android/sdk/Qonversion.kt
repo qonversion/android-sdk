@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.2.0"
+    private const val SDK_VERSION = "2.2.1"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
