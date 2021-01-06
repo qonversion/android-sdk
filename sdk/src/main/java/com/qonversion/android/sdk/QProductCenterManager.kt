@@ -97,6 +97,37 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    fun offerings(
+        callback: QonversionOfferingsCallback
+    ) {
+        val productsCallback = object: QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                executeOfferingCallback(callback)
+            }
+
+            override fun onError(error: QonversionError) {
+                callback.onError(error)
+            }
+        }
+
+        loadProducts(callback = productsCallback)
+    }
+
+    private fun executeOfferingCallback(callback: QonversionOfferingsCallback) {
+        val offerings = launchResult?.offerings
+        if (offerings != null) {
+            offerings.availableOfferings?.forEach { offering ->
+                offering.products.forEach {product ->
+                    product.skuDetail = skuDetails[product.storeID]
+                }
+            }
+            callback.onSuccess(offerings)
+        } else {
+            val error = launchError ?: QonversionError(QonversionErrorCode.OfferingsNotFound)
+            callback.onError(error)
+        }
+    }
+
     fun purchaseProduct(
         context: Activity,
         id: String,
@@ -326,6 +357,8 @@ class QProductCenterManager internal constructor(
 
             override fun onError(error: QonversionError) {
                 isLaunchingFinished = true
+                isProductsLoaded = true
+                isProductsLoadingFailed = true
                 launchResult = null
                 launchError = error
 
@@ -367,6 +400,8 @@ class QProductCenterManager internal constructor(
                     isProductsLoadingFailed = true
                     onLoadFailed?.let { it(error) }
                 })
+        } else {
+            executeProductsBlocks()
         }
     }
 
@@ -380,11 +415,12 @@ class QProductCenterManager internal constructor(
                 product.skuDetail = skuDetails[product.storeID]
             }
 
-            productsCallbacks.forEach {
+            val callbacks = productsCallbacks.toList()
+            productsCallbacks.clear()
+
+            callbacks.forEach {
                 it.onSuccess(products)
             }
-
-            productsCallbacks.clear()
         }
     }
 

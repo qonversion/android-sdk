@@ -154,6 +154,17 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
+     Todo: comment
+     */
+    @JvmStatic
+    fun offerings(
+        callback: QonversionOfferingsCallback
+    ) {
+        productCenterManager?.offerings(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
      * Check user permissions based on product center details
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
