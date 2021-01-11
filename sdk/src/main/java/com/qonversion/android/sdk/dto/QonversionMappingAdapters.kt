@@ -2,8 +2,6 @@ package com.qonversion.android.sdk.dto
 
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.billing.toBoolean
-import com.qonversion.android.sdk.billing.toInt
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -85,5 +83,35 @@ class QPermissionsAdapter {
             result[it.permissionID] = it
         }
         return result
+    }
+}
+
+class QOfferingTagAdapter {
+    @ToJson
+    private fun toJson(enum: QOfferingTag): Int? {
+        return enum.tag
+    }
+
+    @FromJson
+    fun fromJson(tag: Int?): QOfferingTag {
+        return QOfferingTag.fromTag(tag)
+    }
+}
+
+class QOfferingsAdapter {
+    @ToJson
+    private fun toJson(offerings: QOfferings?): String? {
+        return null
+    }
+
+    @FromJson
+    fun fromJson(offerings: List<QOffering>): QOfferings? {
+        if (offerings.isEmpty()) {
+            return null
+        }
+
+        val main = offerings.firstOrNull { it.tag == QOfferingTag.Main }
+
+        return QOfferings(main, offerings)
     }
 }

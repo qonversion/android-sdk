@@ -22,7 +22,8 @@ class QProductCenterManager internal constructor(
     private val logger: Logger
 ): QonversionBillingService.PurchasesListener {
 
-    private var isLaunchingFinished: Boolean = false
+    private val isLaunchingFinished: Boolean
+        get() = launchError != null || launchResult != null
     private var isProductsLoaded: Boolean = false
 
     private var isProductsLoadingFailed: Boolean = false
@@ -94,6 +95,35 @@ class QProductCenterManager internal constructor(
         } else {
             val launchCallback = getLaunchCallback(null)
             launch(launchCallback)
+        }
+    }
+
+    fun offerings(
+        callback: QonversionOfferingsCallback
+    ) {
+        loadProducts(object: QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) = executeOfferingCallback(callback)
+
+            override fun onError(error: QonversionError) = callback.onError(error)
+        })
+    }
+
+    private fun executeOfferingCallback(callback: QonversionOfferingsCallback) {
+        val offerings = launchResult?.offerings
+        if (offerings != null) {
+            offerings.availableOfferings.forEach { offering ->
+                addSkuDetailForProducts(offering.products)
+            }
+            callback.onSuccess(offerings)
+        } else {
+            val error = launchError ?: QonversionError(QonversionErrorCode.OfferingsNotFound)
+            callback.onError(error)
+        }
+    }
+
+    private fun addSkuDetailForProducts(products: Collection<QProduct>) {
+        products.forEach {product ->
+            product.skuDetail = skuDetails[product.storeID]
         }
     }
 
@@ -313,7 +343,6 @@ class QProductCenterManager internal constructor(
     private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
         return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
-                isLaunchingFinished = true
                 this@QProductCenterManager.launchResult = launchResult
                 launchError = null
 
@@ -325,7 +354,8 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                isLaunchingFinished = true
+                isProductsLoaded = true
+                isProductsLoadingFailed = true
                 launchResult = null
                 launchError = error
 
@@ -367,6 +397,8 @@ class QProductCenterManager internal constructor(
                     isProductsLoadingFailed = true
                     onLoadFailed?.let { it(error) }
                 })
+        } else {
+            executeProductsBlocks()
         }
     }
 
@@ -376,15 +408,14 @@ class QProductCenterManager internal constructor(
         }
 
         launchResult?.products?.let { products ->
-            products.values.forEach { product ->
-                product.skuDetail = skuDetails[product.storeID]
-            }
+            addSkuDetailForProducts(products.values)
 
-            productsCallbacks.forEach {
+            val callbacks = productsCallbacks.toList()
+            productsCallbacks.clear()
+
+            callbacks.forEach {
                 it.onSuccess(products)
             }
-
-            productsCallbacks.clear()
         }
     }
 

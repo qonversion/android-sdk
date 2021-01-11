@@ -2,7 +2,7 @@ package com.qonversion.android.sdk
 
 import java.lang.reflect.Modifier
 
-fun Any.mockPrivateField(fieldName: String, field: Any) {
+fun Any.mockPrivateField(fieldName: String, field: Any?) {
     javaClass.declaredFields
         .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
         .firstOrNull { it.name == fieldName }
