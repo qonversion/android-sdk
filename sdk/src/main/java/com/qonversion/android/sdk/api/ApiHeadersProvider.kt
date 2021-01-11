@@ -10,11 +10,7 @@ class ApiHeadersProvider {
 
     init {
         val config = QDependencyInjector.appComponent.config()
-        projectKey = if (config.isDebugMode) {
-           "$DEBUG_MODE_KEY${config.key}"
-        }else{
-            config.key
-        }
+        projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
     }
 
     fun getScreenHeaders(): ApiHeaders.Screens =

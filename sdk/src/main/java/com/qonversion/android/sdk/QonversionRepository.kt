@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.automation.ActionPointScreen
+import com.qonversion.android.sdk.dto.automation.Screen
 import com.qonversion.android.sdk.dto.automation.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
@@ -32,7 +33,7 @@ class QonversionRepository internal constructor(
 ) {
     private val logger = ConsoleLogger()
     private var advertisingId: String? = null
-    private var installDate: Long? = null
+    private  var installDate: Long = 0
 
     // Public functions
 
@@ -90,7 +91,7 @@ class QonversionRepository internal constructor(
 
     fun screens(
         screenId: String,
-        onSuccess: (htmlPage: String) -> Unit,
+        onSuccess: (screen: Screen) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
@@ -101,7 +102,7 @@ class QonversionRepository internal constructor(
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.htmlPage)
+                    onSuccess(body.data)
                 } else {
                     onError(it.toQonversionError())
                 }
@@ -132,7 +133,7 @@ class QonversionRepository internal constructor(
 
     fun actionPoints(
         queryParams: Map<String, String>,
-        onSuccess: (actionPoints: List<Data<ActionPointScreen>>) -> Unit,
+        onSuccess: (actionPoints: ActionPointScreen?) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         val uid = storage.load()
@@ -144,7 +145,7 @@ class QonversionRepository internal constructor(
                 logger.release("actionPointsRequest - $logMessage")
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.items)
+                    onSuccess(body.data.items.lastOrNull()?.data)
                 } else {
                     onError(it.toQonversionError())
                 }

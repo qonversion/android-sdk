@@ -223,7 +223,7 @@ object Qonversion : LifecycleDelegate {
 
     /**
      * You can set the flag to distinguish sandbox and production users.
-     * To see the sandbox users turn on the Viewing test Data toggle in Qonversion Dashboard
+     * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
     @JvmStatic
     fun setDebugMode() {

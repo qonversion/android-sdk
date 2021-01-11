@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.mvp.ScreenActivity
 
@@ -20,7 +21,7 @@ class QAutomationManager(
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
         val pickScreen = remoteMessage.data[PICK_SCREEN]
-        if (pickScreen.equals(PICK_SCREEN_VALUE)) {
+        if (pickScreen.toBoolean()) {
             logger.release("handlePushIfPossible() -> Qonversion push notification was received")
             loadScreenIfPossible()
             return true
@@ -43,11 +44,10 @@ class QAutomationManager(
     private fun loadScreenIfPossible() {
         repository.actionPoints(
             getQueryParams(),
-            { data ->
-                val actionPoint = data.lastOrNull()
+            { actionPoint ->
                 if (actionPoint != null) {
-                    logger.debug("loadScreenIfPossible() ->  Screen with id ${actionPoint.data.screenId} was found to show")
-                    loadScreen(actionPoint.data.screenId)
+                    logger.debug("loadScreenIfPossible() ->  Screen with id ${actionPoint.screenId} was found to show")
+                    loadScreen(actionPoint.screenId)
                 }
             },
             {
@@ -57,16 +57,15 @@ class QAutomationManager(
     }
 
     private fun getQueryParams(): Map<String, String> {
-        val queryParams = HashMap<String, String>()
-        return queryParams.apply {
-            put(QUERY_PARAM_TYPE, QUERY_PARAM_TYPE_VALUE)
-            put(QUERY_PARAM_ACTIVE, QUERY_PARAM_ACTIVE_VALUE.toString())
-        }
+        return mapOf(
+            QUERY_PARAM_TYPE to QUERY_PARAM_TYPE_VALUE,
+            QUERY_PARAM_ACTIVE to QUERY_PARAM_ACTIVE_VALUE.toString()
+        )
     }
 
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
-            { htmlPage ->
+            { screen ->
                 val activity = automationDelegate?.provideActivityForScreen()
                 if (activity == null) {
                     logger.release("It looks like setAutomationDelegate() was not called")
@@ -74,12 +73,12 @@ class QAutomationManager(
                 }
 
                 val intent = Intent(activity, ScreenActivity::class.java)
-                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, htmlPage)
+                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
                 intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
                 activity.startActivity(intent)
             },
             {
-                logger.debug("loadScreen() -> Failed to load screen")
+                logger.release("loadScreen() -> Failed to load screen with id $screenId")
             }
         )
     }
@@ -91,7 +90,6 @@ class QAutomationManager(
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
-        private const val PICK_SCREEN_VALUE = "1"
         private const val PUSH_TOKEN_KEY = "push_token_key"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"

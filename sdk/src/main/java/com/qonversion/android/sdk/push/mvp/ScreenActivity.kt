@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.push.mvp
 
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -53,11 +54,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun openLink(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             startActivity(intent)
-        } catch (e: Exception) {
-            logger.release("Couldn't find the Activity to handle Intent with deeplink")
+        } catch (e: ActivityNotFoundException) {
+            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
         }
     }
 
@@ -72,7 +73,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
             override fun onError(error: QonversionError) {
                 Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
-                logger.release("screen purchase() -> $error.description")
+                logger.release("automation purchase() -> $error.description")
             }
         })
     }
@@ -85,7 +86,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             }
 
             override fun onError(error: QonversionError) {
-                logger.release("screen restore() -> $error.description")
+                logger.release("automation restore() -> $error.description")
                 Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
             }
         })
@@ -116,7 +117,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
-        }
+       }
     }
 
     private fun loadWebView() {

@@ -67,7 +67,7 @@ class ScreenPresenter @Inject constructor(
 
     private fun Uri.getActionType(): QActionType {
         val actionType = getQueryParameter(ACTION)
-
+        logger.debug("getActionType() $QActionType.fromType(actionType)")
         return QActionType.fromType(actionType)
     }
 
@@ -88,8 +88,8 @@ class ScreenPresenter @Inject constructor(
 
     private fun getHtmlPageForScreen(screenId: String) {
         repository.screens(screenId,
-            { htmlPage ->
-                view.openScreen(screenId, htmlPage)
+            { screen ->
+                view.openScreen(screenId, screen.htmlPage)
             },
             {
                 view.onError(it)
@@ -100,8 +100,8 @@ class ScreenPresenter @Inject constructor(
     companion object {
         private const val ACTION = "action"
         private const val DATA = "data"
-        private const val SCHEMA = "q-"
-        private const val HOST = "automations"
+        private const val SCHEMA = "qon-"
+        private const val HOST = "automation"
         private const val REGEX = "$SCHEMA.+"
     }
 }

@@ -4,6 +4,7 @@ import android.os.Build
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionErrorCode
 import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.dto.automation.Screen
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -41,7 +42,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when url host is not automation`() {
-        val url = "q-projectID://auto?action=url&amp;data=https://qonversion.io"
+        val url = "qon-projectID://auto?action=url&amp;data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -51,7 +52,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when url scheme is not qonversion`() {
-        val url = "qonversion-projectID://automations?action=url&amp;data=https://qonversion.io"
+        val url = "scheme-projectID://automation?action=url&amp;data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -61,7 +62,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when action type is url`() {
-        val url = "q-AgLqRhy0://automations?action=url&data=https://qonversion.io"
+        val url = "qon-AgLqRhy0://automation?action=url&data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -80,7 +81,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when action type is deeplink`() {
-        val url = "q-AgLqRhy0://automations?action=deeplink&data=someApp://mainScreen"
+        val url = "qon-AgLqRhy0://automation?action=deeplink&data=someApp://mainScreen"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -99,7 +100,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when action type is purchase`() {
-        val url = "q-AgLqRhy0://automations?action=purchase&data=main"
+        val url = "qon-AgLqRhy0://automation?action=purchase&data=main"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -118,7 +119,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when action type is restore`() {
-        val url = "q-AgLqRhy0://automations?action=restore"
+        val url = "qon-AgLqRhy0://automation?action=restore"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -137,7 +138,7 @@ class ScreenPresenterTest {
 
     @Test
     fun `shouldOverrideUrlLoading when action type is close`() {
-        val url = "q-AgLqRhy0://automations?action=close"
+        val url = "qon-AgLqRhy0://automation?action=close"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
@@ -157,14 +158,15 @@ class ScreenPresenterTest {
     @Test
     fun `shouldOverrideUrlLoading when action type is navigate success`() {
         val screenId = "screen-uid-789-2"
-        val url = "q-AgLqRhy0://automations?action=navigate&data=$screenId"
+        val url = "qon-AgLqRhy0://automation?action=navigate&data=$screenId"
         val html = "<html><body>Screen 2 Content<body></html>"
+        val screen = Screen(screenId, html, "ru", "#CCEEFF", "string")
 
         every {
             mockRepository.screens(screenId, captureLambda(), any())
         } answers {
-            lambda<(String) -> Unit>().captured.invoke(
-                html
+            lambda<(Screen) -> Unit>().captured.invoke(
+                screen
             )
         }
 
@@ -186,7 +188,7 @@ class ScreenPresenterTest {
     @Test
     fun `shouldOverrideUrlLoading when action type is navigate error`() {
         val screenId = "screen-uid-789-2"
-        val url = "q-AgLqRhy0://automations?action=navigate&data=$screenId"
+        val url = "qon-AgLqRhy0://automation?action=navigate&data=$screenId"
         val error = QonversionError(QonversionErrorCode.BackendError, "Failed to load screen")
         every {
             mockRepository.screens(screenId, any(), captureLambda())
