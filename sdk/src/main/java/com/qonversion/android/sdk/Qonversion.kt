@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.2.1"
+    private const val SDK_VERSION = "2.3.0"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
@@ -150,6 +150,22 @@ object Qonversion : LifecycleDelegate {
         callback: QonversionProductsCallback
     ) {
         productCenterManager?.loadProducts(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Return Qonversion Offerings Object
+     * An offering is a group of products that you can offer to a user on a given paywall based on your business logic.
+     * For example, you can offer one set of products on a paywall immediately after onboarding and another set of products with discounts later on if a user has not converted.
+     * Offerings allow changing the products offered remotely without releasing app updates.
+     * @see [Offerings](https://qonversion.io/docs/offerings)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    @JvmStatic
+    fun offerings(
+        callback: QonversionOfferingsCallback
+    ) {
+        productCenterManager?.offerings(callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 

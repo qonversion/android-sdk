@@ -364,6 +364,8 @@ class QonversionRepository private constructor(
                 .add(QPermissionsAdapter())
                 .add(QProductTypeAdapter())
                 .add(QProductRenewStateAdapter())
+                .add(QOfferingsAdapter())
+                .add(QOfferingTagAdapter())
             val moshi = moshiBuilder.build()
 
             val retrofit = Retrofit.Builder()
