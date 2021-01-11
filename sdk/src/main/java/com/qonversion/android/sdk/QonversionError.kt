@@ -14,7 +14,7 @@ data class QonversionError(
 enum class QonversionErrorCode(val specification: String) {
     UnknownError("Unknown error"),
     PlayStoreError("There was an issue with Play Store service"),
-    BillingUnavailable("Billing API version is not supported for the type requested"),
+    BillingUnavailable("The Billing service is unavailable on the device because it is not connected to any Google account at the moment"),
     PurchaseInvalid("Invalid arguments provided to the Billing API"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),
     ProductNotOwned("Failure to consume purchase since item is not owned"),
