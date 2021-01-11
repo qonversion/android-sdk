@@ -100,12 +100,16 @@ class QOfferingTagAdapter {
 
 class QOfferingsAdapter {
     @ToJson
-    private fun toJson(offerings: QOfferings): String? {
+    private fun toJson(offerings: QOfferings?): String? {
         return null
     }
 
     @FromJson
-    fun fromJson(offerings: List<QOffering>): QOfferings {
+    fun fromJson(offerings: List<QOffering>): QOfferings? {
+        if (offerings.isEmpty()) {
+            return null
+        }
+
         val main = offerings.firstOrNull { it.tag == QOfferingTag.Main }
 
         return QOfferings(main, offerings)

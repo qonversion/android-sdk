@@ -10,6 +10,7 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.billing.BillingError
 import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.logger.Logger
 import io.mockk.*
 import org.assertj.core.api.Assertions
@@ -18,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
@@ -30,7 +32,7 @@ class QProductCenterManagerTest {
 
     private lateinit var productCenterManager: QProductCenterManager
 
-    private val fieldIsLaunchingFinished = "isLaunchingFinished"
+    private val fieldLaunchResult = "launchResult"
     private val fieldSkuDetails = "skuDetails"
 
     private val skuTypeInApp = BillingClient.SkuType.INAPP
@@ -48,12 +50,17 @@ class QProductCenterManagerTest {
         productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger)
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
-        productCenterManager.mockPrivateField(fieldIsLaunchingFinished, true)
+        mockLaunchResult()
+    }
+
+    private fun mockLaunchResult() {
+        val launchResult = QLaunchResult("uid", Date(), offerings = null)
+        productCenterManager.mockPrivateField(fieldLaunchResult, launchResult)
     }
 
     @Test
     fun `handle pending purchases when launching is not finished`() {
-        productCenterManager.mockPrivateField(fieldIsLaunchingFinished, false)
+        productCenterManager.mockPrivateField(fieldLaunchResult, null)
 
         productCenterManager.onAppForeground()
         verify(exactly = 0) {
