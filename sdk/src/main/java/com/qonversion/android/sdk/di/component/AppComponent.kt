@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.di.component
 
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.module.AppModule
@@ -16,6 +15,5 @@ import dagger.Component
 interface AppComponent {
     fun repository(): QonversionRepository
     fun automationManager(): QAutomationManager
-    fun preferences(): SharedPreferences
     fun config(): QonversionConfig
 }

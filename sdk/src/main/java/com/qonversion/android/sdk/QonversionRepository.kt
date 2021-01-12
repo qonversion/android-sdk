@@ -133,7 +133,7 @@ class QonversionRepository internal constructor(
 
     fun actionPoints(
         queryParams: Map<String, String>,
-        onSuccess: (actionPoints: ActionPointScreen?) -> Unit,
+        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         val uid = storage.load()
