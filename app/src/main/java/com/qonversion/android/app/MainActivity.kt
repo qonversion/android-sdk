@@ -133,7 +133,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showError(error: QonversionError){
+        val code = error.code                           // Error enum code
+        val description = error.description             // Error enum code description
+        val additionalMessage = error.additionalMessage // Additional error information (if possible)
         Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
-        Log.e(TAG, error.toString())
+        Log.e(TAG, "error code: $code, description: $description, additionalMessage: $additionalMessage")
     }
 }
