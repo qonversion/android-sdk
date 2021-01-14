@@ -188,9 +188,13 @@ class MainActivity : AppCompatActivity() {
             if (token != null) {
                 Qonversion.setPushToken(token)
                 Log.d(TAG, token)
+                // Copy push token to clipboard for testing.
+                // If you don't need it, please delete
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText(token, token)
                 clipboard.setPrimaryClip(clip)
+                // Show toast just for testing purposes only
+                // If you don't need it, please delete
                 Toast.makeText(baseContext, token, Toast.LENGTH_SHORT).show()
             }
         })
