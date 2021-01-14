@@ -1,6 +1,9 @@
 package com.qonversion.android.app
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.RemoteMessage
+import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionPermissionsCallback
@@ -73,6 +78,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Automation
+        buttonSetPushToken.setOnClickListener {
+            setPushToken()
+        }
+
+        // Before handling push notification provide the activity for show screen
         Qonversion.setAutomationDelegate(object : QAutomationDelegate {
             override fun provideActivityForScreen(): Activity {
                 return this@MainActivity
@@ -83,8 +93,10 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        buttonSetPushToken.setOnClickListener {
-            setPushToken()
+        // Check if the activity was launched from a push notification
+        val remoteMessage: RemoteMessage? = intent.getParcelableExtra(INTENT_REMOTE_MESSAGE)
+        if (remoteMessage != null && !Qonversion.handlePushIfPossible(remoteMessage)) {
+            // Handle notification yourself
         }
     }
 
@@ -176,6 +188,10 @@ class MainActivity : AppCompatActivity() {
             if (token != null) {
                 Qonversion.setPushToken(token)
                 Log.d(TAG, token)
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(token, token)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(baseContext, token, Toast.LENGTH_SHORT).show()
             }
         })
     }
