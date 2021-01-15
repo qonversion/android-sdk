@@ -20,8 +20,8 @@ data class QonversionError(
 enum class QonversionErrorCode(val specification: String) {
     UnknownError("Unknown error"),
     PlayStoreError("There was an issue with the Play Store service"),
-    BillingUnavailable("The Billing service is unavailable on the device because it is not connected to any Google account at the moment"),
-    PurchaseInvalid("Failure to purchase. Please make sure that you are using the google account where purchases are allowed and the application was correctly signed and properly set up for billing"),
+    BillingUnavailable("The Billing service is unavailable on the device"),
+    PurchaseInvalid("Failure to purchase"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),
     ProductNotOwned("Failure to consume purchase since item is not owned"),
     ProductAlreadyOwned("Failure to purchase since item is already owned"),
@@ -29,9 +29,9 @@ enum class QonversionErrorCode(val specification: String) {
     ProductUnavailable("Requested product is not available for purchase"),
     NetworkConnectionFailed("There was a network issue. Please make sure that the Internet connection is available on the device"),
     ParseResponseFailed("A problem occurred when serializing or deserializing data"),
-    BackendError("There was a backend error. Please see additionalMessage for detailed error information"),
+    BackendError("There was a backend error"),
     ProductNotFound("Failure to purchase since the Qonversion product was not found"),
     OfferingsNotFound("No offerings found"),
     LaunchError("There was an error on launching Qonversion SDK"),
-    SkuDetailsError("Failure to retrieve SkuDetails for the in-app product ID. Please make sure that the products were configured correctly in Google Play Console")
+    SkuDetailsError("Failure to retrieve SkuDetails for the in-app product ID")
 }
