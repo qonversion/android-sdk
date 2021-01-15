@@ -1,9 +1,6 @@
 package com.qonversion.android.sdk
 
-import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QOfferings
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QProduct
+import com.qonversion.android.sdk.dto.*
 
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -17,6 +14,11 @@ interface QonversionProductsCallback {
 
 interface QonversionOfferingsCallback {
    fun onSuccess(offerings: QOfferings)
+   fun onError(error: QonversionError)
+}
+
+interface QonversionExperimentsCallback {
+   fun onSuccess(experiments: Map<String, QExperimentInfo>)
    fun onError(error: QonversionError)
 }
 
