@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.requests
 
-import com.qonversion.android.sdk.dto.AttributionRequest
+import com.qonversion.android.sdk.dto.request.AttributionRequest
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import org.junit.Before

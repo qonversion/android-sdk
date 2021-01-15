@@ -1,5 +1,6 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.request
 
+import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QProduct
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 
@@ -103,6 +104,29 @@ class QProductCenterManager internal constructor(
     ) {
         loadProducts(object: QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) = executeOfferingCallback(callback)
+
+            override fun onError(error: QonversionError) = callback.onError(error)
+        })
+    }
+
+    fun checkTrialIntroEligibilityForProductIds(
+        productIds: List<String>,
+        callback: QonversionEligibilityCallback
+    ) {
+        loadProducts(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                val storeIds = products.map { it.value.skuDetail?.sku }.filterNotNull()
+                if (storeIds.isNotEmpty()) {
+                    repository.eligibilityForProductIds(storeIds, installDate, object : QonversionEligibilityCallback{
+                        override fun onSuccess(eligibilities: Map<String, QEligibility>) {
+                            val resultForRequiredProductIds = eligibilities.filter{it.key in productIds}
+                            callback.onSuccess(resultForRequiredProductIds)
+                        }
+
+                        override fun onError(error: QonversionError) = callback.onError(error)
+                    })
+                }
+            }
 
             override fun onError(error: QonversionError) = callback.onError(error)
         })

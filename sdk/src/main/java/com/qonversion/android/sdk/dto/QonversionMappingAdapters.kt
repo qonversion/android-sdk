@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.dto
 
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -113,5 +114,17 @@ class QOfferingsAdapter {
         val main = offerings.firstOrNull { it.tag == QOfferingTag.Main }
 
         return QOfferings(main, offerings)
+    }
+}
+
+class QEligibilityStatusAdapter {
+    @ToJson
+    private fun toJson(enum: QIntroEligibilityStatus): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QIntroEligibilityStatus? {
+        return QIntroEligibilityStatus.fromType(type)
     }
 }

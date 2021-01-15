@@ -6,10 +6,12 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
+import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
@@ -83,6 +85,49 @@ class QonversionRepository private constructor(
     fun sendProperties() {
         if (propertiesStorage.getProperties().isNotEmpty() && storage.load().isNotEmpty()) {
             propertiesRequest()
+        }
+    }
+
+    fun eligibilityForProductIds(
+        productIds: List<String>,
+        installDate: Long,
+        callback: QonversionEligibilityCallback
+    ) {
+        val uid = storage.load()
+
+        val eligibilityRequest = EligibilityRequest(
+            installDate = installDate,
+            device = environmentProvider.getInfo(advertisingId),
+            version = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            debugMode = isDebugMode.stringValue(),
+            ids = productIds.map {
+                StoreId(it)
+            }
+        )
+
+        api.eligibility(eligibilityRequest).enqueue {
+            onResponse = {
+                logger.release("eligibilityRequest - success - $it")
+                val body = it.body()
+                if (body != null && body.success) {
+                    val eligibilityMap = body.data.productsEligibility.map { item ->
+                        item.product.qonversionID to QEligibility(item.eligibilityStatus)
+                    }.toMap()
+
+                    callback.onSuccess(eligibilityMap)
+                } else {
+                    callback.onError(it.toQonversionError())
+                }
+                kickRequestQueue()
+            }
+            onFailure = {
+                logger.release("eligibilityRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    callback.onError(it.toQonversionError())
+                }
+            }
         }
     }
 
@@ -366,6 +411,7 @@ class QonversionRepository private constructor(
                 .add(QProductRenewStateAdapter())
                 .add(QOfferingsAdapter())
                 .add(QOfferingTagAdapter())
+                .add(QEligibilityStatusAdapter())
             val moshi = moshiBuilder.build()
 
             val retrofit = Retrofit.Builder()
