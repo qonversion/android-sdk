@@ -21,6 +21,7 @@ import com.qonversion.android.sdk.validator.Validator
 import com.squareup.moshi.Moshi
 import okhttp3.Cache
 import okhttp3.OkHttpClient
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
@@ -109,7 +110,7 @@ class QonversionRepository private constructor(
 
         api.eligibility(eligibilityRequest).enqueue {
             onResponse = {
-                logger.release("eligibilityRequest - success - $it")
+                logger.debug("eligibilityRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
                     val eligibilityMap = body.data.productsEligibility.map { item ->
@@ -304,7 +305,7 @@ class QonversionRepository private constructor(
     }
 
     private fun handlePermissionsResponse(
-        response: retrofit2.Response<BaseResponse<QLaunchResult>>,
+        response: Response<BaseResponse<QLaunchResult>>,
         callback: QonversionPermissionsCallback?
     ) {
         val body = response.body()
@@ -366,8 +367,7 @@ class QonversionRepository private constructor(
 
         api.properties(propertiesRequest).enqueue {
             onResponse = {
-                val logMessage =  if(it.isSuccessful) "success - $it" else  "failure - ${it.toQonversionError()}"
-                logger.debug("propertiesRequest - $logMessage")
+                logger.debug("propertiesRequest - ${it.getLogMessage()}")
 
                 if (it.isSuccessful) {
                     propertiesStorage.clear()
@@ -380,6 +380,8 @@ class QonversionRepository private constructor(
             }
         }
     }
+
+    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
 
     companion object {
 
