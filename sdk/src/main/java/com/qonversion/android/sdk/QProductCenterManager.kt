@@ -116,16 +116,18 @@ class QProductCenterManager internal constructor(
         loadProducts(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 val storeIds = products.map { it.value.skuDetail?.sku }.filterNotNull()
-                if (storeIds.isNotEmpty()) {
-                    repository.eligibilityForProductIds(storeIds, installDate, object : QonversionEligibilityCallback{
+                repository.eligibilityForProductIds(
+                    storeIds,
+                    installDate,
+                    object : QonversionEligibilityCallback {
                         override fun onSuccess(eligibilities: Map<String, QEligibility>) {
-                            val resultForRequiredProductIds = eligibilities.filter{it.key in productIds}
+                            val resultForRequiredProductIds =
+                                eligibilities.filter { it.key in productIds }
                             callback.onSuccess(resultForRequiredProductIds)
                         }
 
                         override fun onError(error: QonversionError) = callback.onError(error)
                     })
-                }
             }
 
             override fun onError(error: QonversionError) = callback.onError(error)

@@ -13,7 +13,7 @@ data class EligibilityRequest(
     @Json(name = "q_uid") override val clientUid: String?,
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
-    @Json(name = "products_local_data") val ids: List<StoreId>? = null
+    @Json(name = "products_local_data") val ids: List<StoreId>
 ): RequestData()
 
 @JsonClass(generateAdapter = true)
