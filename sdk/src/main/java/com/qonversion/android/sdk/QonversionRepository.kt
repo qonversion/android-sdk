@@ -113,11 +113,7 @@ class QonversionRepository private constructor(
                 logger.debug("eligibilityRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
-                    val eligibilityMap = body.data.productsEligibility.map { item ->
-                        item.product.qonversionID to QEligibility(item.eligibilityStatus)
-                    }.toMap()
-
-                    callback.onSuccess(eligibilityMap)
+                    callback.onSuccess(body.data.productsEligibility)
                 } else {
                     callback.onError(it.toQonversionError())
                 }
@@ -414,6 +410,7 @@ class QonversionRepository private constructor(
                 .add(QOfferingsAdapter())
                 .add(QOfferingTagAdapter())
                 .add(QEligibilityStatusAdapter())
+                .add(QEligibilityAdapter())
             val moshi = moshiBuilder.build()
 
             val retrofit = Retrofit.Builder()

@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.dto
 
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.dto.eligibility.ProductEligibility
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
@@ -126,5 +128,21 @@ class QEligibilityStatusAdapter {
     @FromJson
     fun fromJson(type: String): QIntroEligibilityStatus? {
         return QIntroEligibilityStatus.fromType(type)
+    }
+}
+
+class QEligibilityAdapter {
+    @ToJson
+    private fun toJson(eligibilities: Map<String, QEligibility>): List<ProductEligibility> {
+        return listOf()
+    }
+
+    @FromJson
+    fun fromJson(eligibilities: List<ProductEligibility>): Map<String, QEligibility> {
+        val result = mutableMapOf<String, QEligibility>()
+        eligibilities.forEach {
+            result[it.product.qonversionID] = QEligibility(it.eligibilityStatus)
+        }
+        return result
     }
 }
