@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.products
 
 enum class QProductDuration(val type: Int) {
     Weekly(0),

@@ -5,6 +5,15 @@ import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.dto.eligibility.ProductEligibility
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
+import com.qonversion.android.sdk.dto.experiments.QExperimentGroupType
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOffering
+import com.qonversion.android.sdk.dto.offerings.QOfferingTag
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductDuration
+import com.qonversion.android.sdk.dto.products.QProductRenewState
+import com.qonversion.android.sdk.dto.products.QProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -89,6 +98,34 @@ class QPermissionsAdapter {
     }
 }
 
+class QExperimentsAdapter {
+    @ToJson
+    private fun toJson(experiments: Map<String, QExperimentInfo>): List<QExperimentInfo> {
+        return experiments.values.toList()
+    }
+
+    @FromJson
+    fun fromJson(experiments: List<QExperimentInfo>): Map<String, QExperimentInfo> {
+        val result = mutableMapOf<String, QExperimentInfo>()
+        experiments.forEach {
+            result[it.experimentID] = it
+        }
+        return result
+    }
+}
+
+class QExperimentGroupTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QExperimentGroupType): Int {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: Int): QExperimentGroupType {
+        return QExperimentGroupType.fromType(type)
+    }
+}
+
 class QOfferingTagAdapter {
     @ToJson
     private fun toJson(enum: QOfferingTag): Int? {
@@ -115,7 +152,10 @@ class QOfferingsAdapter {
 
         val main = offerings.firstOrNull { it.tag == QOfferingTag.Main }
 
-        return QOfferings(main, offerings)
+        return QOfferings(
+            main,
+            offerings
+        )
     }
 }
 
