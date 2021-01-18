@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.offerings
 
 enum class QOfferingTag(val tag: Int?) {
     None(0),

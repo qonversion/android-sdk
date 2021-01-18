@@ -1,11 +1,11 @@
 package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QOfferings
+import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QProduct
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.QExperimentInfo
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)

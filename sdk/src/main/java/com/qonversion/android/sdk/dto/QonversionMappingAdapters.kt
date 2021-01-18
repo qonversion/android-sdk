@@ -5,6 +5,15 @@ import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.dto.eligibility.ProductEligibility
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
+import com.qonversion.android.sdk.dto.experiments.QExperimentGroupType
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOffering
+import com.qonversion.android.sdk.dto.offerings.QOfferingTag
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductDuration
+import com.qonversion.android.sdk.dto.products.QProductRenewState
+import com.qonversion.android.sdk.dto.products.QProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.*
@@ -143,7 +152,10 @@ class QOfferingsAdapter {
 
         val main = offerings.firstOrNull { it.tag == QOfferingTag.Main }
 
-        return QOfferings(main, offerings)
+        return QOfferings(
+            main,
+            offerings
+        )
     }
 }
 

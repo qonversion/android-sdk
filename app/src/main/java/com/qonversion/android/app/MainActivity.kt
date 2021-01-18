@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.QonversionProductsCallback
 import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QProduct
+import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
 
 

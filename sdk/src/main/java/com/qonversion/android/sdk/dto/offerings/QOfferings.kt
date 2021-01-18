@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.offerings
 
 data class QOfferings (
     val main: QOffering?,

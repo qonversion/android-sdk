@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.experiments
 
 enum class QExperimentGroupType(val type: Int) {
     A(0),
