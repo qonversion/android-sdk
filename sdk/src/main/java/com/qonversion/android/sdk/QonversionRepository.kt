@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -103,8 +103,8 @@ class QonversionRepository private constructor(
             accessToken = key,
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
-            ids = productIds.map {
-                StoreId(it)
+            productInfos = productIds.map {
+                StoreProductInfo(it)
             }
         )
 
