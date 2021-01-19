@@ -6,10 +6,12 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
+import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
@@ -19,6 +21,7 @@ import com.qonversion.android.sdk.validator.Validator
 import com.squareup.moshi.Moshi
 import okhttp3.Cache
 import okhttp3.OkHttpClient
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
@@ -83,6 +86,45 @@ class QonversionRepository private constructor(
     fun sendProperties() {
         if (propertiesStorage.getProperties().isNotEmpty() && storage.load().isNotEmpty()) {
             propertiesRequest()
+        }
+    }
+
+    fun eligibilityForProductIds(
+        productIds: List<String>,
+        installDate: Long,
+        callback: QonversionEligibilityCallback
+    ) {
+        val uid = storage.load()
+
+        val eligibilityRequest = EligibilityRequest(
+            installDate = installDate,
+            device = environmentProvider.getInfo(advertisingId),
+            version = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            debugMode = isDebugMode.stringValue(),
+            productInfos = productIds.map {
+                StoreProductInfo(it)
+            }
+        )
+
+        api.eligibility(eligibilityRequest).enqueue {
+            onResponse = {
+                logger.debug("eligibilityRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body != null && body.success) {
+                    callback.onSuccess(body.data.productsEligibility)
+                } else {
+                    callback.onError(it.toQonversionError())
+                }
+                kickRequestQueue()
+            }
+            onFailure = {
+                logger.release("eligibilityRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    callback.onError(it.toQonversionError())
+                }
+            }
         }
     }
 
@@ -259,7 +301,7 @@ class QonversionRepository private constructor(
     }
 
     private fun handlePermissionsResponse(
-        response: retrofit2.Response<BaseResponse<QLaunchResult>>,
+        response: Response<BaseResponse<QLaunchResult>>,
         callback: QonversionPermissionsCallback?
     ) {
         val body = response.body()
@@ -321,8 +363,7 @@ class QonversionRepository private constructor(
 
         api.properties(propertiesRequest).enqueue {
             onResponse = {
-                val logMessage =  if(it.isSuccessful) "success - $it" else  "failure - ${it.toQonversionError()}"
-                logger.debug("propertiesRequest - $logMessage")
+                logger.debug("propertiesRequest - ${it.getLogMessage()}")
 
                 if (it.isSuccessful) {
                     propertiesStorage.clear()
@@ -335,6 +376,8 @@ class QonversionRepository private constructor(
             }
         }
     }
+
+    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
 
     companion object {
 
@@ -366,6 +409,11 @@ class QonversionRepository private constructor(
                 .add(QProductRenewStateAdapter())
                 .add(QOfferingsAdapter())
                 .add(QOfferingTagAdapter())
+                .add(QExperimentGroupTypeAdapter())
+                .add(QExperimentsAdapter())
+                .add(QEligibilityStatusAdapter())
+                .add(QEligibilityAdapter())
+
             val moshi = moshiBuilder.build()
 
             val retrofit = Retrofit.Builder()

@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.QonversionProductsCallback
 import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QProduct
+import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -133,7 +133,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showError(error: QonversionError){
+        val code = error.code                           // Error enum code
+        val description = error.description             // Error enum code description
+        val additionalMessage = error.additionalMessage // Additional error information (if possible)
         Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
-        Log.e(TAG, error.toString())
+        Log.e(TAG, "error code: $code, description: $description, additionalMessage: $additionalMessage")
     }
 }

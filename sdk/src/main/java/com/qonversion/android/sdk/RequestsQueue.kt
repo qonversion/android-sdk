@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk
 
-import com.qonversion.android.sdk.dto.QonversionRequest
+import com.qonversion.android.sdk.dto.request.QonversionRequest
 import com.qonversion.android.sdk.logger.Logger
 import java.util.*
 
