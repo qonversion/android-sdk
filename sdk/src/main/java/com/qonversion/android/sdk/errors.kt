@@ -26,8 +26,14 @@ fun BillingError.toQonversionError(): QonversionError {
         BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> QonversionErrorCode.ProductNotOwned
         else -> QonversionErrorCode.UnknownError
     }
+    val additionalMessage = when (errorCode) {
+        QonversionErrorCode.BillingUnavailable -> "Billing service is not connected to any Google account at the moment."
+        QonversionErrorCode.PurchaseInvalid -> "Please make sure that you are using the google account where purchases are allowed and the application was correctly signed and properly set up for billing."
+        QonversionErrorCode.SkuDetailsError -> "Please make sure that the products were configured correctly in Google Play Console."
+        else -> ""
+    }
 
-    return QonversionError(errorCode, this.message)
+    return QonversionError(errorCode, "${this.message}. $additionalMessage")
 }
 
 fun Throwable.toQonversionError(): QonversionError {

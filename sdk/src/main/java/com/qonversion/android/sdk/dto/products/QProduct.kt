@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.products
 
 import com.android.billingclient.api.SkuDetails
 import com.squareup.moshi.Json

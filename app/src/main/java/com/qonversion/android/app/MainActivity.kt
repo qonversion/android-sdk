@@ -1,9 +1,5 @@
 package com.qonversion.android.app
 
-import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +15,7 @@ import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.QonversionProductsCallback
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QProduct
 import com.qonversion.android.sdk.push.QAction
 import com.qonversion.android.sdk.push.QAutomationDelegate
@@ -103,7 +100,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateContent(products: Map<String, QProduct>) {
         buttonPermissions.text = getString(R.string.check_active_permissions)
         buttonRestore.text = getString(R.string.restore_purchases)
-        buttonSetPushToken.text = getString(R.string.set_push_token)
 
         val subscription = products[productIdSubs]
         if (subscription != null) {
@@ -166,9 +162,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showError(error: QonversionError) {
+    private fun showError(error: QonversionError){
+        val code = error.code                           // Error enum code
+        val description = error.description             // Error enum code description
+        val additionalMessage = error.additionalMessage // Additional error information (if possible)
         Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
-        Log.e(TAG, error.toString())
+        Log.e(TAG, "error code: $code, description: $description, additionalMessage: $additionalMessage")
     }
 
     private fun setPushToken() {

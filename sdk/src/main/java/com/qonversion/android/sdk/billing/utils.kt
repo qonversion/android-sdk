@@ -16,7 +16,7 @@ fun Boolean.toInt() = if (this) 1 else 0
 fun Boolean.stringValue() = if (this) "1" else "0"
 
 fun BillingResult.getDescription() =
-    "DebugMessage: $debugMessage; ResponseCodeName: ${responseCode.getDescription()}"
+    "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
 fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
