@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
+import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.logger.Logger
 import dagger.Module
 import dagger.Provides
 
@@ -30,6 +32,12 @@ class AppModule(
     @Provides
     fun provideSharedPreferences(context: Application): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideLogger(): Logger {
+        return ConsoleLogger()
     }
 
     companion object {

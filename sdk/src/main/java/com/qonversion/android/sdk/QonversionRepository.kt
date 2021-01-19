@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk
 
-import android.app.Application
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
@@ -17,17 +16,11 @@ import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
-import com.squareup.moshi.Moshi
-import okhttp3.Cache
-import okhttp3.OkHttpClient
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 
 class QonversionRepository internal constructor(
     private val api: Api,
@@ -37,11 +30,11 @@ class QonversionRepository internal constructor(
     private val sdkVersion: String,
     private val key: String,
     private val isDebugMode: Boolean,
+    private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
     private val headersProvider: ApiHeadersProvider
 ) {
-    private val logger = ConsoleLogger()
     private var advertisingId: String? = null
     private  var installDate: Long = 0
 

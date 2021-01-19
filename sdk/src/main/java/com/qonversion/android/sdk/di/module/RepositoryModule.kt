@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.RequestsQueue
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.di.scope.ApplicationScope
+import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
@@ -29,6 +30,7 @@ class RepositoryModule {
         propertiesStorage: PropertiesStorage,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
+        logger: Logger,
         requestsQueue: RequestsQueue,
         requestValidator: RequestValidator,
         apiHeadersProvider: ApiHeadersProvider
@@ -41,6 +43,7 @@ class RepositoryModule {
             config.sdkVersion,
             config.key,
             config.isDebugMode,
+            logger,
             requestsQueue,
             requestValidator,
             apiHeadersProvider
@@ -76,8 +79,8 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideRequestsQueue(): RequestsQueue {
-        return RequestsQueue()
+    fun provideRequestsQueue(logger: Logger): RequestsQueue {
+        return RequestsQueue(logger)
     }
 
     @ApplicationScope

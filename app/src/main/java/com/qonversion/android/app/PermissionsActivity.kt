@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.dto.QPermission
 import kotlinx.android.synthetic.main.activity_permissions.*
 
 class PermissionsActivity : AppCompatActivity() {
-    private val TAG = "PermissionsActivity"
+    private val tag = "PermissionsActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +27,8 @@ class PermissionsActivity : AppCompatActivity() {
             }
 
             override fun onError(error: QonversionError) {
-                Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
-                Log.e(TAG, error.toString())
+                Toast.makeText(baseContext, error.description, Toast.LENGTH_LONG).show()
+                Log.e(tag, error.toString())
             }
         })
     }

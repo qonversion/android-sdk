@@ -15,16 +15,22 @@ import com.qonversion.android.sdk.Qonversion
 
 
 class FirebaseMessageReceiver : FirebaseMessagingService() {
-    private val TAG = "FirebaseMessageReceiver"
+    private val tag = "FirebaseMessageReceiver"
 
+    /**
+     *  The token used for sending messages to the application.
+     */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "onNewToken: $token")
+        Log.d(tag, "onNewToken: $token")
         Qonversion.setPushToken(token)
     }
 
+    /**
+     * Called when a message is received.
+     */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        Log.d(TAG, "onMessageReceived: ")
+        Log.d(tag, "onMessageReceived: ")
         // Qonversion notifications are received via data event
         // and have "title" and "body" as JSON attributes
         if (remoteMessage.data.isNotEmpty()) {
@@ -71,7 +77,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
             CHANNEL_ID
         )
             .setSmallIcon(R.drawable.ic_notification)
-            .setAutoCancel(true) // Flag true will make the notification is automatically canceled when the user clicks it in the panel.
+            .setAutoCancel(true) // Flag true will make the notification automatically canceled when the user clicks it in the panel.
             .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
             .setContentTitle(title)
@@ -94,7 +100,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
                 notificationChannel
             )
         }
-        // Please be attentive with id.
+
         // If a notification with the same id has already been posted by your application and has not yet been canceled,
         // it will be replaced by the updated information.
         notificationManager.notify(0, builder.build())

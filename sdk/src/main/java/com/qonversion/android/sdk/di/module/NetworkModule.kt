@@ -39,6 +39,12 @@ class NetworkModule {
             .add(QPermissionsAdapter())
             .add(QProductTypeAdapter())
             .add(QProductRenewStateAdapter())
+            .add(QOfferingsAdapter())
+            .add(QOfferingTagAdapter())
+            .add(QExperimentGroupTypeAdapter())
+            .add(QExperimentsAdapter())
+            .add(QEligibilityStatusAdapter())
+            .add(QEligibilityAdapter())
             .build()
     }
 

@@ -20,7 +20,9 @@ public class App extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        //  You can set the flag to distinguish sandbox and production users.
+        //  Don't use it in production
+        Qonversion.setDebugMode();
         Qonversion.launch(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
