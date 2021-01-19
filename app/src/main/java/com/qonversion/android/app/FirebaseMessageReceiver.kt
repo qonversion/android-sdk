@@ -44,14 +44,14 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
         // Since here we do not have any notification payload,
         // This section is commented out.
         // In case you expect notification payload, uncomment the block.
-        if (remoteMessage.notification != null) {
+        /*if (remoteMessage.notification != null) {
             // Since the notification is received directly from
             // FCM, the title and the body can be fetched directly as below.
             showNotification(
                 remoteMessage.notification?.title,
                 remoteMessage.notification?.body
             )
-        }
+        }*/
     }
 
     private fun showNotification(

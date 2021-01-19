@@ -43,7 +43,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
         loadWebView()
 
-        confirmScreenIsShown()
+        confirmScreenView()
     }
 
     override fun openScreen(screenId: String, htmlPage: String) {
@@ -129,12 +129,12 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         }
     }
 
-    private fun confirmScreenIsShown() {
+    private fun confirmScreenView() {
         val extraScreenId = intent.getStringExtra(INTENT_SCREEN_ID)
         if (extraScreenId != null) {
-            presenter.screenIsShownWithId(extraScreenId)
+            presenter.confirmScreenView(extraScreenId)
         } else {
-            logger.release("confirmScreenIsShown() -> Failure to confirm screen shown")
+            logger.debug("confirmScreenView() -> Failure to confirm screen shown")
         }
     }
 

@@ -4,7 +4,7 @@ import android.app.Activity
 
 interface QAutomationDelegate {
     /**
-     * Provide current activity for showing a screen
+     * Provide current activity for screen show
      */
     fun provideActivityForScreen(): Activity
 

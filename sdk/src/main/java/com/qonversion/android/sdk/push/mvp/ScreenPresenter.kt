@@ -61,7 +61,7 @@ class ScreenPresenter @Inject constructor(
         return true
     }
 
-    override fun screenIsShownWithId(screenId: String) {
+    override fun confirmScreenView(screenId: String) {
         repository.views(screenId)
     }
 

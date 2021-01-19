@@ -9,7 +9,7 @@ import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.dto.automation.ActionPointScreen
 import com.qonversion.android.sdk.dto.automation.Screen
-import com.qonversion.android.sdk.dto.automation.ViewsRequest
+import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -138,9 +138,7 @@ class QonversionRepository internal constructor(
     ) {
         api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
             onResponse = {
-                val logMessage =
-                    if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
-                logger.release("screensRequest - $logMessage")
+                logger.release("screensRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
@@ -158,14 +156,13 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun views(screenId: String){
+    fun views(screenId: String) {
         val uid = storage.load()
         val viewsRequest = ViewsRequest(uid)
 
         api.views(headersProvider.getHeaders(), screenId, viewsRequest).enqueue {
             onResponse = {
-                val logMessage = if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
-                logger.release("viewsRequest - $logMessage")
+                logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
             onFailure = {
                 logger.release("viewsRequest - failure - ${it?.toQonversionError()}")
@@ -182,9 +179,7 @@ class QonversionRepository internal constructor(
 
         api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
             onResponse = {
-                val logMessage =
-                    if (it.isSuccessful) "success - $it" else "failure - ${it.toQonversionError()}"
-                logger.release("actionPointsRequest - $logMessage")
+                logger.release("actionPointsRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.items.lastOrNull()?.data)

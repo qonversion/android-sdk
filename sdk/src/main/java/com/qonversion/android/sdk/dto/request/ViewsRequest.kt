@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto.automation
+package com.qonversion.android.sdk.dto.request
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

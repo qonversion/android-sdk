@@ -216,7 +216,7 @@ class ScreenPresenterTest {
     @Test
     fun screenShownWithId() {
         val screenId = "screenId"
-        screenPresenter.screenIsShownWithId(screenId)
+        screenPresenter.confirmScreenView(screenId)
 
         verify(exactly = 1) {
             mockRepository.views(screenId)

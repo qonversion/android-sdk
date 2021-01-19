@@ -12,8 +12,6 @@ import com.qonversion.android.sdk.push.QAutomationManager
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.2.0"
-
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
