@@ -36,11 +36,11 @@ data class QProduct(
             "P3D"-> period = QTrialDuration.ThreeDays
             "P7D", "P1W"-> period = QTrialDuration.Week
             "P14D", "P2W"-> period = QTrialDuration.TwoWeeks
-            "P30D", "P4W2D"-> period = QTrialDuration.Month
-            "P60D", "P8W4D"-> period = QTrialDuration.TwoMonths
-            "P90D", "P12W6D"-> period = QTrialDuration.ThreeMonths
-            "P180D", "P25W5D"-> period = QTrialDuration.SixMonths
-            "P365D", "P52W1D"-> period = QTrialDuration.Year
+            "P30D", "P1M", "P4W2D"-> period = QTrialDuration.Month
+            "P60D", "P2M", "P8W4D"-> period = QTrialDuration.TwoMonths
+            "P90D", "P3M", "P12W6D"-> period = QTrialDuration.ThreeMonths
+            "P180D", "P6M", "P25W5D"-> period = QTrialDuration.SixMonths
+            "P365D", "P12M", "P52W1D"-> period = QTrialDuration.Year
             else-> QTrialDuration.Other
         }
 
