@@ -13,7 +13,7 @@ enum class QTrialDuration(val type: Int) {
     Other(9);
 
     companion object {
-        fun fromType(type: Int): QTrialDuration? {
+        fun fromType(type: Int): QTrialDuration {
             return when (type) {
                 -1-> NotAvailable
                 1-> ThreeDays

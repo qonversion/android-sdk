@@ -34,13 +34,13 @@ data class QProduct(
 
         when (trialPeriod) {
             "P3D"-> period = QTrialDuration.ThreeDays
-            "P7D", "P1W"-> period = QTrialDuration.Week
-            "P14D", "P2W"-> period = QTrialDuration.TwoWeeks
-            "P30D", "P1M"-> period = QTrialDuration.Month
-            "P60D", "P2M"-> period = QTrialDuration.TwoMonths
-            "P90D", "P3M"-> period = QTrialDuration.ThreeMonths
-            "P180D", "P6M"-> period = QTrialDuration.SixMonths
-            "P365D", "P12M", "P1Y"-> period = QTrialDuration.Year
+            "P1W"-> period = QTrialDuration.Week
+            "P2W"-> period = QTrialDuration.TwoWeeks
+            "P4W2D"-> period = QTrialDuration.Month
+            "P8W4D"-> period = QTrialDuration.TwoMonths
+            "P12W6D"-> period = QTrialDuration.ThreeMonths
+            "P25W5D"-> period = QTrialDuration.SixMonths
+            "P52W1D"-> period = QTrialDuration.Year
             else-> QTrialDuration.Other
         }
 
