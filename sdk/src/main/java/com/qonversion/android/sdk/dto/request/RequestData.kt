@@ -1,4 +1,6 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.request
+
+import com.qonversion.android.sdk.dto.Environment
 
 abstract class RequestData {
     abstract val installDate: Long

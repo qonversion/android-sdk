@@ -5,7 +5,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.Util
-import com.qonversion.android.sdk.dto.PurchaseRequest
+import com.qonversion.android.sdk.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi

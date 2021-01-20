@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.3.0"
+    private const val SDK_VERSION = "2.4.1"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
@@ -166,6 +166,33 @@ object Qonversion : LifecycleDelegate {
         callback: QonversionOfferingsCallback
     ) {
         productCenterManager?.offerings(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Qonversion A/B tests help you grow your app revenue by making it easy to run and analyze paywall and promoted in-app product experiments. It gives you the power to measure your paywalls' performance before you roll them out widely. It is an out-of-the-box solution that does not require any third-party service.
+     * @param callback - callback that will be called when response is received
+     */
+    @JvmStatic
+    fun experiments(
+        callback: QonversionExperimentsCallback
+    ) {
+        productCenterManager?.experiments(callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * You can check if a user is eligible for an introductory offer, including a free trial.
+     * You can show only a regular price for users who are not eligible for an introductory offer.
+     * @param productIds products identifiers that must be checked
+     * @param callback - callback that will be called when response is received
+     */
+    @JvmStatic
+    fun checkTrialIntroEligibilityForProductIds(
+        productIds: List<String>,
+        callback: QonversionEligibilityCallback
+    ) {
+        productCenterManager?.checkTrialIntroEligibilityForProductIds(productIds, callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
