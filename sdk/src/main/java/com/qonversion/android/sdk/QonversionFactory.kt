@@ -3,11 +3,13 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import androidx.annotation.UiThread
+import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.billing.BillingService
 import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 
 class QonversionFactory internal constructor(
     private val context: Application,
@@ -17,13 +19,19 @@ class QonversionFactory internal constructor(
         repository: QonversionRepository,
         isObserveMode: Boolean
     ): QProductCenterManager {
-        val productCenterManager = QProductCenterManager(context, repository, logger)
+        val productCenterManager = QProductCenterManager(context, repository, logger, createDeviceStorage())
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService
         productCenterManager.consumer = createConsumer(billingService, isObserveMode)
 
         return productCenterManager
+    }
+
+    private fun createDeviceStorage(): DeviceStorage {
+        return DeviceStorage(
+            PreferenceManager.getDefaultSharedPreferences(context)
+        )
     }
 
     private fun createBillingService(listener: QonversionBillingService.PurchasesListener): QonversionBillingService {
