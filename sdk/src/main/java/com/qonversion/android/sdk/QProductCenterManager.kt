@@ -22,7 +22,7 @@ class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private val logger: Logger,
-    private val storage: DeviceStorage
+    private val deviceStorage: DeviceStorage
 ): QonversionBillingService.PurchasesListener {
 
     private val isLaunchingFinished: Boolean
@@ -451,6 +451,19 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    private fun handleCachedPurchases() {
+        val cachedPurchases = deviceStorage.loadPurchases()
+        cachedPurchases.forEach { purchase->
+            repository.purchase(installDate, purchase, object : QonversionPermissionsCallback{
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    deviceStorage.clearPurchase(purchase)
+                }
+
+                override fun onError(error: QonversionError) {}
+            })
+        }
+    }
+
     private fun executeExperimentsBlocks() {
         if (experimentsCallbacks.isEmpty()) {
             return
@@ -530,57 +543,31 @@ class QProductCenterManager internal constructor(
         consumer.consumePurchases(purchases, skuDetails)
 
         purchases.forEach { purchase ->
-            handlePurchase(purchase)
-        }
-    }
+            val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
-    private fun handlePurchase(purchase: Purchase, retries: Int = MAX_RETRIES_NUMBER) {
-        purchase(purchase, object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
-                launchResult?.permissions = permissions
-                val purchaseCallback = purchasingCallbacks[purchase.sku]
-                purchasingCallbacks.remove(purchase.sku)
-                purchaseCallback?.onSuccess(permissions)
-            }
+            val purchaseInfo = Pair.create(skuDetail, purchase)
+            purchase(purchaseInfo, object : QonversionPermissionsCallback {
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    launchResult?.permissions = permissions
+                    val purchaseCallback = purchasingCallbacks[purchase.sku]
+                    purchasingCallbacks.remove(purchase.sku)
+                    purchaseCallback?.onSuccess(permissions)
+                }
 
-            override fun onError(error: QonversionError) {
-                if (retries > 0) {
-                    handlePurchase(purchase, retries - 1)
-                } else {
+                override fun onError(error: QonversionError) {
                     val purchaseCallback = purchasingCallbacks[purchase.sku]
                     purchasingCallbacks.remove(purchase.sku)
                     purchaseCallback?.onError(error)
-                    storage.savePurchase(purchase, skuDetails[purchase.sku])
                 }
-            }
-        })
-    }
-
-    private fun handleCachedPurchases(){
-        val cachedPurchases = storage.loadPurchases()
-        cachedPurchases.forEach { purchase ->
-            purchase(purchase, object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    storage.clearPurchase(purchase)
-                }
-
-                override fun onError(error: QonversionError) {}
             })
         }
     }
 
     private fun purchase(
-        purchase: Purchase,
+        purchaseInfo: Pair<SkuDetails, Purchase>,
         callback: QonversionPermissionsCallback
     ) {
-        val skuDetail = skuDetails[purchase.sku] ?: return
-        val purchaseInfo = Pair.create(skuDetail, purchase)
-
-        val purchaseDto = converter.convert(purchaseInfo)
-        repository.purchase(installDate, purchaseDto, callback)
-    }
-
-    companion object{
-        private const val MAX_RETRIES_NUMBER = 3
+        val purchase = converter.convert(purchaseInfo)
+        repository.purchase(installDate, purchase, callback)
     }
 }

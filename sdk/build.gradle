@@ -167,9 +167,6 @@ dependencies {
     implementation lifecycle.extensions
     kapt lifecycle.compiler
 
-    // Gson
-    implementation 'com.google.code.gson:gson:2.8.6'
-
     testImplementation 'junit:junit:4.13'
 
     testImplementation junit.api

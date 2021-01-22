@@ -17,9 +17,10 @@ class QonversionFactory internal constructor(
 ) {
     fun createProductCenterManager(
         repository: QonversionRepository,
-        isObserveMode: Boolean
+        isObserveMode: Boolean,
+        deviceStorage:DeviceStorage
     ): QProductCenterManager {
-        val productCenterManager = QProductCenterManager(context, repository, logger, createDeviceStorage())
+        val productCenterManager = QProductCenterManager(context, repository, logger, deviceStorage)
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService
@@ -28,7 +29,7 @@ class QonversionFactory internal constructor(
         return productCenterManager
     }
 
-    private fun createDeviceStorage(): DeviceStorage {
+     fun createDeviceStorage(): DeviceStorage {
         return DeviceStorage(
             PreferenceManager.getDefaultSharedPreferences(context)
         )

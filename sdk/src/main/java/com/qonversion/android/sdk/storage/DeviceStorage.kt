@@ -2,20 +2,27 @@ package com.qonversion.android.sdk.storage
 
 import android.content.SharedPreferences
 import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.qonversion.android.sdk.entity.Purchase
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import java.lang.reflect.Type
 
 class DeviceStorage(
     private val preferences: SharedPreferences
 ) {
-    fun savePurchase(
-        purchase: Purchase,
-        skuDetails: SkuDetails?
-    ) {
-        if (skuDetails?.type == BillingClient.SkuType.INAPP) {
+    private val moshi = Moshi.Builder().build()
+    private val collectionPurchaseType: Type = Types.newParameterizedType(
+        MutableSet::class.java,
+        Purchase::class.java
+    )
+    private val jsonAdapter: JsonAdapter<MutableSet<Purchase>> =
+        moshi.adapter(collectionPurchaseType)
+
+    fun savePurchase(purchase: Purchase) {
+
+        if (purchase.type == BillingClient.SkuType.INAPP) {
 
             val purchases = loadPurchases()
             purchases.add(purchase)
@@ -30,15 +37,16 @@ class DeviceStorage(
     }
 
     fun loadPurchases(): MutableSet<Purchase> {
-        val gson = Gson()
-        val json = preferences.getString(PURCHASE, "")
-        val type: Type = object : TypeToken<MutableSet<Purchase>>() {}.type
-        var result: MutableSet<Purchase>? = gson.fromJson(json, type)
-
-        if (result == null) {
-            result = mutableSetOf()
+        val json = preferences.getString(PURCHASE_KEY, "")
+        if (json == null || json.isEmpty()) {
+            return mutableSetOf()
         }
-        return result
+        return try {
+            val purchases: MutableSet<Purchase>? = jsonAdapter.fromJson(json)
+            purchases ?: mutableSetOf()
+        } catch (e: JsonDataException) {
+            mutableSetOf()
+        }
     }
 
     fun clearPurchase(purchase: Purchase) {
@@ -48,14 +56,13 @@ class DeviceStorage(
         savePurchasesAsJson(purchases)
     }
 
-    private fun savePurchasesAsJson(purchases: Set<Purchase>) {
-        val gson = Gson()
-        val jsonStr = gson.toJson(purchases)
-        preferences.edit().putString(PURCHASE, jsonStr).apply()
+    private fun savePurchasesAsJson(purchases: MutableSet<Purchase>) {
+        val jsonStr: String = jsonAdapter.toJson(purchases)
+        preferences.edit().putString(PURCHASE_KEY, jsonStr).apply()
     }
 
     companion object {
-        private const val PURCHASE = "purchase"
+        private const val PURCHASE_KEY = "purchase"
         private const val MAX_PURCHASES_NUMBER = 5
         private const val MAX_OLD_PURCHASES_NUMBER = 2
     }
