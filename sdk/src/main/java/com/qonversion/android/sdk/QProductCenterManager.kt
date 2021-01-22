@@ -396,6 +396,7 @@ class QProductCenterManager internal constructor(
 
                 executePermissionsBlock()
                 executeExperimentsBlocks()
+                handleCachedPurchases()
 
                 callback?.onSuccess(launchResult)
             }
@@ -434,8 +435,6 @@ class QProductCenterManager internal constructor(
 
                     val formattedDetails: Map<String, SkuDetails> = configureSkuDetails(details)
                     skuDetails = formattedDetails.toMutableMap()
-
-                    handleCachedPurchases()
 
                     executeProductsBlocks()
 

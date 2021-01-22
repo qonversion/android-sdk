@@ -21,7 +21,6 @@ class DeviceStorage(
         moshi.adapter(collectionPurchaseType)
 
     fun savePurchase(purchase: Purchase) {
-
         if (purchase.type == BillingClient.SkuType.INAPP) {
 
             val purchases = loadPurchases()
