@@ -7,13 +7,13 @@ import com.qonversion.android.sdk.di.module.ManagersModule
 import com.qonversion.android.sdk.di.module.NetworkModule
 import com.qonversion.android.sdk.di.module.RepositoryModule
 import com.qonversion.android.sdk.di.scope.ApplicationScope
-import com.qonversion.android.sdk.push.QAutomationManager
+import com.qonversion.android.sdk.push.QAutomationsManager
 import dagger.Component
 
 @ApplicationScope
 @Component(modules = [AppModule::class, RepositoryModule::class, NetworkModule::class, ManagersModule::class])
 interface AppComponent {
     fun repository(): QonversionRepository
-    fun automationManager(): QAutomationManager
+    fun automationsManager(): QAutomationsManager
     fun config(): QonversionConfig
 }

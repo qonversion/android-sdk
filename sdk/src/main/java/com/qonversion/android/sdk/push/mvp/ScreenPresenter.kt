@@ -67,7 +67,6 @@ class ScreenPresenter @Inject constructor(
 
     private fun Uri.getActionType(): QActionType {
         val actionType = getQueryParameter(ACTION)
-        logger.debug("getActionType() $QActionType.fromType(actionType)")
         return QActionType.fromType(actionType)
     }
 

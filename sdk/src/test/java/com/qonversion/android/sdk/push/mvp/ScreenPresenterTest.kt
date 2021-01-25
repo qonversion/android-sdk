@@ -31,7 +31,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when url is null`() {
+    fun `shouldOverrideUrlLoading shouldn't call view methods when url is null`() {
         val url = null
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -41,7 +41,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when url host is not automation`() {
+    fun `shouldOverrideUrlLoading shouldn't call view methods when url host is not automation`() {
         val url = "qon-projectID://auto?action=url&amp;data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -51,7 +51,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when url scheme is not qonversion`() {
+    fun `shouldOverrideUrlLoading shouldn't call view methods when url scheme is not qonversion`() {
         val url = "scheme-projectID://automation?action=url&amp;data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -61,7 +61,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is url`() {
+    fun `shouldOverrideUrlLoading should call openLink() when action type is url`() {
         val url = "qon-AgLqRhy0://automation?action=url&data=https://qonversion.io"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -80,7 +80,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is deeplink`() {
+    fun `shouldOverrideUrlLoading should call openLink() when action type is deeplink`() {
         val url = "qon-AgLqRhy0://automation?action=deeplink&data=someApp://mainScreen"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -99,7 +99,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is purchase`() {
+    fun `shouldOverrideUrlLoading should call purchase() when action type is purchase`() {
         val url = "qon-AgLqRhy0://automation?action=purchase&data=main"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -118,7 +118,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is restore`() {
+    fun `shouldOverrideUrlLoading should call restore() when action type is restore`() {
         val url = "qon-AgLqRhy0://automation?action=restore"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -137,7 +137,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is close`() {
+    fun `shouldOverrideUrlLoading should call close() when action type is close`() {
         val url = "qon-AgLqRhy0://automation?action=close"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -156,7 +156,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is navigate success`() {
+    fun `shouldOverrideUrlLoading should call openScreen() when action type is navigate and screens request success`() {
         val screenId = "screen-uid-789-2"
         val url = "qon-AgLqRhy0://automation?action=navigate&data=$screenId"
         val html = "<html><body>Screen 2 Content<body></html>"
@@ -186,7 +186,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading when action type is navigate error`() {
+    fun `shouldOverrideUrlLoading should call onError() when action type is navigate and screens request failed`() {
         val screenId = "screen-uid-789-2"
         val url = "qon-AgLqRhy0://automation?action=navigate&data=$screenId"
         val error = QonversionError(QonversionErrorCode.BackendError, "Failed to load screen")
@@ -214,7 +214,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun screenShownWithId() {
+    fun confirmScreenView() {
         val screenId = "screenId"
         screenPresenter.confirmScreenView(screenId)
 

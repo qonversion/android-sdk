@@ -20,13 +20,13 @@ import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.QAction
 import com.qonversion.android.sdk.push.QActionType
-import com.qonversion.android.sdk.push.QAutomationManager
+import com.qonversion.android.sdk.push.QAutomationsManager
 import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
 
 class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     @Inject
-    lateinit var automationManager: QAutomationManager
+    lateinit var automationsManager: QAutomationsManager
 
     @Inject
     lateinit var presenter: ScreenPresenter
@@ -67,7 +67,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun onSuccess(permissions: Map<String, QPermission>) {
                 val map = mutableMapOf<String, String>()
                 map[ACTION_MAP_KEY] = productId
-                automationManager.automationFlowFinishedWithAction(QAction(QActionType.Purchase, map))
+                automationsManager.automationFlowFinishedWithAction(QAction(QActionType.Purchase, map))
                 close()
             }
 
@@ -81,7 +81,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                automationManager.automationFlowFinishedWithAction(QAction(QActionType.Restore))
+                automationsManager.automationFlowFinishedWithAction(QAction(QActionType.Restore))
                 close()
             }
 
@@ -98,8 +98,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     override fun onError(error: QonversionError) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Screen show alert")
-        builder.setMessage("Failure to show screen. ${error.description}")
+        builder.setTitle("Failure to show app screen")
+        builder.setMessage(error.description)
 
         builder.setPositiveButton(android.R.string.yes) { _, _ -> }
         builder.show()

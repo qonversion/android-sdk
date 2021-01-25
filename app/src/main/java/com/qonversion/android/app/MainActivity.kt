@@ -18,7 +18,7 @@ import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.push.QAction
-import com.qonversion.android.sdk.push.QAutomationDelegate
+import com.qonversion.android.sdk.push.QAutomationsDelegate
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -78,13 +78,14 @@ class MainActivity : AppCompatActivity() {
             setPushToken()
         }
 
-        // Before handling push notification provide the activity for screen show
-        Qonversion.setAutomationDelegate(object : QAutomationDelegate {
-            override fun provideActivityForScreen(): Activity {
+        // Before handling push notifications provide the instance of Automations delegate
+        Automations.setDelegate(object : QAutomationsDelegate {
+            override fun activityForScreen(): Activity {
+                // Provide the current Activity context
                 return this@MainActivity
             }
 
-            override fun automationFlowFinishedWithAction(action: QAction) {
+            override fun automationsFinishedWithAction(action: QAction) {
                 // handle action
             }
         })
@@ -186,7 +187,7 @@ class MainActivity : AppCompatActivity() {
             val token = task.result
             if (token != null) {
                 Qonversion.setPushToken(token)
-                // Copy push token to the clipboard
+                // Copy push token to the clipboard, if you need
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText(token, token)
                 clipboard.setPrimaryClip(clip)

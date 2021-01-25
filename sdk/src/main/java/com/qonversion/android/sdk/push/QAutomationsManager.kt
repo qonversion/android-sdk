@@ -8,14 +8,14 @@ import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.mvp.ScreenActivity
 
-class QAutomationManager(
+class QAutomationsManager(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences
 ) {
     private val logger = ConsoleLogger()
 
     @Volatile
-    var automationDelegate: QAutomationDelegate? = null
+    var automationsDelegate: QAutomationsDelegate? = null
         @Synchronized set
         @Synchronized get
 
@@ -38,7 +38,7 @@ class QAutomationManager(
     }
 
     fun automationFlowFinishedWithAction(action: QAction) {
-        automationDelegate?.automationFlowFinishedWithAction(action)
+        automationsDelegate?.automationsFinishedWithAction(action)
     }
 
     private fun loadScreenIfPossible() {
@@ -66,9 +66,9 @@ class QAutomationManager(
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
             { screen ->
-                val activity = automationDelegate?.provideActivityForScreen()
+                val activity = automationsDelegate?.activityForScreen()
                 if (activity == null) {
-                    logger.release("It looks like setAutomationDelegate() was not called")
+                    logger.release("It looks like Automations.setDelegate() was not called")
                     return@screens
                 }
 

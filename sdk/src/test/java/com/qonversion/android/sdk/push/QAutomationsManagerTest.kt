@@ -19,14 +19,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class QAutomationManagerTest {
+class QAutomationsManagerTest {
     private val mockRepository: QonversionRepository = mockk(relaxed = true)
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
-    private lateinit var automationManager: QAutomationManager
+    private lateinit var automationsManager: QAutomationsManager
 
     private val pushTokenKey = "push_token_key"
     private val screenId = "ZNkQaNy6"
@@ -40,13 +40,13 @@ class QAutomationManagerTest {
         mockIntent()
         mockSharedPreferences()
 
-        automationManager = QAutomationManager(mockRepository, mockPrefs)
-        automationManager.automationDelegate = object : QAutomationDelegate {
-            override fun provideActivityForScreen(): Activity {
+        automationsManager = QAutomationsManager(mockRepository, mockPrefs)
+        automationsManager.automationsDelegate = object : QAutomationsDelegate {
+            override fun activityForScreen(): Activity {
                 return mockActivity
             }
 
-            override fun automationFlowFinishedWithAction(action: QAction) {
+            override fun automationsFinishedWithAction(action: QAction) {
             }
         }
     }
@@ -54,12 +54,12 @@ class QAutomationManagerTest {
     @Nested
     inner class HandlePushIfPossible {
         @Test
-        fun `returns true when push is qonversion's and screen show completed`() {
+        fun `should return true when push is qonversion's and screen show completed`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse()
 
-            val result = automationManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
@@ -69,11 +69,11 @@ class QAutomationManagerTest {
         }
 
         @Test
-        fun `returns true when push is qonversion's and actionPoints request failed`() {
+        fun `should return true when push is qonversion's and actionPoints request failed`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse(false)
 
-            val result = automationManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
@@ -85,12 +85,12 @@ class QAutomationManagerTest {
         }
 
         @Test
-        fun `returns true when push is qonversion's and screen request failed`() {
+        fun `should return true when push is qonversion's and screen request failed`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse(false)
 
-            val result = automationManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
@@ -100,10 +100,10 @@ class QAutomationManagerTest {
         }
 
         @Test
-        fun `returns false when push is not Qonversion`() {
+        fun `should return false when push is not Qonversion`() {
             val remoteMessage = mockRemoteMessage(false)
 
-            val result = automationManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
             assertThat(result).isFalse()
             verify(exactly = 0) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
@@ -176,30 +176,36 @@ class QAutomationManagerTest {
     @Nested
     inner class SetPushToken {
         @Test
-        fun `set token when it is new`() {
+        fun `should set token and save it to the sharedPreferences when token is new`() {
             val newToken = "newToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns null
 
-            automationManager.setPushToken(newToken)
-            verify(exactly = 1) {
+            automationsManager.setPushToken(newToken)
+            verifyOrder  {
+                mockPrefs.getString(pushTokenKey, "")
                 mockRepository.setPushToken(newToken)
                 mockEditor.putString(pushTokenKey, newToken)
+                mockEditor.apply()
             }
         }
 
         @Test
-        fun `doesn't set token when it is old`() {
+        fun `shouldn't set token and save it to the sharedPreferences when token is old`() {
             val oldToken = "oldToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns oldToken
 
-            automationManager.setPushToken(oldToken)
+            automationsManager.setPushToken(oldToken)
+            verify  (exactly = 1){
+                mockPrefs.getString(pushTokenKey, "")
+            }
             verify(exactly = 0) {
                 mockRepository.setPushToken(any())
                 mockEditor.putString(pushTokenKey, any())
+                mockEditor.apply()
             }
         }
     }

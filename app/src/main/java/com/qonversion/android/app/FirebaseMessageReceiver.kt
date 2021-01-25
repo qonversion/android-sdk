@@ -31,8 +31,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
      */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(tag, "onMessageReceived: ")
-        // Qonversion notifications are received via data event
-        // and have "title" and "body" as JSON attributes
+        // Qonversion sends data messages payload with *title* and *body* custom keys
         if (remoteMessage.data.isNotEmpty()) {
             showNotification(
                 remoteMessage.data["title"],

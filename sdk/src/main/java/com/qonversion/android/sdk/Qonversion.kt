@@ -7,15 +7,14 @@ import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QAutomationDelegate
-import com.qonversion.android.sdk.push.QAutomationManager
+import com.qonversion.android.sdk.push.QAutomationsManager
 
 object Qonversion : LifecycleDelegate {
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
-    private var automationManager: QAutomationManager? = null
+    private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
 
@@ -57,7 +56,7 @@ object Qonversion : LifecycleDelegate {
         }
 
         val repository = QDependencyInjector.appComponent.repository()
-        automationManager = QDependencyInjector.appComponent.automationManager()
+        automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QUserPropertiesManager(context, repository)
         attributionManager = QAttributionManager(repository)
@@ -274,28 +273,21 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
-     *
-     */
-    @JvmStatic
-    fun setAutomationDelegate(delegate: QAutomationDelegate) {
-        automationManager?.automationDelegate = delegate
-    }
-
-    /**
-     *
+     * Set push token to Qonversion to enable Qonversion push notifications
      */
     @JvmStatic
     fun setPushToken(token: String) {
-        automationManager?.setPushToken(token)
+        automationsManager?.setPushToken(token)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
-     *
+     * Returns true when a push notification was received from Qonversion.
+     * Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
-        val isPossibleToHandlePush = automationManager?.handlePushIfPossible(remoteMessage)
+        val isPossibleToHandlePush = automationsManager?.handlePushIfPossible(remoteMessage)
         if (isPossibleToHandlePush == null) {
             logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
             return false
