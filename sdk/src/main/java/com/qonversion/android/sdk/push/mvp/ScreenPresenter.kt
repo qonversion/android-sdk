@@ -41,7 +41,7 @@ class ScreenPresenter @Inject constructor(
             QActionResultType.Close -> {
                 view.close()
             }
-            QActionResultType.Navigate -> {
+            QActionResultType.Navigation -> {
                 val screenId = uri.getData()
                 if (screenId != null) {
                     getHtmlPageForScreen(screenId)

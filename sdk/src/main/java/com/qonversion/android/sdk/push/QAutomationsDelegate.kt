@@ -4,7 +4,7 @@ import android.app.Activity
 
 /**
  * The delegate is responsible for handling in-app screens and actions when push notification is received.
- * Make sure the method is called before handlePushIfPossible
+ * Make sure the method is called before handleNotification
  */
 interface QAutomationsDelegate {
     /**

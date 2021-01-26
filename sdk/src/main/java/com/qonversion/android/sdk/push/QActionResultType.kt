@@ -4,7 +4,7 @@ enum class QActionResultType(val type: String) {
     Unknown("unknown"),
     Url("url"),
     DeepLink("deeplink"),
-    Navigate("navigate"),
+    Navigation("navigate"),
     Purchase("purchase"),
     Restore("restore"),
     Close("close");
@@ -14,7 +14,7 @@ enum class QActionResultType(val type: String) {
             return when (type) {
                 "url" -> Url
                 "deeplink" -> DeepLink
-                "navigate" -> Navigate
+                "navigate" -> Navigation
                 "purchase" -> Purchase
                 "restore" -> Restore
                 "close" -> Close

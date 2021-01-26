@@ -41,7 +41,7 @@ class QAutomationsManager(
     fun automationFinishedWithAction(actionResult: QActionResult) {
         val weakReference = automationsDelegate?.get()
         if (weakReference == null) {
-            logger.release("automationsFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called")
+            logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called")
             return
         }
         weakReference.automationFinishedWithAction(actionResult)
@@ -51,10 +51,10 @@ class QAutomationsManager(
         repository.actionPoints(
             getQueryParams(),
             { actionPoint ->
-                if (actionPoint != null) {
-                    logger.debug("loadScreenIfPossible() ->  Screen with id ${actionPoint.screenId} was found to show")
-                    loadScreen(actionPoint.screenId)
-                }
+                actionPoint?.let {
+                    logger.debug("loadScreenIfPossible() ->  Screen with id ${it.screenId} was found to show")
+                    loadScreen(it.screenId)
+                } ?: logger.release("loadScreenIfPossible() ->  No screens to show")
             },
             {
                 logger.debug("loadScreenIfPossible() -> Failed to retrieve screenId to show")

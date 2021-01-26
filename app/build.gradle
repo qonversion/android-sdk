@@ -72,11 +72,11 @@ dependencies {
     implementation 'com.appsflyer:af-android-sdk:5.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.android.support:multidex:1.0.3'
-    // Preference
-    implementation "androidx.preference:preference:1.1.1"
+
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:26.1.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
+
     implementation project(':sdk')
 }

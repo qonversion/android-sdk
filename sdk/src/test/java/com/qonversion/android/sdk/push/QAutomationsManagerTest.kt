@@ -25,14 +25,6 @@ class QAutomationsManagerTest {
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
-    private val mockAutomationsDelegate: QAutomationsDelegate = object : QAutomationsDelegate {
-        override fun activityForScreenIntent(): Activity {
-            return mockActivity
-        }
-
-        override fun automationFinishedWithAction(action: QActionResult) {
-        }
-    }
 
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
@@ -50,13 +42,27 @@ class QAutomationsManagerTest {
         mockSharedPreferences()
 
         automationsManager = QAutomationsManager(mockRepository, mockPrefs)
-        automationsManager.automationsDelegate = WeakReference(mockAutomationsDelegate)
+        automationsManager.automationsDelegate = WeakReference(object : QAutomationsDelegate {
+            override fun activityForScreenIntent(): Activity {
+                return mockActivity
+            }
+
+            override fun automationFinishedWithAction(action: QActionResult) {}
+        })
     }
 
     @Nested
     inner class HandlePushIfPossible {
         @Test
-        fun `should return true when push is qonversion's and screen show completed`() {
+        fun `should return true when push was sent from Qonversion`() {
+            val remoteMessage = mockRemoteMessage()
+
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            assertThat(result).isTrue()
+        }
+
+        @Test
+        fun `should start screen activity when push was sent from Qonversion and screen and actionPoints requests succeeded`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse()
@@ -71,7 +77,7 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `should return true when push is qonversion's and actionPoints request failed`() {
+        fun `shouldn't start screen activity when push was sent from Qonversion and actionPoints request failed`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse(false)
 
@@ -87,7 +93,7 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `should return true when push is qonversion's and screen request failed`() {
+        fun `shouldn't start screen activity when push was sent from Qonversion and screens request failed`() {
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse(false)
@@ -102,11 +108,18 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `should return false when push is not Qonversion`() {
+        fun `should return false when push wasn't sent from Qonversion`() {
             val remoteMessage = mockRemoteMessage(false)
 
             val result = automationsManager.handlePushIfPossible(remoteMessage)
             assertThat(result).isFalse()
+        }
+
+        @Test
+        fun `shouldn't start screen activity when push wasn't sent from Qonversion`() {
+            val remoteMessage = mockRemoteMessage(false)
+
+            automationsManager.handlePushIfPossible(remoteMessage)
             verify(exactly = 0) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())

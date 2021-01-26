@@ -58,7 +58,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+            logger.release("Couldn't find any Activity to handle the Intent with url $url")
         }
     }
 
@@ -86,7 +86,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
             override fun onError(error: QonversionError) {
                 Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
-                logger.release("automation purchase() -> $error.description")
+                logger.release("ScreenActivity purchase() -> $error.description")
             }
         })
     }
@@ -99,7 +99,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             }
 
             override fun onError(error: QonversionError) {
-                logger.release("automation restore() -> $error.description")
+                logger.release("ScreenActivity restore() -> $error.description")
                 Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
             }
         })
@@ -114,7 +114,6 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Failure to show app screen")
         builder.setMessage(error.description)
-
         builder.setPositiveButton(android.R.string.yes) { _, _ -> }
         builder.show()
     }
@@ -136,25 +135,21 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     private fun loadWebView() {
         val extraHtmlPage = intent.getStringExtra(INTENT_HTML_PAGE)
-        if (extraHtmlPage != null) {
-            webView.loadDataWithBaseURL(null, extraHtmlPage, MIME_TYPE, ENCODING, null)
-        } else {
-            logger.release("loadWebView() -> Failure to fetch html page for screen")
-        }
+
+        extraHtmlPage?.let {
+            webView.loadDataWithBaseURL(null, it, MIME_TYPE, ENCODING, null)
+        } ?: logger.release("loadWebView() -> Failure to fetch html page for app screen")
     }
 
     private fun confirmScreenView() {
         val extraScreenId = intent.getStringExtra(INTENT_SCREEN_ID)
-        if (extraScreenId != null) {
-            presenter.confirmScreenView(extraScreenId)
-        } else {
-            logger.debug("confirmScreenView() -> Failure to confirm screen shown")
-        }
+
+        extraScreenId?.let {
+            presenter.confirmScreenView(it)
+        } ?: logger.debug("confirmScreenView() -> Failure to confirm screen view")
     }
 
-    private fun getActionResultMap(value: String): MutableMap<String, String> {
-        return mutableMapOf(ACTION_MAP_KEY to value)
-    }
+    private fun getActionResultMap(value: String): MutableMap<String, String> = mutableMapOf(ACTION_MAP_KEY to value)
 
     companion object {
         const val INTENT_HTML_PAGE = "htmlPage"

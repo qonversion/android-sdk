@@ -80,7 +80,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading should call openLink() when action type is deeplink`() {
+    fun `shouldOverrideUrlLoading should call openDeepLink() when action type is deeplink`() {
         val url = "qon-AgLqRhy0://automation?action=deeplink&data=someApp://mainScreen"
 
         val result = screenPresenter.shouldOverrideUrlLoading(url)
@@ -156,7 +156,7 @@ class ScreenPresenterTest {
     }
 
     @Test
-    fun `shouldOverrideUrlLoading should call openScreen() when action type is navigate and screens request success`() {
+    fun `shouldOverrideUrlLoading should call openScreen() when action type is navigate and screens request succeeded`() {
         val screenId = "screen-uid-789-2"
         val url = "qon-AgLqRhy0://automation?action=navigate&data=$screenId"
         val html = "<html><body>Screen 2 Content<body></html>"
