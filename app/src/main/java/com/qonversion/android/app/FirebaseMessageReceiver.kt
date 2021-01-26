@@ -108,6 +108,6 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     companion object {
         const val INTENT_REMOTE_MESSAGE = "remoteMessage"
         private const val CHANNEL_ID = "qonv_id"
-        private const val CHANNEL_NAME = "qonv_sample"
+        private const val CHANNEL_NAME = "Qonversion"
     }
 }

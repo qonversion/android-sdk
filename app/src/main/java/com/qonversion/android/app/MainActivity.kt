@@ -80,16 +80,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getAutomationsDelegate(): QAutomationsDelegate {
-        return object : QAutomationsDelegate {
-            override fun activityForScreenIntent(): Activity {
-                // Provide the current Activity context
-                return this@MainActivity
-            }
+    private fun getAutomationsDelegate() = object : QAutomationsDelegate {
+        override fun activityForScreenIntent(): Activity {
+            // Provide the current Activity context
+            return this@MainActivity
+        }
 
-            override fun automationFinishedWithAction(action: QActionResult) {
-                // Handle the final action that the user completed on the in-app screen
-            }
+        override fun automationFinishedWithAction(action: QActionResult) {
+            // Handle the final action that the user completed on the in-app screen
         }
     }
 
