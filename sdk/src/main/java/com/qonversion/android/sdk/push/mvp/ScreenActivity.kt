@@ -18,8 +18,8 @@ import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QAction
-import com.qonversion.android.sdk.push.QActionType
+import com.qonversion.android.sdk.push.QActionResult
+import com.qonversion.android.sdk.push.QActionResultType
 import com.qonversion.android.sdk.push.QAutomationsManager
 import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
@@ -62,13 +62,26 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         }
     }
 
+    override fun openDeepLink(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        try {
+            startActivity(intent)
+            automationsManager.automationFinishedWithAction(
+                QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
+            )
+            finish()
+        } catch (e: ActivityNotFoundException) {
+            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+        }
+    }
+
     override fun purchase(productId: String) {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                val map = mutableMapOf<String, String>()
-                map[ACTION_MAP_KEY] = productId
-                automationsManager.automationFlowFinishedWithAction(QAction(QActionType.Purchase, map))
-                close()
+                automationsManager.automationFinishedWithAction(
+                    QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
+                )
+                finish()
             }
 
             override fun onError(error: QonversionError) {
@@ -81,8 +94,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                automationsManager.automationFlowFinishedWithAction(QAction(QActionType.Restore))
-                close()
+                automationsManager.automationFinishedWithAction(QActionResult(QActionResultType.Restore))
+                finish()
             }
 
             override fun onError(error: QonversionError) {
@@ -94,6 +107,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     override fun close() {
         finish()
+        automationsManager.automationFinishedWithAction(QActionResult(QActionResultType.Close))
     }
 
     override fun onError(error: QonversionError) {
@@ -117,7 +131,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
-       }
+        }
     }
 
     private fun loadWebView() {
@@ -136,6 +150,10 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         } else {
             logger.debug("confirmScreenView() -> Failure to confirm screen shown")
         }
+    }
+
+    private fun getActionResultMap(value: String): MutableMap<String, String> {
+        return mutableMapOf(ACTION_MAP_KEY to value)
     }
 
     companion object {

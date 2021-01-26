@@ -23,7 +23,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(tag, "onNewToken: $token")
-        Qonversion.setPushToken(token)
+        Qonversion.setNotificationsToken(token)
     }
 
     /**

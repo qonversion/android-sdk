@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.push
 
-enum class QActionType(val type: String) {
+enum class QActionResultType(val type: String) {
     Unknown("unknown"),
     Url("url"),
     DeepLink("deeplink"),
@@ -10,7 +10,7 @@ enum class QActionType(val type: String) {
     Close("close");
 
     companion object {
-        fun fromType(type: String?): QActionType {
+        fun fromType(type: String?): QActionResultType {
             return when (type) {
                 "url" -> Url
                 "deeplink" -> DeepLink

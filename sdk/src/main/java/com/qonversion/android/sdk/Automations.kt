@@ -3,10 +3,12 @@ package com.qonversion.android.sdk
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.push.QAutomationsDelegate
 import com.qonversion.android.sdk.push.QAutomationsManager
+import java.lang.ref.WeakReference
 
 object Automations {
 
-    private val automationsManager: QAutomationsManager = QDependencyInjector.appComponent.automationsManager()
+    private val automationsManager: QAutomationsManager =
+        QDependencyInjector.appComponent.automationsManager()
 
     /**
      * The delegate is responsible for handling in-app screens and actions when push notification is received.
@@ -14,6 +16,6 @@ object Automations {
      */
     @JvmStatic
     fun setDelegate(delegate: QAutomationsDelegate) {
-        automationsManager.automationsDelegate = delegate
+        automationsManager.automationsDelegate = WeakReference(delegate)
     }
 }

@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.mvp.ScreenActivity
+import java.lang.ref.WeakReference
 
 class QAutomationsManager(
     private val repository: QonversionRepository,
@@ -15,7 +16,7 @@ class QAutomationsManager(
     private val logger = ConsoleLogger()
 
     @Volatile
-    var automationsDelegate: QAutomationsDelegate? = null
+    var automationsDelegate: WeakReference<QAutomationsDelegate>? = null
         @Synchronized set
         @Synchronized get
 
@@ -37,8 +38,13 @@ class QAutomationsManager(
         }
     }
 
-    fun automationFlowFinishedWithAction(action: QAction) {
-        automationsDelegate?.automationsFinishedWithAction(action)
+    fun automationFinishedWithAction(actionResult: QActionResult) {
+        val weakReference = automationsDelegate?.get()
+        if (weakReference == null) {
+            logger.release("automationsFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called")
+            return
+        }
+        weakReference.automationFinishedWithAction(actionResult)
     }
 
     private fun loadScreenIfPossible() {
@@ -66,9 +72,9 @@ class QAutomationsManager(
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
             { screen ->
-                val activity = automationsDelegate?.activityForScreen()
+                val activity = automationsDelegate?.get()?.activityForScreenIntent()
                 if (activity == null) {
-                    logger.release("It looks like Automations.setDelegate() was not called")
+                    logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called")
                     return@screens
                 }
 

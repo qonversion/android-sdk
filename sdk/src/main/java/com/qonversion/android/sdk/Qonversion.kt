@@ -276,7 +276,7 @@ object Qonversion : LifecycleDelegate {
      * Set push token to Qonversion to enable Qonversion push notifications
      */
     @JvmStatic
-    fun setPushToken(token: String) {
+    fun setNotificationsToken(token: String) {
         automationsManager?.setPushToken(token)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -286,7 +286,7 @@ object Qonversion : LifecycleDelegate {
      * Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
-    fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
+    fun handleNotification(remoteMessage: RemoteMessage): Boolean {
         val isPossibleToHandlePush = automationsManager?.handlePushIfPossible(remoteMessage)
         if (isPossibleToHandlePush == null) {
             logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)

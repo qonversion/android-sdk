@@ -18,12 +18,21 @@ import org.junit.jupiter.api.BeforeEach
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.lang.ref.WeakReference
 
 class QAutomationsManagerTest {
     private val mockRepository: QonversionRepository = mockk(relaxed = true)
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockAutomationsDelegate: QAutomationsDelegate = object : QAutomationsDelegate {
+        override fun activityForScreenIntent(): Activity {
+            return mockActivity
+        }
+
+        override fun automationFinishedWithAction(action: QActionResult) {
+        }
+    }
 
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
@@ -41,14 +50,7 @@ class QAutomationsManagerTest {
         mockSharedPreferences()
 
         automationsManager = QAutomationsManager(mockRepository, mockPrefs)
-        automationsManager.automationsDelegate = object : QAutomationsDelegate {
-            override fun activityForScreen(): Activity {
-                return mockActivity
-            }
-
-            override fun automationsFinishedWithAction(action: QAction) {
-            }
-        }
+        automationsManager.automationsDelegate = WeakReference(mockAutomationsDelegate)
     }
 
     @Nested
@@ -164,7 +166,7 @@ class QAutomationsManagerTest {
             return remoteMessage
         }
 
-        private fun verifyActivityStart(isActivityWasStarted: Boolean){
+        private fun verifyActivityStart(isActivityWasStarted: Boolean) {
             verify(exactly = isActivityWasStarted.toInt()) {
                 mockIntent.putExtra(ScreenActivity.INTENT_HTML_PAGE, html)
                 mockIntent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
@@ -183,7 +185,7 @@ class QAutomationsManagerTest {
             } returns null
 
             automationsManager.setPushToken(newToken)
-            verifyOrder  {
+            verifyOrder {
                 mockPrefs.getString(pushTokenKey, "")
                 mockRepository.setPushToken(newToken)
                 mockEditor.putString(pushTokenKey, newToken)
@@ -199,7 +201,7 @@ class QAutomationsManagerTest {
             } returns oldToken
 
             automationsManager.setPushToken(oldToken)
-            verify  (exactly = 1){
+            verify(exactly = 1) {
                 mockPrefs.getString(pushTokenKey, "")
             }
             verify(exactly = 0) {

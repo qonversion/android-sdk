@@ -86,7 +86,7 @@ class ScreenPresenterTest {
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
         verify(exactly = 1) {
-            mockView.openLink("someApp://mainScreen")
+            mockView.openDeepLink("someApp://mainScreen")
         }
         verify(exactly = 0) {
             mockView.openScreen(any(), any())

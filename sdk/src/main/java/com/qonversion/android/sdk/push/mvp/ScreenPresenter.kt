@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.push.mvp
 import android.net.Uri
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QActionType
+import com.qonversion.android.sdk.push.QActionResultType
 import javax.inject.Inject
 
 class ScreenPresenter @Inject constructor(
@@ -26,34 +26,34 @@ class ScreenPresenter @Inject constructor(
         }
 
         when (uri.getActionType()) {
-            QActionType.Url -> {
+            QActionResultType.Url -> {
                 val link = uri.getData()
                 if (link != null) {
                     view.openLink(link)
                 }
             }
-            QActionType.DeepLink -> {
+            QActionResultType.DeepLink -> {
                 val deepLink = uri.getData()
                 if (deepLink != null) {
-                    view.openLink(deepLink)
+                    view.openDeepLink(deepLink)
                 }
             }
-            QActionType.Close -> {
+            QActionResultType.Close -> {
                 view.close()
             }
-            QActionType.Navigate -> {
+            QActionResultType.Navigate -> {
                 val screenId = uri.getData()
                 if (screenId != null) {
                     getHtmlPageForScreen(screenId)
                 }
             }
-            QActionType.Purchase -> {
+            QActionResultType.Purchase -> {
                 val productId = uri.getData()
                 if (productId != null) {
                     view.purchase(productId)
                 }
             }
-            QActionType.Restore -> {
+            QActionResultType.Restore -> {
                 view.restore()
             }
             else -> return true
@@ -65,9 +65,9 @@ class ScreenPresenter @Inject constructor(
         repository.views(screenId)
     }
 
-    private fun Uri.getActionType(): QActionType {
+    private fun Uri.getActionType(): QActionResultType {
         val actionType = getQueryParameter(ACTION)
-        return QActionType.fromType(actionType)
+        return QActionResultType.fromType(actionType)
     }
 
     private fun Uri.getData() = getQueryParameter(DATA)

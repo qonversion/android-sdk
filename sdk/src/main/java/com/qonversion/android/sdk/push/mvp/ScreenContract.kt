@@ -8,6 +8,8 @@ class ScreenContract {
 
         fun openLink(url: String)
 
+        fun openDeepLink(url: String)
+
         fun purchase(productId: String)
 
         fun restore()
