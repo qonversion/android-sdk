@@ -10,16 +10,6 @@ enum class QActionResultType(val type: String) {
     Close("close");
 
     companion object {
-        fun fromType(type: String?): QActionResultType {
-            return when (type) {
-                "url" -> Url
-                "deeplink" -> DeepLink
-                "navigate" -> Navigation
-                "purchase" -> Purchase
-                "restore" -> Restore
-                "close" -> Close
-                else -> Unknown
-            }
-        }
+        fun fromType(type: String?) = values().find { it.type == type } ?: Unknown
     }
 }

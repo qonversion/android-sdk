@@ -286,19 +286,13 @@ object Qonversion : LifecycleDelegate {
      * Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
-    fun handleNotification(remoteMessage: RemoteMessage): Boolean {
-        val isPossibleToHandlePush = automationsManager?.handlePushIfPossible(remoteMessage)
-        if (isPossibleToHandlePush == null) {
-            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return false
-        }
-
-        return isPossibleToHandlePush
+    fun handleNotification(remoteMessage: RemoteMessage) = automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
+        logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        return@run false
     }
 
-    // Private functions
-
-    private fun logLaunchErrorForFunctionName(functionName: String?) {
+    // Internal functions
+    internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 }

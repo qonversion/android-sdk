@@ -43,7 +43,7 @@ class QAutomationsManagerTest {
 
         automationsManager = QAutomationsManager(mockRepository, mockPrefs)
         automationsManager.automationsDelegate = WeakReference(object : QAutomationsDelegate {
-            override fun activityForScreenIntent(): Activity {
+            override fun contextForScreenIntent(): Activity {
                 return mockActivity
             }
 

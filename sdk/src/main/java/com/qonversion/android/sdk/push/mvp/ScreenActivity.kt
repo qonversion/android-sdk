@@ -66,10 +66,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
             startActivity(intent)
-            automationsManager.automationFinishedWithAction(
-                QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
-            )
-            finish()
+            close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
         } catch (e: ActivityNotFoundException) {
             logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
         }
@@ -78,10 +75,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun purchase(productId: String) {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                automationsManager.automationFinishedWithAction(
-                    QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
-                )
-                finish()
+                close(QActionResult(QActionResultType.Purchase, getActionResultMap(productId)))
             }
 
             override fun onError(error: QonversionError) {
@@ -94,8 +88,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                automationsManager.automationFinishedWithAction(QActionResult(QActionResultType.Restore))
-                finish()
+                close(QActionResult(QActionResultType.Restore))
             }
 
             override fun onError(error: QonversionError) {
@@ -105,9 +98,9 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         })
     }
 
-    override fun close() {
+    override fun close(finalAction: QActionResult) {
         finish()
-        automationsManager.automationFinishedWithAction(QActionResult(QActionResultType.Close))
+        automationsManager.automationFinishedWithAction(finalAction)
     }
 
     override fun onError(error: QonversionError) {

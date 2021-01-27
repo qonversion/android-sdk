@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.push
 
-import android.app.Activity
+import android.content.Context
 
 /**
  * The delegate is responsible for handling in-app screens and actions when push notification is received.
@@ -8,15 +8,16 @@ import android.app.Activity
  */
 interface QAutomationsDelegate {
     /**
-     * Provide the current Activity context
+     * Provide the context for screen intent
      */
-    fun activityForScreenIntent(): Activity
+    fun contextForScreenIntent(): Context
+
 
     /**
      * Returns the final action that the user completed on the in-app screen.
      * @param action the final action on the in-app screen. For instance,
-     * if the user makes purchase then
-     * action = QActionResult(type=Purchase, value={value=in_app})
+     * if the user makes a purchase then action.type = QActionResultType.Purchase.
+     * You can use the Qonversion.checkPermissions() method to get available permissions
      */
     fun automationFinishedWithAction(action: QActionResult)
 }

@@ -1,12 +1,14 @@
 package com.qonversion.android.sdk.push
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.mvp.ScreenActivity
+import java.lang.Exception
 import java.lang.ref.WeakReference
 
 class QAutomationsManager(
@@ -22,12 +24,13 @@ class QAutomationsManager(
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
         val pickScreen = remoteMessage.data[PICK_SCREEN]
-        if (pickScreen.toBoolean()) {
-            logger.release("handlePushIfPossible() -> Qonversion push notification was received")
-            loadScreenIfPossible()
-            return true
+
+        return pickScreen.toBoolean().also {
+            if (it) {
+                logger.release("handlePushIfPossible() -> Qonversion push notification was received")
+                loadScreenIfPossible()
+            }
         }
-        return false
     }
 
     fun setPushToken(token: String) {
@@ -39,11 +42,11 @@ class QAutomationsManager(
     }
 
     fun automationFinishedWithAction(actionResult: QActionResult) {
-        val weakReference = automationsDelegate?.get()
-        if (weakReference == null) {
+        val weakReference = automationsDelegate?.get() ?: run {
             logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called")
             return
         }
+
         weakReference.automationFinishedWithAction(actionResult)
     }
 
@@ -72,16 +75,21 @@ class QAutomationsManager(
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
             { screen ->
-                val activity = automationsDelegate?.get()?.activityForScreenIntent()
-                if (activity == null) {
+                val context = automationsDelegate?.get()?.contextForScreenIntent()
+                if (context == null) {
                     logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called")
                     return@screens
                 }
 
-                val intent = Intent(activity, ScreenActivity::class.java)
+                val intent = Intent(context, ScreenActivity::class.java)
                 intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
                 intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
-                activity.startActivity(intent)
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    logger.release("loadScreen() -> Failed to start screen with id $screenId")
+                }
             },
             {
                 logger.release("loadScreen() -> Failed to load screen with id $screenId")

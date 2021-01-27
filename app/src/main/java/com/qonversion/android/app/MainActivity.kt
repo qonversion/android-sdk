@@ -1,6 +1,6 @@
 package com.qonversion.android.app
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.push.QActionResult
+import com.qonversion.android.sdk.push.QActionResultType
 import com.qonversion.android.sdk.push.QAutomationsDelegate
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -81,13 +82,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getAutomationsDelegate() = object : QAutomationsDelegate {
-        override fun activityForScreenIntent(): Activity {
-            // Provide the current Activity context
-            return this@MainActivity
+        override fun contextForScreenIntent(): Context {
+            // Provide the context for screen intent
+            return baseContext
         }
 
         override fun automationFinishedWithAction(action: QActionResult) {
-            // Handle the final action that the user completed on the in-app screen
+            // Handle the final action that the user completed on the in-app screen.
+            if (action.type == QActionResultType.Purchase) {
+                // You can check available permissions
+                Qonversion.checkPermissions(object :QonversionPermissionsCallback{
+                    override fun onSuccess(permissions: Map<String, QPermission>){
+                        // Handle active permissions here
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        // Handle the error
+                    }
+                })
+            }
         }
     }
 

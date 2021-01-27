@@ -36,7 +36,7 @@ class QonversionRepository internal constructor(
     private val headersProvider: ApiHeadersProvider
 ) {
     private var advertisingId: String? = null
-    private  var installDate: Long = 0
+    private var installDate: Long = 0
 
     // Public functions
 

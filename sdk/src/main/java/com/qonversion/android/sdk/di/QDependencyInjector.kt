@@ -25,4 +25,7 @@ object QDependencyInjector {
 
         return appComponent
     }
+
+    fun isAppComponentInitialized() = ::appComponent.isInitialized
+
 }

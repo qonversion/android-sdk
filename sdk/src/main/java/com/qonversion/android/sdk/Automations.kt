@@ -7,8 +7,12 @@ import java.lang.ref.WeakReference
 
 object Automations {
 
-    private val automationsManager: QAutomationsManager =
-        QDependencyInjector.appComponent.automationsManager()
+    private val automationsManager: QAutomationsManager? =
+        if (QDependencyInjector.isAppComponentInitialized()) {
+            QDependencyInjector.appComponent.automationsManager()
+        } else {
+            null
+        }
 
     /**
      * The delegate is responsible for handling in-app screens and actions when push notification is received.
@@ -16,6 +20,10 @@ object Automations {
      */
     @JvmStatic
     fun setDelegate(delegate: QAutomationsDelegate) {
+        if (automationsManager == null) {
+            Qonversion.logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return
+        }
         automationsManager.automationsDelegate = WeakReference(delegate)
     }
 }

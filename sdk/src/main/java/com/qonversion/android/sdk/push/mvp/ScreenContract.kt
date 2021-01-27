@@ -1,6 +1,8 @@
 package com.qonversion.android.sdk.push.mvp
 
 import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.push.QActionResult
+import com.qonversion.android.sdk.push.QActionResultType
 
 class ScreenContract {
     interface View {
@@ -14,7 +16,7 @@ class ScreenContract {
 
         fun restore()
 
-        fun close()
+        fun close(finalAction: QActionResult = QActionResult(QActionResultType.Close))
 
         fun onError(error: QonversionError)
     }
