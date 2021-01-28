@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.di.module
 
+import android.app.Application
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.scope.ApplicationScope
@@ -14,8 +15,9 @@ class ManagersModule {
     @Provides
     fun provideAutomationManager(
         repository: QonversionRepository,
-        preferences: SharedPreferences
+        preferences: SharedPreferences,
+        appContext: Application
     ): QAutomationsManager {
-        return QAutomationsManager(repository, preferences)
+        return QAutomationsManager(repository, preferences, appContext)
     }
 }

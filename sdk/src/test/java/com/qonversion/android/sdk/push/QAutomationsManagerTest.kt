@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.push
 
 import android.app.Activity
+import android.app.Application
 import android.content.Intent
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
@@ -25,6 +26,7 @@ class QAutomationsManagerTest {
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockApplication: Application = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
@@ -41,7 +43,8 @@ class QAutomationsManagerTest {
         mockIntent()
         mockSharedPreferences()
 
-        automationsManager = QAutomationsManager(mockRepository, mockPrefs)
+        automationsManager = QAutomationsManager(mockRepository, mockPrefs, mockApplication)
+
         automationsManager.automationsDelegate = WeakReference(object : QAutomationsDelegate {
             override fun contextForScreenIntent(): Activity {
                 return mockActivity

@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.push
 
+import android.app.Activity
+import android.app.Application
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
@@ -10,10 +12,12 @@ import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.push.mvp.ScreenActivity
 import java.lang.Exception
 import java.lang.ref.WeakReference
+import javax.inject.Inject
 
-class QAutomationsManager(
+class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
+    private val appContext: Application
 ) {
     private val logger = ConsoleLogger()
 
@@ -75,20 +79,23 @@ class QAutomationsManager(
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
             { screen ->
-                val context = automationsDelegate?.get()?.contextForScreenIntent()
+                var context = automationsDelegate?.get()?.contextForScreenIntent()
                 if (context == null) {
                     logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called")
-                    return@screens
+                    context = appContext
                 }
-
                 val intent = Intent(context, ScreenActivity::class.java)
                 intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
                 intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
-                intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                if(context !is Activity){
+                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                    logger.release("loadScreen() -> Screen intent will process with a non-Activity context")
+                }
+
                 try {
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    logger.release("loadScreen() -> Failed to start screen with id $screenId")
+                    logger.release("loadScreen() -> Failed to start screen with id $screenId with exception: $e")
                 }
             },
             {

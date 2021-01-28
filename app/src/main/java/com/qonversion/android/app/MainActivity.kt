@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
     private fun getAutomationsDelegate() = object : QAutomationsDelegate {
         override fun contextForScreenIntent(): Context {
             // Provide the context for screen intent
-            return baseContext
+            return this@MainActivity
         }
 
         override fun automationFinishedWithAction(action: QActionResult) {

@@ -20,10 +20,7 @@ object Automations {
      */
     @JvmStatic
     fun setDelegate(delegate: QAutomationsDelegate) {
-        if (automationsManager == null) {
-            Qonversion.logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return
-        }
-        automationsManager.automationsDelegate = WeakReference(delegate)
+        automationsManager?.let { it.automationsDelegate = WeakReference(delegate) }
+            ?: Qonversion.logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 }
