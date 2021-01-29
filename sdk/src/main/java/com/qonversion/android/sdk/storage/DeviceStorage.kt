@@ -22,7 +22,6 @@ class DeviceStorage(
 
     fun savePurchase(purchase: Purchase) {
         if (purchase.type == BillingClient.SkuType.INAPP) {
-
             val purchases = loadPurchases().toMutableSet()
             purchases.add(purchase)
 
