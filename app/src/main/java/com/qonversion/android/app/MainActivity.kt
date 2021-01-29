@@ -6,10 +6,7 @@ import android.util.Log
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionPermissionsCallback
-import com.qonversion.android.sdk.QonversionProductsCallback
+import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
@@ -21,10 +18,20 @@ class MainActivity : AppCompatActivity() {
     private val permissionPlus = "plus"
     private val permissionStandart = "standart"
     private val TAG = "MainActivity"
+    private var listener = getUpdatedPurchasesListener();
 
+    private fun getUpdatedPurchasesListener(): UpdatedPurchasesListener {
+        return object: UpdatedPurchasesListener {
+            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+                // handle updated permissions here
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Qonversion.setUpdatedPurchasesListener(listener)
 
         Qonversion.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {

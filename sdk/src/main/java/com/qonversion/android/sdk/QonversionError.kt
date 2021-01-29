@@ -21,6 +21,7 @@ enum class QonversionErrorCode(val specification: String) {
     UnknownError("Unknown error"),
     PlayStoreError("There was an issue with the Play Store service"),
     BillingUnavailable("The Billing service is unavailable on the device"),
+    PurchasePending("Purchase is pending"),
     PurchaseInvalid("Failure to purchase"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),
     ProductNotOwned("Failure to consume purchase since item is not owned"),

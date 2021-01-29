@@ -282,6 +282,11 @@ object Qonversion : LifecycleDelegate {
         isDebugMode = true
     }
 
+    @JvmStatic
+    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
+        productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
     // Private functions
 
     private fun logLaunchErrorForFunctionName(functionName: String?) {
