@@ -55,15 +55,19 @@ class DeviceStorageTest {
 
         @Test
         fun `should not save two identical purchases`() {
+            every {
+                mockPrefs.getString(purchaseKey, "")
+            } returns onePurchaseStr
             val purchase = mockPurchase(BillingClient.SkuType.INAPP)
 
-            for (n in 1..2) {
-                deviceStorage.savePurchase(purchase)
-            }
-            verify(exactly = 2) {
+            deviceStorage.savePurchase(purchase)
+
+            verifyOrder {
                 mockEditor.putString(purchaseKey, onePurchaseStr)
                 mockEditor.apply()
             }
+            val purchases = deviceStorage.loadPurchases()
+            assertThat(purchases.size).isEqualTo(1)
         }
 
         @Test
@@ -74,11 +78,11 @@ class DeviceStorageTest {
 
             val fifthPurchase = mockPurchase(BillingClient.SkuType.INAPP, "5")
             deviceStorage.savePurchase(fifthPurchase)
-            val threeNewestPurchasesStr =
-                "[${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"
+            val fourNewestPurchasesStr =
+                "[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, threeNewestPurchasesStr)
+                mockEditor.putString(purchaseKey, fourNewestPurchasesStr)
                 mockEditor.apply()
             }
         }
@@ -88,7 +92,7 @@ class DeviceStorageTest {
     @Nested
     inner class LoadPurchases {
         @Test
-        fun `should return empty set`() {
+        fun `should return empty set when cache is empty`() {
             every {
                 mockPrefs.getString(purchaseKey, any())
             } returns ""
@@ -101,7 +105,7 @@ class DeviceStorageTest {
         }
 
         @Test
-        fun `should return set with 1 purchase`() {
+        fun `should return set with 1 purchase when cache contains 1 purchase`() {
             every {
                 mockPrefs.getString(purchaseKey, "")
             } returns onePurchaseStr
@@ -127,7 +131,6 @@ class DeviceStorageTest {
             every {
                 mockPrefs.getString(purchaseKey, any())
             } returns onePurchaseStr
-
 
             deviceStorage.clearPurchase(purchase)
 

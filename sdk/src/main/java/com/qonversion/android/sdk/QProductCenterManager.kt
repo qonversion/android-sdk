@@ -452,8 +452,8 @@ class QProductCenterManager internal constructor(
 
     private fun handleCachedPurchases() {
         val cachedPurchases = deviceStorage.loadPurchases()
-        cachedPurchases.forEach { purchase->
-            repository.purchase(installDate, purchase, object : QonversionPermissionsCallback{
+        cachedPurchases.forEach { purchase ->
+            repository.purchase(installDate, purchase, object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     deviceStorage.clearPurchase(purchase)
                 }

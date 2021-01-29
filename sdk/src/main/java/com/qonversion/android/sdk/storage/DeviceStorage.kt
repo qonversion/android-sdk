@@ -23,7 +23,7 @@ class DeviceStorage(
     fun savePurchase(purchase: Purchase) {
         if (purchase.type == BillingClient.SkuType.INAPP) {
 
-            val purchases = loadPurchases()
+            val purchases = loadPurchases().toMutableSet()
             purchases.add(purchase)
 
             if (purchases.size >= MAX_PURCHASES_NUMBER) {
@@ -35,7 +35,7 @@ class DeviceStorage(
         }
     }
 
-    fun loadPurchases(): MutableSet<Purchase> {
+    fun loadPurchases(): Set<Purchase> {
         val json = preferences.getString(PURCHASE_KEY, "")
         if (json == null || json.isEmpty()) {
             return mutableSetOf()
@@ -49,7 +49,7 @@ class DeviceStorage(
     }
 
     fun clearPurchase(purchase: Purchase) {
-        val purchases = loadPurchases()
+        val purchases = loadPurchases().toMutableSet()
         purchases.remove(purchase)
 
         savePurchasesAsJson(purchases)
@@ -63,6 +63,6 @@ class DeviceStorage(
     companion object {
         private const val PURCHASE_KEY = "purchase"
         private const val MAX_PURCHASES_NUMBER = 5
-        private const val MAX_OLD_PURCHASES_NUMBER = 2
+        private const val MAX_OLD_PURCHASES_NUMBER = 1
     }
 }
