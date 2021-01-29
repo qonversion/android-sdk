@@ -34,6 +34,21 @@ class QAutomationsManagerTest {
     private val pushTokenKey = "push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
+    private val delegate = object : QAutomationsDelegate {
+        override fun contextForScreenIntent(): Activity {
+            return mockActivity
+        }
+
+        override fun automationsDidShowScreen(screenId: String) {}
+
+        override fun automationsDidStartExecuting(actionResult: QActionResult) {}
+
+        override fun automationsDidFailExecuting(actionResult: QActionResult) {}
+
+        override fun automationsDidFinishExecuting(actionResult: QActionResult) {}
+
+        override fun automationsFinished() {}
+    }
 
     @BeforeEach
     fun setUp() {
@@ -45,13 +60,7 @@ class QAutomationsManagerTest {
 
         automationsManager = QAutomationsManager(mockRepository, mockPrefs, mockApplication)
 
-        automationsManager.automationsDelegate = WeakReference(object : QAutomationsDelegate {
-            override fun contextForScreenIntent(): Activity {
-                return mockActivity
-            }
-
-            override fun automationFinishedWithAction(action: QActionResult) {}
-        })
+        automationsManager.automationsDelegate = WeakReference(delegate)
     }
 
     @Nested

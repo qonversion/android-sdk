@@ -9,10 +9,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionPermissionsCallback
-import com.qonversion.android.sdk.R
+import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
@@ -47,60 +44,74 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun openScreen(screenId: String, htmlPage: String) {
-        val intent = Intent(this, ScreenActivity::class.java)
-        intent.putExtra(INTENT_HTML_PAGE, htmlPage)
-        intent.putExtra(INTENT_SCREEN_ID, screenId)
-        startActivity(intent)
+        val actionResult = QActionResult(QActionResultType.Navigation, getActionResultMap(screenId))
+        automationsManager.automationsDidStartExecuting(actionResult)
+
+        try {
+            val intent = Intent(this, ScreenActivity::class.java)
+            intent.putExtra(INTENT_HTML_PAGE, htmlPage)
+            intent.putExtra(INTENT_SCREEN_ID, screenId)
+            startActivity(intent)
+            automationsManager.automationsDidFinishExecuting(actionResult)
+        } catch (e: Exception) {
+            automationsManager.automationsDidFailExecuting(actionResult)
+        }
     }
 
     override fun openLink(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val actionResult = QActionResult(QActionResultType.Url, getActionResultMap(url))
+        automationsManager.automationsDidStartExecuting(actionResult)
+
         try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             startActivity(intent)
+            automationsManager.automationsDidFinishExecuting(actionResult)
         } catch (e: ActivityNotFoundException) {
             logger.release("Couldn't find any Activity to handle the Intent with url $url")
+            automationsManager.automationsDidFailExecuting(actionResult)
         }
     }
 
     override fun openDeepLink(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
+        automationsManager.automationsDidStartExecuting(actionResult)
+
         try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             startActivity(intent)
             close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
         } catch (e: ActivityNotFoundException) {
             logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+            automationsManager.automationsDidFailExecuting(actionResult)
         }
     }
 
     override fun purchase(productId: String) {
-        Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
-                close(QActionResult(QActionResultType.Purchase, getActionResultMap(productId)))
-            }
+        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(productId))
+        automationsManager.automationsDidStartExecuting(actionResult)
 
-            override fun onError(error: QonversionError) {
-                Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
-                logger.release("ScreenActivity purchase() -> $error.description")
-            }
+        Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+
+            override fun onError(error: QonversionError) = handleOnErrorCallback(object {}.javaClass.enclosingMethod?.name, error, actionResult)
         })
     }
 
     override fun restore() {
-        Qonversion.restore(object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
-                close(QActionResult(QActionResultType.Restore))
-            }
+        val actionResult = QActionResult(QActionResultType.Restore)
+        automationsManager.automationsDidStartExecuting(actionResult)
 
-            override fun onError(error: QonversionError) {
-                logger.release("ScreenActivity restore() -> $error.description")
-                Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
-            }
+        Qonversion.restore(object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+
+            override fun onError(error: QonversionError) = handleOnErrorCallback(object {}.javaClass.enclosingMethod?.name, error, actionResult)
         })
     }
 
-    override fun close(finalAction: QActionResult) {
+    override fun close(actionResult: QActionResult) {
         finish()
-        automationsManager.automationFinishedWithAction(finalAction)
+        automationsManager.automationsDidFinishExecuting(actionResult)
+        automationsManager.automationsFinished()
     }
 
     override fun onError(error: QonversionError) {
@@ -138,11 +149,24 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val extraScreenId = intent.getStringExtra(INTENT_SCREEN_ID)
 
         extraScreenId?.let {
+            automationsManager.automationsDidShowScreen(extraScreenId)
             presenter.confirmScreenView(it)
         } ?: logger.debug("confirmScreenView() -> Failure to confirm screen view")
     }
 
-    private fun getActionResultMap(value: String): MutableMap<String, String> = mutableMapOf(ACTION_MAP_KEY to value)
+    private fun getActionResultMap(value: String): MutableMap<String, String> =
+        mutableMapOf(ACTION_MAP_KEY to value)
+
+    private fun handleOnErrorCallback(
+        functionName: String?,
+        error: QonversionError,
+        actionResult: QActionResult
+    ) {
+        logger.release("ScreenActivity $functionName -> $error.description")
+        Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
+        actionResult.error = error
+        automationsManager.automationsDidFailExecuting(actionResult)
+    }
 
     companion object {
         const val INTENT_HTML_PAGE = "htmlPage"

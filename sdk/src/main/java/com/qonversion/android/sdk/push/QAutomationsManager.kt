@@ -45,13 +45,35 @@ class QAutomationsManager @Inject constructor(
         }
     }
 
-    fun automationFinishedWithAction(actionResult: QActionResult) {
-        val weakReference = automationsDelegate?.get() ?: run {
-            logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called")
-            return
-        }
+    fun automationsDidStartExecuting(actionResult: QActionResult){
+        val delegate = getAutomationsDelegate()
+        delegate?.automationsDidStartExecuting(actionResult)
+    }
 
-        weakReference.automationFinishedWithAction(actionResult)
+    fun automationsDidFailExecuting(actionResult: QActionResult){
+        val delegate = getAutomationsDelegate()
+        delegate?.automationsDidFailExecuting(actionResult)
+    }
+
+    fun automationsDidFinishExecuting(actionResult: QActionResult) {
+        val delegate = getAutomationsDelegate()
+        delegate?.automationsDidFinishExecuting(actionResult)
+    }
+
+    fun automationsDidShowScreen(screenId: String) {
+        val delegate = getAutomationsDelegate()
+        delegate?.automationsDidShowScreen(screenId)
+    }
+
+    fun automationsFinished(){
+        val delegate = getAutomationsDelegate()
+        delegate?.automationsFinished()
+    }
+
+    private fun getAutomationsDelegate(): QAutomationsDelegate? {
+        return automationsDelegate?.get().apply {
+            if (this == null) logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
+        }
     }
 
     private fun loadScreenIfPossible() {
@@ -81,13 +103,13 @@ class QAutomationsManager @Inject constructor(
             { screen ->
                 var context = automationsDelegate?.get()?.contextForScreenIntent()
                 if (context == null) {
-                    logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called")
+                    logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
                     context = appContext
                 }
                 val intent = Intent(context, ScreenActivity::class.java)
                 intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
                 intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
-                if(context !is Activity){
+                if (context !is Activity) {
                     intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                     logger.release("loadScreen() -> Screen intent will process with a non-Activity context")
                 }

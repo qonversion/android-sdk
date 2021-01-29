@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -48,7 +49,8 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
             // FCM, the title and the body can be fetched directly as below.
             showNotification(
                 remoteMessage.notification?.title,
-                remoteMessage.notification?.body
+                remoteMessage.notification?.body,
+                remoteMessage
             )
         }*/
     }
@@ -56,23 +58,29 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     private fun showNotification(
         title: String?,
         body: String?,
-        remoteMessage: RemoteMessage? = null
+        remoteMessage: RemoteMessage
     ) {
-        val intent = Intent(this, MainActivity::class.java)
+        val notification = createNotification(title, body, remoteMessage)
 
-        // If you need, set the intent flag for activity
-        // FLAG_ACTIVITY_CLEAR_TOP clears the activities present in the activity stack,
-        // on the top of the Activity that is to be launched
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        intent.putExtra(INTENT_REMOTE_MESSAGE, remoteMessage)
+        createNotificationChannel()
 
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_ONE_SHOT
-        )
+        // Show the notification with notificationId.
+        // It is a unique int for each notification that you must define
+        val notificationId = 0
+        with(NotificationManagerCompat.from(this)) {
+            notify(notificationId, notification.build())
+        }
+    }
 
-        val builder = NotificationCompat.Builder(
-            applicationContext,
+    private fun createNotification(
+        title: String?,
+        body: String?,
+        remoteMessage: RemoteMessage
+    ): NotificationCompat.Builder {
+        val pendingIntent = createPendingIntent(remoteMessage)
+
+        return NotificationCompat.Builder(
+            this,
             CHANNEL_ID
         )
             .setSmallIcon(R.drawable.ic_notification)
@@ -81,33 +89,39 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
             .setContentTitle(title)
             .setContentText(body)
-            .setColor(ContextCompat.getColor(applicationContext, R.color.colorQonversionBlue))
+            .setColor(ContextCompat.getColor(this, R.color.colorQonversionBlue))
+    }
 
-        // Create an object of NotificationManager class to notify the user
-        val notificationManager = applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private fun createPendingIntent(remoteMessage: RemoteMessage): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java)
+        // If you need, set the intent flag for activity
+        // FLAG_ACTIVITY_CLEAR_TOP clears the activities present in the activity stack,
+        // on the top of the Activity that is to be launched
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        intent.putExtra(INTENT_REMOTE_MESSAGE, remoteMessage)
 
-        // Check if the Android Version is greater than Oreo
-        if (Build.VERSION.SDK_INT
-            >= Build.VERSION_CODES.O
-        ) {
-            val notificationChannel = NotificationChannel(
-                CHANNEL_ID, CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(
-                notificationChannel
-            )
+        return PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_ONE_SHOT
+        )
+    }
+
+    private fun createNotificationChannel() {
+        // If the Android Version is greater than Oreo,
+        // then create the NotificationChannel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, name, importance)
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
-
-        // If a notification with the same id has already been posted by your application and has not yet been canceled,
-        // it will be replaced by the updated information.
-        notificationManager.notify(0, builder.build())
     }
 
     companion object {
         const val INTENT_REMOTE_MESSAGE = "remoteMessage"
-        private const val CHANNEL_ID = "qonv_id"
-        private const val CHANNEL_NAME = "Qonversion"
+        private const val CHANNEL_ID = "qonversion"
     }
 }

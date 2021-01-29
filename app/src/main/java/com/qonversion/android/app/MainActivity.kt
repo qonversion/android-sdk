@@ -87,13 +87,13 @@ class MainActivity : AppCompatActivity() {
             return this@MainActivity
         }
 
-        override fun automationFinishedWithAction(action: QActionResult) {
+        override fun automationsDidFinishExecuting(actionResult: QActionResult) {
             // Handle the final action that the user completed on the in-app screen.
-            if (action.type == QActionResultType.Purchase) {
+            if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available permissions
                 Qonversion.checkPermissions(object :QonversionPermissionsCallback{
                     override fun onSuccess(permissions: Map<String, QPermission>){
-                        // Handle active permissions here
+                        // Handle new permissions here
                     }
 
                     override fun onError(error: QonversionError) {
@@ -102,6 +102,14 @@ class MainActivity : AppCompatActivity() {
                 })
             }
         }
+
+        override fun automationsFinished() {}
+
+        override fun automationsDidShowScreen(screenId: String) {}
+
+        override fun automationsDidStartExecuting(actionResult: QActionResult) {}
+
+        override fun automationsDidFailExecuting(actionResult: QActionResult) {}
     }
 
     private fun updateContent(products: Map<String, QProduct>) {

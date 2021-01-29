@@ -16,7 +16,7 @@ class ScreenContract {
 
         fun restore()
 
-        fun close(finalAction: QActionResult = QActionResult(QActionResultType.Close))
+        fun close(actionResult: QActionResult = QActionResult(QActionResultType.Close))
 
         fun onError(error: QonversionError)
     }
