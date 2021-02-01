@@ -16,11 +16,13 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 
 class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
-    private val logger: Logger
+    private val logger: Logger,
+    private val deviceStorage: DeviceStorage
 ): QonversionBillingService.PurchasesListener {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -399,6 +401,7 @@ class QProductCenterManager internal constructor(
 
                 executePermissionsBlock()
                 executeExperimentsBlocks()
+                handleCachedPurchases()
 
                 callback?.onSuccess(launchResult)
             }
@@ -449,6 +452,19 @@ class QProductCenterManager internal constructor(
                 })
         } else {
             executeProductsBlocks()
+        }
+    }
+
+    private fun handleCachedPurchases() {
+        val cachedPurchases = deviceStorage.loadPurchases()
+        cachedPurchases.forEach { purchase ->
+            repository.purchase(installDate, purchase, object : QonversionPermissionsCallback {
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    deviceStorage.clearPurchase(purchase)
+                }
+
+                override fun onError(error: QonversionError) {}
+            })
         }
     }
 
