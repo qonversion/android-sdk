@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push.mvp
+package com.qonversion.android.sdk.automations.mvp
 
 import android.os.Build
 import com.qonversion.android.sdk.QonversionError

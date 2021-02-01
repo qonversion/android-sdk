@@ -1,8 +1,8 @@
-package com.qonversion.android.sdk.push.mvp
+package com.qonversion.android.sdk.automations.mvp
 
 import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.push.QActionResult
-import com.qonversion.android.sdk.push.QActionResultType
+import com.qonversion.android.sdk.automations.QActionResult
+import com.qonversion.android.sdk.automations.QActionResultType
 
 class ScreenContract {
     interface View {

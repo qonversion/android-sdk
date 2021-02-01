@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.di.module.ManagersModule
 import com.qonversion.android.sdk.di.module.NetworkModule
 import com.qonversion.android.sdk.di.module.RepositoryModule
 import com.qonversion.android.sdk.di.scope.ApplicationScope
-import com.qonversion.android.sdk.push.QAutomationsManager
+import com.qonversion.android.sdk.automations.QAutomationsManager
 import dagger.Component
 
 @ApplicationScope

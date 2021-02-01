@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push.mvp
+package com.qonversion.android.sdk.automations.mvp
 
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
@@ -15,9 +15,9 @@ import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QActionResult
-import com.qonversion.android.sdk.push.QActionResultType
-import com.qonversion.android.sdk.push.QAutomationsManager
+import com.qonversion.android.sdk.automations.QActionResult
+import com.qonversion.android.sdk.automations.QActionResultType
+import com.qonversion.android.sdk.automations.QAutomationsManager
 import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
 

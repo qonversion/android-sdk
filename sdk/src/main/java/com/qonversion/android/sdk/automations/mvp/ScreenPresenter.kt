@@ -1,9 +1,9 @@
-package com.qonversion.android.sdk.push.mvp
+package com.qonversion.android.sdk.automations.mvp
 
 import android.net.Uri
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QActionResultType
+import com.qonversion.android.sdk.automations.QActionResultType
 import javax.inject.Inject
 
 class ScreenPresenter @Inject constructor(

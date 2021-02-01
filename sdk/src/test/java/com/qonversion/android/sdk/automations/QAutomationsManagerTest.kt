@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push
+package com.qonversion.android.sdk.automations
 
 import android.app.Activity
 import android.app.Application
@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.dto.automation.ActionPointScreen
 import com.qonversion.android.sdk.dto.automation.Screen
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.mvp.ScreenActivity
+import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import com.qonversion.android.sdk.toInt
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat

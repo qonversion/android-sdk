@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push
+package com.qonversion.android.sdk.automations
 
 import android.app.Activity
 import android.app.Application
@@ -9,7 +9,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.mvp.ScreenActivity
+import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import java.lang.Exception
 import java.lang.ref.WeakReference
 import javax.inject.Inject

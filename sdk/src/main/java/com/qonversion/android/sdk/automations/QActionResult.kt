@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push
+package com.qonversion.android.sdk.automations
 
 import com.qonversion.android.sdk.QonversionError
 

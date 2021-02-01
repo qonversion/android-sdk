@@ -3,7 +3,7 @@
     package="com.qonversion.android.sdk">
 
     <application>
-        <activity android:name=".push.mvp.ScreenActivity"/>
+        <activity android:name=".automations.mvp.ScreenActivity"/>
     </application>
 
 </manifest>

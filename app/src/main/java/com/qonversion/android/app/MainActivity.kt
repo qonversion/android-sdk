@@ -10,11 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.Automations
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.push.QActionResult
-import com.qonversion.android.sdk.push.QActionResultType
-import com.qonversion.android.sdk.push.QAutomationsDelegate
+import com.qonversion.android.sdk.automations.QActionResult
+import com.qonversion.android.sdk.automations.QActionResultType
+import com.qonversion.android.sdk.automations.QAutomationsDelegate
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {

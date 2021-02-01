@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.push
+package com.qonversion.android.sdk.automations
 
 enum class QActionResultType(val type: String) {
     Unknown("unknown"),

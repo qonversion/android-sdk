@@ -7,7 +7,7 @@ import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.push.QAutomationsManager
+import com.qonversion.android.sdk.automations.QAutomationsManager
 
 object Qonversion : LifecycleDelegate {
 

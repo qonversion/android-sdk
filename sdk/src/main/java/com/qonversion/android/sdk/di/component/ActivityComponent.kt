@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.di.component
 
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.di.scope.ActivityScope
-import com.qonversion.android.sdk.push.mvp.ScreenActivity
+import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import dagger.Component
 
 @ActivityScope

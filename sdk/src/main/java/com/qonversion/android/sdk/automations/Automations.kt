@@ -1,8 +1,7 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.automations
 
+import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.di.QDependencyInjector
-import com.qonversion.android.sdk.push.QAutomationsDelegate
-import com.qonversion.android.sdk.push.QAutomationsManager
 import java.lang.ref.WeakReference
 
 object Automations {
@@ -21,6 +20,7 @@ object Automations {
     @JvmStatic
     fun setDelegate(delegate: QAutomationsDelegate) {
         automationsManager?.let { it.automationsDelegate = WeakReference(delegate) }
-            ?: Qonversion.logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            ?: Qonversion.logLaunchErrorForFunctionName(
+                object {}.javaClass.enclosingMethod?.name)
     }
 }
