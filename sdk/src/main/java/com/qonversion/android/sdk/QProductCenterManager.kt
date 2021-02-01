@@ -23,6 +23,7 @@ class QProductCenterManager internal constructor(
     private val logger: Logger
 ): QonversionBillingService.PurchasesListener {
 
+    private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResult != null
     private var isProductsLoaded: Boolean = false
@@ -54,7 +55,7 @@ class QProductCenterManager internal constructor(
         @Synchronized set
         @Synchronized get
 
-    init{
+    init {
         installDate = context.packageManager.getPackageInfo(
             context.packageName,
             0
@@ -65,6 +66,10 @@ class QProductCenterManager internal constructor(
 
     fun onAppForeground() {
         handlePendingPurchases()
+    }
+
+    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
+        this.listener = listener
     }
 
     fun launch(
@@ -526,20 +531,27 @@ class QProductCenterManager internal constructor(
         consumer.consumePurchases(purchases, skuDetails)
 
         purchases.forEach { purchase ->
+            val purchaseCallback = purchasingCallbacks[purchase.sku]
+            purchasingCallbacks.remove(purchase.sku)
+
+            if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+                purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
+                return@forEach
+            }
+
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
             purchase(purchaseInfo, object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     launchResult?.permissions = permissions
-                    val purchaseCallback = purchasingCallbacks[purchase.sku]
-                    purchasingCallbacks.remove(purchase.sku)
-                    purchaseCallback?.onSuccess(permissions)
+
+                    purchaseCallback?.onSuccess(permissions) ?: run {
+                        listener?.onPermissionsUpdate(permissions)
+                    }
                 }
 
                 override fun onError(error: QonversionError) {
-                    val purchaseCallback = purchasingCallbacks[purchase.sku]
-                    purchasingCallbacks.remove(purchase.sku)
                     purchaseCallback?.onError(error)
                 }
             })
