@@ -277,14 +277,19 @@ object Qonversion : LifecycleDelegate {
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    @JvmStatic
-    fun setDebugMode() {
-        isDebugMode = true
-    }
-
+    /**
+     * Set the delegate to handle pending purchases
+     * This delegate will be called when pending purchases state will be changed
+     * For example, to handle purchases using slow credit card or SCA flow purchases
+     */
     @JvmStatic
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
         productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    @JvmStatic
+    fun setDebugMode() {
+        isDebugMode = true
     }
 
     // Private functions
