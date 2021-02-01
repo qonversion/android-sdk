@@ -279,7 +279,7 @@ object Qonversion : LifecycleDelegate {
 
     /**
      * Set the delegate to handle pending purchases
-     * This delegate will be called when pending purchases state will be changed
+     * The delegate is called when the deferred transaction status updates
      * For example, to handle purchases using slow credit card or SCA flow purchases
      */
     @JvmStatic
