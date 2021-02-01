@@ -14,10 +14,10 @@ class DeviceStorage(
 ) {
     private val moshi = Moshi.Builder().build()
     private val collectionPurchaseType: Type = Types.newParameterizedType(
-        MutableSet::class.java,
+        Set::class.java,
         Purchase::class.java
     )
-    private val jsonAdapter: JsonAdapter<MutableSet<Purchase>> =
+    private val jsonAdapter: JsonAdapter<Set<Purchase>> =
         moshi.adapter(collectionPurchaseType)
 
     fun savePurchase(purchase: Purchase) {
@@ -37,13 +37,13 @@ class DeviceStorage(
     fun loadPurchases(): Set<Purchase> {
         val json = preferences.getString(PURCHASE_KEY, "")
         if (json == null || json.isEmpty()) {
-            return mutableSetOf()
+            return setOf()
         }
         return try {
-            val purchases: MutableSet<Purchase>? = jsonAdapter.fromJson(json)
-            purchases ?: mutableSetOf()
+            val purchases: Set<Purchase>? = jsonAdapter.fromJson(json)
+            purchases ?: setOf()
         } catch (e: JsonDataException) {
-            mutableSetOf()
+            setOf()
         }
     }
 
