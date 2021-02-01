@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.RequestValidator
@@ -36,7 +37,8 @@ class QonversionRepository private constructor(
     private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val isDebugMode: Boolean
+    private val isDebugMode: Boolean,
+    private val deviceStorage: DeviceStorage
 ) {
     private var advertisingId: String? = null
 
@@ -180,7 +182,8 @@ class QonversionRepository private constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
-        callback: QonversionPermissionsCallback
+        callback: QonversionPermissionsCallback,
+        retries: Int = MAX_RETRIES_NUMBER
     ) {
         val uid = storage.load()
         val purchaseRequest = PurchaseRequest(
@@ -197,14 +200,35 @@ class QonversionRepository private constructor(
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 logger.release("purchaseRequest - success - $it")
-                handlePermissionsResponse(it, callback)
+                val body = it.body()
+                if (body != null && body.success) {
+                    callback.onSuccess(body.data.permissions)
+                } else {
+                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
+                }
+                kickRequestQueue()
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback.onError(it.toQonversionError())
+                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
                 }
             }
+        }
+    }
+
+    private fun handleErrorPurchase(
+        installDate: Long,
+        purchase: Purchase,
+        callback: QonversionPermissionsCallback,
+        error: QonversionError,
+        retries: Int
+    ) {
+        if (retries > 0) {
+            purchaseRequest(installDate, purchase, callback, retries - 1)
+        } else {
+            callback.onError(error)
+            deviceStorage.savePurchase(purchase)
         }
     }
 
@@ -384,6 +408,7 @@ class QonversionRepository private constructor(
         private const val BASE_URL = "https://api.qonversion.io/"
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L //10 MB
+        private const val MAX_RETRIES_NUMBER = 3
 
         fun initialize(
             context: Application,
@@ -391,7 +416,8 @@ class QonversionRepository private constructor(
             propertiesStorage: PropertiesStorage,
             logger: Logger,
             environmentProvider: EnvironmentProvider,
-            config: QonversionConfig
+            config: QonversionConfig,
+            deviceStorage: DeviceStorage
         ): QonversionRepository {
 
             val client = OkHttpClient.Builder()
@@ -434,7 +460,8 @@ class QonversionRepository private constructor(
                 logger,
                 requestQueue,
                 RequestValidator(),
-                config.isDebugMode
+                config.isDebugMode,
+                deviceStorage
             )
         }
     }

@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.validator.TokenValidator
 
 object Qonversion : LifecycleDelegate {
 
-    private const val SDK_VERSION = "2.4.1"
+    private const val SDK_VERSION = "2.5.0"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
@@ -55,10 +55,13 @@ object Qonversion : LifecycleDelegate {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
+        val factory = QonversionFactory(context, logger)
+
         val storage = TokenStorage(
             PreferenceManager.getDefaultSharedPreferences(context),
             TokenValidator()
         )
+        val deviceStorage = factory.createDeviceStorage()
         val propertiesStorage = UserPropertiesStorage()
         val environment = EnvironmentProvider(context)
         val config = QonversionConfig(key, SDK_VERSION, isDebugMode)
@@ -68,15 +71,14 @@ object Qonversion : LifecycleDelegate {
             propertiesStorage,
             logger,
             environment,
-            config
+            config,
+            deviceStorage
         )
 
         userPropertiesManager = QUserPropertiesManager(context, repository)
         attributionManager = QAttributionManager(repository)
 
-        val factory = QonversionFactory(context, logger)
-
-        productCenterManager = factory.createProductCenterManager(repository, observeMode)
+        productCenterManager = factory.createProductCenterManager(repository, observeMode, deviceStorage)
         productCenterManager?.launch(callback)
     }
 
@@ -275,6 +277,16 @@ object Qonversion : LifecycleDelegate {
     fun setUserID(value: String) {
         userPropertiesManager?.setUserID(value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Set the delegate to handle pending purchases
+     * The delegate is called when the deferred transaction status updates
+     * For example, to handle purchases using slow credit card or SCA flow purchases
+     */
+    @JvmStatic
+    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
+        productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     @JvmStatic
