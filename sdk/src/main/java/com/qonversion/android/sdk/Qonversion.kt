@@ -56,6 +56,8 @@ object Qonversion : LifecycleDelegate {
         }
 
         val repository = QDependencyInjector.appComponent.repository()
+        val deviceStorage = QDependencyInjector.appComponent.deviceStorage()
+
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QUserPropertiesManager(context, repository)

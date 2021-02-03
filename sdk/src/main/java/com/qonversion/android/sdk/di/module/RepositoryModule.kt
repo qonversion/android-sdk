@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.TokenStorage
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
@@ -33,7 +34,8 @@ class RepositoryModule {
         logger: Logger,
         requestsQueue: RequestsQueue,
         requestValidator: RequestValidator,
-        apiHeadersProvider: ApiHeadersProvider
+        apiHeadersProvider: ApiHeadersProvider,
+        deviceStorage: DeviceStorage
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
@@ -46,7 +48,8 @@ class RepositoryModule {
             logger,
             requestsQueue,
             requestValidator,
-            apiHeadersProvider
+            apiHeadersProvider,
+            deviceStorage
         )
     }
 
@@ -85,8 +88,8 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideHeadersProvider(
+    fun provideHeadersProvider(config: QonversionConfig
     ): ApiHeadersProvider {
-        return ApiHeadersProvider()
+        return ApiHeadersProvider(config)
     }
 }

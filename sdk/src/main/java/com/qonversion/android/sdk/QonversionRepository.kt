@@ -470,4 +470,7 @@ class QonversionRepository internal constructor(
 
     private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
 
+    companion object {
+        private const val MAX_RETRIES_NUMBER = 3
+    }
 }

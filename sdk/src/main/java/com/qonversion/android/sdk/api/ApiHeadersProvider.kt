@@ -1,15 +1,17 @@
 package com.qonversion.android.sdk.api
 
-import com.qonversion.android.sdk.di.QDependencyInjector
+import com.qonversion.android.sdk.QonversionConfig
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.HashMap
 
-class ApiHeadersProvider {
+class ApiHeadersProvider @Inject constructor(
+    config: QonversionConfig
+) {
     private val projectKey: String
     private fun getLocale() = Locale.getDefault().language
 
     init {
-        val config = QDependencyInjector.appComponent.config()
         projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
     }
 

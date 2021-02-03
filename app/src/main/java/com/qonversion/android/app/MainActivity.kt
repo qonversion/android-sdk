@@ -1,6 +1,5 @@
 package com.qonversion.android.app
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,7 +10,6 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.automations.*
-import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
@@ -23,15 +21,14 @@ class MainActivity : AppCompatActivity() {
     private val permissionStandart = "standart"
     private val tag = "MainActivity"
     private val automationsDelegate = getAutomationsDelegate()
-    private val TAG = "MainActivity"
-    private var listener = getUpdatedPurchasesListener();
+    private val purchasesListener = getUpdatedPurchasesListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // Product Center
-        Qonversion.setUpdatedPurchasesListener(listener)
+        Qonversion.setUpdatedPurchasesListener(purchasesListener)
 
         Qonversion.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
@@ -81,33 +78,6 @@ class MainActivity : AppCompatActivity() {
         val remoteMessage: RemoteMessage? = intent.getParcelableExtra(INTENT_REMOTE_MESSAGE)
         if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage)) {
             // Handle notification yourself
-        }
-    }
-
-    private fun getAutomationsDelegate() = object : AutomationsDelegate {
-        override fun automationsDidFinishExecuting(actionResult: QActionResult) {
-            // Handle the final action that the user completed on the in-app screen.
-            if (actionResult.type == QActionResultType.Purchase) {
-                // You can check available permissions
-                Qonversion.checkPermissions(object : QonversionPermissionsCallback {
-                    override fun onSuccess(permissions: Map<String, QPermission>) {
-                        // Handle new permissions here
-                    }
-
-                    override fun onError(error: QonversionError) {
-                        // Handle the error
-                    }
-                })
-            }
-        }
-
-        override fun automationsDidFailExecuting(actionResult: QActionResult) {
-            // Do some logic or track event
-        }
-
-
-        override fun automationsDidStartExecuting(actionResult: QActionResult) {
-            // Do some logic or track event
         }
     }
 
@@ -184,11 +154,36 @@ class MainActivity : AppCompatActivity() {
         Log.e(tag, "error code: $code, description: $description, additionalMessage: $additionalMessage")
     }
 
-    private fun getUpdatedPurchasesListener(): UpdatedPurchasesListener {
-        return object: UpdatedPurchasesListener {
-            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
-                // handle updated permissions here
+    private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
+        override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+            // handle updated permissions here
+        }
+    }
+
+    private fun getAutomationsDelegate() = object : AutomationsDelegate {
+        override fun automationsDidFinishExecuting(actionResult: QActionResult) {
+            // Handle the final action that the user completed on the in-app screen.
+            if (actionResult.type == QActionResultType.Purchase) {
+                // You can check available permissions
+                Qonversion.checkPermissions(object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                        // Handle new permissions here
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        // Handle the error
+                    }
+                })
             }
+        }
+
+        override fun automationsDidFailExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
+        }
+
+
+        override fun automationsDidStartExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
         }
     }
 }

@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 import dagger.Module
 import dagger.Provides
 
@@ -40,7 +41,13 @@ class AppModule(
         return ConsoleLogger()
     }
 
+    @ApplicationScope
+    @Provides
+    fun deviceStorage(sharedPreferences: SharedPreferences): DeviceStorage {
+        return DeviceStorage(sharedPreferences)
+    }
+
     companion object {
-        private const val SDK_VERSION = "2.5.0-beta1"
+        private const val SDK_VERSION = "2.5.0"
     }
 }
