@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.api
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.eligibility.EligibilityResult
 import com.qonversion.android.sdk.dto.request.*
-import com.qonversion.android.sdk.dto.automation.Screen
+import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import retrofit2.Call
 import retrofit2.http.*

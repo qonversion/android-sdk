@@ -8,8 +8,8 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionErrorCode
 import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.dto.automation.ActionPointScreen
-import com.qonversion.android.sdk.dto.automation.Screen
+import com.qonversion.android.sdk.dto.automations.ActionPointScreen
+import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import com.qonversion.android.sdk.toInt

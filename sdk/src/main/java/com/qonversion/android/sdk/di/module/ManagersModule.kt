@@ -13,7 +13,7 @@ class ManagersModule {
 
     @ApplicationScope
     @Provides
-    fun provideAutomationManager(
+    fun provideAutomationsManager(
         repository: QonversionRepository,
         preferences: SharedPreferences,
         appContext: Application

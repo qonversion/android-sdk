@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.dto.automation.ActionPointScreen
+import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 

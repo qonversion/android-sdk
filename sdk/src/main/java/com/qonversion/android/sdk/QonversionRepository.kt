@@ -7,8 +7,8 @@ import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
-import com.qonversion.android.sdk.dto.automation.ActionPointScreen
-import com.qonversion.android.sdk.dto.automation.Screen
+import com.qonversion.android.sdk.dto.automations.ActionPointScreen
+import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp

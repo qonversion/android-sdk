@@ -4,7 +4,7 @@ import android.os.Build
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionErrorCode
 import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.dto.automation.Screen
+import com.qonversion.android.sdk.dto.automations.Screen
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk

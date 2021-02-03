@@ -45,35 +45,33 @@ class QAutomationsManager @Inject constructor(
         }
     }
 
-    fun automationsDidStartExecuting(actionResult: QActionResult){
-        val delegate = getAutomationsDelegate()
-        delegate?.automationsDidStartExecuting(actionResult)
+    fun automationsDidStartExecuting(actionResult: QActionResult) {
+        automationsDelegate?.get()?.automationsDidStartExecuting(actionResult)
+            ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    fun automationsDidFailExecuting(actionResult: QActionResult){
-        val delegate = getAutomationsDelegate()
-        delegate?.automationsDidFailExecuting(actionResult)
+    fun automationsDidFailExecuting(actionResult: QActionResult) {
+        automationsDelegate?.get()?.automationsDidFailExecuting(actionResult)
+            ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     fun automationsDidFinishExecuting(actionResult: QActionResult) {
-        val delegate = getAutomationsDelegate()
-        delegate?.automationsDidFinishExecuting(actionResult)
+        automationsDelegate?.get()?.automationsDidFinishExecuting(actionResult)
+            ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     fun automationsDidShowScreen(screenId: String) {
-        val delegate = getAutomationsDelegate()
-        delegate?.automationsDidShowScreen(screenId)
+        automationsDelegate?.get()?.automationsDidShowScreen(screenId)
+            ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    fun automationsFinished(){
-        val delegate = getAutomationsDelegate()
-        delegate?.automationsFinished()
+    fun automationsFinished() {
+        automationsDelegate?.get()?.automationsFinished()
+            ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    private fun getAutomationsDelegate(): AutomationsDelegate? {
-        return automationsDelegate?.get().apply {
-            if (this == null) logger.release("getAutomationsDelegate() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
-        }
+    private fun logDelegateErrorForFunctionName(functionName: String?) {
+        logger.release("AutomationsDelegate.$functionName() function can not be executed. It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
     }
 
     private fun loadScreenIfPossible() {
