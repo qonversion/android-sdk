@@ -9,3 +9,5 @@ fun Any.mockPrivateField(fieldName: String, field: Any?) {
         ?.also { it.isAccessible = true }
         ?.set(this, field)
 }
+
+fun Boolean.toInt() = if (this) 1 else 0

@@ -1,0 +1,5 @@
+<resources>
+    <style name="ProgressBarStyleGray">
+        <item name="colorAccent">@color/gray</item>
+    </style>
+</resources>

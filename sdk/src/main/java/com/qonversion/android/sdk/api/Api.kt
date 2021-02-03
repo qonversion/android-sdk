@@ -3,9 +3,10 @@ package com.qonversion.android.sdk.api
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.eligibility.EligibilityResult
 import com.qonversion.android.sdk.dto.request.*
+import com.qonversion.android.sdk.dto.automations.Screen
+import com.qonversion.android.sdk.dto.request.ViewsRequest
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface Api {
 
@@ -26,5 +27,25 @@ interface Api {
 
     @POST("v1/products/get")
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
+
+    @GET("v2/screens/{id}")
+    fun screens(
+        @HeaderMap headers: ApiHeaders.Screens,
+        @Path("id") screenId: String
+    ): Call<Data<Screen>>
+
+    @POST("/v2/screens/{id}/views")
+    fun views(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Path("id") screenId: String,
+        @Body request: ViewsRequest
+    ): Call<Void>
+
+    @GET("v2/users/{id}/action-points")
+    fun actionPoints(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Path("id") userId: String,
+        @QueryMap params: Map<String, String>
+    ): Call<Data<ActionPoints>>
 
 }

@@ -13,5 +13,6 @@
     <string name="renew_state">Renew state</string>
     <string name="active_permissions">Active permissions</string>
     <string name="application_icon">Application icon</string>
+    <string name="channel_name">qonversion</string>
 
 </resources>
