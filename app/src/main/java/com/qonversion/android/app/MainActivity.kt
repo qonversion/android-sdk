@@ -11,6 +11,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.automations.*
+import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
@@ -22,13 +23,17 @@ class MainActivity : AppCompatActivity() {
     private val permissionStandart = "standart"
     private val tag = "MainActivity"
     private val automationsDelegate = getAutomationsDelegate()
+    private val TAG = "MainActivity"
+    private var listener = getUpdatedPurchasesListener();
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // Product Center
-        Qonversion.products(object : QonversionProductsCallback {
+        Qonversion.setUpdatedPurchasesListener(listener)
+
+        Qonversion.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 showLoading(false)
                 updateContent(products)
@@ -177,5 +182,13 @@ class MainActivity : AppCompatActivity() {
         val additionalMessage = error.additionalMessage // Additional error information (if possible)
         Toast.makeText(baseContext, error.description, Toast.LENGTH_LONG).show()
         Log.e(tag, "error code: $code, description: $description, additionalMessage: $additionalMessage")
+    }
+
+    private fun getUpdatedPurchasesListener(): UpdatedPurchasesListener {
+        return object: UpdatedPurchasesListener {
+            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+                // handle updated permissions here
+            }
+        }
     }
 }

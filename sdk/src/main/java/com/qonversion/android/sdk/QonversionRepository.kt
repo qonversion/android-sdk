@@ -17,6 +17,7 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.DeviceStorage
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
@@ -33,7 +34,8 @@ class QonversionRepository internal constructor(
     private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val headersProvider: ApiHeadersProvider
+    private val headersProvider: ApiHeadersProvider,
+    private val deviceStorage: DeviceStorage
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -248,7 +250,8 @@ class QonversionRepository internal constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
-        callback: QonversionPermissionsCallback
+        callback: QonversionPermissionsCallback,
+        retries: Int = MAX_RETRIES_NUMBER
     ) {
         val uid = storage.load()
         val purchaseRequest = PurchaseRequest(
@@ -265,14 +268,35 @@ class QonversionRepository internal constructor(
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 logger.release("purchaseRequest - success - $it")
-                handlePermissionsResponse(it, callback)
+                val body = it.body()
+                if (body != null && body.success) {
+                    callback.onSuccess(body.data.permissions)
+                } else {
+                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
+                }
+                kickRequestQueue()
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    callback.onError(it.toQonversionError())
+                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
                 }
             }
+        }
+    }
+
+    private fun handleErrorPurchase(
+        installDate: Long,
+        purchase: Purchase,
+        callback: QonversionPermissionsCallback,
+        error: QonversionError,
+        retries: Int
+    ) {
+        if (retries > 0) {
+            purchaseRequest(installDate, purchase, callback, retries - 1)
+        } else {
+            callback.onError(error)
+            deviceStorage.savePurchase(purchase)
         }
     }
 

@@ -62,7 +62,8 @@ object Qonversion : LifecycleDelegate {
         attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)
-        productCenterManager = factory.createProductCenterManager(repository, observeMode)
+
+        productCenterManager = factory.createProductCenterManager(repository, observeMode, deviceStorage)
         productCenterManager?.launch(callback)
     }
 
@@ -261,6 +262,16 @@ object Qonversion : LifecycleDelegate {
     fun setUserID(value: String) {
         userPropertiesManager?.setUserID(value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Set the delegate to handle pending purchases
+     * The delegate is called when the deferred transaction status updates
+     * For example, to handle purchases using slow credit card or SCA flow purchases
+     */
+    @JvmStatic
+    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
+        productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
