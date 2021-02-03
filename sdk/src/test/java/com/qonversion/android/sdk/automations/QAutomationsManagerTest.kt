@@ -34,7 +34,7 @@ class QAutomationsManagerTest {
     private val pushTokenKey = "push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
-    private val delegate = object : QAutomationsDelegate {
+    private val delegate = object : AutomationsDelegate {
         override fun contextForScreenIntent(): Activity {
             return mockActivity
         }

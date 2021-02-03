@@ -22,7 +22,7 @@ class QAutomationsManager @Inject constructor(
     private val logger = ConsoleLogger()
 
     @Volatile
-    var automationsDelegate: WeakReference<QAutomationsDelegate>? = null
+    var automationsDelegate: WeakReference<AutomationsDelegate>? = null
         @Synchronized set
         @Synchronized get
 
@@ -70,7 +70,7 @@ class QAutomationsManager @Inject constructor(
         delegate?.automationsFinished()
     }
 
-    private fun getAutomationsDelegate(): QAutomationsDelegate? {
+    private fun getAutomationsDelegate(): AutomationsDelegate? {
         return automationsDelegate?.get().apply {
             if (this == null) logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
         }
@@ -101,11 +101,8 @@ class QAutomationsManager @Inject constructor(
     private fun loadScreen(screenId: String) {
         repository.screens(screenId,
             { screen ->
-                var context = automationsDelegate?.get()?.contextForScreenIntent()
-                if (context == null) {
-                    logger.release("loadScreen() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
-                    context = appContext
-                }
+                val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
+
                 val intent = Intent(context, ScreenActivity::class.java)
                 intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
                 intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)

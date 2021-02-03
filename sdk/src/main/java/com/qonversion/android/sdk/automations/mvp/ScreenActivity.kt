@@ -5,19 +5,19 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.QActionResult
+import com.qonversion.android.sdk.automations.QActionResultType
+import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.automations.QAutomationsManager
 import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
 
@@ -87,8 +87,9 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun purchase(productId: String) {
-        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(productId))
+        val actionResult = QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
         automationsManager.automationsDidStartExecuting(actionResult)
+        progressBar.visibility = View.VISIBLE
 
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
@@ -100,6 +101,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         val actionResult = QActionResult(QActionResultType.Restore)
         automationsManager.automationsDidStartExecuting(actionResult)
+        progressBar.visibility = View.VISIBLE
 
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
@@ -109,6 +111,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun close(actionResult: QActionResult) {
+        progressBar.visibility = View.GONE
         finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()
@@ -162,8 +165,8 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         error: QonversionError,
         actionResult: QActionResult
     ) {
-        logger.release("ScreenActivity $functionName -> $error.description")
-        Toast.makeText(this@ScreenActivity, error.description, Toast.LENGTH_LONG).show()
+        progressBar.visibility = View.GONE
+        logger.debug("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)
     }

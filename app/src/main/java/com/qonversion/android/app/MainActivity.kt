@@ -10,12 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.Automations
+import com.qonversion.android.sdk.automations.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.automations.QAutomationsDelegate
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -72,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Automation
-        // Before handling push notifications provide the instance of Automations delegate
+        // You can skip this step if you don't need to handle the Qonversion Automations result
         Automations.setDelegate(automationsDelegate)
 
         // Check if the activity was launched from a push notification
@@ -82,18 +79,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getAutomationsDelegate() = object : QAutomationsDelegate {
-        override fun contextForScreenIntent(): Context {
-            // Provide the context for screen intent
-            return this@MainActivity
-        }
-
+    private fun getAutomationsDelegate() = object : AutomationsDelegate {
         override fun automationsDidFinishExecuting(actionResult: QActionResult) {
             // Handle the final action that the user completed on the in-app screen.
             if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available permissions
-                Qonversion.checkPermissions(object :QonversionPermissionsCallback{
-                    override fun onSuccess(permissions: Map<String, QPermission>){
+                Qonversion.checkPermissions(object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
                         // Handle new permissions here
                     }
 
@@ -104,13 +96,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        override fun automationsFinished() {}
+        override fun automationsDidFailExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
+        }
 
-        override fun automationsDidShowScreen(screenId: String) {}
 
-        override fun automationsDidStartExecuting(actionResult: QActionResult) {}
-
-        override fun automationsDidFailExecuting(actionResult: QActionResult) {}
+        override fun automationsDidStartExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
+        }
     }
 
     private fun updateContent(products: Map<String, QProduct>) {

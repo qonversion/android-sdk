@@ -18,7 +18,7 @@ object Automations {
      * Make sure the method is called before handleNotification
      */
     @JvmStatic
-    fun setDelegate(delegate: QAutomationsDelegate) {
+    fun setDelegate(delegate: AutomationsDelegate) {
         automationsManager?.let { it.automationsDelegate = WeakReference(delegate) }
             ?: Qonversion.logLaunchErrorForFunctionName(
                 object {}.javaClass.enclosingMethod?.name)
