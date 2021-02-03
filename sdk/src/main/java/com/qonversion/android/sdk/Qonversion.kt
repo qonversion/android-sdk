@@ -3,20 +3,18 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingFlowParams
+import com.google.firebase.messaging.RemoteMessage
+import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import com.qonversion.android.sdk.storage.TokenStorage
-import com.qonversion.android.sdk.storage.UserPropertiesStorage
-import com.qonversion.android.sdk.validator.TokenValidator
+import com.qonversion.android.sdk.automations.QAutomationsManager
 
 object Qonversion : LifecycleDelegate {
-
-    private const val SDK_VERSION = "2.5.0"
 
     private var userPropertiesManager: QUserPropertiesManager? = null
     private var attributionManager: QAttributionManager? = null
     private var productCenterManager: QProductCenterManager? = null
+    private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
 
@@ -51,32 +49,21 @@ object Qonversion : LifecycleDelegate {
         observeMode: Boolean,
         callback: QonversionLaunchCallback? = null
     ) {
+        QDependencyInjector.buildAppComponent(context, key, isDebugMode)
+
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
         }
 
-        val factory = QonversionFactory(context, logger)
+        val repository = QDependencyInjector.appComponent.repository()
+        val deviceStorage = QDependencyInjector.appComponent.deviceStorage()
 
-        val storage = TokenStorage(
-            PreferenceManager.getDefaultSharedPreferences(context),
-            TokenValidator()
-        )
-        val deviceStorage = factory.createDeviceStorage()
-        val propertiesStorage = UserPropertiesStorage()
-        val environment = EnvironmentProvider(context)
-        val config = QonversionConfig(key, SDK_VERSION, isDebugMode)
-        val repository = QonversionRepository.initialize(
-            context,
-            storage,
-            propertiesStorage,
-            logger,
-            environment,
-            config,
-            deviceStorage
-        )
+        automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QUserPropertiesManager(context, repository)
         attributionManager = QAttributionManager(repository)
+
+        val factory = QonversionFactory(context, logger)
 
         productCenterManager = factory.createProductCenterManager(repository, observeMode, deviceStorage)
         productCenterManager?.launch(callback)
@@ -289,14 +276,36 @@ object Qonversion : LifecycleDelegate {
         productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * You can set the flag to distinguish sandbox and production users.
+     * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
+     */
     @JvmStatic
     fun setDebugMode() {
         isDebugMode = true
     }
 
-    // Private functions
+    /**
+     * Set push token to Qonversion to enable Qonversion push notifications
+     */
+    @JvmStatic
+    fun setNotificationsToken(token: String) {
+        automationsManager?.setPushToken(token)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
 
-    private fun logLaunchErrorForFunctionName(functionName: String?) {
+    /**
+     * Returns true when a push notification was received from Qonversion.
+     * Otherwise returns false, so you need to handle a notification yourself
+     */
+    @JvmStatic
+    fun handleNotification(remoteMessage: RemoteMessage) = automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
+        logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        return@run false
+    }
+
+    // Internal functions
+    internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 }

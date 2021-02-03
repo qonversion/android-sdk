@@ -3,7 +3,6 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import androidx.annotation.UiThread
-import androidx.preference.PreferenceManager
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.billing.BillingService
@@ -27,12 +26,6 @@ class QonversionFactory internal constructor(
         productCenterManager.consumer = createConsumer(billingService, isObserveMode)
 
         return productCenterManager
-    }
-
-    fun createDeviceStorage(): DeviceStorage {
-        return DeviceStorage(
-            PreferenceManager.getDefaultSharedPreferences(context)
-        )
     }
 
     private fun createBillingService(listener: QonversionBillingService.PurchasesListener): QonversionBillingService {

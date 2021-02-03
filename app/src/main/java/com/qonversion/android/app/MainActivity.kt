@@ -6,25 +6,29 @@ import android.util.Log
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.messaging.RemoteMessage
+import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.*
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
-
 
 class MainActivity : AppCompatActivity() {
     private val productIdSubs = "main"
     private val productIdInApp = "in_app"
     private val permissionPlus = "plus"
     private val permissionStandart = "standart"
-    private val TAG = "MainActivity"
-    private var listener = getUpdatedPurchasesListener();
+    private val tag = "MainActivity"
+    private val automationsDelegate = getAutomationsDelegate()
+    private val purchasesListener = getUpdatedPurchasesListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Qonversion.setUpdatedPurchasesListener(listener)
+        // Product Center
+        Qonversion.setUpdatedPurchasesListener(purchasesListener)
 
         Qonversion.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
@@ -64,6 +68,16 @@ class MainActivity : AppCompatActivity() {
         buttonPermissions.setOnClickListener {
             val intent = Intent(this, PermissionsActivity::class.java)
             startActivity(intent)
+        }
+
+        // Automation
+        // You can skip this step if you don't need to handle the Qonversion Automations result
+        Automations.setDelegate(automationsDelegate)
+
+        // Check if the activity was launched from a push notification
+        val remoteMessage: RemoteMessage? = intent.getParcelableExtra(INTENT_REMOTE_MESSAGE)
+        if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage)) {
+            // Handle notification yourself
         }
     }
 
@@ -136,15 +150,40 @@ class MainActivity : AppCompatActivity() {
         val code = error.code                           // Error enum code
         val description = error.description             // Error enum code description
         val additionalMessage = error.additionalMessage // Additional error information (if possible)
-        Toast.makeText(applicationContext, error.description, Toast.LENGTH_LONG).show()
-        Log.e(TAG, "error code: $code, description: $description, additionalMessage: $additionalMessage")
+        Toast.makeText(baseContext, error.description, Toast.LENGTH_LONG).show()
+        Log.e(tag, "error code: $code, description: $description, additionalMessage: $additionalMessage")
     }
 
-    private fun getUpdatedPurchasesListener(): UpdatedPurchasesListener {
-        return object: UpdatedPurchasesListener {
-            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
-                // handle updated permissions here
+    private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
+        override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+            // handle updated permissions here
+        }
+    }
+
+    private fun getAutomationsDelegate() = object : AutomationsDelegate {
+        override fun automationsDidFinishExecuting(actionResult: QActionResult) {
+            // Handle the final action that the user completed on the in-app screen.
+            if (actionResult.type == QActionResultType.Purchase) {
+                // You can check available permissions
+                Qonversion.checkPermissions(object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                        // Handle new permissions here
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        // Handle the error
+                    }
+                })
             }
+        }
+
+        override fun automationsDidFailExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
+        }
+
+
+        override fun automationsDidStartExecuting(actionResult: QActionResult) {
+            // Do some logic or track event
         }
     }
 }

@@ -1,12 +1,15 @@
 package com.qonversion.android.sdk
 
-import android.app.Application
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
+import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
+import com.qonversion.android.sdk.dto.automations.ActionPointScreen
+import com.qonversion.android.sdk.dto.automations.Screen
+import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -17,30 +20,25 @@ import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.DeviceStorage
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
-import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.Validator
-import com.squareup.moshi.Moshi
-import okhttp3.Cache
-import okhttp3.OkHttpClient
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 
-class QonversionRepository private constructor(
+class QonversionRepository internal constructor(
     private val api: Api,
     private var storage: Storage,
     private var propertiesStorage: PropertiesStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
+    private val isDebugMode: Boolean,
     private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val isDebugMode: Boolean,
+    private val headersProvider: ApiHeadersProvider,
     private val deviceStorage: DeviceStorage
 ) {
     private var advertisingId: String? = null
+    private var installDate: Long = 0
 
     // Public functions
 
@@ -51,7 +49,8 @@ class QonversionRepository private constructor(
         callback: QonversionLaunchCallback?
     ) {
         advertisingId = idfa
-        initRequest(installDate, idfa, purchases, callback)
+        this.installDate = installDate
+        initRequest(purchases, callback)
     }
 
     fun purchase(
@@ -125,6 +124,75 @@ class QonversionRepository private constructor(
                 logger.release("eligibilityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
                     callback.onError(it.toQonversionError())
+                }
+            }
+        }
+    }
+
+    fun setPushToken(token: String) {
+        initRequest(pushToken = token)
+    }
+
+    fun screens(
+        screenId: String,
+        onSuccess: (screen: Screen) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
+            onResponse = {
+                logger.release("screensRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (body != null && it.isSuccessful) {
+                    onSuccess(body.data)
+                } else {
+                    onError(it.toQonversionError())
+                }
+            }
+            onFailure = {
+                logger.release("screensRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    onError(it.toQonversionError())
+                }
+            }
+        }
+    }
+
+    fun views(screenId: String) {
+        val uid = storage.load()
+        val viewsRequest = ViewsRequest(uid)
+
+        api.views(headersProvider.getHeaders(), screenId, viewsRequest).enqueue {
+            onResponse = {
+                logger.debug("viewsRequest - ${it.getLogMessage()}")
+            }
+            onFailure = {
+                logger.release("viewsRequest - failure - ${it?.toQonversionError()}")
+            }
+        }
+    }
+
+    fun actionPoints(
+        queryParams: Map<String, String>,
+        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        val uid = storage.load()
+
+        api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
+            onResponse = {
+                logger.release("actionPointsRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body != null && it.isSuccessful) {
+                    onSuccess(body.data.items.lastOrNull()?.data)
+                } else {
+                    onError(it.toQonversionError())
+                }
+            }
+            onFailure = {
+                logger.release("actionPointsRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    onError(it.toQonversionError())
                 }
             }
         }
@@ -232,10 +300,10 @@ class QonversionRepository private constructor(
         }
     }
 
-    private fun convertPurchases(purcahses: List<Purchase>?): List<Inapp> {
+    private fun convertPurchases(purchases: List<Purchase>?): List<Inapp> {
         val inapps: MutableList<Inapp> = mutableListOf()
 
-        purcahses?.forEach {
+        purchases?.forEach {
             val inapp = convertPurchase(it)
             inapps.add(inapp)
         }
@@ -338,16 +406,15 @@ class QonversionRepository private constructor(
     }
 
     private fun initRequest(
-        installDate: Long,
-        idfa: String?,
-        purchases: List<Purchase>?,
-        callback: QonversionLaunchCallback?
+        purchases: List<Purchase>? = null,
+        callback: QonversionLaunchCallback? = null,
+        pushToken: String? = null
     ) {
         val uid = storage.load()
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(idfa),
+            device = environmentProvider.getInfo(advertisingId, pushToken),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
@@ -404,65 +471,6 @@ class QonversionRepository private constructor(
     private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
 
     companion object {
-
-        private const val BASE_URL = "https://api.qonversion.io/"
-        private const val TIMEOUT = 30L
-        private const val CACHE_SIZE = 10485776L //10 MB
         private const val MAX_RETRIES_NUMBER = 3
-
-        fun initialize(
-            context: Application,
-            storage: Storage,
-            propertiesStorage: PropertiesStorage,
-            logger: Logger,
-            environmentProvider: EnvironmentProvider,
-            config: QonversionConfig,
-            deviceStorage: DeviceStorage
-        ): QonversionRepository {
-
-            val client = OkHttpClient.Builder()
-                .cache(Cache(context.cacheDir, CACHE_SIZE))
-                .readTimeout(TIMEOUT, TimeUnit.SECONDS)
-                .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
-                .build()
-
-            val moshiBuilder = Moshi.Builder()
-                .add(QProductDurationAdapter())
-                .add(QDateAdapter())
-                .add(QProductsAdapter())
-                .add(QPermissionsAdapter())
-                .add(QProductTypeAdapter())
-                .add(QProductRenewStateAdapter())
-                .add(QOfferingsAdapter())
-                .add(QOfferingTagAdapter())
-                .add(QExperimentGroupTypeAdapter())
-                .add(QExperimentsAdapter())
-                .add(QEligibilityStatusAdapter())
-                .add(QEligibilityAdapter())
-
-            val moshi = moshiBuilder.build()
-
-            val retrofit = Retrofit.Builder()
-                .addConverterFactory(MoshiConverterFactory.create(moshi))
-                .baseUrl(BASE_URL)
-                .client(client)
-                .build()
-
-            val requestQueue = RequestsQueue(logger)
-
-            return QonversionRepository(
-                retrofit.create(Api::class.java),
-                storage,
-                propertiesStorage,
-                environmentProvider,
-                config.sdkVersion,
-                config.key,
-                logger,
-                requestQueue,
-                RequestValidator(),
-                config.isDebugMode,
-                deviceStorage
-            )
-        }
     }
 }
