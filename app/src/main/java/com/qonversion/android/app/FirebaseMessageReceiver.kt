@@ -18,9 +18,6 @@ import com.qonversion.android.sdk.Qonversion
 class FirebaseMessageReceiver : FirebaseMessagingService() {
     private val tag = "FirebaseMessageReceiver"
 
-    /**
-     *  The token used for sending messages to the application.
-     */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(tag, "onNewToken: $token")

@@ -15,7 +15,7 @@ object Automations {
 
     /**
      * The delegate is responsible for handling in-app screens and actions when push notification is received.
-     * Make sure the method is called before handleNotification
+     * Make sure the method is called before Qonversion.handleNotification
      */
     @JvmStatic
     fun setDelegate(delegate: AutomationsDelegate) {

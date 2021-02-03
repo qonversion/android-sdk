@@ -72,7 +72,7 @@ class QAutomationsManager @Inject constructor(
 
     private fun getAutomationsDelegate(): AutomationsDelegate? {
         return automationsDelegate?.get().apply {
-            if (this == null) logger.release("automationFlowFinishedWithAction() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
+            if (this == null) logger.release("getAutomationsDelegate() -> It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
         }
     }
 

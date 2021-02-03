@@ -41,7 +41,7 @@ public interface AutomationsDelegate {
      * Called when Automations flow finishes executing an action
      *
      * @param actionResult executed action.
-     *                     For instance, if the user makes a purchase then action.type = QActionResultType.Purchase.
+     *                     For instance, if the user made a purchase then action.type = QActionResultType.Purchase.
      *                     You can use the Qonversion.checkPermissions() method to get available permissions
      */
     default void automationsDidFinishExecuting(@NotNull QActionResult actionResult) {
