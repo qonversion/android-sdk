@@ -57,6 +57,7 @@ object Qonversion : LifecycleDelegate {
 
         val repository = QDependencyInjector.appComponent.repository()
         val deviceStorage = QDependencyInjector.appComponent.deviceStorage()
+        val launchResultStorage = QDependencyInjector.appComponent.launchResultStorage()
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -65,7 +66,7 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, deviceStorage)
+        productCenterManager = factory.createProductCenterManager(repository, observeMode, deviceStorage, launchResultStorage)
         productCenterManager?.launch(callback)
     }
 

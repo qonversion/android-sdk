@@ -7,7 +7,9 @@ import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.DeviceStorage
+import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.LaunchResultCache
+import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 
@@ -43,8 +45,17 @@ class AppModule(
 
     @ApplicationScope
     @Provides
-    fun deviceStorage(sharedPreferences: SharedPreferences): DeviceStorage {
-        return DeviceStorage(sharedPreferences)
+    fun provideDeviceStorage(sharedPreferences: SharedPreferences): PurchasesCache {
+        return PurchasesCache(sharedPreferences)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideLaunchResultStorage(
+        sharedPreferences: SharedPreferences,
+        moshi: Moshi
+    ): LaunchResultCache {
+        return LaunchResultCache(sharedPreferences, moshi)
     }
 
     companion object {

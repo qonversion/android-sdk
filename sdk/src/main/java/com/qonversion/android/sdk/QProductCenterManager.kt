@@ -11,24 +11,28 @@ import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.DeviceStorage
+import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.LaunchResultCache
 
 class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private val logger: Logger,
-    private val deviceStorage: DeviceStorage
-): QonversionBillingService.PurchasesListener {
+    private val purchasesCache: PurchasesCache,
+    private val launchResultCache: LaunchResultCache
+) : QonversionBillingService.PurchasesListener {
 
     private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResult != null
     private var isProductsLoaded: Boolean = false
+
+    private var forceLaunchRetry: Boolean = false
 
     private var isProductsLoadingFailed: Boolean = false
 
@@ -75,7 +79,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun launch(
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback? = null
     ) {
         val adProvider = AdvertisingProvider()
         val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
@@ -99,19 +103,15 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        if (launchError == null) {
-            executeProductsBlocks()
-        } else {
-            val launchCallback = getLaunchCallback(null)
-            launch(launchCallback)
-        }
+        executeProductsBlocks()
     }
 
     fun offerings(
         callback: QonversionOfferingsCallback
     ) {
-        loadProducts(object: QonversionProductsCallback {
-            override fun onSuccess(products: Map<String, QProduct>) = executeOfferingCallback(callback)
+        loadProducts(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) =
+                executeOfferingCallback(callback)
 
             override fun onError(error: QonversionError) = callback.onError(error)
         })
@@ -129,8 +129,7 @@ class QProductCenterManager internal constructor(
         if (launchResult != null) {
             executeExperimentsBlocks()
         } else {
-            val launchCallback = getLaunchCallback(null)
-            launch(launchCallback)
+            launch()
         }
     }
 
@@ -160,7 +159,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun executeOfferingCallback(callback: QonversionOfferingsCallback) {
-        val offerings = launchResult?.offerings
+        val offerings = getActualOfferings()
         if (offerings != null) {
             offerings.availableOfferings.forEach { offering ->
                 addSkuDetailForProducts(offering.products)
@@ -172,8 +171,17 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    private fun getActualOfferings(): QOfferings? {
+        var offerings = launchResult?.offerings
+        if (launchResult == null) {
+            val cachedLaunchResult = launchResultCache.load()
+            cachedLaunchResult?.let { offerings = it.offerings }
+        }
+        return offerings
+    }
+
     private fun addSkuDetailForProducts(products: Collection<QProduct>) {
-        products.forEach {product ->
+        products.forEach { product ->
             product.skuDetail = skuDetails[product.storeID]
         }
     }
@@ -186,7 +194,7 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         if (launchError != null) {
-            val launchCallback = getLaunchCallback(object: QonversionLaunchCallback {
+            launch(object: QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     if (isProductsLoaded && !isProductsLoadingFailed) {
                         processPurchase(context, id, oldProductId, prorationMode, callback)
@@ -207,8 +215,6 @@ class QProductCenterManager internal constructor(
                     callback.onError(error)
                 }
             })
-
-            launch(launchCallback)
         } else {
             processPurchase(context, id, oldProductId, prorationMode, callback)
         }
@@ -283,13 +289,14 @@ class QProductCenterManager internal constructor(
             repository.restore(
                 installDate,
                 purchaseHistoryRecords,
-                callback = object : QonversionPermissionsCallback {
-                    override fun onSuccess(permissions: Map<String, QPermission>) {
-                        launchResult?.permissions = permissions
-                        callback?.onSuccess(permissions)
+                object : QonversionLaunchCallback {
+                    override fun onSuccess(launchResult: QLaunchResult) {
+                        updateLaunchResult(launchResult)
+                        callback?.onSuccess(launchResult.permissions)
                     }
 
                     override fun onError(error: QonversionError) {
+                        forceLaunchRetry = true
                         callback?.onError(error)
                     }
                 })
@@ -394,7 +401,7 @@ class QProductCenterManager internal constructor(
     private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
         return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
-                this@QProductCenterManager.launchResult = launchResult
+                updateLaunchResult(launchResult)
                 launchError = null
 
                 loadStoreProductsIfPossible(launchResult)
@@ -413,10 +420,17 @@ class QProductCenterManager internal constructor(
                 launchError = error
 
                 executePermissionsBlock()
+                executeProductsBlocks()
 
                 callback?.onError(error)
             }
         }
+    }
+
+    private fun updateLaunchResult(launchResult: QLaunchResult) {
+        this@QProductCenterManager.launchResult = launchResult
+        launchResultCache.save(launchResult)
+        forceLaunchRetry = false
     }
 
     private fun loadStoreProductsIfPossible(launchResult: QLaunchResult) {
@@ -456,11 +470,12 @@ class QProductCenterManager internal constructor(
     }
 
     private fun handleCachedPurchases() {
-        val cachedPurchases = deviceStorage.loadPurchases()
+        val cachedPurchases = purchasesCache.loadPurchases()
         cachedPurchases.forEach { purchase ->
-            repository.purchase(installDate, purchase, object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    deviceStorage.clearPurchase(purchase)
+            repository.purchase(installDate, purchase, object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    updateLaunchResult(launchResult)
+                    purchasesCache.clearPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {}
@@ -480,7 +495,7 @@ class QProductCenterManager internal constructor(
             callbacks.forEach {
                 it.onSuccess(experiments)
             }
-        }  ?: run {
+        } ?: run {
             experimentsCallbacks.forEach {
                 val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
                 it.onError(error)
@@ -493,15 +508,27 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        launchResult?.products?.let { products ->
-            addSkuDetailForProducts(products.values)
+        val callbacks = productsCallbacks.toList()
+        productsCallbacks.clear()
 
-            val callbacks = productsCallbacks.toList()
-            productsCallbacks.clear()
+        launchResult?.let {
+            handleSuccessProductsCallbacks(callbacks)
+        } ?: run {
+            retryLaunch(
+                {
+                    handleSuccessProductsCallbacks(callbacks)
+                },
+                { launchError ->
+                    val cachedLaunchResult = launchResultCache.load()
 
-            callbacks.forEach {
-                it.onSuccess(products)
-            }
+                    if (cachedLaunchResult == null) {
+                        callbacks.forEach {
+                            it.onError(launchError)
+                        }
+                    } else {
+                        handleSuccessProductsCallbacks(callbacks, cachedLaunchResult.products)
+                    }
+                })
         }
     }
 
@@ -519,9 +546,53 @@ class QProductCenterManager internal constructor(
                 it.onSuccess(permissions)
             }
         } ?: run {
+            retryLaunch(
+                { launchResult ->
+                    callbacks.forEach {
+                        it.onSuccess(launchResult.permissions)
+                    }
+                },
+                { error ->
+                    if (forceLaunchRetry) {
+                        callbacks.forEach {
+                            it.onError(error)
+                        }
+                    } else {
+                        val cachedLaunchResult = launchResultCache.load()
+
+                        if (cachedLaunchResult == null) {
+                            callbacks.forEach {
+                                it.onError(error)
+                            }
+                        } else {
+                            callbacks.forEach {
+                                it.onSuccess(cachedLaunchResult.permissions)
+                            }
+                        }
+                    }
+                })
+        }
+    }
+
+    private fun retryLaunch(
+        onSuccess: (QLaunchResult) -> Unit,
+        onError: (QonversionError) -> Unit
+    ) {
+        launch(object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) = onSuccess(launchResult)
+            override fun onError(error: QonversionError) = onError(error)
+        })
+    }
+
+    private fun handleSuccessProductsCallbacks(
+        callbacks: List<QonversionProductsCallback>,
+        products: Map<String, QProduct>? = launchResult?.products
+    ) {
+        if (products != null) {
+            addSkuDetailForProducts(products.values)
+
             callbacks.forEach {
-                val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
-                it.onError(error)
+                it.onSuccess(products)
             }
         }
     }
@@ -558,17 +629,18 @@ class QProductCenterManager internal constructor(
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
-            purchase(purchaseInfo, object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    launchResult?.permissions = permissions
+            purchase(purchaseInfo, object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    updateLaunchResult(launchResult)
 
-                    purchaseCallback?.onSuccess(permissions) ?: run {
-                        listener?.onPermissionsUpdate(permissions)
+                    purchaseCallback?.onSuccess(launchResult.permissions) ?: run {
+                        listener?.onPermissionsUpdate(launchResult.permissions)
                     }
                 }
 
                 override fun onError(error: QonversionError) {
                     purchaseCallback?.onError(error)
+                    forceLaunchRetry = true
                 }
             })
         }
@@ -576,7 +648,7 @@ class QProductCenterManager internal constructor(
 
     private fun purchase(
         purchaseInfo: Pair<SkuDetails, Purchase>,
-        callback: QonversionPermissionsCallback
+        callback: QonversionLaunchCallback
     ) {
         val purchase = converter.convert(purchaseInfo)
         repository.purchase(installDate, purchase, callback)

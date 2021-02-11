@@ -10,11 +10,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class DeviceStorageTest {
+class PurchasesCacheTest {
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
 
-    private lateinit var deviceStorage: DeviceStorage
+    private lateinit var purchasesCache: PurchasesCache
 
     private val purchaseKey = "purchase"
     private val onePurchaseStr = "[${generatePurchaseJson()}]"
@@ -26,7 +26,7 @@ class DeviceStorageTest {
 
         mockSharedPreferences()
 
-        deviceStorage = DeviceStorage(mockPrefs)
+        purchasesCache = PurchasesCache(mockPrefs)
     }
 
     @Nested
@@ -35,7 +35,7 @@ class DeviceStorageTest {
         fun `should not save purchase when sku type is subs`() {
             val purchase = mockPurchase(BillingClient.SkuType.SUBS)
 
-            deviceStorage.savePurchase(purchase)
+            purchasesCache.savePurchase(purchase)
             verify(exactly = 0) {
                 mockEditor.putString(purchaseKey, any()).apply()
             }
@@ -45,7 +45,7 @@ class DeviceStorageTest {
         fun `should save purchase when sku type is inapp`() {
             val purchase = mockPurchase(BillingClient.SkuType.INAPP)
 
-            deviceStorage.savePurchase(purchase)
+            purchasesCache.savePurchase(purchase)
 
             verifyOrder {
                 mockEditor.putString(purchaseKey, onePurchaseStr)
@@ -60,13 +60,13 @@ class DeviceStorageTest {
             } returns onePurchaseStr
             val purchase = mockPurchase(BillingClient.SkuType.INAPP)
 
-            deviceStorage.savePurchase(purchase)
+            purchasesCache.savePurchase(purchase)
 
             verifyOrder {
                 mockEditor.putString(purchaseKey, onePurchaseStr)
                 mockEditor.apply()
             }
-            val purchases = deviceStorage.loadPurchases()
+            val purchases = purchasesCache.loadPurchases()
             assertThat(purchases.size).isEqualTo(1)
         }
 
@@ -77,7 +77,7 @@ class DeviceStorageTest {
             } returns fourPurchasesStr
 
             val fifthPurchase = mockPurchase(BillingClient.SkuType.INAPP, "5")
-            deviceStorage.savePurchase(fifthPurchase)
+            purchasesCache.savePurchase(fifthPurchase)
             val fourNewestPurchasesStr =
                 "[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"
 
@@ -86,7 +86,6 @@ class DeviceStorageTest {
                 mockEditor.apply()
             }
         }
-
     }
 
     @Nested
@@ -97,7 +96,7 @@ class DeviceStorageTest {
                 mockPrefs.getString(purchaseKey, any())
             } returns ""
 
-            val purchases = deviceStorage.loadPurchases()
+            val purchases = purchasesCache.loadPurchases()
             verify(exactly = 1) {
                 mockPrefs.getString(purchaseKey, any())
             }
@@ -112,12 +111,26 @@ class DeviceStorageTest {
 
             val purchase = mockPurchase(BillingClient.SkuType.INAPP)
 
-            val purchases = deviceStorage.loadPurchases()
+            val purchases = purchasesCache.loadPurchases()
             verify(exactly = 1) {
                 mockPrefs.getString(purchaseKey, any())
             }
             assertThat(purchases.size).isEqualTo(1)
             assertThat(purchase).isEqualTo(purchases.elementAt(0))
+        }
+
+        @Test
+        fun `should return empty set when cache contains invalid json string`() {
+            val invalidPurchaseJsonStr = "Invalid Purchase Json Str"
+            every {
+                mockPrefs.getString(purchaseKey, "")
+            } returns invalidPurchaseJsonStr
+
+            val purchases = purchasesCache.loadPurchases()
+            verify(exactly = 1) {
+                mockPrefs.getString(purchaseKey, any())
+            }
+            assertThat(purchases.size).isEqualTo(0)
         }
     }
 
@@ -132,7 +145,7 @@ class DeviceStorageTest {
                 mockPrefs.getString(purchaseKey, any())
             } returns onePurchaseStr
 
-            deviceStorage.clearPurchase(purchase)
+            purchasesCache.clearPurchase(purchase)
 
             verifyOrder {
                 mockEditor.putString(purchaseKey, emptyList)
@@ -145,7 +158,7 @@ class DeviceStorageTest {
             val emptyList = "[]"
             val purchase = mockPurchase(BillingClient.SkuType.INAPP)
 
-            deviceStorage.clearPurchase(purchase)
+            purchasesCache.clearPurchase(purchase)
 
             verifyOrder {
                 mockEditor.putString(purchaseKey, emptyList)
