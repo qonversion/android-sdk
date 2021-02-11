@@ -11,6 +11,7 @@ import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -194,7 +195,7 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         if (launchError != null) {
-            launch(object: QonversionLaunchCallback {
+            launch(object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     if (isProductsLoaded && !isProductsLoadingFailed) {
                         processPurchase(context, id, oldProductId, prorationMode, callback)
@@ -462,6 +463,7 @@ class QProductCenterManager internal constructor(
                 onLoadFailed = { error ->
                     isProductsLoaded = true
                     isProductsLoadingFailed = true
+                    executeProductsBlocks(error.toQonversionError())
                     onLoadFailed?.let { it(error) }
                 })
         } else {
@@ -503,7 +505,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun executeProductsBlocks() {
+    private fun executeProductsBlocks(loadingStoreProductsError: QonversionError? = null) {
         if (productsCallbacks.isEmpty()) {
             return
         }
@@ -511,25 +513,12 @@ class QProductCenterManager internal constructor(
         val callbacks = productsCallbacks.toList()
         productsCallbacks.clear()
 
-        launchResult?.let {
-            handleSuccessProductsCallbacks(callbacks)
-        } ?: run {
-            retryLaunch(
-                {
-                    handleSuccessProductsCallbacks(callbacks)
-                },
-                { launchError ->
-                    val cachedLaunchResult = launchResultCache.load()
-
-                    if (cachedLaunchResult == null) {
-                        callbacks.forEach {
-                            it.onError(launchError)
-                        }
-                    } else {
-                        handleSuccessProductsCallbacks(callbacks, cachedLaunchResult.products)
-                    }
-                })
+        loadingStoreProductsError?.let {
+            callbacks.handleFailureProducts(it)
+            return
         }
+
+        handleProductsCallbacks(callbacks)
     }
 
     private fun executePermissionsBlock() {
@@ -540,38 +529,7 @@ class QProductCenterManager internal constructor(
         val callbacks = permissionsCallbacks.toList()
         permissionsCallbacks.clear()
 
-        launchResult?.let {
-            val permissions = launchResult?.permissions ?: mapOf()
-            callbacks.forEach {
-                it.onSuccess(permissions)
-            }
-        } ?: run {
-            retryLaunch(
-                { launchResult ->
-                    callbacks.forEach {
-                        it.onSuccess(launchResult.permissions)
-                    }
-                },
-                { error ->
-                    if (forceLaunchRetry) {
-                        callbacks.forEach {
-                            it.onError(error)
-                        }
-                    } else {
-                        val cachedLaunchResult = launchResultCache.load()
-
-                        if (cachedLaunchResult == null) {
-                            callbacks.forEach {
-                                it.onError(error)
-                            }
-                        } else {
-                            callbacks.forEach {
-                                it.onSuccess(cachedLaunchResult.permissions)
-                            }
-                        }
-                    }
-                })
-        }
+        handlePermissionsCallbacks(callbacks)
     }
 
     private fun retryLaunch(
@@ -584,16 +542,92 @@ class QProductCenterManager internal constructor(
         })
     }
 
-    private fun handleSuccessProductsCallbacks(
-        callbacks: List<QonversionProductsCallback>,
+    private fun handleProductsCallbacks(callbacks: List<QonversionProductsCallback>) {
+        launchResult?.let {
+            callbacks.handleSuccessProducts()
+        } ?: run {
+            retryLaunch(
+                onSuccess = {
+                    callbacks.handleSuccessProducts()
+                },
+                onError = { launchError ->
+                    val cachedLaunchResult = launchResultCache.load()
+
+                    if (cachedLaunchResult == null) {
+                        callbacks.handleFailureProducts(launchError)
+                    } else {
+                        loadStoreProductsIfPossible(cachedLaunchResult,
+                            {
+                                callbacks.handleSuccessProducts(cachedLaunchResult.products)
+                            },
+                            { billingError ->
+                                callbacks.handleFailureProducts(billingError.toQonversionError())
+                            })
+                    }
+                })
+        }
+    }
+
+    private fun List<QonversionProductsCallback>.handleSuccessProducts(
         products: Map<String, QProduct>? = launchResult?.products
     ) {
         if (products != null) {
             addSkuDetailForProducts(products.values)
 
-            callbacks.forEach {
+            this.forEach {
                 it.onSuccess(products)
             }
+        }
+    }
+
+    private fun List<QonversionProductsCallback>.handleFailureProducts(
+        error: QonversionError
+    ) {
+        this.forEach {
+            it.onError(error)
+        }
+    }
+
+    private fun handlePermissionsCallbacks(
+        callbacks: List<QonversionPermissionsCallback>
+    ) {
+        launchResult?.let {
+            val permissions = launchResult?.permissions ?: mapOf()
+            callbacks.handleSuccessPermissions(permissions)
+        } ?: run {
+            retryLaunch(
+                { launchResult ->
+                    callbacks.handleSuccessPermissions(launchResult.permissions)
+                },
+                { error ->
+                    if (forceLaunchRetry) {
+                        callbacks.handleFailurePermissions(error)
+                    } else {
+                        val cachedLaunchResult = launchResultCache.load()
+
+                        if (cachedLaunchResult == null) {
+                            callbacks.handleFailurePermissions(error)
+                        } else {
+                            callbacks.handleSuccessPermissions(cachedLaunchResult.permissions)
+                        }
+                    }
+                })
+        }
+    }
+
+    private fun List<QonversionPermissionsCallback>.handleSuccessPermissions(
+        permissions: Map<String, QPermission>
+    ) {
+        this.forEach {
+            it.onSuccess(permissions)
+        }
+    }
+
+    private fun List<QonversionPermissionsCallback>.handleFailurePermissions(
+        error: QonversionError
+    ) {
+        this.forEach {
+            it.onError(error)
         }
     }
 
