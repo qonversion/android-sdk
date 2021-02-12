@@ -195,29 +195,35 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback
     ) {
         if (launchError != null) {
-            launch(object : QonversionLaunchCallback {
-                override fun onSuccess(launchResult: QLaunchResult) {
-                    if (isProductsLoaded && !isProductsLoadingFailed) {
-                        processPurchase(context, id, oldProductId, prorationMode, callback)
-                    } else {
-                        productsCallbacks.add(object : QonversionProductsCallback {
-                            override fun onSuccess(products: Map<String, QProduct>) {
-                                processPurchase(context, id, oldProductId, prorationMode, callback)
-                            }
-
-                            override fun onError(error: QonversionError) {
-                                callback.onError(error)
-                            }
-                        })
-                    }
+            retryLaunch(
+                onSuccess = {
+                    tryToPurchase(context, id, oldProductId, prorationMode, callback)
+                },
+                onError = {
+                    tryToPurchase(context, id, oldProductId, prorationMode, callback)
                 }
-
-                override fun onError(error: QonversionError) {
-                    callback.onError(error)
-                }
-            })
+            )
         } else {
             processPurchase(context, id, oldProductId, prorationMode, callback)
+        }
+    }
+
+    private fun tryToPurchase(
+        context: Activity,
+        id: String,
+        oldProductId: String?,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        if (isProductsLoaded && !isProductsLoadingFailed) {
+            processPurchase(context, id, oldProductId, prorationMode, callback)
+        } else {
+            productsCallbacks.add(object : QonversionProductsCallback {
+                override fun onSuccess(products: Map<String, QProduct>) =
+                    processPurchase(context, id, oldProductId, prorationMode, callback)
+
+                override fun onError(error: QonversionError) = callback.onError(error)
+            })
         }
     }
 
@@ -256,7 +262,6 @@ class QProductCenterManager internal constructor(
             }
 
             loadStoreProductsIfPossible(
-                launchResult,
                 onLoadCompleted = { skuDetailsList ->
                     val sku = skuDetailsList.find { detail ->
                         detail.sku == product.storeID
@@ -405,7 +410,7 @@ class QProductCenterManager internal constructor(
                 updateLaunchResult(launchResult)
                 launchError = null
 
-                loadStoreProductsIfPossible(launchResult)
+                loadStoreProductsIfPossible()
 
                 executePermissionsBlock()
                 executeExperimentsBlocks()
@@ -415,11 +420,10 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                isProductsLoaded = true
-                isProductsLoadingFailed = true
                 launchResult = null
                 launchError = error
 
+                loadStoreProductsIfPossible()
                 executePermissionsBlock()
                 executeProductsBlocks()
 
@@ -434,15 +438,15 @@ class QProductCenterManager internal constructor(
         forceLaunchRetry = false
     }
 
-    private fun loadStoreProductsIfPossible(launchResult: QLaunchResult) {
-        loadStoreProductsIfPossible(launchResult, null, null)
-    }
-
     private fun loadStoreProductsIfPossible(
-        launchResult: QLaunchResult,
-        onLoadCompleted: ((products: List<SkuDetails>) -> Unit)?,
-        onLoadFailed: ((error: BillingError) -> Unit)?
+        onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
+        onLoadFailed: ((error: BillingError) -> Unit)? = null
     ) {
+        val launchResult: QLaunchResult = getAvailableLaunchResult() ?: run{
+            executeProductsBlocks()
+            return
+        }
+
         val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
@@ -556,13 +560,7 @@ class QProductCenterManager internal constructor(
                     if (cachedLaunchResult == null) {
                         callbacks.handleFailureProducts(launchError)
                     } else {
-                        loadStoreProductsIfPossible(cachedLaunchResult,
-                            {
-                                callbacks.handleSuccessProducts(cachedLaunchResult.products)
-                            },
-                            { billingError ->
-                                callbacks.handleFailureProducts(billingError.toQonversionError())
-                            })
+                        callbacks.handleSuccessProducts(cachedLaunchResult.products)
                     }
                 })
         }
@@ -631,9 +629,11 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun productForID(id: String?): QProduct? {
-        return launchResult?.products?.get(id)
-    }
+    private fun productForID(id: String?): QProduct? = getAvailableLaunchResult()?.products?.get(id)
+
+
+    private fun getAvailableLaunchResult(): QLaunchResult? =
+        this@QProductCenterManager.launchResult ?: launchResultCache.load()
 
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
