@@ -254,7 +254,6 @@ class QProductCenterManager internal constructor(
             purchasingCallbacks[product.storeID] = callback
             billingService.purchase(context, skuDetail, oldSkuDetail, prorationMode)
         } else {
-            val launchResult = launchResult
             if ((isProductsLoaded && !isProductsLoadingFailed) || launchResult == null) {
                 val error = QonversionError(QonversionErrorCode.SkuDetailsError)
                 callback.onError(error)
