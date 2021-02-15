@@ -72,6 +72,150 @@ internal class SharedPreferencesCacheTest {
     }
 
     @Nested
+    inner class Long {
+        @Test
+        fun `should save Long preference with key`() {
+            val key = "key"
+            val value = 57L
+
+            every {
+                mockEditor.putLong(key, value)
+            } returns mockEditor
+
+            prefsCache.putLong(key, value)
+
+            verifyOrder {
+                mockEditor.putLong(key, value)
+                mockEditor.apply()
+            }
+        }
+
+        @Test
+        fun `should load Long preference with key when it exists`() {
+            val key = "key"
+            val value = 57L
+
+            every {
+                mockPrefs.getLong(key, any())
+            } returns value
+
+            val expectedValue = prefsCache.getLong(key)
+
+            verify(exactly = 1) {
+                mockPrefs.getLong(key, 0)
+            }
+            assertThat(value).isEqualTo(expectedValue)
+        }
+
+        @Test
+        fun `should load Long preference with key and defValue when it doesn't exist`() {
+            val key = "key"
+
+            val expectedValue = prefsCache.getLong(key)
+            verify(exactly = 1) {
+                mockPrefs.getLong(key, 0)
+            }
+            assertThat(expectedValue).isEqualTo(0)
+        }
+    }
+
+    @Nested
+    inner class Float {
+        @Test
+        fun `should save Float preference with key`() {
+            val key = "key"
+            val value = 57F
+
+            every {
+                mockEditor.putFloat(key, value)
+            } returns mockEditor
+
+            prefsCache.putFloat(key, value)
+
+            verifyOrder {
+                mockEditor.putFloat(key, value)
+                mockEditor.apply()
+            }
+        }
+
+        @Test
+        fun `should load Float preference with key when it exists`() {
+            val key = "key"
+            val value = 57F
+
+            every {
+                mockPrefs.getFloat(key, any())
+            } returns value
+
+            val expectedValue = prefsCache.getFloat(key)
+
+            verify(exactly = 1) {
+                mockPrefs.getFloat(key, 0F)
+            }
+            assertThat(value).isEqualTo(expectedValue)
+        }
+
+        @Test
+        fun `should load Float preference with key and defValue when it doesn't exist`() {
+            val key = "key"
+
+            val expectedValue = prefsCache.getFloat(key)
+            verify(exactly = 1) {
+                mockPrefs.getFloat(key, 0F)
+            }
+            assertThat(expectedValue).isEqualTo(0F)
+        }
+    }
+
+    @Nested
+    inner class String {
+        @Test
+        fun `should save String preference with key`() {
+            val key = "key"
+            val value = "57"
+
+            every {
+                mockEditor.putString(key, value)
+            } returns mockEditor
+
+            prefsCache.putString(key, value)
+
+            verifyOrder {
+                mockEditor.putString(key, value)
+                mockEditor.apply()
+            }
+        }
+
+        @Test
+        fun `should load String preference with key when it exists`() {
+            val key = "key"
+            val value = "57"
+
+            every {
+                mockPrefs.getString(key, any())
+            } returns value
+
+            val expectedValue = prefsCache.getString(key)
+
+            verify(exactly = 1) {
+                mockPrefs.getString(key, "")
+            }
+            assertThat(value).isEqualTo(expectedValue)
+        }
+
+        @Test
+        fun `should load String preference with key and defValue when it doesn't exist`() {
+            val key = "key"
+
+            val expectedValue = prefsCache.getString(key)
+            verify(exactly = 1) {
+                mockPrefs.getString(key, "")
+            }
+            assertThat(expectedValue).isEqualTo("")
+        }
+    }
+
+    @Nested
     inner class Object {
         @Test
         fun `should save Object preference with key`() {

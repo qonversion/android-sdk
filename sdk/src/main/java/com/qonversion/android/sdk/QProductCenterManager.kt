@@ -204,7 +204,7 @@ class QProductCenterManager internal constructor(
                 }
             )
         } else {
-            processPurchase(context, id, oldProductId, prorationMode, callback)
+            tryToPurchase(context, id, oldProductId, prorationMode, callback)
         }
     }
 
@@ -218,12 +218,16 @@ class QProductCenterManager internal constructor(
         if (isProductsLoaded && !isProductsLoadingFailed) {
             processPurchase(context, id, oldProductId, prorationMode, callback)
         } else {
-            productsCallbacks.add(object : QonversionProductsCallback {
-                override fun onSuccess(products: Map<String, QProduct>) =
-                    processPurchase(context, id, oldProductId, prorationMode, callback)
+            if (!isProductsLoaded) {
+                productsCallbacks.add(object : QonversionProductsCallback {
+                    override fun onSuccess(products: Map<String, QProduct>) =
+                        processPurchase(context, id, oldProductId, prorationMode, callback)
 
-                override fun onError(error: QonversionError) = callback.onError(error)
-            })
+                    override fun onError(error: QonversionError) = callback.onError(error)
+                })
+            } else {
+                callback.onError(QonversionError(QonversionErrorCode.LaunchError))
+            }
         }
     }
 
@@ -424,7 +428,6 @@ class QProductCenterManager internal constructor(
 
                 loadStoreProductsIfPossible()
                 executePermissionsBlock()
-                executeProductsBlocks()
 
                 callback?.onError(error)
             }
@@ -441,12 +444,14 @@ class QProductCenterManager internal constructor(
         onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
         onLoadFailed: ((error: BillingError) -> Unit)? = null
     ) {
-        if(isProductsLoaded && !isProductsLoadingFailed){
+        if (isProductsLoaded && !isProductsLoadingFailed) {
             executeProductsBlocks()
             return
         }
 
-        val launchResult: QLaunchResult = getAvailableLaunchResult() ?: run{
+        val launchResult: QLaunchResult = getAvailableLaunchResult() ?: run {
+            isProductsLoaded = true
+            isProductsLoadingFailed = true
             executeProductsBlocks()
             return
         }
