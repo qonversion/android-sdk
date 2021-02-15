@@ -17,15 +17,15 @@ import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.LaunchResultCache
 
 class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
-    private val launchResultCache: LaunchResultCache
+    private val launchResultCache: LaunchResultCacheWrapper
 ) : QonversionBillingService.PurchasesListener {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -175,7 +175,7 @@ class QProductCenterManager internal constructor(
     private fun getActualOfferings(): QOfferings? {
         var offerings = launchResult?.offerings
         if (launchResult == null) {
-            val cachedLaunchResult = launchResultCache.load()
+            val cachedLaunchResult = launchResultCache.getActualLaunchResult()
             cachedLaunchResult?.let { offerings = it.offerings }
         }
         return offerings
@@ -442,6 +442,11 @@ class QProductCenterManager internal constructor(
         onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
         onLoadFailed: ((error: BillingError) -> Unit)? = null
     ) {
+        if(isProductsLoaded && !isProductsLoadingFailed){
+            executeProductsBlocks()
+            return
+        }
+
         val launchResult: QLaunchResult = getAvailableLaunchResult() ?: run{
             executeProductsBlocks()
             return
@@ -451,7 +456,7 @@ class QProductCenterManager internal constructor(
             it.storeID
         }.toSet()
 
-        if (!productStoreIds.isNullOrEmpty() && (!isProductsLoaded || isProductsLoadingFailed)) {
+        if (!productStoreIds.isNullOrEmpty()) {
             billingService.loadProducts(productStoreIds,
                 onLoadCompleted = { details ->
                     isProductsLoaded = true
@@ -555,7 +560,7 @@ class QProductCenterManager internal constructor(
                     callbacks.handleSuccessProducts()
                 },
                 onError = { launchError ->
-                    val cachedLaunchResult = launchResultCache.load()
+                    val cachedLaunchResult = launchResultCache.getActualLaunchResult()
 
                     if (cachedLaunchResult == null) {
                         callbacks.handleFailureProducts(launchError)
@@ -601,7 +606,7 @@ class QProductCenterManager internal constructor(
                     if (forceLaunchRetry) {
                         callbacks.handleFailurePermissions(error)
                     } else {
-                        val cachedLaunchResult = launchResultCache.load()
+                        val cachedLaunchResult = launchResultCache.getActualLaunchResult()
 
                         if (cachedLaunchResult == null) {
                             callbacks.handleFailurePermissions(error)
@@ -633,7 +638,7 @@ class QProductCenterManager internal constructor(
 
 
     private fun getAvailableLaunchResult(): QLaunchResult? =
-        this@QProductCenterManager.launchResult ?: launchResultCache.load()
+        this@QProductCenterManager.launchResult ?: launchResultCache.getLaunchResult()
 
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return

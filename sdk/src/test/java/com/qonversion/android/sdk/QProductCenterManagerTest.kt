@@ -12,8 +12,8 @@ import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.LaunchResultCache
 import io.mockk.*
 import org.assertj.core.api.Assertions
 import org.junit.Before
@@ -28,7 +28,7 @@ import java.util.*
 class QProductCenterManagerTest {
     private val mockLogger: Logger = mockk(relaxed = true)
     private val mockDeviceStorage = mockk<PurchasesCache>(relaxed = true)
-    private val mockLaunchResultStorage = mockk<LaunchResultCache>(relaxed = true)
+    private val mockLaunchResultCacheWrapper = mockk<LaunchResultCacheWrapper>(relaxed = true)
     private val mockContext = mockk<Application>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockBillingService: QonversionBillingService = mockk()
@@ -51,7 +51,7 @@ class QProductCenterManagerTest {
 
         mockInstallDate()
 
-        productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger, mockDeviceStorage, mockLaunchResultStorage)
+        productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger, mockDeviceStorage, mockLaunchResultCacheWrapper)
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
         mockLaunchResult()

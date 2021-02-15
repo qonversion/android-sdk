@@ -7,8 +7,9 @@ import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.LaunchResultCache
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -39,23 +40,31 @@ class AppModule(
 
     @ApplicationScope
     @Provides
+    fun provideSharedPreferencesCache(
+        sharedPreferences: SharedPreferences
+    ): SharedPreferencesCache {
+        return SharedPreferencesCache(sharedPreferences)
+    }
+
+    @ApplicationScope
+    @Provides
     fun provideLogger(): Logger {
         return ConsoleLogger()
     }
 
     @ApplicationScope
     @Provides
-    fun provideDeviceStorage(sharedPreferences: SharedPreferences): PurchasesCache {
+    fun providePurchasesCache(sharedPreferences: SharedPreferences): PurchasesCache {
         return PurchasesCache(sharedPreferences)
     }
 
     @ApplicationScope
     @Provides
-    fun provideLaunchResultStorage(
-        sharedPreferences: SharedPreferences,
-        moshi: Moshi
-    ): LaunchResultCache {
-        return LaunchResultCache(sharedPreferences, moshi)
+    fun provideLaunchResultCacheWrapper(
+        moshi: Moshi,
+        sharedPreferencesCache: SharedPreferencesCache
+    ): LaunchResultCacheWrapper {
+        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
     }
 
     companion object {
