@@ -6,6 +6,8 @@ import android.util.Log
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingFlowParams.ProrationMode.IMMEDIATE_WITH_TIME_PRORATION
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.FirebaseMessageReceiver.Companion.INTENT_REMOTE_MESSAGE
 import com.qonversion.android.sdk.*
@@ -15,8 +17,11 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-    private val productIdSubs = "main"
+    private val productIdSubsMain = "subs_plus_trial"
     private val productIdInApp = "in_app"
+    private val productIdSubsDowngrade = "main"
+    private val productIdSubsUpgrade = "annual"
+
     private val permissionPlus = "plus"
     private val permissionStandart = "standart"
     private val tag = "MainActivity"
@@ -43,11 +48,18 @@ class MainActivity : AppCompatActivity() {
         })
 
         buttonSubscribe.setOnClickListener {
-            purchase(productIdSubs)
+            purchase(productIdSubsMain)
         }
 
         buttonInApp.setOnClickListener {
             purchase(productIdInApp)
+        }
+
+        buttonDowngrade.setOnClickListener {
+            updatePurchase(productIdSubsDowngrade, productIdSubsMain, IMMEDIATE_WITH_TIME_PRORATION)
+        }
+        buttonUpgrade.setOnClickListener {
+            updatePurchase(productIdSubsUpgrade, productIdSubsMain, IMMEDIATE_WITH_TIME_PRORATION)
         }
 
         buttonRestore.setOnClickListener {
@@ -84,8 +96,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateContent(products: Map<String, QProduct>) {
         buttonPermissions.text = getString(R.string.check_active_permissions)
         buttonRestore.text = getString(R.string.restore_purchases)
+        buttonUpgrade.text = "Upgrade"
+        buttonDowngrade.text = "Downgrade"
 
-        val subscription = products[productIdSubs]
+        val subscription = products[productIdSubsMain]
         if (subscription != null) {
             buttonSubscribe.text = String.format(
                 "%s %s / %s", getString(R.string.subscribe_for),
@@ -122,20 +136,41 @@ class MainActivity : AppCompatActivity() {
 
     private fun purchase(productId: String) {
         Qonversion.purchase(
-            this,
-            productId,
-            callback = object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    when (productId) {
-                        productIdInApp -> buttonInApp.text = getString(R.string.purchased)
-                        productIdSubs -> buttonSubscribe.text = getString(R.string.purchased)
+                this,
+                productId,
+                callback = object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                        when (productId) {
+                            productIdInApp -> buttonInApp.text = getString(R.string.purchased)
+                            productIdSubsMain -> buttonSubscribe.text = getString(R.string.purchased)
+                        }
                     }
-                }
 
-                override fun onError(error: QonversionError) {
-                    showError(error)
-                }
-            })
+                    override fun onError(error: QonversionError) {
+                        showError(error)
+                    }
+                })
+    }
+
+    private fun updatePurchase(productId: String, oldProductId: String, @BillingFlowParams.ProrationMode prorationMode: Int) {
+        Qonversion.updatePurchase(
+                this,
+                productId,
+                oldProductId,
+                prorationMode,
+                callback = object : QonversionPermissionsCallback {
+                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                        when (productId) {
+                            productIdSubsMain -> buttonSubscribe.text = getString(R.string.purchased)
+                            productIdSubsUpgrade -> buttonUpgrade.text = getString(R.string.purchased)
+                            productIdSubsDowngrade -> buttonDowngrade.text = getString(R.string.purchased)
+                        }
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        showError(error)
+                    }
+                })
     }
 
     private fun showLoading(isLoading: Boolean) {
