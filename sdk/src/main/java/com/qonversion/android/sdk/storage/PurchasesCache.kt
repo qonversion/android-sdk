@@ -4,12 +4,12 @@ import android.content.SharedPreferences
 import com.android.billingclient.api.BillingClient
 import com.qonversion.android.sdk.entity.Purchase
 import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import java.io.IOException
 import java.lang.reflect.Type
 
-class DeviceStorage(
+class PurchasesCache(
     private val preferences: SharedPreferences
 ) {
     private val moshi = Moshi.Builder().build()
@@ -42,7 +42,7 @@ class DeviceStorage(
         return try {
             val purchases: Set<Purchase>? = jsonAdapter.fromJson(json)
             purchases ?: setOf()
-        } catch (e: JsonDataException) {
+        } catch (e: IOException) {
             setOf()
         }
     }
