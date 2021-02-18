@@ -43,6 +43,7 @@ Qonversion Automation allows sending automated, personalized push notifications 
 See more in the [documentation](https://documentation.qonversion.io/docs/automations)
 ![](https://qonversion.io/img/@2x/automation/in-app-constructor.gif)
 
+
 ## Analytics
 
 Monitor your in-app revenue metrics. Understand your customers and make better decisions with precise subscription revenue data.
