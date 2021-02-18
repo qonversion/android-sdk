@@ -7,7 +7,7 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
-import com.qonversion.android.sdk.ad.LoadProductsState.*
+import com.qonversion.android.sdk.ad.LoadStoreProductsState.*
 import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
@@ -100,7 +100,8 @@ class QProductCenterManager internal constructor(
         callback: QonversionProductsCallback
     ) {
         productsCallbacks.add(callback)
-        if (loadProductsState in listOf(Loading, NotStartedYet) || !isLaunchingFinished) {
+        val isProductsLoaded = loadProductsState in listOf(Loaded, Failed)
+        if (!isProductsLoaded || !isLaunchingFinished) {
             return
         }
 
@@ -243,8 +244,8 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val product: QProduct? = productForID(id, actualLaunchResult)
-        val oldProduct: QProduct? = productForID(oldProductId, actualLaunchResult)
+        val product: QProduct? = actualLaunchResult.products[id]
+        val oldProduct: QProduct? = actualLaunchResult.products[oldProductId]
 
         if (product?.storeID == null) {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
@@ -453,14 +454,17 @@ class QProductCenterManager internal constructor(
             Loading -> return
             Loaded -> {
                 executeProductsBlocks()
+                onLoadCompleted?.let { skuDetails.values.toList() }
                 return
             }
             else -> Unit
         }
 
-        val actualLaunchResult: QLaunchResult = getActualLaunchResult() ?: run {
+        val actualLaunchResult = getActualLaunchResult() ?: run {
             loadProductsState = Failed
-            executeProductsBlocks(launchError ?: QonversionError(QonversionErrorCode.LaunchError))
+            val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
+            executeProductsBlocks(error)
+            onLoadFailed?.let { it(error) }
             return
         }
 
@@ -539,12 +543,16 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val actualLaunchResult = launchResult ?: launchResultCache.getActualLaunchResult()
+        val actualLaunchResult = getActualLaunchResult()
 
         if (actualLaunchResult == null) {
             handleFailureProducts(callbacks, launchError)
         } else {
-            handleSuccessProducts(callbacks, actualLaunchResult.products)
+            addSkuDetailForProducts(actualLaunchResult.products.values)
+
+            callbacks.forEach {
+                it.onSuccess(actualLaunchResult.products)
+            }
         }
     }
 
@@ -556,10 +564,17 @@ class QProductCenterManager internal constructor(
         val callbacks = permissionsCallbacks.toList()
         permissionsCallbacks.clear()
 
-        retryLaunchForPermissions(
-            { permissions -> handleSuccessPermissions(callbacks, permissions) },
-            { error -> handleFailurePermissions(callbacks, error) }
-        )
+        preparePermissionsResult(
+            { permissions ->
+                callbacks.forEach {
+                    it.onSuccess(permissions)
+                }
+            },
+            { error ->
+                callbacks.forEach {
+                    it.onError(error)
+                }
+            })
     }
 
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
@@ -592,17 +607,6 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun handleSuccessProducts(
-        callbacks: List<QonversionProductsCallback>,
-        products: Map<String, QProduct>
-    ) {
-        addSkuDetailForProducts(products.values)
-
-        callbacks.forEach {
-            it.onSuccess(products)
-        }
-    }
-
     private fun handleFailureProducts(
         callbacks: List<QonversionProductsCallback>,
         error: QonversionError?
@@ -612,7 +616,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun retryLaunchForPermissions(
+    private fun preparePermissionsResult(
         onSuccess: (permissions: Map<String, QPermission>) -> Unit,
         onError: (QonversionError) -> Unit
     ) {
@@ -635,27 +639,6 @@ class QProductCenterManager internal constructor(
                 }
             })
     }
-
-    private fun handleSuccessPermissions(
-        callbacks: List<QonversionPermissionsCallback>,
-        permissions: Map<String, QPermission>
-    ) {
-        callbacks.forEach {
-            it.onSuccess(permissions)
-        }
-    }
-
-    private fun handleFailurePermissions(
-        callbacks: List<QonversionPermissionsCallback>,
-        error: QonversionError
-    ) {
-        callbacks.forEach {
-            it.onError(error)
-        }
-    }
-
-    private fun productForID(id: String?, launchResult: QLaunchResult): QProduct? =
-        launchResult.products[id]
 
     private fun getActualLaunchResult(): QLaunchResult? =
         this@QProductCenterManager.launchResult ?: launchResultCache.getActualLaunchResult()

@@ -35,7 +35,7 @@ class LaunchResultCacheWrapper(
     }
 
     private fun isCacheOutdated(): Boolean {
-        val cachedTime = cache.getLong(CACHE_TIMESTAMP_KEY)
+        val cachedTime = cache.getLong(CACHE_TIMESTAMP_KEY, 0)
         val currentTime = getCurrentTimeInSec()
 
         return currentTime - cachedTime >= TimeUnit.HOURS.toSeconds(DURATION_IN_HOURS_FOR_ACTUAL_CACHE)

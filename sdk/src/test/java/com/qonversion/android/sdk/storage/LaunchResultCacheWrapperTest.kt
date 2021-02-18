@@ -55,7 +55,7 @@ class LaunchResultCacheWrapperTest {
             val actualLaunchResult = cacheWrapper.getActualLaunchResult()
 
             verify(exactly = 1) {
-                mockPrefsCache.getLong(timestampKey)
+                mockPrefsCache.getLong(timestampKey, 0)
             }
             verify(exactly = 0) {
                 mockPrefsCache.getObject(launchResultKey, mockAdapter)
@@ -75,7 +75,7 @@ class LaunchResultCacheWrapperTest {
             val actualLaunchResult = cacheWrapper.getActualLaunchResult()
 
             verifyOrder {
-                mockPrefsCache.getLong(timestampKey)
+                mockPrefsCache.getLong(timestampKey, 0)
                 mockPrefsCache.getObject(launchResultKey, mockAdapter)
             }
             assertThat(actualLaunchResult).isEqualTo(expectedLaunchResult)
@@ -92,7 +92,7 @@ class LaunchResultCacheWrapperTest {
             val actualLaunchResult = cacheWrapper.getActualLaunchResult()
 
             verifyOrder {
-                mockPrefsCache.getLong(timestampKey)
+                mockPrefsCache.getLong(timestampKey, 0)
                 mockPrefsCache.getObject(launchResultKey, mockAdapter)
             }
             assertThat(actualLaunchResult).isNull()

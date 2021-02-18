@@ -51,23 +51,12 @@ internal class SharedPreferencesCacheTest {
                 mockPrefs.getInt(key, any())
             } returns value
 
-            val expectedValue = prefsCache.getInt(key)
+            val expectedValue = prefsCache.getInt(key, 0)
 
             verify(exactly = 1) {
                 mockPrefs.getInt(key, 0)
             }
             assertThat(value).isEqualTo(expectedValue)
-        }
-
-        @Test
-        fun `should load Int preference with key and defValue when it doesn't exist`() {
-            val key = "key"
-
-            val expectedValue = prefsCache.getInt(key)
-            verify(exactly = 1) {
-                mockPrefs.getInt(key, 0)
-            }
-            assertThat(expectedValue).isEqualTo(0)
         }
     }
 
@@ -99,23 +88,12 @@ internal class SharedPreferencesCacheTest {
                 mockPrefs.getLong(key, any())
             } returns value
 
-            val expectedValue = prefsCache.getLong(key)
+            val expectedValue = prefsCache.getLong(key, 0)
 
             verify(exactly = 1) {
                 mockPrefs.getLong(key, 0)
             }
             assertThat(value).isEqualTo(expectedValue)
-        }
-
-        @Test
-        fun `should load Long preference with key and defValue when it doesn't exist`() {
-            val key = "key"
-
-            val expectedValue = prefsCache.getLong(key)
-            verify(exactly = 1) {
-                mockPrefs.getLong(key, 0)
-            }
-            assertThat(expectedValue).isEqualTo(0)
         }
     }
 
@@ -147,23 +125,12 @@ internal class SharedPreferencesCacheTest {
                 mockPrefs.getFloat(key, any())
             } returns value
 
-            val expectedValue = prefsCache.getFloat(key)
+            val expectedValue = prefsCache.getFloat(key, 0F)
 
             verify(exactly = 1) {
                 mockPrefs.getFloat(key, 0F)
             }
             assertThat(value).isEqualTo(expectedValue)
-        }
-
-        @Test
-        fun `should load Float preference with key and defValue when it doesn't exist`() {
-            val key = "key"
-
-            val expectedValue = prefsCache.getFloat(key)
-            verify(exactly = 1) {
-                mockPrefs.getFloat(key, 0F)
-            }
-            assertThat(expectedValue).isEqualTo(0F)
         }
     }
 
@@ -195,23 +162,12 @@ internal class SharedPreferencesCacheTest {
                 mockPrefs.getString(key, any())
             } returns value
 
-            val expectedValue = prefsCache.getString(key)
+            val expectedValue = prefsCache.getString(key, "")
 
             verify(exactly = 1) {
                 mockPrefs.getString(key, "")
             }
             assertThat(value).isEqualTo(expectedValue)
-        }
-
-        @Test
-        fun `should load String preference with key and defValue when it doesn't exist`() {
-            val key = "key"
-
-            val expectedValue = prefsCache.getString(key)
-            verify(exactly = 1) {
-                mockPrefs.getString(key, "")
-            }
-            assertThat(expectedValue).isEqualTo("")
         }
     }
 
@@ -260,7 +216,6 @@ internal class SharedPreferencesCacheTest {
         @Test
         fun `should not load Object preference with key when it doesn't exist`() {
             val key = "launchResultKey"
-            val expectedValue = null
             val mockMoshi = Util.buildMoshi()
             val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)
 
@@ -273,17 +228,15 @@ internal class SharedPreferencesCacheTest {
             verify (exactly = 1) {
                 mockPrefs.getString(key, "")
             }
-            assertThat(actualValue).isEqualTo(expectedValue)
+            assertThat(actualValue).isNull()
         }
 
         @Test
         fun `should return null when sharedPreferences returns invalid json string for Object with key`() {
             val key = "launchResultKey"
-            val expectedValue = null
             val mockMoshi = Util.buildMoshi()
             val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)
             val invalidValueJsonStr = "Invalid Object Json Str"
-
 
             every {
                 mockPrefs.getString(key, "")
@@ -294,7 +247,7 @@ internal class SharedPreferencesCacheTest {
             verify (exactly = 1) {
                 mockPrefs.getString(key, "")
             }
-            assertThat(actualValue).isEqualTo(expectedValue)
+            assertThat(actualValue).isNull()
         }
     }
 

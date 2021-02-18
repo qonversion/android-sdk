@@ -36,7 +36,7 @@ class SharedPreferencesCache(
     }
 
     override fun <T> getObject(key: String, adapter: JsonAdapter<T>): T? {
-        val jsonStr = getString(key)
+        val jsonStr = getString(key, "")
         if (jsonStr == null || jsonStr.isEmpty()) {
             return null
         }
