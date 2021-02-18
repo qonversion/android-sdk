@@ -17,7 +17,7 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.DeviceStorage
+import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
@@ -35,7 +35,7 @@ class QonversionRepository internal constructor(
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
     private val headersProvider: ApiHeadersProvider,
-    private val deviceStorage: DeviceStorage
+    private val purchasesCache: PurchasesCache
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -56,7 +56,7 @@ class QonversionRepository internal constructor(
     fun purchase(
         installDate: Long,
         purchase: Purchase,
-        callback: QonversionPermissionsCallback
+        callback: QonversionLaunchCallback
     ) {
         purchaseRequest(installDate, purchase, callback)
     }
@@ -64,7 +64,7 @@ class QonversionRepository internal constructor(
     fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionLaunchCallback?
     ) {
         restoreRequest(installDate, historyRecords, callback)
     }
@@ -250,7 +250,7 @@ class QonversionRepository internal constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
-        callback: QonversionPermissionsCallback,
+        callback: QonversionLaunchCallback,
         retries: Int = MAX_RETRIES_NUMBER
     ) {
         val uid = storage.load()
@@ -270,7 +270,7 @@ class QonversionRepository internal constructor(
                 logger.release("purchaseRequest - success - $it")
                 val body = it.body()
                 if (body != null && body.success) {
-                    callback.onSuccess(body.data.permissions)
+                    callback.onSuccess(body.data)
                 } else {
                     handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
                 }
@@ -288,7 +288,7 @@ class QonversionRepository internal constructor(
     private fun handleErrorPurchase(
         installDate: Long,
         purchase: Purchase,
-        callback: QonversionPermissionsCallback,
+        callback: QonversionLaunchCallback,
         error: QonversionError,
         retries: Int
     ) {
@@ -296,7 +296,7 @@ class QonversionRepository internal constructor(
             purchaseRequest(installDate, purchase, callback, retries - 1)
         } else {
             callback.onError(error)
-            deviceStorage.savePurchase(purchase)
+            purchasesCache.savePurchase(purchase)
         }
     }
 
@@ -364,7 +364,7 @@ class QonversionRepository internal constructor(
     private fun restoreRequest(
         installDate: Long,
         historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionLaunchCallback?
     ) {
         val uid = storage.load()
         val history = convertHistory(historyRecords)
@@ -394,11 +394,11 @@ class QonversionRepository internal constructor(
 
     private fun handlePermissionsResponse(
         response: Response<BaseResponse<QLaunchResult>>,
-        callback: QonversionPermissionsCallback?
+        callback: QonversionLaunchCallback?
     ) {
         val body = response.body()
         if (body != null && body.success) {
-            callback?.onSuccess(body.data.permissions)
+            callback?.onSuccess(body.data)
         } else {
             callback?.onError(response.toQonversionError())
         }

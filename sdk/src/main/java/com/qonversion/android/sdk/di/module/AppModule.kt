@@ -7,7 +7,10 @@ import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.DeviceStorage
+import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
+import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
+import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 
@@ -37,17 +40,34 @@ class AppModule(
 
     @ApplicationScope
     @Provides
+    fun provideSharedPreferencesCache(
+        sharedPreferences: SharedPreferences
+    ): SharedPreferencesCache {
+        return SharedPreferencesCache(sharedPreferences)
+    }
+
+    @ApplicationScope
+    @Provides
     fun provideLogger(): Logger {
         return ConsoleLogger()
     }
 
     @ApplicationScope
     @Provides
-    fun deviceStorage(sharedPreferences: SharedPreferences): DeviceStorage {
-        return DeviceStorage(sharedPreferences)
+    fun providePurchasesCache(sharedPreferences: SharedPreferences): PurchasesCache {
+        return PurchasesCache(sharedPreferences)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideLaunchResultCacheWrapper(
+        moshi: Moshi,
+        sharedPreferencesCache: SharedPreferencesCache
+    ): LaunchResultCacheWrapper {
+        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
     }
 
     companion object {
-        private const val SDK_VERSION = "2.6.0"
+        private const val SDK_VERSION = "2.7.0"
     }
 }

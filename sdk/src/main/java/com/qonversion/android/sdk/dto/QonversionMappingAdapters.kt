@@ -140,8 +140,8 @@ class QOfferingTagAdapter {
 
 class QOfferingsAdapter {
     @ToJson
-    private fun toJson(offerings: QOfferings?): String? {
-        return null
+    private fun toJson(offerings: QOfferings?): List<QOffering> {
+        return offerings?.availableOfferings ?: listOf()
     }
 
     @FromJson
