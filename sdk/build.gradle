@@ -114,6 +114,7 @@ ext {
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
     dagger_version = '2.24'
+    firebase_messaging_version = '21.0.1'
 
     kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
@@ -176,7 +177,6 @@ dependencies {
     implementation network.moshiConverter
     implementation network.interceptor
 
-
     // Lifecycle components
     implementation lifecycle.runtime
     implementation lifecycle.extensions
@@ -193,8 +193,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
     // Firebase
-    implementation platform('com.google.firebase:firebase-bom:26.1.0')
-    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation "com.google.firebase:firebase-messaging:$firebase_messaging_version"
 
     // JUnit
     testImplementation 'junit:junit:4.13'
