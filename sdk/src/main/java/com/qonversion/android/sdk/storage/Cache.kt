@@ -26,7 +26,7 @@ interface Cache {
     /**
     * @param defValue is returned if the String preference for key does not exist
     */
-    fun getString(key: String, defValue: String): String?
+    fun getString(key: String, defValue: String?): String?
 
     fun <T> putObject(key: String, value: T, adapter: JsonAdapter<T>)
 

@@ -17,16 +17,16 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.CustomUidStorage
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
 
 class QonversionRepository internal constructor(
     private val api: Api,
-    private var storage: Storage,
-    private var propertiesStorage: PropertiesStorage,
+    private var qUidStorage: Storage,
+    private var customUidStorage: CustomUidStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
@@ -80,13 +80,9 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun setProperty(key: String, value: String) {
-        propertiesStorage.save(key, value)
-    }
-
-    fun sendProperties() {
-        if (propertiesStorage.getProperties().isNotEmpty() && storage.load().isNotEmpty()) {
-            propertiesRequest()
+    fun sendProperties(properties: Map<String, String>, onCompleted: () -> Unit) {
+        if (qUidStorage.load().isNotEmpty()) {
+            propertiesRequest(properties, onCompleted)
         }
     }
 
@@ -95,7 +91,8 @@ class QonversionRepository internal constructor(
         installDate: Long,
         callback: QonversionEligibilityCallback
     ) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
+        val customUid = customUidStorage.load()
 
         val eligibilityRequest = EligibilityRequest(
             installDate = installDate,
@@ -103,6 +100,7 @@ class QonversionRepository internal constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
+            customUid = customUid,
             debugMode = isDebugMode.stringValue(),
             productInfos = productIds.map {
                 StoreProductInfo(it)
@@ -159,7 +157,7 @@ class QonversionRepository internal constructor(
     }
 
     fun views(screenId: String) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
         val viewsRequest = ViewsRequest(uid)
 
         api.views(headersProvider.getHeaders(), screenId, viewsRequest).enqueue {
@@ -177,7 +175,7 @@ class QonversionRepository internal constructor(
         onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
 
         api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
             onResponse = {
@@ -204,7 +202,7 @@ class QonversionRepository internal constructor(
         conversionInfo: Map<String, Any>,
         from: String
     ): QonversionRequest {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
         return AttributionRequest(
             d = environmentProvider.getInfo(),
             v = sdkVersion,
@@ -235,7 +233,7 @@ class QonversionRepository internal constructor(
     }
 
     private fun kickRequestQueue() {
-        val clientUid = storage.load()
+        val clientUid = qUidStorage.load()
         if (clientUid.isNotEmpty() && !requestQueue.isEmpty()) {
             logger.debug("QonversionRepository: kickRequestQueue queue is not empty")
             val request = requestQueue.poll()
@@ -253,13 +251,16 @@ class QonversionRepository internal constructor(
         callback: QonversionLaunchCallback,
         retries: Int = MAX_RETRIES_NUMBER
     ) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
+        val customUid = customUidStorage.load()
+
         val purchaseRequest = PurchaseRequest(
             installDate,
             device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
+            customUid = customUid,
             debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
@@ -366,7 +367,9 @@ class QonversionRepository internal constructor(
         historyRecords: List<PurchaseHistoryRecord>,
         callback: QonversionLaunchCallback?
     ) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
+        val customUid = customUidStorage.load()
+
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
             installDate = installDate,
@@ -374,6 +377,7 @@ class QonversionRepository internal constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
+            customUid = customUid,
             debugMode = isDebugMode.stringValue(),
             history = history
         )
@@ -410,7 +414,8 @@ class QonversionRepository internal constructor(
         callback: QonversionLaunchCallback? = null,
         pushToken: String? = null
     ) {
-        val uid = storage.load()
+        val uid = qUidStorage.load()
+        val customUid =  customUidStorage.load()
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
@@ -418,6 +423,7 @@ class QonversionRepository internal constructor(
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
+            customUid = customUid,
             debugMode = isDebugMode.stringValue(),
             purchases = inapps
         )
@@ -427,7 +433,7 @@ class QonversionRepository internal constructor(
                 logger.release("initRequest - success - $it")
                 val body = it.body()
                 if (body != null && body.success) {
-                    storage.save(body.data.uid)
+                    qUidStorage.save(body.data.uid)
                     callback?.onSuccess(body.data)
                 } else {
                     callback?.onError(it.toQonversionError())
@@ -443,13 +449,16 @@ class QonversionRepository internal constructor(
         }
     }
 
-    private fun propertiesRequest() {
-        val uid = storage.load()
+    private fun propertiesRequest(
+        properties: Map<String, String>,
+        onCompleted: () -> Unit
+    ) {
+        val uid = qUidStorage.load()
 
         val propertiesRequest = PropertiesRequest(
             accessToken = key,
             clientUid = uid,
-            properties = propertiesStorage.getProperties()
+            properties = properties
         )
 
         api.properties(propertiesRequest).enqueue {
@@ -457,7 +466,7 @@ class QonversionRepository internal constructor(
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
 
                 if (it.isSuccessful) {
-                    propertiesStorage.clear()
+                    onCompleted()
                 }
 
                 kickRequestQueue()

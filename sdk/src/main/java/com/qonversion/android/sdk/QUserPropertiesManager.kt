@@ -2,10 +2,14 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.os.Handler
+import com.qonversion.android.sdk.storage.CustomUidStorage
+import com.qonversion.android.sdk.storage.PropertiesStorage
 
 class QUserPropertiesManager internal constructor(
     private val context: Application,
-    private val repository: QonversionRepository
+    private val repository: QonversionRepository,
+    private var propertiesStorage: PropertiesStorage,
+    private val customUidStorage: CustomUidStorage
 ) {
 
     companion object {
@@ -15,10 +19,7 @@ class QUserPropertiesManager internal constructor(
     init {
         val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
         if (fbAttributionId != null) {
-            repository.setProperty(
-                QUserProperties.FacebookAttribution.userPropertyCode,
-                fbAttributionId
-            )
+            propertiesStorage.save(QUserProperties.FacebookAttribution.code, fbAttributionId)
         }
 
         sendPropertiesAtPeriod()
@@ -28,25 +29,32 @@ class QUserPropertiesManager internal constructor(
         val mainHandler = Handler(context.mainLooper)
         mainHandler.postDelayed(object : Runnable {
             override fun run() {
-                repository.sendProperties()
+                forceSendProperties()
                 mainHandler.postDelayed(this, PROPERTY_UPLOAD_PERIOD.toLong())
             }
         }, PROPERTY_UPLOAD_PERIOD.toLong())
     }
 
     fun setProperty(key: QUserProperties, value: String) {
-        repository.setProperty(key.userPropertyCode, value)
+        propertiesStorage.save(key.code, value)
     }
 
     fun setUserProperty(key: String, value: String) {
-        repository.setProperty(key, value)
+        propertiesStorage.save(key, value)
     }
 
     fun setUserID(value: String) {
-        repository.setProperty(QUserProperties.CustomUserId.userPropertyCode, value)
+        customUidStorage.save(value)
+        propertiesStorage.save(QUserProperties.CustomUserId.code, value)
     }
 
     fun forceSendProperties() {
-        repository.sendProperties()
+        propertiesStorage.getProperties()
+            .takeIf { it.isNotEmpty() }
+            ?.let {
+                repository.sendProperties(it) {
+                    propertiesStorage.clear()
+                }
+            }
     }
 }

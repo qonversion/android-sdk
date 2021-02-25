@@ -10,10 +10,7 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.PropertiesStorage
-import com.qonversion.android.sdk.storage.TokenStorage
-import com.qonversion.android.sdk.storage.UserPropertiesStorage
+import com.qonversion.android.sdk.storage.*
 import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.TokenValidator
 import dagger.Module
@@ -27,8 +24,8 @@ class RepositoryModule {
     @Provides
     fun provideRepository(
         retrofit: Retrofit,
-        tokenStorage: TokenStorage,
-        propertiesStorage: PropertiesStorage,
+        qUidStorage: TokenStorage,
+        customUidStorage: CustomUidStorage,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
         logger: Logger,
@@ -39,8 +36,8 @@ class RepositoryModule {
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
-            tokenStorage,
-            propertiesStorage,
+            qUidStorage,
+            customUidStorage,
             environmentProvider,
             config.sdkVersion,
             config.key,
@@ -64,8 +61,8 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun providePropertiesStorage(): PropertiesStorage {
-        return UserPropertiesStorage()
+    fun provideCustomUidStorage(cache: SharedPreferencesCache): CustomUidStorage {
+        return CustomUidStorage(cache)
     }
 
     @ApplicationScope

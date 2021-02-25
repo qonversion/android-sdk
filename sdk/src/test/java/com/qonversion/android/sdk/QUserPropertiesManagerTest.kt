@@ -5,6 +5,8 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.qonversion.android.sdk.storage.CustomUidStorage
+import com.qonversion.android.sdk.storage.PropertiesStorage
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
@@ -15,6 +17,8 @@ class QUserPropertiesManagerTest {
     private val mockContext = mockk<Application>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
+    private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
+    private val mockCustomUidStorage = mockk<CustomUidStorage>(relaxed = true)
 
     private lateinit var mockHandler: Handler
     private lateinit var propertiesManager: QUserPropertiesManager
@@ -41,15 +45,38 @@ class QUserPropertiesManagerTest {
             true
         }
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        propertiesManager = createUserPropertiesManager()
     }
 
     @Test
-    fun forceSendProperties() {
+    fun `should force send properties when properties storage is not empty`() {
+        every { mockPropertiesStorage.getProperties() } returns mapOf("key" to "value")
+        every {
+            mockRepository.sendProperties(mockPropertiesStorage.getProperties(), captureLambda())
+        } answers {
+            lambda<() -> Unit>().captured.invoke()
+        }
+
         propertiesManager.forceSendProperties()
 
         verify(exactly = 1) {
-            mockRepository.sendProperties()
+            mockRepository.sendProperties(mockPropertiesStorage.getProperties(), any())
+            mockPropertiesStorage.clear()
+        }
+    }
+
+    @Test
+    fun `should not force send properties when properties storage is empty`() {
+        every { mockPropertiesStorage.getProperties() } returns mapOf()
+
+        propertiesManager.forceSendProperties()
+        verify(exactly = 1) {
+            mockPropertiesStorage.getProperties()
+        }
+
+        verify(exactly = 0) {
+            mockRepository.sendProperties(any(), any())
+            mockPropertiesStorage.clear()
         }
     }
 
@@ -60,7 +87,7 @@ class QUserPropertiesManagerTest {
         propertiesManager.setUserID(userId)
 
         verify(exactly = 1) {
-            mockRepository.setProperty(QUserProperties.CustomUserId.userPropertyCode, userId)
+            mockPropertiesStorage.save(QUserProperties.CustomUserId.code, userId)
         }
     }
 
@@ -72,7 +99,7 @@ class QUserPropertiesManagerTest {
         propertiesManager.setProperty(key, email)
 
         verify(exactly = 1) {
-            mockRepository.setProperty(QUserProperties.Email.userPropertyCode, email)
+            mockPropertiesStorage.save(QUserProperties.Email.code, email)
         }
     }
 
@@ -84,7 +111,7 @@ class QUserPropertiesManagerTest {
         propertiesManager.setUserProperty(key, value)
 
         verify(exactly = 1) {
-            mockRepository.setProperty(key, value)
+            mockPropertiesStorage.save(key, value)
         }
     }
 
@@ -98,33 +125,42 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `init when fbAttributionId is not null`() {
+    fun `should set facebook property when fbAttributionId is not null`() {
         val fbAttributionId = "fbAttributionId"
         mockkConstructor(FacebookAttribution::class)
         every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        createUserPropertiesManager()
 
         verify(exactly = 1) {
-            mockRepository.setProperty(
-                QUserProperties.FacebookAttribution.userPropertyCode,
+            mockPropertiesStorage.save(
+                QUserProperties.FacebookAttribution.code,
                 fbAttributionId
             )
         }
     }
 
     @Test
-    fun `init when fbAttributionId is null`() {
+    fun `should not set facebook property when fbAttributionId is null`() {
         mockkConstructor(FacebookAttribution::class)
         every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        createUserPropertiesManager()
 
         verify(exactly = 0) {
-            mockRepository.setProperty(
+            mockPropertiesStorage.save(
                 any(),
                 any()
             )
         }
     }
+
+    private fun createUserPropertiesManager() =
+        QUserPropertiesManager(
+            mockContext,
+            mockRepository,
+            mockPropertiesStorage,
+            mockCustomUidStorage
+        )
+
 }
