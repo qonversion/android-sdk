@@ -5,8 +5,8 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.storage.CustomUidStorage
 import com.qonversion.android.sdk.storage.PropertiesStorage
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +18,7 @@ class QUserPropertiesManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
     private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
-    private val mockCustomUidStorage = mockk<CustomUidStorage>(relaxed = true)
+    private val mockSharedPreferencesCache = mockk<SharedPreferencesCache>(relaxed = true)
 
     private lateinit var mockHandler: Handler
     private lateinit var propertiesManager: QUserPropertiesManager
@@ -88,6 +88,8 @@ class QUserPropertiesManagerTest {
 
         verify(exactly = 1) {
             mockPropertiesStorage.save(QUserProperties.CustomUserId.code, userId)
+            mockSharedPreferencesCache.putString(SharedPreferencesKeys.CUSTOM_UID_KEY, userId)
+
         }
     }
 
@@ -160,7 +162,7 @@ class QUserPropertiesManagerTest {
             mockContext,
             mockRepository,
             mockPropertiesStorage,
-            mockCustomUidStorage
+            mockSharedPreferencesCache
         )
 
 }

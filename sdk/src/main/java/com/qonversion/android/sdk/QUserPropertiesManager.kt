@@ -2,14 +2,15 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.os.Handler
-import com.qonversion.android.sdk.storage.CustomUidStorage
+import com.qonversion.android.sdk.SharedPreferencesKeys.CUSTOM_UID_KEY
 import com.qonversion.android.sdk.storage.PropertiesStorage
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 
 class QUserPropertiesManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private var propertiesStorage: PropertiesStorage,
-    private val customUidStorage: CustomUidStorage
+    private val sharedPreferencesCache: SharedPreferencesCache
 ) {
 
     companion object {
@@ -44,7 +45,7 @@ class QUserPropertiesManager internal constructor(
     }
 
     fun setUserID(value: String) {
-        customUidStorage.save(value)
+        sharedPreferencesCache.putString(CUSTOM_UID_KEY, value)
         propertiesStorage.save(QUserProperties.CustomUserId.code, value)
     }
 

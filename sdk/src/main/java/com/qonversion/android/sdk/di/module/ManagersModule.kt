@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.QUserPropertiesManager
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.QAutomationsManager
-import com.qonversion.android.sdk.storage.CustomUidStorage
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import dagger.Module
 import dagger.Provides
@@ -30,9 +30,9 @@ class ManagersModule {
         appContext: Application,
         repository: QonversionRepository,
         propertiesStorage: UserPropertiesStorage,
-        customUidStorage: CustomUidStorage
+        sharedPreferencesCache: SharedPreferencesCache
     ): QUserPropertiesManager {
-        return QUserPropertiesManager(appContext, repository, propertiesStorage, customUidStorage)
+        return QUserPropertiesManager(appContext, repository, propertiesStorage, sharedPreferencesCache)
     }
 
     @ApplicationScope

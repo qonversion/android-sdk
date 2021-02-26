@@ -25,7 +25,7 @@ class RepositoryModule {
     fun provideRepository(
         retrofit: Retrofit,
         qUidStorage: TokenStorage,
-        customUidStorage: CustomUidStorage,
+        sharedPreferencesCache: SharedPreferencesCache,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
         logger: Logger,
@@ -37,7 +37,7 @@ class RepositoryModule {
         return QonversionRepository(
             retrofit.create(Api::class.java),
             qUidStorage,
-            customUidStorage,
+            sharedPreferencesCache,
             environmentProvider,
             config.sdkVersion,
             config.key,
@@ -57,12 +57,6 @@ class RepositoryModule {
             preferences,
             TokenValidator()
         )
-    }
-
-    @ApplicationScope
-    @Provides
-    fun provideCustomUidStorage(cache: SharedPreferencesCache): CustomUidStorage {
-        return CustomUidStorage(cache)
     }
 
     @ApplicationScope

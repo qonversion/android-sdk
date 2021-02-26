@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.SharedPreferencesKeys.CUSTOM_UID_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
@@ -17,8 +18,8 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.CustomUidStorage
 import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
@@ -26,7 +27,7 @@ import retrofit2.Response
 class QonversionRepository internal constructor(
     private val api: Api,
     private var qUidStorage: Storage,
-    private var customUidStorage: CustomUidStorage,
+    private val sharedPreferencesCache: SharedPreferencesCache,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
@@ -92,7 +93,7 @@ class QonversionRepository internal constructor(
         callback: QonversionEligibilityCallback
     ) {
         val uid = qUidStorage.load()
-        val customUid = customUidStorage.load()
+        val customUid = getCustomUid()
 
         val eligibilityRequest = EligibilityRequest(
             installDate = installDate,
@@ -252,7 +253,7 @@ class QonversionRepository internal constructor(
         retries: Int = MAX_RETRIES_NUMBER
     ) {
         val uid = qUidStorage.load()
-        val customUid = customUidStorage.load()
+        val customUid = getCustomUid()
 
         val purchaseRequest = PurchaseRequest(
             installDate,
@@ -368,7 +369,7 @@ class QonversionRepository internal constructor(
         callback: QonversionLaunchCallback?
     ) {
         val uid = qUidStorage.load()
-        val customUid = customUidStorage.load()
+        val customUid = getCustomUid()
 
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
@@ -415,7 +416,7 @@ class QonversionRepository internal constructor(
         pushToken: String? = null
     ) {
         val uid = qUidStorage.load()
-        val customUid =  customUidStorage.load()
+        val customUid = getCustomUid()
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
@@ -476,6 +477,8 @@ class QonversionRepository internal constructor(
             }
         }
     }
+
+    private fun getCustomUid() = sharedPreferencesCache.getString(CUSTOM_UID_KEY, null)
 
     private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
 
