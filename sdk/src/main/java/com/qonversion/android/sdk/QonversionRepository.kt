@@ -39,6 +39,7 @@ class QonversionRepository internal constructor(
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
+    private val headers = headersProvider.getHeaders()
 
     // Public functions
 
@@ -109,7 +110,7 @@ class QonversionRepository internal constructor(
             }
         )
 
-        api.eligibility(eligibilityRequest).enqueue {
+        api.eligibility(headers, eligibilityRequest).enqueue {
             onResponse = {
                 logger.debug("eligibilityRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -162,7 +163,7 @@ class QonversionRepository internal constructor(
         val uid = storage.load()
         val viewsRequest = ViewsRequest(uid)
 
-        api.views(headersProvider.getHeaders(), screenId, viewsRequest).enqueue {
+        api.views(headers, screenId, viewsRequest).enqueue {
             onResponse = {
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
@@ -179,7 +180,7 @@ class QonversionRepository internal constructor(
     ) {
         val uid = storage.load()
 
-        api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
+        api.actionPoints(headers, uid, queryParams).enqueue {
             onResponse = {
                 logger.release("actionPointsRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -220,7 +221,7 @@ class QonversionRepository internal constructor(
     private fun sendQonversionRequest(request: QonversionRequest) {
         when (request) {
             is AttributionRequest -> {
-                api.attribution(request).enqueue {
+                api.attribution(headers, request).enqueue {
                     onResponse = {
                         logger.release("QonversionRequest - success - $it")
                         kickRequestQueue()
@@ -265,7 +266,7 @@ class QonversionRepository internal constructor(
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
-        api.purchase(purchaseRequest).enqueue {
+        api.purchase(headers, purchaseRequest).enqueue {
             onResponse = {
                 logger.release("purchaseRequest - success - $it")
                 val body = it.body()
@@ -378,7 +379,7 @@ class QonversionRepository internal constructor(
             history = history
         )
 
-        api.restore(request).enqueue {
+        api.restore(headers, request).enqueue {
             onResponse = {
                 logger.release("restoreRequest - success - $it")
                 handlePermissionsResponse(it, callback)
@@ -422,7 +423,7 @@ class QonversionRepository internal constructor(
             purchases = inapps
         )
 
-        api.init(initRequest).enqueue {
+        api.init(headers, initRequest).enqueue {
             onResponse = {
                 logger.release("initRequest - success - $it")
                 val body = it.body()
@@ -452,7 +453,7 @@ class QonversionRepository internal constructor(
             properties = propertiesStorage.getProperties()
         )
 
-        api.properties(propertiesRequest).enqueue {
+        api.properties(headers, propertiesRequest).enqueue {
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
 

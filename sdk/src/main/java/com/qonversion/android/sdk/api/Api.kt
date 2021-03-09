@@ -1,32 +1,49 @@
 package com.qonversion.android.sdk.api
 
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.eligibility.EligibilityResult
 import com.qonversion.android.sdk.dto.request.*
-import com.qonversion.android.sdk.dto.automations.Screen
-import com.qonversion.android.sdk.dto.request.ViewsRequest
 import retrofit2.Call
 import retrofit2.http.*
 
 interface Api {
 
     @POST("v1/user/init")
-    fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
+    fun init(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: InitRequest
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/purchase")
-    fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
+    fun purchase(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: PurchaseRequest
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/restore")
-    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>
+    fun restore(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: RestoreRequest
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("attribution")
-    fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>
+    fun attribution(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: AttributionRequest
+    ): Call<BaseResponse<Response>>
 
     @POST("v1/properties")
-    fun properties(@Body request: PropertiesRequest): Call<BaseResponse<Response>>
+    fun properties(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: PropertiesRequest
+    ): Call<BaseResponse<Response>>
 
     @POST("v1/products/get")
-    fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
+    fun eligibility(
+        @HeaderMap headers: ApiHeaders.Default,
+        @Body request: EligibilityRequest
+    ): Call<BaseResponse<EligibilityResult>>
 
     @GET("v2/screens/{id}")
     fun screens(

@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.storage
 
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.constants.PREFS_PREFIX
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper.CacheConstants.CACHE_TIMESTAMP_KEY
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper.CacheConstants.DURATION_IN_HOURS_FOR_ACTUAL_CACHE
@@ -44,8 +45,8 @@ class LaunchResultCacheWrapper(
     private fun getCurrentTimeInSec() = System.currentTimeMillis().milliSecondsToSeconds()
 
     private object CacheConstants {
-        const val LAUNCH_RESULT_KEY = "launchResult"
-        const val CACHE_TIMESTAMP_KEY = "timestamp"
+        const val LAUNCH_RESULT_KEY = "$PREFS_PREFIX.launchResult"
+        const val CACHE_TIMESTAMP_KEY = "$PREFS_PREFIX.timestamp"
         const val DURATION_IN_HOURS_FOR_ACTUAL_CACHE = 24L
     }
 }
