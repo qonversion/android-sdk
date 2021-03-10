@@ -1,20 +1,8 @@
 package com.qonversion.android.sdk.api
 
 import android.os.Build
+import com.qonversion.android.sdk.Constants.PREFS_PREFIX
 import com.qonversion.android.sdk.QonversionConfig
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Constants.ANDROID_PLATFORM
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Constants.DEBUG_MODE_KEY
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Constants.PREFS_SOURCE_KEY
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Constants.PREFS_SOURCE_VERSION_KEY
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Constants.getBearer
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.AUTHORIZATION
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.CONTENT_TYPE
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.PLATFORM
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.PLATFORM_VERSION
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.SOURCE
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.SOURCE_VERSION
-import com.qonversion.android.sdk.api.ApiHeadersProvider.Headers.USER_LOCALE
-import com.qonversion.android.sdk.constants.PREFS_PREFIX
 import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import java.util.*
 import javax.inject.Inject
@@ -56,22 +44,19 @@ class ApiHeadersProvider @Inject constructor(
     private fun getSourceVersion() =
         sharedPreferencesCache.getString(PREFS_SOURCE_VERSION_KEY, null) ?: config.sdkVersion
 
-    private object Constants {
-        // Platform
+    companion object{
         const val ANDROID_PLATFORM = "android"
-        // Shared Preferences keys
+
         const val PREFS_SOURCE_KEY = "$PREFS_PREFIX.source"
         const val PREFS_SOURCE_VERSION_KEY = "$PREFS_PREFIX.sourceVersion"
-        // Project key
+
         const val DEBUG_MODE_KEY = "test_"
         fun getBearer(projectKey: String) = "Bearer $projectKey"
-    }
 
-    private object Headers {
+        // Headers
         const val CONTENT_TYPE = "Content-Type"
         const val AUTHORIZATION = "Authorization"
         const val USER_LOCALE = "User-Locale"
-        // SDK info
         const val SOURCE = "Source"
         const val SOURCE_VERSION = "Source-Version"
         const val PLATFORM = "Platform"

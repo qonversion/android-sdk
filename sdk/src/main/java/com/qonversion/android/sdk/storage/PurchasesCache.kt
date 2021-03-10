@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.storage
 
 import android.content.SharedPreferences
 import com.android.billingclient.api.BillingClient
-import com.qonversion.android.sdk.constants.PREFS_PREFIX
 import com.qonversion.android.sdk.entity.Purchase
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -36,7 +35,7 @@ class PurchasesCache(
     }
 
     fun loadPurchases(): Set<Purchase> {
-        val json = preferences.getString(PURCHASES_KEY, "")
+        val json = preferences.getString(PURCHASE_KEY, "")
         if (json == null || json.isEmpty()) {
             return setOf()
         }
@@ -57,11 +56,11 @@ class PurchasesCache(
 
     private fun savePurchasesAsJson(purchases: MutableSet<Purchase>) {
         val jsonStr: String = jsonAdapter.toJson(purchases)
-        preferences.edit().putString(PURCHASES_KEY, jsonStr).apply()
+        preferences.edit().putString(PURCHASE_KEY, jsonStr).apply()
     }
 
     companion object {
-        private const val PURCHASES_KEY = "$PREFS_PREFIX.purchases"
+        private const val PURCHASE_KEY = "purchase"
         private const val MAX_PURCHASES_NUMBER = 5
         private const val MAX_OLD_PURCHASES_NUMBER = 1
     }
