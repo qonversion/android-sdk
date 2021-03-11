@@ -19,6 +19,15 @@ class ApiHeadersProvider @Inject constructor(
         projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
     }
 
+    fun getHeaders(): Headers {
+        val headerBuilder = Headers.Builder()
+        for ((key, value) in getHeadersMap()) {
+            headerBuilder.add(key, value)
+        }
+
+        return headerBuilder.build()
+    }
+
     private fun getHeadersMap() = mapOf(
         CONTENT_TYPE to "application/json",
         AUTHORIZATION to getBearer(projectKey),
@@ -28,15 +37,6 @@ class ApiHeadersProvider @Inject constructor(
         PLATFORM to ANDROID_PLATFORM,
         PLATFORM_VERSION to Build.VERSION.RELEASE
     )
-
-    fun getHeaders(): Headers {
-        val headerBuilder = Headers.Builder()
-        for ((key, value) in getHeadersMap()) {
-            headerBuilder.add(key, value)
-        }
-
-        return headerBuilder.build()
-    }
 
     private fun getSource() =
         sharedPreferencesCache.getString(PREFS_SOURCE_KEY, null) ?: ANDROID_PLATFORM
