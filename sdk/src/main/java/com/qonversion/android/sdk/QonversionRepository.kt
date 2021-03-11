@@ -2,14 +2,14 @@ package com.qonversion.android.sdk
 
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
-import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
+import com.qonversion.android.sdk.dto.BaseResponse
+import com.qonversion.android.sdk.dto.ProviderData
+import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
-import com.qonversion.android.sdk.dto.request.ViewsRequest
+import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -17,8 +17,8 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.PropertiesStorage
+import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
@@ -34,12 +34,10 @@ class QonversionRepository internal constructor(
     private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val headersProvider: ApiHeadersProvider,
     private val purchasesCache: PurchasesCache
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
-    private val headers = headersProvider.getHeaders()
 
     // Public functions
 
@@ -110,7 +108,7 @@ class QonversionRepository internal constructor(
             }
         )
 
-        api.eligibility(headers, eligibilityRequest).enqueue {
+        api.eligibility(eligibilityRequest).enqueue {
             onResponse = {
                 logger.debug("eligibilityRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -139,7 +137,7 @@ class QonversionRepository internal constructor(
         onSuccess: (screen: Screen) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
+        api.screens(screenId).enqueue {
             onResponse = {
                 logger.release("screensRequest - ${it.getLogMessage()}")
 
@@ -163,7 +161,7 @@ class QonversionRepository internal constructor(
         val uid = storage.load()
         val viewsRequest = ViewsRequest(uid)
 
-        api.views(headers, screenId, viewsRequest).enqueue {
+        api.views(screenId, viewsRequest).enqueue {
             onResponse = {
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
@@ -180,7 +178,7 @@ class QonversionRepository internal constructor(
     ) {
         val uid = storage.load()
 
-        api.actionPoints(headers, uid, queryParams).enqueue {
+        api.actionPoints(uid, queryParams).enqueue {
             onResponse = {
                 logger.release("actionPointsRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -221,7 +219,7 @@ class QonversionRepository internal constructor(
     private fun sendQonversionRequest(request: QonversionRequest) {
         when (request) {
             is AttributionRequest -> {
-                api.attribution(headers, request).enqueue {
+                api.attribution(request).enqueue {
                     onResponse = {
                         logger.release("QonversionRequest - success - $it")
                         kickRequestQueue()
@@ -266,7 +264,7 @@ class QonversionRepository internal constructor(
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
-        api.purchase(headers, purchaseRequest).enqueue {
+        api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 logger.release("purchaseRequest - success - $it")
                 val body = it.body()
@@ -379,7 +377,7 @@ class QonversionRepository internal constructor(
             history = history
         )
 
-        api.restore(headers, request).enqueue {
+        api.restore(request).enqueue {
             onResponse = {
                 logger.release("restoreRequest - success - $it")
                 handlePermissionsResponse(it, callback)
@@ -423,7 +421,7 @@ class QonversionRepository internal constructor(
             purchases = inapps
         )
 
-        api.init(headers, initRequest).enqueue {
+        api.init(initRequest).enqueue {
             onResponse = {
                 logger.release("initRequest - success - $it")
                 val body = it.body()
@@ -453,7 +451,7 @@ class QonversionRepository internal constructor(
             properties = propertiesStorage.getProperties()
         )
 
-        api.properties(headers, propertiesRequest).enqueue {
+        api.properties(propertiesRequest).enqueue {
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
 

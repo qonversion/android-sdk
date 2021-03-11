@@ -31,7 +31,6 @@ class RepositoryModule {
         logger: Logger,
         requestsQueue: RequestsQueue,
         requestValidator: RequestValidator,
-        apiHeadersProvider: ApiHeadersProvider,
         purchasesCache: PurchasesCache
     ): QonversionRepository {
         return QonversionRepository(
@@ -45,7 +44,6 @@ class RepositoryModule {
             logger,
             requestsQueue,
             requestValidator,
-            apiHeadersProvider,
             purchasesCache
         )
     }

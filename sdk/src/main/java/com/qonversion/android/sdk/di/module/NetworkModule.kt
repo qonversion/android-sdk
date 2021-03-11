@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.di.module
 
 import android.app.Application
 import com.qonversion.android.sdk.BuildConfig
+import com.qonversion.android.sdk.api.ApiHeadersProvider
+import com.qonversion.android.sdk.api.HeadersInterceptor
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.dto.*
 import com.squareup.moshi.Moshi
@@ -50,11 +52,15 @@ class NetworkModule {
 
     @ApplicationScope
     @Provides
-    fun provideOkHttpClient(context: Application): OkHttpClient {
+    fun provideOkHttpClient(
+        context: Application,
+        interceptor: HeadersInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .cache(Cache(context.cacheDir, CACHE_SIZE))
             .readTimeout(TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
+            .addInterceptor(interceptor)
             .apply {
                 if (BuildConfig.DEBUG) {
                     val logging = HttpLoggingInterceptor()
@@ -63,6 +69,14 @@ class NetworkModule {
                 }
             }
             .build()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideHeadersInterceptor(
+        apiHeadersProvider: ApiHeadersProvider
+    ): HeadersInterceptor {
+        return HeadersInterceptor(apiHeadersProvider)
     }
 
     companion object {

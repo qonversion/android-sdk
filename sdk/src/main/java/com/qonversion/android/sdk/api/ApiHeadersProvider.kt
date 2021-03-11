@@ -4,6 +4,7 @@ import android.os.Build
 import com.qonversion.android.sdk.Constants.PREFS_PREFIX
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.storage.SharedPreferencesCache
+import okhttp3.Headers
 import java.util.*
 import javax.inject.Inject
 
@@ -18,25 +19,24 @@ class ApiHeadersProvider @Inject constructor(
         projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
     }
 
-    fun getScreenHeaders(): ApiHeaders.Screens =
-        ApiHeaders.Screens().apply {
-            putAll(getHeaders())
-            put(USER_LOCALE, getLocale())
-        }
-
-    fun getHeaders(): ApiHeaders.Default =
-        ApiHeaders.Default().apply {
-            putAll(getDefaultHeaders())
-        }
-
-    private fun getDefaultHeaders() = mapOf(
+    private fun getHeadersMap() = mapOf(
         CONTENT_TYPE to "application/json",
         AUTHORIZATION to getBearer(projectKey),
+        USER_LOCALE to getLocale(),
         SOURCE to getSource(),
         SOURCE_VERSION to getSourceVersion(),
         PLATFORM to ANDROID_PLATFORM,
         PLATFORM_VERSION to Build.VERSION.RELEASE
     )
+
+    fun getHeaders(): Headers {
+        val headerBuilder = Headers.Builder()
+        for ((key, value) in getHeadersMap()) {
+            headerBuilder.add(key, value)
+        }
+
+        return headerBuilder.build()
+    }
 
     private fun getSource() =
         sharedPreferencesCache.getString(PREFS_SOURCE_KEY, null) ?: ANDROID_PLATFORM
@@ -44,7 +44,7 @@ class ApiHeadersProvider @Inject constructor(
     private fun getSourceVersion() =
         sharedPreferencesCache.getString(PREFS_SOURCE_VERSION_KEY, null) ?: config.sdkVersion
 
-    companion object{
+    companion object {
         const val ANDROID_PLATFORM = "android"
 
         const val PREFS_SOURCE_KEY = "$PREFS_PREFIX.source"
@@ -62,9 +62,4 @@ class ApiHeadersProvider @Inject constructor(
         const val PLATFORM = "Platform"
         const val PLATFORM_VERSION = "Platform-Version"
     }
-}
-
-sealed class ApiHeaders : HashMap<String, String>() {
-    class Screens : ApiHeaders()
-    class Default : ApiHeaders()
 }
