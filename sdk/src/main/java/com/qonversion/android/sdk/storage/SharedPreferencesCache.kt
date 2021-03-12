@@ -27,7 +27,7 @@ class SharedPreferencesCache(
     override fun putString(key: String, value: String?) =
         preferences.edit().putString(key, value).apply()
 
-    override fun getString(key: String, defValue: String): String? =
+    override fun getString(key: String, defValue: String?): String? =
         preferences.getString(key, defValue)
 
     override fun <T> putObject(key: String, value: T, adapter: JsonAdapter<T>) {
