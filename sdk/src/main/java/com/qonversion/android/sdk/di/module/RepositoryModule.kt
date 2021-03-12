@@ -10,10 +10,7 @@ import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.PropertiesStorage
-import com.qonversion.android.sdk.storage.TokenStorage
-import com.qonversion.android.sdk.storage.UserPropertiesStorage
+import com.qonversion.android.sdk.storage.*
 import com.qonversion.android.sdk.validator.RequestValidator
 import com.qonversion.android.sdk.validator.TokenValidator
 import dagger.Module
@@ -34,7 +31,6 @@ class RepositoryModule {
         logger: Logger,
         requestsQueue: RequestsQueue,
         requestValidator: RequestValidator,
-        apiHeadersProvider: ApiHeadersProvider,
         purchasesCache: PurchasesCache
     ): QonversionRepository {
         return QonversionRepository(
@@ -48,7 +44,6 @@ class RepositoryModule {
             logger,
             requestsQueue,
             requestValidator,
-            apiHeadersProvider,
             purchasesCache
         )
     }
@@ -88,8 +83,8 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideHeadersProvider(config: QonversionConfig
+    fun provideHeadersProvider(config: QonversionConfig, sharedPreferencesCache: SharedPreferencesCache
     ): ApiHeadersProvider {
-        return ApiHeadersProvider(config)
+        return ApiHeadersProvider(config, sharedPreferencesCache)
     }
 }

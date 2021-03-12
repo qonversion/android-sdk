@@ -2,14 +2,14 @@ package com.qonversion.android.sdk
 
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
-import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
+import com.qonversion.android.sdk.dto.BaseResponse
+import com.qonversion.android.sdk.dto.ProviderData
+import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
-import com.qonversion.android.sdk.dto.request.ViewsRequest
+import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -17,8 +17,8 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.PropertiesStorage
+import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
@@ -34,7 +34,6 @@ class QonversionRepository internal constructor(
     private val logger: Logger,
     private val requestQueue: RequestsQueue,
     private val requestValidator: Validator<QonversionRequest>,
-    private val headersProvider: ApiHeadersProvider,
     private val purchasesCache: PurchasesCache
 ) {
     private var advertisingId: String? = null
@@ -138,7 +137,7 @@ class QonversionRepository internal constructor(
         onSuccess: (screen: Screen) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        api.screens(headersProvider.getScreenHeaders(), screenId).enqueue {
+        api.screens(screenId).enqueue {
             onResponse = {
                 logger.release("screensRequest - ${it.getLogMessage()}")
 
@@ -162,7 +161,7 @@ class QonversionRepository internal constructor(
         val uid = storage.load()
         val viewsRequest = ViewsRequest(uid)
 
-        api.views(headersProvider.getHeaders(), screenId, viewsRequest).enqueue {
+        api.views(screenId, viewsRequest).enqueue {
             onResponse = {
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
@@ -179,7 +178,7 @@ class QonversionRepository internal constructor(
     ) {
         val uid = storage.load()
 
-        api.actionPoints(headersProvider.getHeaders(), uid, queryParams).enqueue {
+        api.actionPoints(uid, queryParams).enqueue {
             onResponse = {
                 logger.release("actionPointsRequest - ${it.getLogMessage()}")
                 val body = it.body()
