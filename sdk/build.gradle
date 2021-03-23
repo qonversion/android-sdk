@@ -108,7 +108,6 @@ ext {
     moshiVersion = '1.9.2'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.8'
-    interceptor_version = '4.2.2'
     billing = '3.0.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
@@ -131,8 +130,7 @@ ext {
     network = [
             core              : "com.squareup.retrofit2:retrofit:$retrofit_version",
             moshiConverter    : "com.squareup.retrofit2:converter-moshi:$retrofit_version",
-            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version",
-            interceptor       : "com.squareup.okhttp3:logging-interceptor:$interceptor_version"
+            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version"
     ]
 
     lifecycle = [
@@ -175,7 +173,6 @@ dependencies {
     implementation network.core
     implementation network.okhttp
     implementation network.moshiConverter
-    implementation network.interceptor
 
     // Lifecycle components
     implementation lifecycle.runtime
