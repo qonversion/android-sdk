@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.di.module
 
 import android.app.Application
-import com.qonversion.android.sdk.BuildConfig
 import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.api.HeadersInterceptor
 import com.qonversion.android.sdk.di.scope.ApplicationScope
@@ -11,7 +10,6 @@ import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
@@ -61,13 +59,6 @@ class NetworkModule {
             .readTimeout(TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
             .addInterceptor(interceptor)
-            .apply {
-                if (BuildConfig.DEBUG) {
-                    val logging = HttpLoggingInterceptor()
-                    logging.level = HttpLoggingInterceptor.Level.BODY
-                    addInterceptor(logging)
-                }
-            }
             .build()
     }
 
