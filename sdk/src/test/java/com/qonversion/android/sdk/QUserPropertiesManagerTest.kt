@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.qonversion.android.sdk.logger.Logger
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
@@ -15,6 +16,7 @@ class QUserPropertiesManagerTest {
     private val mockContext = mockk<Application>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
+    private val mockLogger: Logger = mockk(relaxed = true)
 
     private lateinit var mockHandler: Handler
     private lateinit var propertiesManager: QUserPropertiesManager
@@ -41,7 +43,7 @@ class QUserPropertiesManagerTest {
             true
         }
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockLogger)
     }
 
     @Test
@@ -103,7 +105,7 @@ class QUserPropertiesManagerTest {
         mockkConstructor(FacebookAttribution::class)
         every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockLogger)
 
         verify(exactly = 1) {
             mockRepository.setProperty(
@@ -118,7 +120,7 @@ class QUserPropertiesManagerTest {
         mockkConstructor(FacebookAttribution::class)
         every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository)
+        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockLogger)
 
         verify(exactly = 0) {
             mockRepository.setProperty(

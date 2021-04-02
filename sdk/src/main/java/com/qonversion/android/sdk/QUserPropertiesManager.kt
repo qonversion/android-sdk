@@ -2,26 +2,30 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.os.Handler
+import com.qonversion.android.sdk.logger.Logger
 
 class QUserPropertiesManager internal constructor(
     private val context: Application,
-    private val repository: QonversionRepository
+    private val repository: QonversionRepository,
+    logger: Logger
 ) {
-
     companion object {
         private const val PROPERTY_UPLOAD_PERIOD = 5 * 1000
     }
 
     init {
-        val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
-        if (fbAttributionId != null) {
-            repository.setProperty(
-                QUserProperties.FacebookAttribution.userPropertyCode,
-                fbAttributionId
-            )
+        try {
+            val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
+            if (fbAttributionId != null) {
+                repository.setProperty(
+                    QUserProperties.FacebookAttribution.userPropertyCode,
+                    fbAttributionId
+                )
+            }
+            sendPropertiesAtPeriod()
+        } catch (e: IllegalStateException) {
+            logger.release("Failed to retrieve facebook attribution ${e.localizedMessage}")
         }
-
-        sendPropertiesAtPeriod()
     }
 
     private fun sendPropertiesAtPeriod() {
