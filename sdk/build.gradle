@@ -13,14 +13,14 @@ android {
 
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 29
         versionCode 1
         versionName project.getProperty("libraryVersion")
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'com.qonversion.android.sdk'
-        version = '2.7.3'
+        version = '2.7.4'
     }
 
     buildTypes {
@@ -56,10 +56,10 @@ bintray {
         name = 'com.qonversion.android.sdk'
 
         version {
-            name = '2.7.3'
+            name = '2.7.4'
             desc = 'qonversion-android-sdk'
             released  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ENGLISH).format(new Date())
-            vcsTag = '2.7.3'
+            vcsTag = '2.7.4'
         }
 
         licenses = ['MIT']
@@ -72,7 +72,7 @@ bintray {
             MyPublication(MavenPublication) {
                 groupId 'com.qonversion.android.sdk'
                 artifactId 'sdk'
-                version '2.7.3'
+                version '2.7.4'
             }
         }
     }
@@ -102,7 +102,7 @@ ext {
 
     PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '2.7.3'
+    PUBLISH_VERSION = '2.7.4'
 
     kotlinVersion = '1.3.61'
     moshiVersion = '1.9.2'
