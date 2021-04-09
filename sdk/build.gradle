@@ -1,11 +1,7 @@
-import java.text.SimpleDateFormat
-
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 29
@@ -15,12 +11,12 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 1
-        versionName project.getProperty("libraryVersion")
+        versionCode release.versionCode
+        versionName release.versionName
 
         consumerProguardFiles 'consumer-rules.pro'
-        group = 'com.qonversion.android.sdk'
-        version = '2.7.4'
+        group = 'io.qonversion.android.sdk'
+        version = release.versionName
     }
 
     buildTypes {
@@ -47,48 +43,6 @@ android {
     }
 }
 
-bintray {
-    user = getProps("bintray_user")
-    key = getProps("bintray_password")
-
-    pkg {
-        repo = 'Qonversion'
-        name = 'com.qonversion.android.sdk'
-
-        version {
-            name = '2.7.4'
-            desc = 'qonversion-android-sdk'
-            released  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ENGLISH).format(new Date())
-            vcsTag = '2.7.4'
-        }
-
-        licenses = ['MIT']
-        vcsUrl = 'https://github.com/qonversion/android-sdk.git'
-        websiteUrl = 'https://qonversion.io/'
-    }
-    configurations = ['archives']
-    publishing {
-        publications {
-            MyPublication(MavenPublication) {
-                groupId 'com.qonversion.android.sdk'
-                artifactId 'sdk'
-                version '2.7.4'
-            }
-        }
-    }
-}
-
-def getProps(String propName) {
-    def propsFile = rootProject.file('local.properties')
-    if (propsFile.exists()) {
-        def props = new Properties()
-        props.load(new FileInputStream(propsFile))
-        return props[propName]
-    } else {
-        return ""
-    }
-}
-
 tasks.withType(Test) {
     testLogging {
         exceptionFormat "full"
@@ -100,9 +54,8 @@ tasks.withType(Test) {
 ext {
 
 
-    PUBLISH_GROUP_ID = 'com.qonversion.android.sdk'
+    PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
-    PUBLISH_VERSION = '2.7.4'
 
     kotlinVersion = '1.3.61'
     moshiVersion = '1.9.2'
@@ -156,7 +109,7 @@ ext {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
+    compileOnly 'com.github.pengrad:jdk9-deps:1.0'
     // Moshi
     implementation moshi.core
     implementation moshi.adapters
@@ -218,5 +171,4 @@ dependencies {
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 
 }
-
-apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
+apply from: "../maven-release.gradle"
