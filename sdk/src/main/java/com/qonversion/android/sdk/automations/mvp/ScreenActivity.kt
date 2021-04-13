@@ -10,6 +10,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.macros.ScreenProcessor
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
 import com.qonversion.android.sdk.automations.QAutomationsManager
@@ -27,6 +28,9 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     @Inject
     lateinit var presenter: ScreenPresenter
+
+    @Inject
+    lateinit var screenProcessor: ScreenProcessor
 
     private val logger = ConsoleLogger()
 
@@ -94,7 +98,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
 
-            override fun onError(error: QonversionError) = handleOnErrorCallback(object {}.javaClass.enclosingMethod?.name, error, actionResult)
+            override fun onError(error: QonversionError) = handleOnErrorCallback(
+                object {}.javaClass.enclosingMethod?.name,
+                error,
+                actionResult
+            )
         })
     }
 
@@ -106,7 +114,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
 
-            override fun onError(error: QonversionError) = handleOnErrorCallback(object {}.javaClass.enclosingMethod?.name, error, actionResult)
+            override fun onError(error: QonversionError) = handleOnErrorCallback(
+                object {}.javaClass.enclosingMethod?.name,
+                error,
+                actionResult
+            )
         })
     }
 
@@ -144,7 +156,12 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         val extraHtmlPage = intent.getStringExtra(INTENT_HTML_PAGE)
 
         extraHtmlPage?.let {
-            webView.loadDataWithBaseURL(null, it, MIME_TYPE, ENCODING, null)
+            screenProcessor.processScreen(it,
+                { macrosHtml ->
+                    webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
+                }, { error ->
+                    logger.release("loadWebView() -> Failure to process screen macros ${error.description}")
+                })
         } ?: logger.release("loadWebView() -> Failure to fetch html page for app screen")
     }
 
