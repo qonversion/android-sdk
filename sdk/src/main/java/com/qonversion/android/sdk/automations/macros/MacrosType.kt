@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.automations.macros
 
 enum class MacrosType(val type: String) {
-    Unknown("Unknown"),
+    Unknown("unknown"),
     Price("price"),
-    SubscriptionDuration("duration"),
-    TrialDuration("trialDuration");
+    SubscriptionDuration("duration_subscription"),
+    TrialDuration("duration_trial");
 
     companion object {
         fun fromType(type: String) = values()

@@ -38,7 +38,8 @@ class ScreenProcessor {
 
         matchResults.forEach {
             val value = it.groupValues.first()
-            val valueWithoutBrackets = value.drop(2).dropLast(2)
+            val valueWithoutBrackets =
+                value.drop(MACROS_BRACKETS_NUMBER).dropLast(MACROS_BRACKETS_NUMBER)
 
             try {
                 val json = JSONObject(valueWithoutBrackets)
@@ -108,5 +109,7 @@ class ScreenProcessor {
         private const val MACROS_TYPE_KEY = "type"
         private const val MACROS_ID_KEY = "uid"
         private const val MACROS_CATEGORY_KEY = "category"
+
+        private const val MACROS_BRACKETS_NUMBER = 2
     }
 }
