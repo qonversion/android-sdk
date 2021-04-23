@@ -42,6 +42,20 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+//        Qonversion.identify("testIdentityAndroid")
+//        Qonversion.logout()
+
+        Qonversion.checkPermissions(callback = object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) {
+                print(permissions)
+            }
+
+            override fun onError(error: QonversionError) {
+                print(error)
+            }
+
+        })
+
         buttonSubscribe.setOnClickListener {
             purchase(productIdSubs)
         }

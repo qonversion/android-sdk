@@ -58,6 +58,11 @@ object Qonversion : LifecycleDelegate {
         val repository = QDependencyInjector.appComponent.repository()
         val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
+        val userInfoService = QDependencyInjector.appComponent.userInfoService()
+        val identityManager = QDependencyInjector.appComponent.identityManager()
+
+        val userID = userInfoService.obtainUserID()
+        repository.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -66,7 +71,7 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper)
+        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
         productCenterManager?.launch(callback)
     }
 
@@ -218,6 +223,18 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun syncPurchases() {
         productCenterManager?.syncPurchases()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    @JvmStatic
+    fun identify(userID: String) {
+        productCenterManager?.identify(userID)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    @JvmStatic
+    fun logout() {
+        productCenterManager?.logout()
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
