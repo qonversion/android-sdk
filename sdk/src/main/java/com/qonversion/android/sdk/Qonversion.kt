@@ -61,7 +61,8 @@ object Qonversion : LifecycleDelegate {
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
-        userPropertiesManager = QUserPropertiesManager(context, repository, logger)
+        userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
+
         attributionManager = QAttributionManager(repository)
 
         val factory = QonversionFactory(context, logger)

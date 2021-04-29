@@ -20,7 +20,7 @@ class UserPropertiesStorageTest {
         userPropertiesStorage.save("any_string_key_1", "any_string_value_1")
         userPropertiesStorage.save("any_string_key_2", "any_string_value_2")
         userPropertiesStorage.save("any_string_key_1", "new_string_value_1")
-        val properties:MutableMap<String, String> = userPropertiesStorage.getProperties()
+        val properties: Map<String, String> = userPropertiesStorage.getProperties()
 
         Assert.assertTrue(properties.isNotEmpty())
         Assert.assertTrue(properties.containsKey("any_string_key_1"))
@@ -34,7 +34,8 @@ class UserPropertiesStorageTest {
         userPropertiesStorage.save("any_string_key_1", "any_string_value_1")
         userPropertiesStorage.save("any_string_key_2", "any_string_value_2")
 
-        userPropertiesStorage.clear()
+        userPropertiesStorage.clear(mapOf("any_string_key_1" to "any_string_value_1",
+        "any_string_key_2" to "any_string_value_2"))
         Assert.assertTrue(userPropertiesStorage.getProperties().isEmpty())
     }
 }

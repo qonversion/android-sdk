@@ -10,11 +10,13 @@ class UserPropertiesStorage : PropertiesStorage {
         userProperties[key] = value
     }
 
-    override fun clear() {
-        userProperties.clear()
+    override fun clear(properties: Map<String, String>) {
+        properties.keys.map {
+            userProperties.remove(it)
+        }
     }
 
-    override fun getProperties(): MutableMap<String, String> {
-        return userProperties
+    override fun getProperties(): Map<String, String> {
+        return userProperties.toMap()
     }
 }
