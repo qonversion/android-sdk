@@ -17,7 +17,6 @@ import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.PropertiesStorage
 import com.qonversion.android.sdk.storage.PurchasesCache
 import com.qonversion.android.sdk.storage.Storage
 import com.qonversion.android.sdk.validator.Validator
@@ -26,7 +25,6 @@ import retrofit2.Response
 class QonversionRepository internal constructor(
     private val api: Api,
     private var storage: Storage,
-    private var propertiesStorage: PropertiesStorage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
@@ -79,13 +77,34 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun setProperty(key: String, value: String) {
-        propertiesStorage.save(key, value)
-    }
+    fun sendProperties(
+        properties: Map<String, String>,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
+        val uid = storage.load()
+        if (uid.isEmpty()) {
+            return
+        }
 
-    fun sendProperties() {
-        if (propertiesStorage.getProperties().isNotEmpty() && storage.load().isNotEmpty()) {
-            propertiesRequest()
+        val propertiesRequest = PropertiesRequest(
+            accessToken = key,
+            clientUid = uid,
+            properties = properties
+        )
+
+        api.properties(propertiesRequest).enqueue {
+            onResponse = {
+                logger.debug("propertiesRequest - ${it.getLogMessage()}")
+
+                if (it.isSuccessful) onSuccess() else onError()
+
+                kickRequestQueue()
+            }
+            onFailure = {
+                logger.debug("propertiesRequest - failure - ${it?.toQonversionError()}")
+                onError()
+            }
         }
     }
 
@@ -438,31 +457,6 @@ class QonversionRepository internal constructor(
                 if (it != null) {
                     callback?.onError(it.toQonversionError())
                 }
-            }
-        }
-    }
-
-    private fun propertiesRequest() {
-        val uid = storage.load()
-
-        val propertiesRequest = PropertiesRequest(
-            accessToken = key,
-            clientUid = uid,
-            properties = propertiesStorage.getProperties()
-        )
-
-        api.properties(propertiesRequest).enqueue {
-            onResponse = {
-                logger.debug("propertiesRequest - ${it.getLogMessage()}")
-
-                if (it.isSuccessful) {
-                    propertiesStorage.clear()
-                }
-
-                kickRequestQueue()
-            }
-            onFailure = {
-                logger.debug("propertiesRequest - failure - ${it?.toQonversionError()}")
             }
         }
     }

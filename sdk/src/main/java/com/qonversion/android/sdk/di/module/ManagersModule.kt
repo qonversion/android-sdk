@@ -2,9 +2,13 @@ package com.qonversion.android.sdk.di.module
 
 import android.app.Application
 import android.content.SharedPreferences
+import com.qonversion.android.sdk.QUserPropertiesManager
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
+import com.qonversion.android.sdk.storage.UserPropertiesStorage
 import dagger.Module
 import dagger.Provides
 
@@ -19,5 +23,16 @@ class ManagersModule {
         appContext: Application
     ): QAutomationsManager {
         return QAutomationsManager(repository, preferences, appContext)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideUserPropertiesManager(
+        appContext: Application,
+        repository: QonversionRepository,
+        propertiesStorage: UserPropertiesStorage,
+        logger: Logger
+    ): QUserPropertiesManager {
+        return QUserPropertiesManager(appContext, repository, propertiesStorage, logger)
     }
 }
