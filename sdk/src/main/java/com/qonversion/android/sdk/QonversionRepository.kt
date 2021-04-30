@@ -77,9 +77,11 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun sendProperties(properties: Map<String, String>,
-                       onSuccess: () -> Unit,
-                       onError: () -> Unit) {
+    fun sendProperties(
+        properties: Map<String, String>,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
         val uid = storage.load()
         if (uid.isEmpty()) {
             return

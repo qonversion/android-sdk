@@ -5,17 +5,16 @@ import android.os.Handler
 import android.os.HandlerThread
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
-import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import javax.inject.Inject
 
 class QUserPropertiesManager @Inject internal constructor(
-    context: Application,
+    private val context: Application,
     private val repository: QonversionRepository,
     private var propertiesStorage: PropertiesStorage,
-    logger: Logger
+    private val logger: Logger
 ) {
     private var isRequestInProgress: Boolean = false
-    private var mainHandler: Handler? = null
+    private var handler: Handler? = null
 
     companion object {
         private const val PROPERTY_UPLOAD_PERIOD = 5 * 1000
@@ -23,30 +22,43 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     init {
+        val thread = HandlerThread(LOOPER_THREAD_NAME)
+        thread.start()
+        handler = Handler(thread.looper)
+    }
+
+    fun sendFacebookAttribution() {
         try {
             val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
             if (fbAttributionId != null) {
-                propertiesStorage.save(QUserProperties.FacebookAttribution.userPropertyCode, fbAttributionId)
+                setUserProperty(
+                    QUserProperties.FacebookAttribution.userPropertyCode,
+                    fbAttributionId
+                )
             }
-
-            val thread = HandlerThread(LOOPER_THREAD_NAME)
-            thread.start()
-            mainHandler = Handler(thread.looper)
-
-            sendPropertiesAtPeriod()
         } catch (e: IllegalStateException) {
             logger.release("Failed to retrieve facebook attribution ${e.localizedMessage}")
         }
     }
 
-    private fun sendPropertiesAtPeriod() {
+    fun forceSendProperties() {
         if (isRequestInProgress) {
             return
         }
 
-        mainHandler?.postDelayed({
-            forceSendProperties()
-        }, PROPERTY_UPLOAD_PERIOD.toLong())
+        val properties = propertiesStorage.getProperties()
+        if (properties.isNotEmpty()) {
+            isRequestInProgress = true
+
+            repository.sendProperties(properties,
+                onSuccess = {
+                    isRequestInProgress = false
+                    propertiesStorage.clear(properties)
+                },
+                onError = {
+                    isRequestInProgress = false
+                })
+        }
     }
 
     fun setProperty(key: QUserProperties, value: String) {
@@ -66,23 +78,13 @@ class QUserPropertiesManager @Inject internal constructor(
         sendPropertiesAtPeriod()
     }
 
-    fun forceSendProperties() {
+    private fun sendPropertiesAtPeriod() {
         if (isRequestInProgress) {
             return
         }
 
-        val properties = propertiesStorage.getProperties()
-        if (properties.isNotEmpty()) {
-            isRequestInProgress = true
-
-            repository.sendProperties(properties,
-                onSuccess = {
-                isRequestInProgress = false
-                propertiesStorage.clear(properties)
-            },
-                onError = {
-                isRequestInProgress = false
-            })
-        }
+        handler?.postDelayed({
+            forceSendProperties()
+        }, PROPERTY_UPLOAD_PERIOD.toLong())
     }
 }

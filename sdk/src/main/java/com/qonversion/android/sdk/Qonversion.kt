@@ -62,6 +62,7 @@ object Qonversion : LifecycleDelegate {
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
+        userPropertiesManager?.sendFacebookAttribution()
 
         attributionManager = QAttributionManager(repository)
 

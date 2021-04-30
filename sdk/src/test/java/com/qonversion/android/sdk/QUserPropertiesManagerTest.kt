@@ -5,7 +5,6 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import io.mockk.*
@@ -13,7 +12,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.shadows.ShadowLooper
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
@@ -37,9 +35,6 @@ class QUserPropertiesManagerTest {
         } returns mockContentResolver
 
         val mockLooper = mockk<Looper>()
-        every {
-            mockContext.mainLooper
-        } returns mockLooper
 
         mockkConstructor(Handler::class)
         mockHandler = Handler(mockLooper)
@@ -52,26 +47,76 @@ class QUserPropertiesManagerTest {
             true
         }
 
-        every { mockPropertiesStorage.getProperties() } returns properties
-
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockPropertiesStorage, mockLogger)
+        propertiesManager =
+            QUserPropertiesManager(mockContext, mockRepository, mockPropertiesStorage, mockLogger)
     }
 
     @Test
-    fun forceSendProperties_requestInProgress() {
+    fun `should send facebook attribution when it is not null`() {
+        val fbAttributionId = "fbAttributionId"
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
+
+        propertiesManager.sendFacebookAttribution()
+
+        verify(exactly = 1) {
+            propertiesManager.setUserProperty(
+                "_q_fb_attribution",
+                fbAttributionId
+            )
+        }
+    }
+
+    @Test
+    fun `should not send facebook attribution when it is null`() {
+        mockkConstructor(FacebookAttribution::class)
+        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
+
+        propertiesManager.sendFacebookAttribution()
+
+        verify(exactly = 0) {
+            propertiesManager.setUserProperty(
+                any(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `should not force send properties when request is in progress`() {
         propertiesManager.mockPrivateField(fieldIsRequestInProgress, true)
+
+        propertiesManager.forceSendProperties()
+
+        verify(exactly = 0) {
+            mockPropertiesStorage.getProperties()
+            mockRepository.sendProperties(any(), any(), any())
+        }
+
+        assertThatIsRequestInProgressIsEqualTo(true)
+    }
+
+    @Test
+    fun `should not force send properties when properties storage is empty`() {
+        every { mockPropertiesStorage.getProperties() } returns mapOf()
 
         propertiesManager.forceSendProperties()
 
         verify(exactly = 1) {
             mockPropertiesStorage.getProperties()
-            mockRepository.sendProperties(any(), any(), any())
         }
+
+        verify(exactly = 0) {
+            mockRepository.sendProperties(any(), any(), any())
+            mockPropertiesStorage.clear(any())
+        }
+
+        assertThatIsRequestInProgressIsEqualTo(false)
     }
 
     @Test
-    fun forceSendProperties_onError() {
-        propertiesManager.mockPrivateField(fieldIsRequestInProgress, false)
+    fun `should force send properties and get response in onError callback`() {
+        every { mockPropertiesStorage.getProperties() } returns properties
 
         every {
             mockRepository.sendProperties(properties, any(), captureLambda())
@@ -81,22 +126,20 @@ class QUserPropertiesManagerTest {
 
         propertiesManager.forceSendProperties()
 
-        verify(exactly = 2) {
+        verify(exactly = 1) {
             mockPropertiesStorage.getProperties()
             mockRepository.sendProperties(properties, any(), any())
         }
-
-        val memberProperty = QUserPropertiesManager::class.memberProperties.find { it.name == fieldIsRequestInProgress }
-        memberProperty?.let {
-            it.isAccessible = true
-            val isRequestInProgress = it.get(propertiesManager) as Boolean? // здесь приводишь к нужному типу
-            assertThat(isRequestInProgress).isEqualTo(false) // ну здесь логика, какая нужна
+        verify(exactly = 0) {
+            mockPropertiesStorage.clear(any())
         }
+
+        assertThatIsRequestInProgressIsEqualTo(false)
     }
 
     @Test
-    fun forceSendProperties_onSuccess() {
-        propertiesManager.mockPrivateField(fieldIsRequestInProgress, false)
+    fun `should force send properties and get response in onSuccess callback`() {
+        every { mockPropertiesStorage.getProperties() } returns properties
 
         every {
             mockRepository.sendProperties(properties, captureLambda(), any())
@@ -106,96 +149,13 @@ class QUserPropertiesManagerTest {
 
         propertiesManager.forceSendProperties()
 
-        verify(exactly = 2) {
+        verify(exactly = 1) {
             mockPropertiesStorage.getProperties()
             mockRepository.sendProperties(properties, any(), any())
-        }
-
-        verify {
             mockPropertiesStorage.clear(properties)
         }
 
-        val memberProperty = QUserPropertiesManager::class.memberProperties.find { it.name == fieldIsRequestInProgress }
-        memberProperty?.let {
-            it.isAccessible = true
-            val isRequestInProgress = it.get(propertiesManager) as Boolean? // здесь приводишь к нужному типу
-            assertThat(isRequestInProgress).isEqualTo(false) // ну здесь логика, какая нужна
-        }
-    }
-
-    @Test
-    fun setUserID() {
-        val userId = "userId"
-
-        val spyUserPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
-        justRun { spyUserPropertiesManager.setUserProperty("_q_custom_user_id", userId) }
-
-        spyUserPropertiesManager.setUserID(userId)
-
-        verify() {
-            spyUserPropertiesManager.setUserProperty("_q_custom_user_id", userId)
-        }
-    }
-
-    @Test
-    fun setUserProperty_emptyValue() {
-        val key = QUserProperties.Email
-        val value = ""
-
-        propertiesManager.setProperty(key, value)
-
-        verify(exactly = 0) {
-            mockPropertiesStorage.save(key.userPropertyCode, value)
-        }
-
-        verify(exactly = 1) {
-            mockHandler.postDelayed(any(), any())
-        }
-    }
-
-    @Test
-    fun setUserProperty_requestInProgress() {
-        val key = QUserProperties.Email
-        val value = "some value"
-
-        propertiesManager.mockPrivateField(fieldIsRequestInProgress, true)
-
-        propertiesManager.setProperty(key, value)
-
-        verify(exactly = 1) {
-            mockPropertiesStorage.save(key.userPropertyCode, value)
-            mockHandler.postDelayed(any(), any())
-        }
-    }
-
-    @Test
-    fun setUserProperty() {
-        val key = "_q_email"
-        val value = "some value"
-        val handlerDelay = (5 * 1000).toLong()
-
-        propertiesManager.mockPrivateField(fieldIsRequestInProgress, false)
-
-        val properties = mapOf("someKey" to "someValue")
-
-        every {
-            mockRepository.sendProperties(properties, captureLambda(), any())
-        } answers {
-            lambda<() -> Unit>().captured.invoke()
-        }
-
-        propertiesManager.setUserProperty(key, value)
-
-        verify(exactly = 1) {
-            mockPropertiesStorage.save(key, value)
-            mockPropertiesStorage.clear(properties)
-        }
-
-        verify(exactly = 2) {
-            mockHandler.postDelayed(any(), handlerDelay)
-            mockRepository.sendProperties(properties, any(), any())
-        }
-
+        assertThatIsRequestInProgressIsEqualTo(false)
     }
 
     @Test
@@ -203,53 +163,76 @@ class QUserPropertiesManagerTest {
         val key = QUserProperties.Email
         val value = "me@qonversion.io"
 
-        val spyUserPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
-        justRun { spyUserPropertiesManager.setUserProperty("_q_email", value) }
+        propertiesManager.setProperty(key, value)
 
-        spyUserPropertiesManager.setProperty(key, value)
-
-        verify() {
-            spyUserPropertiesManager.setUserProperty("_q_email", value)
+        verify {
+            propertiesManager.setUserProperty("_q_email", value)
         }
     }
 
     @Test
-    fun sendPropertiesAtPeriod() {
-        val delayMillis: Long = 5 * 1000
+    fun setUserID() {
+        val userId = "userId"
+
+        propertiesManager.setUserID(userId)
 
         verify(exactly = 1) {
-            mockHandler.postDelayed(any(), delayMillis)
+            propertiesManager.setUserProperty("_q_custom_user_id", userId)
         }
     }
 
     @Test
-    fun `init when fbAttributionId is not null`() {
-        val fbAttributionId = "fbAttributionId"
-        mockkConstructor(FacebookAttribution::class)
-        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
+    fun `should not set user property when its value is empty`() {
+        val key = "email"
+        val value = ""
 
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockPropertiesStorage, mockLogger)
-
-        verify(exactly = 1) {
-            mockPropertiesStorage.save(
-                "_q_fb_attribution",
-                fbAttributionId
-            )
-        }
-    }
-
-    @Test
-    fun `init when fbAttributionId is null`() {
-        mockkConstructor(FacebookAttribution::class)
-        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
-
-        propertiesManager = QUserPropertiesManager(mockContext, mockRepository, mockPropertiesStorage, mockLogger)
+        propertiesManager.setUserProperty(key, value)
 
         verify(exactly = 0) {
-            mockPropertiesStorage.save(
-                any(),
-                any()
-            )
+            mockPropertiesStorage.save(any(), any())
+            mockHandler.postDelayed(any(), any())
+        }
+    }
+
+    @Test
+    fun `should set and send user property when its is not empty and request is not in progress`() {
+        val key = "_q_email"
+        val value = "some value"
+        val handlerDelay = (5 * 1000).toLong()
+
+        propertiesManager.setUserProperty(key, value)
+
+        verify(exactly = 1) {
+            mockPropertiesStorage.save(key, value)
+            mockHandler.postDelayed(any(), handlerDelay)
+            propertiesManager.forceSendProperties()
+        }
+    }
+
+    @Test
+    fun `should not send user property when request is in progress`() {
+        val key = "email"
+        val value = "value"
+
+        propertiesManager.mockPrivateField(fieldIsRequestInProgress, true)
+
+        propertiesManager.setUserProperty(key, value)
+
+        verify(exactly = 0) {
+            mockHandler.postDelayed(any(), any())
+            propertiesManager.forceSendProperties()
+        }
+    }
+
+    private fun assertThatIsRequestInProgressIsEqualTo(value: Boolean) {
+        val memberProperty =
+            QUserPropertiesManager::class.memberProperties.find { it.name == fieldIsRequestInProgress }
+
+        memberProperty?.let {
+            it.isAccessible = true
+            val isRequestInProgress =
+                it.get(propertiesManager) as Boolean?
+            assertThat(isRequestInProgress).isEqualTo(value)
         }
     }
 }
