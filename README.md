@@ -19,8 +19,6 @@ Implement in-app subscriptions, validate user receipts, check subscription statu
 
 Check the [documentation](https://docs.qonversion.io) to learn details on implementing and using Qonversion SDKs.
 
-The latest release is available on [Bintray](https://dl.bintray.com/artemyglukhov/Qonversion).
-
 [![Release](https://img.shields.io/github/release/qonversion/android-sdk.svg?style=flat)](https://github.com/qonversion/android-sdk/releases)
 [![MIT License](http://img.shields.io/cocoapods/l/Qonversion.svg?style=flat)](http://qonversion.io)
 

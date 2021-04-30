@@ -25,7 +25,6 @@ class RepositoryModule {
     fun provideRepository(
         retrofit: Retrofit,
         tokenStorage: TokenStorage,
-        propertiesStorage: PropertiesStorage,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
         logger: Logger,
@@ -36,7 +35,6 @@ class RepositoryModule {
         return QonversionRepository(
             retrofit.create(Api::class.java),
             tokenStorage,
-            propertiesStorage,
             environmentProvider,
             config.sdkVersion,
             config.key,
@@ -59,7 +57,7 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun providePropertiesStorage(): PropertiesStorage {
+    fun providePropertiesStorage(): UserPropertiesStorage {
         return UserPropertiesStorage()
     }
 

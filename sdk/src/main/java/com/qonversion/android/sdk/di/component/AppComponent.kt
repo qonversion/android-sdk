@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.di.component
 
+import com.qonversion.android.sdk.QUserPropertiesManager
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.module.AppModule
 import com.qonversion.android.sdk.di.module.ManagersModule
@@ -18,4 +19,5 @@ interface AppComponent {
     fun purchasesCache(): PurchasesCache
     fun launchResultCacheWrapper(): LaunchResultCacheWrapper
     fun automationsManager(): QAutomationsManager
+    fun userPropertiesManager(): QUserPropertiesManager
 }
