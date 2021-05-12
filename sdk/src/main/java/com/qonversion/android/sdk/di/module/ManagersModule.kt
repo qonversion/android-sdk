@@ -8,11 +8,7 @@ import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.QUserPropertiesManager
-import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.di.scope.ApplicationScope
-import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 
 import dagger.Module
@@ -40,6 +36,8 @@ class ManagersModule {
         return QIdentityManager(repository, userInfoService)
     }
 
+    @ApplicationScope
+    @Provides
     fun provideUserPropertiesManager(
         appContext: Application,
         repository: QonversionRepository,
