@@ -514,6 +514,12 @@ class QProductCenterManager internal constructor(
         repository.uid = userID
     }
 
+    fun resetUser() {
+        userInfoService.deleteUser()
+        val userID = userInfoService.obtainUserID()
+        repository.uid = userID
+    }
+
     private fun handleLogout() {
         unhandledLogoutAvailable = false
         launch()

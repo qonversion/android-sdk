@@ -228,16 +228,30 @@ object Qonversion : LifecycleDelegate {
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Call this function to link a user to his unique ID in your system and share purchase data.
+     * @param userID - unique user ID in your system
+     */
     @JvmStatic
     fun identify(userID: String) {
         productCenterManager?.identify(userID)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
+    /**
+     * Call this function to unlink a user from his unique ID in your system and his purchase data.
+     */
     @JvmStatic
     fun logout() {
         productCenterManager?.logout()
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Call this function to unlink a user from his unique ID in your system and his purchase data.
+     */
+    fun resetUser() {
+        productCenterManager.resetUser()
     }
 
     /**
