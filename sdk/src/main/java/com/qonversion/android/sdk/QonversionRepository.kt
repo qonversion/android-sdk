@@ -34,7 +34,11 @@ class QonversionRepository internal constructor(
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
+
+    @Volatile
     var uid = ""
+        @Synchronized set
+        @Synchronized get
 
     // Public functions
 
