@@ -62,13 +62,11 @@ object Qonversion : LifecycleDelegate {
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
 
-        var userID = ""
-
         if (shouldResetUser) {
             userInfoService.deleteUser()
         }
 
-        userID = userInfoService.obtainUserID()
+        val userID = userInfoService.obtainUserID()
 
         repository.uid = userID
 
