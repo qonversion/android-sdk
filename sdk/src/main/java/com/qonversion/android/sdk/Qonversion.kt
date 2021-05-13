@@ -17,6 +17,7 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
+    private var shouldResetUser = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -61,7 +62,14 @@ object Qonversion : LifecycleDelegate {
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
 
-        val userID = userInfoService.obtainUserID()
+        var userID = ""
+
+        if (shouldResetUser) {
+            userInfoService.deleteUser()
+        }
+
+        userID = userInfoService.obtainUserID()
+
         repository.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
@@ -248,10 +256,12 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
-     * Call this function to unlink a user from his unique ID in your system and his purchase data.
+     * Call this function to reset user ID and generate new anonymous user ID.
+     * Call this function before Qonversion.launch()
      */
+    @JvmStatic
     fun resetUser() {
-        productCenterManager.resetUser()
+        shouldResetUser = true
     }
 
     /**
