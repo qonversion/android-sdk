@@ -17,6 +17,7 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
+    private var shouldResetUser = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -58,6 +59,16 @@ object Qonversion : LifecycleDelegate {
         val repository = QDependencyInjector.appComponent.repository()
         val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
+        val userInfoService = QDependencyInjector.appComponent.userInfoService()
+        val identityManager = QDependencyInjector.appComponent.identityManager()
+
+        if (shouldResetUser) {
+            userInfoService.deleteUser()
+        }
+
+        val userID = userInfoService.obtainUserID()
+
+        repository.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -68,7 +79,7 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper)
+        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
         productCenterManager?.launch(callback)
     }
 
@@ -221,6 +232,34 @@ object Qonversion : LifecycleDelegate {
     fun syncPurchases() {
         productCenterManager?.syncPurchases()
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Call this function to link a user to his unique ID in your system and share purchase data.
+     * @param userID - unique user ID in your system
+     */
+    @JvmStatic
+    fun identify(userID: String) {
+        productCenterManager?.identify(userID)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Call this function to unlink a user from his unique ID in your system and his purchase data.
+     */
+    @JvmStatic
+    fun logout() {
+        productCenterManager?.logout()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Call this function to reset user ID and generate new anonymous user ID.
+     * Call this function before Qonversion.launch()
+     */
+    @JvmStatic
+    fun resetUser() {
+        shouldResetUser = true
     }
 
     /**

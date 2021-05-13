@@ -18,24 +18,24 @@ import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.Storage
-import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
 
 class QonversionRepository internal constructor(
     private val api: Api,
-    private var storage: Storage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
     private val isDebugMode: Boolean,
     private val logger: Logger,
-    private val requestQueue: RequestsQueue,
-    private val requestValidator: Validator<QonversionRequest>,
     private val purchasesCache: PurchasesCache
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
+
+    @Volatile
+    var uid = ""
+        @Synchronized set
+        @Synchronized get
 
     // Public functions
 
@@ -68,12 +68,14 @@ class QonversionRepository internal constructor(
 
     fun attribution(conversionInfo: Map<String, Any>, from: String) {
         val attributionRequest = createAttributionRequest(conversionInfo, from)
-        if (requestValidator.valid(attributionRequest)) {
-            logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [TRUE]")
-            sendQonversionRequest(attributionRequest)
-        } else {
-            logger.debug("QonversionRepository: request: [${attributionRequest.javaClass.simpleName}] authorized: [FALSE]")
-            requestQueue.add(attributionRequest)
+        api.attribution(attributionRequest).enqueue {
+            onResponse = {
+                logger.release("AttributionRequest - success - $it")
+            }
+
+            onFailure = {
+                logger.release("AttributionRequest - failure - ${it?.toQonversionError()}")
+            }
         }
     }
 
@@ -82,11 +84,6 @@ class QonversionRepository internal constructor(
         onSuccess: () -> Unit,
         onError: () -> Unit
     ) {
-        val uid = storage.load()
-        if (uid.isEmpty()) {
-            return
-        }
-
         val propertiesRequest = PropertiesRequest(
             accessToken = key,
             clientUid = uid,
@@ -96,10 +93,8 @@ class QonversionRepository internal constructor(
         api.properties(propertiesRequest).enqueue {
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
-
+                
                 if (it.isSuccessful) onSuccess() else onError()
-
-                kickRequestQueue()
             }
             onFailure = {
                 logger.debug("propertiesRequest - failure - ${it?.toQonversionError()}")
@@ -113,8 +108,6 @@ class QonversionRepository internal constructor(
         installDate: Long,
         callback: QonversionEligibilityCallback
     ) {
-        val uid = storage.load()
-
         val eligibilityRequest = EligibilityRequest(
             installDate = installDate,
             device = environmentProvider.getInfo(advertisingId),
@@ -136,12 +129,38 @@ class QonversionRepository internal constructor(
                 } else {
                     callback.onError(it.toQonversionError())
                 }
-                kickRequestQueue()
             }
             onFailure = {
                 logger.release("eligibilityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
                     callback.onError(it.toQonversionError())
+                }
+            }
+        }
+    }
+
+    fun identify(
+        userID: String,
+        currentUserID: String,
+        onSuccess: (identityID: String) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        val identityRequest = IdentityRequest(currentUserID, userID)
+        api.identify(identityRequest).enqueue {
+            onResponse = {
+                logger.release("identityRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (body != null && it.isSuccessful) {
+                    onSuccess(body.data.userID)
+                } else {
+                    onError(it.toQonversionError())
+                }
+            }
+            onFailure = {
+                logger.release("identityRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    onError(it.toQonversionError())
                 }
             }
         }
@@ -177,7 +196,6 @@ class QonversionRepository internal constructor(
     }
 
     fun views(screenId: String) {
-        val uid = storage.load()
         val viewsRequest = ViewsRequest(uid)
 
         api.views(screenId, viewsRequest).enqueue {
@@ -195,8 +213,6 @@ class QonversionRepository internal constructor(
         onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val uid = storage.load()
-
         api.actionPoints(uid, queryParams).enqueue {
             onResponse = {
                 logger.release("actionPointsRequest - ${it.getLogMessage()}")
@@ -221,8 +237,7 @@ class QonversionRepository internal constructor(
     private fun createAttributionRequest(
         conversionInfo: Map<String, Any>,
         from: String
-    ): QonversionRequest {
-        val uid = storage.load()
+    ): AttributionRequest {
         return AttributionRequest(
             d = environmentProvider.getInfo(),
             v = sdkVersion,
@@ -235,43 +250,12 @@ class QonversionRepository internal constructor(
         )
     }
 
-    private fun sendQonversionRequest(request: QonversionRequest) {
-        when (request) {
-            is AttributionRequest -> {
-                api.attribution(request).enqueue {
-                    onResponse = {
-                        logger.release("QonversionRequest - success - $it")
-                        kickRequestQueue()
-                    }
-
-                    onFailure = {
-                        logger.release("QonversionRequest - failure - $it")
-                    }
-                }
-            }
-        }
-    }
-
-    private fun kickRequestQueue() {
-        val clientUid = storage.load()
-        if (clientUid.isNotEmpty() && !requestQueue.isEmpty()) {
-            logger.debug("QonversionRepository: kickRequestQueue queue is not empty")
-            val request = requestQueue.poll()
-            logger.debug("QonversionRepository: kickRequestQueue next request ${request?.javaClass?.simpleName}")
-            if (request != null) {
-                request.authorize(clientUid)
-                sendQonversionRequest(request)
-            }
-        }
-    }
-
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
         callback: QonversionLaunchCallback,
         retries: Int = MAX_RETRIES_NUMBER
     ) {
-        val uid = storage.load()
         val purchaseRequest = PurchaseRequest(
             installDate,
             device = environmentProvider.getInfo(advertisingId),
@@ -292,7 +276,6 @@ class QonversionRepository internal constructor(
                 } else {
                     handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
                 }
-                kickRequestQueue()
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
@@ -384,7 +367,6 @@ class QonversionRepository internal constructor(
         historyRecords: List<PurchaseHistoryRecord>,
         callback: QonversionLaunchCallback?
     ) {
-        val uid = storage.load()
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
             installDate = installDate,
@@ -420,7 +402,6 @@ class QonversionRepository internal constructor(
         } else {
             callback?.onError(response.toQonversionError())
         }
-        kickRequestQueue()
     }
 
     private fun initRequest(
@@ -428,7 +409,6 @@ class QonversionRepository internal constructor(
         callback: QonversionLaunchCallback? = null,
         pushToken: String? = null
     ) {
-        val uid = storage.load()
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
@@ -445,12 +425,10 @@ class QonversionRepository internal constructor(
                 logger.release("initRequest - success - $it")
                 val body = it.body()
                 if (body != null && body.success) {
-                    storage.save(body.data.uid)
                     callback?.onSuccess(body.data)
                 } else {
                     callback?.onError(it.toQonversionError())
                 }
-                kickRequestQueue()
             }
             onFailure = {
                 logger.release("initRequest - failure - ${it?.toQonversionError()}")

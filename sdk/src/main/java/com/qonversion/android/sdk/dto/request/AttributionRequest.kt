@@ -12,18 +12,6 @@ data class AttributionRequest(
     @Json(name = "access_token") val accessToken: String,
     @Json(name = "provider_data") val providerData: ProviderData,
     @Json(name = "client_uid") var clientUid: String?
-) : QonversionRequest {
-    override fun authorize(clientUid: String) {
-        this.clientUid = clientUid
-    }
+) {
 
-    override fun isAuthorized(): Boolean {
-        if (this.clientUid == null) {
-            return false
-        }
-        if (this.clientUid!!.isEmpty()) {
-            return false
-        }
-        return true
-    }
 }
