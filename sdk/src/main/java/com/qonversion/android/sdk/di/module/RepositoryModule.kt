@@ -30,7 +30,6 @@ class RepositoryModule {
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
-            tokenStorage,
             environmentProvider,
             config.sdkVersion,
             config.key,

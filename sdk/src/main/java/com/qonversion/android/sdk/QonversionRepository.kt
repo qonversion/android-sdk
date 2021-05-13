@@ -18,13 +18,10 @@ import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.Storage
-import com.qonversion.android.sdk.validator.Validator
 import retrofit2.Response
 
 class QonversionRepository internal constructor(
     private val api: Api,
-    private var storage: Storage,
     private val environmentProvider: EnvironmentProvider,
     private val sdkVersion: String,
     private val key: String,
@@ -87,11 +84,6 @@ class QonversionRepository internal constructor(
         onSuccess: () -> Unit,
         onError: () -> Unit
     ) {
-        val uid = storage.load()
-        if (uid.isEmpty()) {
-            return
-        }
-
         val propertiesRequest = PropertiesRequest(
             accessToken = key,
             clientUid = uid,
