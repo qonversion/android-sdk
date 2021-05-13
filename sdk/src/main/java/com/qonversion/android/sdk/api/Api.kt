@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.api
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.eligibility.EligibilityResult
+import com.qonversion.android.sdk.dto.identity.IdentityResult
 import com.qonversion.android.sdk.dto.request.*
 import retrofit2.Call
 import retrofit2.http.*
@@ -26,6 +27,9 @@ interface Api {
 
     @POST("v1/products/get")
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
+
+    @POST("v2/identities")
+    fun identify(@Body request: IdentityRequest): Call<Data<IdentityResult>>
 
     @GET("v2/screens/{id}")
     fun screens(@Path("id") screenId: String): Call<Data<Screen>>

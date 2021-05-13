@@ -8,9 +8,9 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.billing.BillingService
 import com.qonversion.android.sdk.billing.QonversionBillingService
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import com.qonversion.android.sdk.storage.SharedPreferencesCache
 
 class QonversionFactory internal constructor(
     private val context: Application,
@@ -20,9 +20,11 @@ class QonversionFactory internal constructor(
         repository: QonversionRepository,
         isObserveMode: Boolean,
         purchasesCache: PurchasesCache,
-        launchResultCacheWrapper: LaunchResultCacheWrapper
+        launchResultCacheWrapper: LaunchResultCacheWrapper,
+        userInfoService: QUserInfoService,
+        identityManager: QIdentityManager
     ): QProductCenterManager {
-        val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper)
+        val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService

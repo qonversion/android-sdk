@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 
@@ -26,7 +27,9 @@ class QProductCenterManager internal constructor(
     private val repository: QonversionRepository,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
-    private val launchResultCache: LaunchResultCacheWrapper
+    private val launchResultCache: LaunchResultCacheWrapper,
+    private val userInfoService: QUserInfoService,
+    private val identityManager: QIdentityManager
 ) : QonversionBillingService.PurchasesListener {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -46,6 +49,10 @@ class QProductCenterManager internal constructor(
     private var permissionsCallbacks = mutableListOf<QonversionPermissionsCallback>()
     private var experimentsCallbacks = mutableListOf<QonversionExperimentsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
+
+    private var identityInProgress: Boolean = false
+    private var pendingIdentityUserID: String? = null
+    private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
 
@@ -116,6 +123,49 @@ class QProductCenterManager internal constructor(
                 executeOfferingCallback(callback)
 
             override fun onError(error: QonversionError) = callback.onError(error)
+        })
+    }
+
+    fun identify(userID: String) {
+        if (!isLaunchingFinished) {
+            pendingIdentityUserID = userID
+            return
+        }
+
+        identityInProgress = true
+
+        if (launchError != null) {
+            repository.init(installDate = installDate, callback = object: QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    processIdentity(userID)
+                }
+
+                override fun onError(error: QonversionError) {
+                    executePermissionsBlock(error)
+                }
+            })
+        } else {
+            processIdentity(userID)
+        }
+    }
+
+    private fun processIdentity(userID: String) {
+        identityManager.identify(userID, object : IdentityManagerCallback {
+            override fun onSuccess(identityID: String) {
+                pendingIdentityUserID = null
+                identityInProgress = false
+                repository.uid = identityID
+
+                launch()
+            }
+
+            override fun onError(error: QonversionError) {
+                pendingIdentityUserID = null
+                identityInProgress = false
+
+                executePermissionsBlock(error)
+            }
+
         })
     }
 
@@ -290,7 +340,13 @@ class QProductCenterManager internal constructor(
     ) {
         permissionsCallbacks.add(callback)
 
-        if (!isLaunchingFinished) {
+        if (!isLaunchingFinished || identityInProgress) {
+            return
+        }
+
+        val pendingUserID = pendingIdentityUserID
+        if (!pendingUserID.isNullOrEmpty()) {
+            identify(pendingUserID)
             return
         }
 
@@ -419,9 +475,19 @@ class QProductCenterManager internal constructor(
                 updateLaunchResult(launchResult)
                 launchError = null
 
+                if (!identityInProgress) {
+                    val userID = pendingIdentityUserID
+                    if (!userID.isNullOrEmpty()) {
+                        identify(userID)
+                    } else if (unhandledLogoutAvailable) {
+                        handleLogout()
+                    } else {
+                        executePermissionsBlock()
+                    }
+                }
+
                 loadStoreProductsIfPossible()
 
-                executePermissionsBlock()
                 executeExperimentsBlocks()
                 handleCachedPurchases()
 
@@ -438,6 +504,19 @@ class QProductCenterManager internal constructor(
                 callback?.onError(error)
             }
         }
+    }
+
+    fun logout() {
+        identityManager.logout()
+        unhandledLogoutAvailable = true
+
+        val userID = userInfoService.obtainUserID()
+        repository.uid = userID
+    }
+
+    private fun handleLogout() {
+        unhandledLogoutAvailable = false
+        launch()
     }
 
     private fun updateLaunchResult(launchResult: QLaunchResult) {
@@ -556,7 +635,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun executePermissionsBlock() {
+    private fun executePermissionsBlock(error: QonversionError? = null) {
         if (permissionsCallbacks.isEmpty()) {
             return
         }
@@ -620,24 +699,28 @@ class QProductCenterManager internal constructor(
         onSuccess: (permissions: Map<String, QPermission>) -> Unit,
         onError: (QonversionError) -> Unit
     ) {
-        launchResult?.let {
+        if (launchError != null || unhandledLogoutAvailable) {
+            retryLaunch(
+                onSuccess = { launchResult ->
+                    onSuccess(launchResult.permissions)
+                    unhandledLogoutAvailable = false
+                },
+                onError = { error ->
+                    unhandledLogoutAvailable = false
+                    if (forceLaunchRetry || pendingIdentityUserID != null) {
+                        onError(error)
+                    } else {
+                        val cachedLaunchResult = launchResultCache.getActualLaunchResult()
+
+                        cachedLaunchResult?.let {
+                            onSuccess(it.permissions)
+                        } ?: onError(error)
+                    }
+                })
+        } else {
             val permissions = launchResult?.permissions ?: mapOf()
             onSuccess(permissions)
-        } ?: retryLaunch(
-            onSuccess = { launchResult ->
-                onSuccess(launchResult.permissions)
-            },
-            onError = { error ->
-                if (forceLaunchRetry) {
-                    onError(error)
-                } else {
-                    val cachedLaunchResult = launchResultCache.getActualLaunchResult()
-
-                    cachedLaunchResult?.let {
-                        onSuccess(it.permissions)
-                    } ?: onError(error)
-                }
-            })
+        }
     }
 
     private fun getActualLaunchResult(): QLaunchResult? =
