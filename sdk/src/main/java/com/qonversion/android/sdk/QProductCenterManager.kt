@@ -141,7 +141,7 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
-                    executePermissionsBlock(error)
+                    executePermissionsBlock()
                 }
             })
         } else {
@@ -163,7 +163,7 @@ class QProductCenterManager internal constructor(
                 pendingIdentityUserID = null
                 identityInProgress = false
 
-                executePermissionsBlock(error)
+                executePermissionsBlock()
             }
 
         })
@@ -635,7 +635,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun executePermissionsBlock(error: QonversionError? = null) {
+    private fun executePermissionsBlock() {
         if (permissionsCallbacks.isEmpty()) {
             return
         }
