@@ -23,10 +23,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
             .setListener { billingResult, list ->
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     if (list != null && list.isNotEmpty()) {
-                        trackPurchase(
-                            skuDetails[SKU_ID]!!,
-                            list[0]
-                        )
+                        Qonversion.syncPurchases()
                     }
                 }
             }
@@ -34,39 +31,37 @@ class ManualTrackingActivityKt : AppCompatActivity() {
         launchBilling()
     }
 
-    private fun trackPurchase(
-        details: SkuDetails,
-        purchase: Purchase
-    ) {
-        Qonversion.syncPurchases()
-    }
-
     private fun launchBilling() {
         client!!.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    val params =
-                        SkuDetailsParams
-                            .newBuilder()
-                            .setSkusList(listOf(SKU_ID))
-                            .setType(BillingClient.SkuType.INAPP)
-                            .build()
-                    client!!.querySkuDetailsAsync(
-                        params
-                    ) { billingResult, list ->
-                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                            if (!list!!.isEmpty()) {
-                                skuDetails[SKU_ID] = list[0]
-                            }
-                            launchBillingFlow()
-                        }
-                    }
+                    querySkuDetailsAsync()
                 }
             }
 
             override fun onBillingServiceDisconnected() { // ignore in example
             }
         })
+    }
+
+    private fun querySkuDetailsAsync() {
+        val params =
+            SkuDetailsParams
+                .newBuilder()
+                .setSkusList(listOf(SKU_ID))
+                .setType(BillingClient.SkuType.INAPP)
+                .build()
+
+        client!!.querySkuDetailsAsync(
+            params
+        ) { billingResult, list ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                if (!list!!.isEmpty()) {
+                    skuDetails[SKU_ID] = list[0]
+                }
+                launchBillingFlow()
+            }
+        }
     }
 
     private fun launchBillingFlow() {

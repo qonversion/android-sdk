@@ -22,7 +22,6 @@ class RepositoryModule {
     @Provides
     fun provideRepository(
         retrofit: Retrofit,
-        tokenStorage: TokenStorage,
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
         logger: Logger,
