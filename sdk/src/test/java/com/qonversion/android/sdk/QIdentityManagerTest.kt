@@ -18,10 +18,6 @@ class QIdentityManagerTest {
     fun setUp() {
         clearAllMocks()
 
-        every {
-            mockUserInfoService.obtainUserID()
-        } returns currentUserID
-
         identityManager = QIdentityManager(mockRepository, mockUserInfoService)
     }
 
@@ -33,6 +29,10 @@ class QIdentityManagerTest {
             val identityID = "identityID"
             var resultUserID: String? = null
             mockIdentifyResponse(identityID)
+
+            every {
+                mockUserInfoService.obtainUserID()
+            } returns currentUserID
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
@@ -53,6 +53,10 @@ class QIdentityManagerTest {
             var resultUserID: String? = null
             mockIdentifyResponse(identityID)
 
+            every {
+                mockUserInfoService.obtainUserID()
+            } returns currentUserID
+
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
                 override fun onSuccess(identityID: String) {
@@ -70,6 +74,10 @@ class QIdentityManagerTest {
             // given
             val identityID = "identityID"
             mockIdentifyResponse(identityID)
+
+            every {
+                mockUserInfoService.obtainUserID()
+            } returns currentUserID
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
@@ -90,6 +98,10 @@ class QIdentityManagerTest {
             // given
             val identityID = ""
             mockIdentifyResponse(identityID)
+
+            every {
+                mockUserInfoService.obtainUserID()
+            } returns currentUserID
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
@@ -116,6 +128,10 @@ class QIdentityManagerTest {
                     QonversionError(QonversionErrorCode.BackendError)
                 )
             }
+
+            every {
+                mockUserInfoService.obtainUserID()
+            } returns currentUserID
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
