@@ -16,7 +16,7 @@ class IncrementalCalculator(private val randomizer: Random) {
     fun countDelay(minDelay: Int, retriesCount: Int): Int {
         var delay = minDelay + FACTOR.pow(retriesCount)
         val delta = (delay * JITTER).roundToInt()
-        delay += randomizer.nextInt((delta + 1))
+        delay += randomizer.nextInt(delta + 1)
         val resultDelay = min(delay.roundToInt(), MAX_DELAY)
 
         return resultDelay
