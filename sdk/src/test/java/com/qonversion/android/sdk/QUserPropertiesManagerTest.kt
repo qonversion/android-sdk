@@ -265,9 +265,9 @@ class QUserPropertiesManagerTest {
     @Test
     fun setProperty() {
         // given
-        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
         val key = QUserProperties.Email
         val value = "me@qonversion.io"
+        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 
         // when
         spykPropertiesManager.setProperty(key, value)
@@ -281,8 +281,8 @@ class QUserPropertiesManagerTest {
     @Test
     fun setUserID() {
         // given
-        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
         val userId = "userId"
+        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 
         // when
         spykPropertiesManager.setUserID(userId)
@@ -308,6 +308,26 @@ class QUserPropertiesManagerTest {
                 mockPropertiesStorage,
                 mockHandler
             ) wasNot Called
+        }
+    }
+
+    @Test
+    fun `should set and not send user property when retriesCounter is not 0`() {
+        // given
+        val handlerDelay = (minDelay * 1000).toLong()
+        val key = "email"
+        val value = "some value"
+
+        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
+        spykPropertiesManager.mockPrivateField(fieldRetriesCounter, 1)
+        mockPostDelayed(handlerDelay)
+
+        // when
+        spykPropertiesManager.setUserProperty(key, value)
+
+        // then
+        verify(exactly = 0) {
+            spykPropertiesManager.forceSendProperties()
         }
     }
 

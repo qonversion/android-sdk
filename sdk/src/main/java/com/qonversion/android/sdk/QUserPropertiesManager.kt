@@ -85,7 +85,9 @@ class QUserPropertiesManager @Inject internal constructor(
         }
 
         propertiesStorage.save(key, value)
-        sendPropertiesWithDelay(retryDelay)
+        if (retriesCounter == 0) {
+            sendPropertiesWithDelay(retryDelay)
+        }
     }
 
     private fun sendPropertiesWithDelay(delaySec: Int) {
