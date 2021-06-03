@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.di.module
 
 import android.app.Application
 import android.content.SharedPreferences
-import com.qonversion.android.sdk.IncrementalCounter
+import com.qonversion.android.sdk.IncrementalCalculator
 import com.qonversion.android.sdk.QIdentityManager
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.scope.ApplicationScope
@@ -44,15 +44,15 @@ class ManagersModule {
         appContext: Application,
         repository: QonversionRepository,
         propertiesStorage: UserPropertiesStorage,
-        incrementalCounter: IncrementalCounter,
+        incrementalCalculator: IncrementalCalculator,
         logger: Logger
     ): QUserPropertiesManager {
-        return QUserPropertiesManager(appContext, repository, propertiesStorage, incrementalCounter, logger)
+        return QUserPropertiesManager(appContext, repository, propertiesStorage, incrementalCalculator, logger)
     }
 
     @ApplicationScope
     @Provides
-    fun provideIncrementalCounter(): IncrementalCounter {
-        return IncrementalCounter(Random())
+    fun provideIncrementalCounter(): IncrementalCalculator {
+        return IncrementalCalculator(Random())
     }
 }

@@ -12,7 +12,7 @@ class QUserPropertiesManager @Inject internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private var propertiesStorage: PropertiesStorage,
-    private val counter: IncrementalCounter,
+    private val calculator: IncrementalCalculator,
     private val logger: Logger
 ) {
     private var handler: Handler? = null
@@ -65,7 +65,7 @@ class QUserPropertiesManager @Inject internal constructor(
                 onError = {
                     isRequestInProgress = false
                     retriesCounter++
-                    retryDelay = counter.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
+                    retryDelay = calculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
                     sendPropertiesWithDelay(retryDelay)
                 })
         }

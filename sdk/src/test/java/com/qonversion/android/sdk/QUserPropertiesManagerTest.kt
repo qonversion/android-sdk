@@ -20,7 +20,7 @@ class QUserPropertiesManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
     private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
-    private val mockIncrementalCounter = mockk<IncrementalCounter>(relaxed = true)
+    private val mockIncrementalCalculator = mockk<IncrementalCalculator>(relaxed = true)
     private val mockLogger: Logger = mockk(relaxed = true)
 
     private val fieldIsRequestInProgress = "isRequestInProgress"
@@ -49,7 +49,7 @@ class QUserPropertiesManagerTest {
                 mockContext,
                 mockRepository,
                 mockPropertiesStorage,
-                mockIncrementalCounter,
+                mockIncrementalCalculator,
                 mockLogger
             )
     }
@@ -104,7 +104,7 @@ class QUserPropertiesManagerTest {
         // then
         verify {
             listOf(
-                mockIncrementalCounter,
+                mockIncrementalCalculator,
                 mockPropertiesStorage,
                 mockRepository,
                 mockHandler
@@ -141,7 +141,7 @@ class QUserPropertiesManagerTest {
         }
         verify {
             listOf(
-                mockIncrementalCounter,
+                mockIncrementalCalculator,
                 mockRepository,
                 mockHandler
             ) wasNot Called
@@ -189,7 +189,7 @@ class QUserPropertiesManagerTest {
         verifyOrder {
             mockPropertiesStorage.getProperties()
             mockRepository.sendProperties(properties, any(), any())
-            mockIncrementalCounter.countDelay(minDelay, 1)
+            mockIncrementalCalculator.countDelay(minDelay, 1)
             mockHandler.postDelayed(any(), handlerDelay)
         }
 
@@ -346,7 +346,7 @@ class QUserPropertiesManagerTest {
 
     private fun mockIncrementalCounterResponse(delay: Int) {
         every {
-            mockIncrementalCounter.countDelay(minDelay, 1)
+            mockIncrementalCalculator.countDelay(minDelay, 1)
         } returns delay
     }
 

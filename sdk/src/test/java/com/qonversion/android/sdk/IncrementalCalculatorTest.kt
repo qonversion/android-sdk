@@ -7,16 +7,16 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class IncrementalCounterTest {
+class IncrementalCalculatorTest {
     private val mockRandomizer = mockk<Random>(relaxed = true)
     private val random = 3
     private val minDelay = 5
 
-    private lateinit var counter: IncrementalCounter
+    private lateinit var calculator: IncrementalCalculator
 
     @BeforeEach
     fun setUp() {
-        counter = IncrementalCounter(mockRandomizer)
+        calculator = IncrementalCalculator(mockRandomizer)
     }
 
     @Nested
@@ -29,7 +29,7 @@ class IncrementalCounterTest {
             } returns random
 
             // when
-            val result = counter.countDelay(minDelay, 0)
+            val result = calculator.countDelay(minDelay, 0)
 
             // then
             assertEquals(9, result)
@@ -43,7 +43,7 @@ class IncrementalCounterTest {
             } returns random
 
             // when
-            val result = counter.countDelay(minDelay, 1)
+            val result = calculator.countDelay(minDelay, 1)
 
             // then
             assertEquals(10, result)
@@ -57,7 +57,7 @@ class IncrementalCounterTest {
             } returns random
 
             // when
-            val result = counter.countDelay(minDelay, 10)
+            val result = calculator.countDelay(minDelay, 10)
 
             // then
             assertEquals(1000, result)
