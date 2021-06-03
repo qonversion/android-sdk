@@ -10,4 +10,11 @@ fun Any.mockPrivateField(fieldName: String, field: Any?) {
         ?.set(this, field)
 }
 
+fun <T> Any.getPrivateField(name: String): T {
+    val field = this::class.java.getDeclaredField(name)
+    field.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    return field.get(this) as T
+}
+
 fun Boolean.toInt() = if (this) 1 else 0

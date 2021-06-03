@@ -3,6 +3,7 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import android.os.HandlerThread
+import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import javax.inject.Inject
@@ -11,14 +12,17 @@ class QUserPropertiesManager @Inject internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
     private var propertiesStorage: PropertiesStorage,
+    private val counter: IncrementalCounter,
     private val logger: Logger
 ) {
-    private var isRequestInProgress: Boolean = false
     private var handler: Handler? = null
+    private var isRequestInProgress: Boolean = false
+    private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
+    private var retriesCounter = 0
 
     companion object {
-        private const val PROPERTY_UPLOAD_PERIOD = 5 * 1000
         private const val LOOPER_THREAD_NAME = "userPropertiesThread"
+        private const val PROPERTY_UPLOAD_MIN_DELAY = 5
     }
 
     init {
@@ -47,16 +51,22 @@ class QUserPropertiesManager @Inject internal constructor(
         }
 
         val properties = propertiesStorage.getProperties()
+
         if (properties.isNotEmpty()) {
             isRequestInProgress = true
 
             repository.sendProperties(properties,
                 onSuccess = {
                     isRequestInProgress = false
+                    retriesCounter = 0
+                    retryDelay = PROPERTY_UPLOAD_MIN_DELAY
                     propertiesStorage.clear(properties)
                 },
                 onError = {
                     isRequestInProgress = false
+                    retriesCounter++
+                    retryDelay = counter.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
+                    sendPropertiesWithDelay(retryDelay)
                 })
         }
     }
@@ -75,16 +85,14 @@ class QUserPropertiesManager @Inject internal constructor(
         }
 
         propertiesStorage.save(key, value)
-        sendPropertiesAtPeriod()
+        sendPropertiesWithDelay(retryDelay)
     }
 
-    private fun sendPropertiesAtPeriod() {
-        if (isRequestInProgress) {
-            return
-        }
+    private fun sendPropertiesWithDelay(delaySec: Int) {
+        val delayMillis = delaySec.toLong().secondsToMilliSeconds()
 
         handler?.postDelayed({
             forceSendProperties()
-        }, PROPERTY_UPLOAD_PERIOD.toLong())
+        }, delayMillis)
     }
 }
