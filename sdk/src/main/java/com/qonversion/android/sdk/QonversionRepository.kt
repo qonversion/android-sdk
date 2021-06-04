@@ -70,7 +70,7 @@ class QonversionRepository internal constructor(
         val attributionRequest = createAttributionRequest(conversionInfo, from)
         api.attribution(attributionRequest).enqueue {
             onResponse = {
-                logger.release("AttributionRequest - success - $it")
+                logger.release("AttributionRequest - ${it.getLogMessage()}")
             }
 
             onFailure = {
@@ -269,7 +269,7 @@ class QonversionRepository internal constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-                logger.release("purchaseRequest - success - $it")
+                logger.release("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
@@ -380,7 +380,8 @@ class QonversionRepository internal constructor(
 
         api.restore(request).enqueue {
             onResponse = {
-                logger.release("restoreRequest - success - $it")
+                logger.release("restoreRequest - ${it.getLogMessage()}")
+
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
@@ -422,7 +423,8 @@ class QonversionRepository internal constructor(
 
         api.init(initRequest).enqueue {
             onResponse = {
-                logger.release("initRequest - success - $it")
+                logger.release("initRequest - ${it.getLogMessage()}")
+
                 val body = it.body()
                 if (body != null && body.success) {
                     callback?.onSuccess(body.data)
