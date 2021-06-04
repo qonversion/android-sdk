@@ -1,8 +1,9 @@
 package com.qonversion.android.sdk.di.module
 
 import android.app.Application
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.api.ApiHeadersProvider
-import com.qonversion.android.sdk.api.HeadersInterceptor
+import com.qonversion.android.sdk.api.NetworkInterceptor
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.dto.*
 import com.squareup.moshi.Moshi
@@ -52,7 +53,7 @@ class NetworkModule {
     @Provides
     fun provideOkHttpClient(
         context: Application,
-        interceptor: HeadersInterceptor
+        interceptor: NetworkInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .cache(Cache(context.cacheDir, CACHE_SIZE))
@@ -65,13 +66,14 @@ class NetworkModule {
     @ApplicationScope
     @Provides
     fun provideHeadersInterceptor(
-        apiHeadersProvider: ApiHeadersProvider
-    ): HeadersInterceptor {
-        return HeadersInterceptor(apiHeadersProvider)
+        apiHeadersProvider: ApiHeadersProvider,
+        config: QonversionConfig
+    ): NetworkInterceptor {
+        return NetworkInterceptor(apiHeadersProvider, config)
     }
 
     companion object {
-        private const val BASE_URL = "https://api.qonversion.io/"
+        const val BASE_URL = "https://api.qonversion.io/"
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L //10 MB
     }
