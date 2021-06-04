@@ -114,14 +114,16 @@ class QUserPropertiesManagerTest {
 
         val isRequestInProgress =
             propertiesManager.getPrivateField<Boolean>(fieldIsRequestInProgress)
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         val retryDelay = propertiesManager.getPrivateField<Int>(fieldRetryDelay)
         val retriesCounter = propertiesManager.getPrivateField<Int>(fieldRetriesCounter)
 
         assertAll(
             "Private members have been changed",
-            { assertEquals(true, isRequestInProgress) },
-            { assertEquals(minDelay, retryDelay) },
-            { assertEquals(0, retriesCounter) }
+            { assertEquals("The field isRequestInProgress is not equal true",true, isRequestInProgress) },
+            { assertEquals("The field retryDelay is not equal minDelay", minDelay, retryDelay) },
+            { assertEquals("The field retriesCounter is not equal 0", 0, retriesCounter) },
+            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
         )
     }
 
@@ -150,14 +152,16 @@ class QUserPropertiesManagerTest {
 
         val isRequestInProgress =
             propertiesManager.getPrivateField<Boolean>(fieldIsRequestInProgress)
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         val retryDelay = propertiesManager.getPrivateField<Int>(fieldRetryDelay)
         val retriesCounter = propertiesManager.getPrivateField<Int>(fieldRetriesCounter)
 
         assertAll(
             "Private members have been changed",
-            { assertEquals(false, isRequestInProgress) },
-            { assertEquals(minDelay, retryDelay) },
-            { assertEquals(0, retriesCounter) }
+            { assertEquals("The field isRequestInProgress is not equal false", false, isRequestInProgress) },
+            { assertEquals("The field retryDelay is not equal minDelay", minDelay, retryDelay) },
+            { assertEquals("The field retriesCounter is not equal 0", 0, retriesCounter) },
+            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
         )
     }
 
@@ -174,8 +178,8 @@ class QUserPropertiesManagerTest {
 
         assertAll(
             "Private members haven't been changed",
-            { assertEquals(true, isRequestInProgress) },
-            { assertEquals(false, isSendingScheduled) }
+            { assertEquals("The field isRequestInProgress is not equal true", true, isRequestInProgress) },
+            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
         )
     }
 
@@ -204,14 +208,16 @@ class QUserPropertiesManagerTest {
 
         val isRequestInProgress =
             propertiesManager.getPrivateField<Boolean>(fieldIsRequestInProgress)
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         val retryDelay = propertiesManager.getPrivateField<Int>(fieldRetryDelay)
         val retriesCounter = propertiesManager.getPrivateField<Int>(fieldRetriesCounter)
 
         assertAll(
             "Private members haven't been changed to calculate new delay",
-            { assertEquals(false, isRequestInProgress) },
-            { assertEquals(retryDelay, calculatedDelay) },
-            { assertEquals(1, retriesCounter) }
+            { assertEquals("The field isRequestInProgress is not equal false", false, isRequestInProgress) },
+            { assertEquals("The field retryDelay is not equal calculatedDelay", retryDelay, calculatedDelay) },
+            { assertEquals("The field retriesCounter is not equal 1", 1, retriesCounter) },
+            { assertEquals("The field isSendingScheduled is not equal true", true, isSendingScheduled) }
         )
     }
 
@@ -256,14 +262,16 @@ class QUserPropertiesManagerTest {
 
         val isRequestInProgress =
             propertiesManager.getPrivateField<Boolean>(fieldIsRequestInProgress)
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         val retryDelay = propertiesManager.getPrivateField<Int>(fieldRetryDelay)
         val retriesCounter = propertiesManager.getPrivateField<Int>(fieldRetriesCounter)
 
         assertAll(
             "Private members haven't been reset",
-            { assertEquals(false, isRequestInProgress) },
-            { assertEquals(minDelay, retryDelay) },
-            { assertEquals(0, retriesCounter) }
+            { assertEquals("The field isRequestInProgress is not equal false", false, isRequestInProgress) },
+            { assertEquals("The field retryDelay is not equal minDelay", minDelay, retryDelay) },
+            { assertEquals("The field retriesCounter is not equal 0", 0, retriesCounter) },
+            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
         )
     }
 
