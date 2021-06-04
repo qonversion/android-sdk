@@ -16,7 +16,8 @@ class QUserPropertiesManager @Inject internal constructor(
     private val logger: Logger
 ) {
     private var handler: Handler? = null
-    private var isRequestInProgress: Boolean = false
+    private var isRequestInProgress = false
+    private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
 
@@ -54,6 +55,7 @@ class QUserPropertiesManager @Inject internal constructor(
 
         if (properties.isNotEmpty()) {
             isRequestInProgress = true
+            isSendingScheduled = false
 
             repository.sendProperties(properties,
                 onSuccess = {
@@ -85,14 +87,14 @@ class QUserPropertiesManager @Inject internal constructor(
         }
 
         propertiesStorage.save(key, value)
-        if (retriesCounter == 0) {
+        if (!isSendingScheduled) {
             sendPropertiesWithDelay(retryDelay)
         }
     }
 
     private fun sendPropertiesWithDelay(delaySec: Int) {
         val delayMillis = delaySec.toLong().secondsToMilliSeconds()
-
+        isSendingScheduled = true
         handler?.postDelayed({
             forceSendProperties()
         }, delayMillis)
