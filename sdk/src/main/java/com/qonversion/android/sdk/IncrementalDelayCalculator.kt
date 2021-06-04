@@ -5,7 +5,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-class IncrementalCalculator(private val randomizer: Random) {
+class IncrementalDelayCalculator(private val randomizer: Random) {
 
     companion object {
         private const val JITTER = 0.4f

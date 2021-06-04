@@ -20,7 +20,7 @@ class QUserPropertiesManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
     private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
-    private val mockIncrementalCalculator = mockk<IncrementalCalculator>(relaxed = true)
+    private val mockIncrementalCalculator = mockk<IncrementalDelayCalculator>(relaxed = true)
     private val mockLogger: Logger = mockk(relaxed = true)
 
     private val fieldIsRequestInProgress = "isRequestInProgress"
