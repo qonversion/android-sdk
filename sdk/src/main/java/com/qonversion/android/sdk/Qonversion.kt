@@ -17,7 +17,6 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
-    private var shouldResetUser = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -61,10 +60,6 @@ object Qonversion : LifecycleDelegate {
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
-
-        if (shouldResetUser) {
-            userInfoService.deleteUser()
-        }
 
         val userID = userInfoService.obtainUserID()
 
@@ -259,7 +254,7 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun resetUser() {
-        shouldResetUser = true
+        logger.debug(object {}.javaClass.enclosingMethod?.name + " function can not be executed. It looks like launch was not called.")
     }
 
     /**
