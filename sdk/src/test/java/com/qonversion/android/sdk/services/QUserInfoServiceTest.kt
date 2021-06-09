@@ -4,6 +4,7 @@ import com.qonversion.android.sdk.Constants
 import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.TokenStorage
 import io.mockk.*
+import junit.framework.Assert.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -279,7 +280,7 @@ class QUserInfoServiceTest {
         } returns originalUserID
 
         // when
-        userInfoService.logoutIfNeeded()
+        val isLogoutNeeded = userInfoService.logoutIfNeeded()
 
         // then
         verifySequence {
@@ -290,6 +291,8 @@ class QUserInfoServiceTest {
         verify(exactly = 0) {
             mockSharedPreferencesCache.putString(any(), any())
         }
+
+        assertEquals("must be false", false, isLogoutNeeded)
     }
 
     @Test
@@ -307,7 +310,7 @@ class QUserInfoServiceTest {
         } returns userID
 
         // when
-        userInfoService.logoutIfNeeded()
+        val isLogoutNeeded = userInfoService.logoutIfNeeded()
 
         // then
         verifySequence {
@@ -315,6 +318,8 @@ class QUserInfoServiceTest {
             mockSharedPreferencesCache.getString(prefsUserIdKey, null)
             mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
         }
+
+        assertEquals("must be true", true, isLogoutNeeded)
     }
 
     @Nested
