@@ -127,6 +127,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
+        unhandledLogoutAvailable = false
         if (!isLaunchingFinished) {
             pendingIdentityUserID = userID
             return
@@ -150,13 +151,20 @@ class QProductCenterManager internal constructor(
     }
 
     private fun processIdentity(userID: String) {
+        val currentUserID = userInfoService.obtainUserID()
+
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
                 pendingIdentityUserID = null
-                identityInProgress = false
-                repository.uid = identityID
 
-                launch()
+                if (currentUserID == identityID) {
+                    executePermissionsBlock()
+                } else {
+                    identityInProgress = false
+                    repository.uid = identityID
+
+                    launch()
+                }
             }
 
             override fun onError(error: QonversionError) {
@@ -507,11 +515,15 @@ class QProductCenterManager internal constructor(
     }
 
     fun logout() {
-        identityManager.logout()
-        unhandledLogoutAvailable = true
+        pendingIdentityUserID = null
+        val isLogoutNeeded = identityManager.logoutIfNeeded()
 
-        val userID = userInfoService.obtainUserID()
-        repository.uid = userID
+        if (isLogoutNeeded) {
+            unhandledLogoutAvailable = true
+
+            val userID = userInfoService.obtainUserID()
+            repository.uid = userID
+        }
     }
 
     private fun handleLogout() {

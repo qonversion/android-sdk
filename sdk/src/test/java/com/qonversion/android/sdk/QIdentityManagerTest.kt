@@ -161,11 +161,11 @@ class QIdentityManagerTest {
     @Test
     fun logout() {
         // when
-        identityManager.logout()
+        identityManager.logoutIfNeeded()
 
         //then
         verify(exactly = 1) {
-            mockUserInfoService.logout()
+            mockUserInfoService.logoutIfNeeded()
         }
     }
 }

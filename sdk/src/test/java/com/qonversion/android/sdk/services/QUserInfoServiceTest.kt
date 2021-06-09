@@ -1,8 +1,10 @@
 package com.qonversion.android.sdk.services
 
+import com.qonversion.android.sdk.Constants
 import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.TokenStorage
 import io.mockk.*
+import junit.framework.Assert.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -265,7 +267,7 @@ class QUserInfoServiceTest {
     }
 
     @Test
-    fun logout() {
+    fun `should not logout if logged user ID is same as anon`() {
         // given
         val originalUserID = "originalUserID"
 
@@ -273,14 +275,51 @@ class QUserInfoServiceTest {
             mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
         } returns originalUserID
 
+        every {
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+        } returns originalUserID
+
         // when
-        userInfoService.logout()
+        val isLogoutNeeded = userInfoService.logoutIfNeeded()
 
         // then
         verifySequence {
             mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+        }
+
+        verify(exactly = 0) {
+            mockSharedPreferencesCache.putString(any(), any())
+        }
+
+        assertEquals("must be false", false, isLogoutNeeded)
+    }
+
+    @Test
+    fun `should logout if logged user ID is not same as anon`() {
+        // given
+        val originalUserID = "originalUserID"
+        val userID = "userID"
+
+        every {
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+        } returns originalUserID
+
+        every {
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+        } returns userID
+
+        // when
+        val isLogoutNeeded = userInfoService.logoutIfNeeded()
+
+        // then
+        verifySequence {
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
             mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
         }
+
+        assertEquals("must be true", true, isLogoutNeeded)
     }
 
     @Nested

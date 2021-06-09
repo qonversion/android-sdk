@@ -17,7 +17,6 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
-    private var shouldResetUser = false
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -61,10 +60,6 @@ object Qonversion : LifecycleDelegate {
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
-
-        if (shouldResetUser) {
-            userInfoService.deleteUser()
-        }
 
         val userID = userInfoService.obtainUserID()
 
@@ -257,9 +252,10 @@ object Qonversion : LifecycleDelegate {
      * Call this function to reset user ID and generate new anonymous user ID.
      * Call this function before Qonversion.launch()
      */
+    @Deprecated("This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.", level = DeprecationLevel.WARNING)
     @JvmStatic
     fun resetUser() {
-        shouldResetUser = true
+        logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
     }
 
     /**
