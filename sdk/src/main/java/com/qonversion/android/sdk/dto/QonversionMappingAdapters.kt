@@ -159,6 +159,21 @@ class QOfferingsAdapter {
     }
 }
 
+class QOfferingAdapter {
+    @ToJson
+    private fun toJson(offering: QOffering): String {
+        return offering.offeringID
+    }
+
+    @FromJson
+    fun fromJson(offering: QOffering): QOffering {
+        offering.products.forEach {
+            it.offeringID = offering.offeringID
+        }
+        return offering
+    }
+}
+
 class QEligibilityStatusAdapter {
     @ToJson
     private fun toJson(enum: QIntroEligibilityStatus): String {

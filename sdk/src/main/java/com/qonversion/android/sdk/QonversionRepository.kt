@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
@@ -10,6 +11,8 @@ import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
@@ -53,9 +56,11 @@ class QonversionRepository internal constructor(
     fun purchase(
         installDate: Long,
         purchase: Purchase,
+        experimentInfo: QExperimentInfo?,
+        qProductId: String?,
         callback: QonversionLaunchCallback
     ) {
-        purchaseRequest(installDate, purchase, callback)
+        purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
     }
 
     fun restore(
@@ -232,6 +237,38 @@ class QonversionRepository internal constructor(
         }
     }
 
+    fun experimentEvents(offering: QOffering) {
+        if (offering.experimentInfo == null) {
+            return
+        }
+
+        val groupId = offering.experimentInfo.group.type.type
+        val experimentId = offering.experimentInfo.experimentID
+        val payload = mapOf(
+            "experiment_id" to experimentId,
+            "group_id" to groupId
+        )
+
+        eventRequest(EXPERIMENT_STARTED_EVENT_NAME, payload)
+    }
+
+    private fun eventRequest(eventName: String, payload: Map<String, Any>) {
+        val eventRequest = EventRequest(
+            userId = uid,
+            eventName = eventName,
+            payload = payload
+        )
+
+        api.events(eventRequest).enqueue {
+            onResponse = {
+                logger.debug("eventRequest - ${it.getLogMessage()}")
+            }
+            onFailure = {
+                logger.debug("eventRequest - failure - ${it?.toQonversionError()}")
+            }
+        }
+    }
+
     // Private functions
 
     private fun createAttributionRequest(
@@ -253,6 +290,8 @@ class QonversionRepository internal constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
+        experimentInfo: QExperimentInfo?,
+        qProductId: String?,
         callback: QonversionLaunchCallback,
         retries: Int = MAX_RETRIES_NUMBER
     ) {
@@ -264,7 +303,9 @@ class QonversionRepository internal constructor(
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase),
-            introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
+            introductoryOffer = convertIntroductoryPurchaseDetail(purchase),
+            experimentInfo = experimentInfo,
+            qProductId = qProductId ?: ""
         )
 
         api.purchase(purchaseRequest).enqueue {
@@ -274,13 +315,13 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
                 } else {
-                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
+                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)
                 }
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    handleErrorPurchase(installDate, purchase, callback, it.toQonversionError(), retries)
+                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)
                 }
             }
         }
@@ -289,12 +330,14 @@ class QonversionRepository internal constructor(
     private fun handleErrorPurchase(
         installDate: Long,
         purchase: Purchase,
+        experimentInfo: QExperimentInfo?,
+        qProductId: String?,
         callback: QonversionLaunchCallback,
         error: QonversionError,
         retries: Int
     ) {
         if (retries > 0) {
-            purchaseRequest(installDate, purchase, callback, retries - 1)
+            purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback, retries - 1)
         } else {
             callback.onError(error)
             purchasesCache.savePurchase(purchase)

@@ -41,6 +41,7 @@ class NetworkModule {
             .add(QProductTypeAdapter())
             .add(QProductRenewStateAdapter())
             .add(QOfferingsAdapter())
+            .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())
             .add(QExperimentGroupTypeAdapter())
             .add(QExperimentsAdapter())
@@ -74,6 +75,8 @@ class NetworkModule {
 
     companion object {
         const val BASE_URL = "https://api.qonversion.io/"
+//        const val BASE_URL = "https://api.qmoons.me"
+
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L //10 MB
     }

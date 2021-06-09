@@ -20,6 +20,9 @@ data class QProduct(
         }
 
     @Transient
+    var offeringID: String? = null
+
+    @Transient
     var prettyPrice: String? = null
 
     @Transient
