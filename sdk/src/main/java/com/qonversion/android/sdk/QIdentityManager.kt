@@ -27,7 +27,7 @@ class QIdentityManager @Inject constructor(
             })
     }
 
-    fun logout() {
-        userInfoService.logout()
+    fun logoutIfNeeded(): Boolean {
+        return userInfoService.logoutIfNeeded()
     }
 }

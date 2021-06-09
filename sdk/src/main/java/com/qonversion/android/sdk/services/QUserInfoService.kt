@@ -38,9 +38,17 @@ class QUserInfoService @Inject constructor(
         preferences.putString(PREFS_USER_ID_KEY, userID)
     }
 
-    fun logout() {
+    fun logoutIfNeeded(): Boolean {
         val originalUserID = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
+        val defaultUserID = preferences.getString(PREFS_USER_ID_KEY, null)
+
+        if (originalUserID == defaultUserID) {
+            return false
+        }
+
         preferences.putString(PREFS_USER_ID_KEY, originalUserID)
+
+        return true
     }
 
     fun deleteUser() {
