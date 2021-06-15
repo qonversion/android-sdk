@@ -2,12 +2,20 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
 
 object Qonversion : LifecycleDelegate {
 
@@ -17,6 +25,7 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
+    private val handler = Handler(Looper.getMainLooper())
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -75,7 +84,13 @@ object Qonversion : LifecycleDelegate {
         val factory = QonversionFactory(context, logger)
 
         productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
-        productCenterManager?.launch(callback)
+        productCenterManager?.launch(object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) =
+                postToMainThread { callback?.onSuccess(launchResult) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback?.onError(error) }
+        })
     }
 
     /**
@@ -87,7 +102,7 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, id, null, null, callback)
+        productCenterManager?.purchaseProduct(context, id, null, null, mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -106,7 +121,7 @@ object Qonversion : LifecycleDelegate {
         oldProductId: String,
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, callback)
+        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -133,7 +148,7 @@ object Qonversion : LifecycleDelegate {
             productId,
             oldProductId,
             prorationMode,
-            callback
+            mainPermissionsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -147,8 +162,14 @@ object Qonversion : LifecycleDelegate {
     fun products(
         callback: QonversionProductsCallback
     ) {
-        productCenterManager?.loadProducts(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.loadProducts(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) =
+                postToMainThread { callback.onSuccess(products) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -163,8 +184,13 @@ object Qonversion : LifecycleDelegate {
     fun offerings(
         callback: QonversionOfferingsCallback
     ) {
-        productCenterManager?.offerings(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.offerings(object : QonversionOfferingsCallback {
+            override fun onSuccess(offerings: QOfferings) =
+                postToMainThread { callback.onSuccess(offerings) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -175,8 +201,13 @@ object Qonversion : LifecycleDelegate {
     fun experiments(
         callback: QonversionExperimentsCallback
     ) {
-        productCenterManager?.experiments(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.experiments(object : QonversionExperimentsCallback {
+            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
+                postToMainThread { callback.onSuccess(experiments) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -190,8 +221,15 @@ object Qonversion : LifecycleDelegate {
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     ) {
-        productCenterManager?.checkTrialIntroEligibilityForProductIds(productIds, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.checkTrialIntroEligibilityForProductIds(
+            productIds,
+            object : QonversionEligibilityCallback {
+                override fun onSuccess(eligibilities: Map<String, QEligibility>) =
+                    callback.onSuccess(eligibilities)
+
+                override fun onError(error: QonversionError) =
+                    callback.onError(error)
+            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -203,7 +241,7 @@ object Qonversion : LifecycleDelegate {
     fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager?.checkPermissions(callback)
+        productCenterManager?.checkPermissions(mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -214,7 +252,7 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager?.restore(callback)
+        productCenterManager?.restore(mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -346,6 +384,19 @@ object Qonversion : LifecycleDelegate {
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
+
+    private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
+        object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) =
+                postToMainThread { callback.onSuccess(permissions) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }
+
+    private fun postToMainThread(runnable: () -> Unit) {
+        handler.post {
+            runnable()
+        }
+    }
 }
-
-
