@@ -3,6 +3,7 @@ package com.qonversion.android.sdk
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData

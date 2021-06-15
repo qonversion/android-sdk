@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.converter
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.Extractor
 
@@ -21,7 +22,7 @@ class GooglePurchaseConverter(
         "D" to 1
     )
 
-    override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
+    override fun convert(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
         return Purchase(
@@ -30,20 +31,20 @@ class GooglePurchaseConverter(
             description = details.description,
             productId = purchase.sku,
             type = details.type,
-            originalPrice = details.originalPrice ?: "",
+            originalPrice = details.originalPrice,
             originalPriceAmountMicros = details.originalPriceAmountMicros,
             priceCurrencyCode = details.priceCurrencyCode,
             price = formatPrice(details.priceAmountMicros),
             priceAmountMicros = details.priceAmountMicros,
             periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
             periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
-            freeTrialPeriod = details.freeTrialPeriod ?: "",
+            freeTrialPeriod = details.freeTrialPeriod,
             introductoryAvailable = details.introductoryPrice.isNotEmpty(),
             introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
             introductoryPrice = getIntroductoryPrice(details),
             introductoryPriceCycles = getIntroductoryPriceCycles(details),
             introductoryPeriodUnit = daysPeriodUnit,
-            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
+            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod),
             orderId = purchase.orderId,
             originalOrderId = formatOriginalTransactionId(purchase.orderId),
             packageName = purchase.packageName,
@@ -57,11 +58,11 @@ class GooglePurchaseConverter(
     }
 
     private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
-        return if (details.freeTrialPeriod.isNullOrEmpty()) details.introductoryPriceCycles else 0
+        return if (details.freeTrialPeriod.isEmpty()) details.introductoryPriceCycles else 0
     }
 
     private fun getIntroductoryPrice(details: SkuDetails): String {
-        if (details.freeTrialPeriod.isNullOrEmpty()) {
+        if (details.freeTrialPeriod.isEmpty()) {
             return formatPrice(details.introductoryPriceAmountMicros)
         }
 
