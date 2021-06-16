@@ -1,0 +1,46 @@
+package com.qonversion.android.app
+
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.qonversion.android.app.databinding.FragmentOfferingsBinding
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.QonversionOfferingsCallback
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+
+class OfferingsFragment : Fragment() {
+    private val TAG = "OfferingsFragment"
+    lateinit var binding: FragmentOfferingsBinding
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentOfferingsBinding.inflate(inflater)
+
+        binding.recyclerViewProductsList.layoutManager = LinearLayoutManager(context)
+
+        Qonversion.offerings(object : QonversionOfferingsCallback {
+            override fun onSuccess(offerings: QOfferings) {
+                val mainProducts = offerings.main?.products
+                mainProducts?.let {
+                    binding.recyclerViewProductsList.adapter = ProductsAdapter(it)
+                } ?:  Toast.makeText(context, "There are no products in main offering", Toast.LENGTH_LONG).show()
+            }
+
+            override fun onError(error: QonversionError) {
+                Toast.makeText(context, error.description, Toast.LENGTH_LONG).show()
+                Log.e(TAG, error.toString())
+            }
+        })
+
+        return binding.root
+    }
+}

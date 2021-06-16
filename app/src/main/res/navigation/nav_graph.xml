@@ -13,10 +13,18 @@
         <action
             android:id="@+id/action_homeFragment_to_permissionsFragment"
             app:destination="@id/permissionsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_offeringsFragment"
+            app:destination="@id/offeringsFragment" />
     </fragment>
     <fragment
         android:id="@+id/permissionsFragment"
         android:name="com.qonversion.android.app.PermissionsFragment"
         android:label="fragment_permissions"
         tools:layout="@layout/fragment_permissions" />
+    <fragment
+        android:id="@+id/offeringsFragment"
+        android:name="com.qonversion.android.app.OfferingsFragment"
+        android:label="fragment_offerings"
+        tools:layout="@layout/fragment_offerings" />
 </navigation>

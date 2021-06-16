@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
 import com.qonversion.android.sdk.*
@@ -75,11 +74,6 @@ class HomeFragment : Fragment() {
             })
         }
 
-        binding.buttonPermissions.setOnClickListener {
-            val action = HomeFragmentDirections.actionHomeFragmentToPermissionsFragment()
-            findNavController().navigate(action)
-        }
-
         // Automation
         // You can skip this step if you don't need to handle the Qonversion Automations result
         Automations.setDelegate(automationsDelegate)
@@ -90,18 +84,16 @@ class HomeFragment : Fragment() {
             // Handle notification yourself
         }
 
-
         return binding.root
     }
 
     private fun updateContent(products: Map<String, QProduct>) {
-        binding.buttonPermissions.text = getString(R.string.check_active_permissions)
-        binding.buttonRestore.text = getString(R.string.restore_purchases)
+        binding.buttonRestore.text = requireActivity().getString(R.string.restore_purchases)
 
         val subscription = products[productIdSubs]
         if (subscription != null) {
             binding.buttonSubscribe.text = String.format(
-                "%s %s / %s", getString(R.string.subscribe_for),
+                "%s %s / %s", requireActivity().getString(R.string.subscribe_for),
                 subscription.prettyPrice, subscription.duration?.name
             )
         }
@@ -109,7 +101,7 @@ class HomeFragment : Fragment() {
         val inApp = products[productIdInApp]
         if (inApp != null) {
             binding.buttonInApp.text = String.format(
-                "%s %s", getString(R.string.buy_for),
+                "%s %s", requireActivity().getString(R.string.buy_for),
                 inApp.prettyPrice
             )
         }
@@ -119,17 +111,17 @@ class HomeFragment : Fragment() {
         var isNothingToRestore = true
         val permissionPlus = permissions[permissionPlus]
         if (permissionPlus != null && permissionPlus.isActive()) {
-            binding.buttonSubscribe.text = getString(R.string.purchased)
+            binding.buttonSubscribe.text = requireActivity().getString(R.string.purchased)
             isNothingToRestore = false
         }
         val permissionStandart = permissions[permissionStandart]
         if (permissionStandart != null && permissionStandart.isActive()) {
-            binding.buttonInApp.text = getString(R.string.purchased)
+            binding.buttonInApp.text = requireActivity().getString(R.string.purchased)
             isNothingToRestore = false
         }
 
         if (isNothingToRestore) {
-            binding.buttonRestore.text = getString(R.string.nothing_to_restore)
+            binding.buttonRestore.text = requireActivity().getString(R.string.nothing_to_restore)
         }
     }
 
@@ -140,9 +132,9 @@ class HomeFragment : Fragment() {
             callback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     when (productId) {
-                        productIdInApp -> binding.buttonInApp.text = getString(R.string.purchased)
+                        productIdInApp -> binding.buttonInApp.text = requireActivity().getString(R.string.purchased)
                         productIdSubs -> binding.buttonSubscribe.text =
-                            getString(R.string.purchased)
+                            requireActivity().getString(R.string.purchased)
                     }
                 }
 

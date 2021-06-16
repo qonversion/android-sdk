@@ -15,7 +15,7 @@ import com.qonversion.android.sdk.QonversionPermissionsCallback
 import com.qonversion.android.sdk.dto.QPermission
 
 class PermissionsFragment : Fragment() {
-    private val TAG = "PermissionsActivity"
+    private val TAG = "PermissionsFragment"
     lateinit var binding: FragmentPermissionsBinding
 
     override fun onCreateView(
