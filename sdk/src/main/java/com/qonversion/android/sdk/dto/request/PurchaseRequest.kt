@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.dto.request
 
 import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.squareup.moshi.Json
@@ -17,7 +16,5 @@ data class PurchaseRequest(
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "purchase") val purchase: PurchaseDetails,
-    @Json(name = "introductory_offer") val introductoryOffer: IntroductoryOfferDetails?,
-    @Json(name = "experiment_info") val experimentInfo: QExperimentInfo? = null,
-    @Json(name = "q_product_id") val qProductId: String
+    @Json(name = "introductory_offer") val introductoryOffer: IntroductoryOfferDetails?
 ) : RequestData()

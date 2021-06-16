@@ -242,11 +242,9 @@ class QonversionRepository internal constructor(
             return
         }
 
-        val groupId = offering.experimentInfo.group.type.type
         val experimentId = offering.experimentInfo.experimentID
         val payload = mapOf(
-            "experiment_id" to experimentId,
-            "group_id" to groupId
+            "experiment_id" to experimentId
         )
 
         eventRequest(EXPERIMENT_STARTED_EVENT_NAME, payload)
@@ -302,10 +300,8 @@ class QonversionRepository internal constructor(
             accessToken = key,
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
-            purchase = convertPurchaseDetails(purchase),
-            introductoryOffer = convertIntroductoryPurchaseDetail(purchase),
-            experimentInfo = experimentInfo,
-            qProductId = qProductId ?: ""
+            purchase = convertPurchaseDetails(purchase, experimentInfo, qProductId),
+            introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
         api.purchase(purchaseRequest).enqueue {
@@ -380,7 +376,12 @@ class QonversionRepository internal constructor(
         return introductoryOfferDetails
     }
 
-    private fun convertPurchaseDetails(purchase: Purchase): PurchaseDetails {
+    private fun convertPurchaseDetails(
+        purchase: Purchase,
+        experimentInfo: QExperimentInfo? = null,
+        qProductId: String? = null
+    ): PurchaseDetails {
+        val experimentUid = experimentInfo?.experimentID ?: ""
         return PurchaseDetails(
             purchase.productId,
             purchase.purchaseToken,
@@ -391,7 +392,9 @@ class QonversionRepository internal constructor(
             purchase.originalOrderId,
             purchase.periodUnit,
             purchase.periodUnitsCount,
-            null
+            null,
+            mapOf("uid" to experimentUid),
+            qProductId ?: ""
         )
     }
 

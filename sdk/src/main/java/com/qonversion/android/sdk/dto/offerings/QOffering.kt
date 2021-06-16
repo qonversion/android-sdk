@@ -11,7 +11,7 @@ class QOffering(
     @Json(name = "id") val offeringID: String,
     @Json(name = "tag") val tag: QOfferingTag,
     @Json(name = "products") products: List<QProduct> = listOf(),
-    @Json(name = "experiment_info") val experimentInfo: QExperimentInfo? = null
+    @Json(name = "experiment") val experimentInfo: QExperimentInfo? = null
 ) {
     @Transient
     internal var observer: OfferingsDelegate? = null
