@@ -12,9 +12,9 @@ data class PurchaseRequest(
     @Json(name = "device") override val device: Environment,
     @Json(name = "version") override val version: String,
     @Json(name = "access_token") override val accessToken: String,
-    @Json(name = "q_uid") override  val clientUid: String?,
+    @Json(name = "q_uid") override val clientUid: String?,
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "purchase") val purchase: PurchaseDetails,
     @Json(name = "introductory_offer") val introductoryOffer: IntroductoryOfferDetails?
-): RequestData()
+) : RequestData()

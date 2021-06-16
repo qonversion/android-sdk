@@ -15,6 +15,7 @@ import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
@@ -30,7 +31,7 @@ class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager
-) : QonversionBillingService.PurchasesListener {
+) : QonversionBillingService.PurchasesListener, OfferingsDelegate{
 
     private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
@@ -59,6 +60,8 @@ class QProductCenterManager internal constructor(
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
+    private var productPurchaseModel = mutableMapOf<String, Pair<QProduct, QOffering>>()
+
     @Volatile
     lateinit var billingService: BillingService
         @Synchronized set
@@ -77,6 +80,14 @@ class QProductCenterManager internal constructor(
     }
 
     // Public functions
+
+    override fun offeringByIDWasCalled(offering: QOffering?) {
+        val isAttached = offering?.experimentInfo?.attached
+        if (isAttached != null && !isAttached) {
+            repository.experimentEvents(offering)
+            offering.experimentInfo.attached = true
+        }
+    }
 
     fun onAppForeground() {
         handlePendingPurchases()
@@ -215,6 +226,7 @@ class QProductCenterManager internal constructor(
         if (offerings != null) {
             offerings.availableOfferings.forEach { offering ->
                 addSkuDetailForProducts(offering.products)
+                offering.observer = this
             }
             callback.onSuccess(offerings)
         } else {
@@ -240,22 +252,33 @@ class QProductCenterManager internal constructor(
 
     fun purchaseProduct(
         context: Activity,
-        id: String,
+        product: QProduct,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        purchaseProduct(context, product.qonversionID, oldProductId, prorationMode, product.offeringID, callback)
+    }
+
+    fun purchaseProduct(
+        context: Activity,
+        productId: String,
+        oldProductId: String?,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        offeringId: String?,
         callback: QonversionPermissionsCallback
     ) {
         if (launchError != null) {
             retryLaunch(
                 onSuccess = {
-                    tryToPurchase(context, id, oldProductId, prorationMode, callback)
+                    tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
                 },
                 onError = {
-                    tryToPurchase(context, id, oldProductId, prorationMode, callback)
+                    tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
                 }
             )
         } else {
-            tryToPurchase(context, id, oldProductId, prorationMode, callback)
+            tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
         }
     }
 
@@ -264,28 +287,30 @@ class QProductCenterManager internal constructor(
         id: String,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
+        offeringId: String?,
         callback: QonversionPermissionsCallback
     ) {
         when (loadProductsState) {
             Loading, NotStartedYet -> {
                 productsCallbacks.add(object : QonversionProductsCallback {
                     override fun onSuccess(products: Map<String, QProduct>) =
-                        processPurchase(context, id, oldProductId, prorationMode, callback)
+                        processPurchase(context, id, oldProductId, prorationMode, offeringId, callback)
 
                     override fun onError(error: QonversionError) = callback.onError(error)
                 })
             }
             Loaded, Failed -> {
-                processPurchase(context, id, oldProductId, prorationMode, callback)
+                processPurchase(context, id, oldProductId, prorationMode, offeringId, callback)
             }
         }
     }
 
     private fun processPurchase(
         context: Activity,
-        id: String,
+        productId: String,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
+        offeringId: String?,
         callback: QonversionPermissionsCallback
     ) {
         val actualLaunchResult = getActualLaunchResult()
@@ -294,7 +319,7 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val product: QProduct? = actualLaunchResult.products[id]
+        val product: QProduct? = getProductForPurchase(productId, offeringId, actualLaunchResult)
         val oldProduct: QProduct? = actualLaunchResult.products[oldProductId]
 
         if (product?.storeID == null) {
@@ -304,7 +329,7 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            logger.release("purchaseProduct() -> Purchase with id = $id is already in progress. This one call will be ignored")
+            logger.release("purchaseProduct() -> Purchase with id = $productId is already in progress. This one call will be ignored")
             return
         }
 
@@ -333,6 +358,31 @@ class QProductCenterManager internal constructor(
                     callback.onError(error)
                 })
         }
+    }
+
+    private fun getProductForPurchase(
+        productId: String?,
+        offeringId: String?,
+        actualLaunchResult: QLaunchResult
+    ): QProduct? {
+        if (productId == null) {
+            return null
+        }
+
+        val product: QProduct?
+        if (offeringId != null) {
+            val offering = getActualOfferings()?.offeringForID(offeringId)
+            product = offering?.productForID(productId)
+            if (product != null && offering != null) {
+                product.storeID?.let {
+                    productPurchaseModel[it] = Pair(product, offering)
+                }
+            }
+        } else {
+            product = actualLaunchResult.products[productId]
+        }
+
+        return product
     }
 
     fun checkPermissions(
@@ -578,7 +628,7 @@ class QProductCenterManager internal constructor(
     private fun handleCachedPurchases() {
         val cachedPurchases = purchasesCache.loadPurchases()
         cachedPurchases.forEach { purchase ->
-            repository.purchase(installDate, purchase, object : QonversionLaunchCallback {
+            repository.purchase(installDate, purchase, null, null, object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
                     purchasesCache.clearPurchase(purchase)
@@ -774,6 +824,15 @@ class QProductCenterManager internal constructor(
         callback: QonversionLaunchCallback
     ) {
         val purchase = converter.convert(purchaseInfo)
-        repository.purchase(installDate, purchase, callback)
+
+        val sku = purchaseInfo.first.sku
+        val product = productPurchaseModel[sku]?.first
+        val offering  = productPurchaseModel[sku]?.second
+        if (sku == product?.storeID) {
+            repository.purchase(installDate, purchase, offering?.experimentInfo, product?.qonversionID, callback)
+            productPurchaseModel.remove(sku)
+        } else {
+            repository.purchase(installDate, purchase, null, product?.qonversionID, callback)
+        }
     }
 }
