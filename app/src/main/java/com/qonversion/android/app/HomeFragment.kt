@@ -79,7 +79,8 @@ class HomeFragment : Fragment() {
         Automations.setDelegate(automationsDelegate)
 
         // Check if the activity was launched from a push notification
-        val remoteMessage: RemoteMessage? = requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
+        val remoteMessage: RemoteMessage? =
+            requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
         if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage)) {
             // Handle notification yourself
         }
@@ -88,12 +89,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateContent(products: Map<String, QProduct>) {
-        binding.buttonRestore.text = requireActivity().getString(R.string.restore_purchases)
+        binding.buttonRestore.text = getStr(R.string.restore_purchases)
 
         val subscription = products[productIdSubs]
         if (subscription != null) {
             binding.buttonSubscribe.text = String.format(
-                "%s %s / %s", requireActivity().getString(R.string.subscribe_for),
+                "%s %s / %s", getStr(R.string.subscribe_for),
                 subscription.prettyPrice, subscription.duration?.name
             )
         }
@@ -101,7 +102,7 @@ class HomeFragment : Fragment() {
         val inApp = products[productIdInApp]
         if (inApp != null) {
             binding.buttonInApp.text = String.format(
-                "%s %s", requireActivity().getString(R.string.buy_for),
+                "%s %s", getStr(R.string.buy_for),
                 inApp.prettyPrice
             )
         }
@@ -111,17 +112,17 @@ class HomeFragment : Fragment() {
         var isNothingToRestore = true
         val permissionPlus = permissions[permissionPlus]
         if (permissionPlus != null && permissionPlus.isActive()) {
-            binding.buttonSubscribe.text = requireActivity().getString(R.string.purchased)
+            binding.buttonSubscribe.text = getStr(R.string.purchased)
             isNothingToRestore = false
         }
         val permissionStandart = permissions[permissionStandart]
         if (permissionStandart != null && permissionStandart.isActive()) {
-            binding.buttonInApp.text = requireActivity().getString(R.string.purchased)
+            binding.buttonInApp.text = getStr(R.string.purchased)
             isNothingToRestore = false
         }
 
         if (isNothingToRestore) {
-            binding.buttonRestore.text = requireActivity().getString(R.string.nothing_to_restore)
+            binding.buttonRestore.text = getStr(R.string.nothing_to_restore)
         }
     }
 
@@ -132,9 +133,10 @@ class HomeFragment : Fragment() {
             callback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     when (productId) {
-                        productIdInApp -> binding.buttonInApp.text = requireActivity().getString(R.string.purchased)
+                        productIdInApp -> binding.buttonInApp.text =
+                            getStr(R.string.purchased)
                         productIdSubs -> binding.buttonSubscribe.text =
-                            requireActivity().getString(R.string.purchased)
+                            getStr(R.string.purchased)
                     }
                 }
 
@@ -162,6 +164,16 @@ class HomeFragment : Fragment() {
             TAG,
             "error code: $code, description: $description, additionalMessage: $additionalMessage"
         )
+    }
+
+    private fun getStr(stringId: Int): String {
+        return try {
+            requireContext().getString(stringId)
+        } catch (e: IllegalStateException) {
+            val errorResult = "There is no context"
+            Log.d(TAG, "$errorResult: ${e.localizedMessage}")
+            errorResult
+        }
     }
 
     private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
@@ -196,5 +208,4 @@ class HomeFragment : Fragment() {
             // Do some logic or track event
         }
     }
-
 }

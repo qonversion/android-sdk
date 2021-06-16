@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentPermissionsBinding
 import com.qonversion.android.sdk.Qonversion
@@ -26,6 +27,12 @@ class PermissionsFragment : Fragment() {
         binding = FragmentPermissionsBinding.inflate(inflater)
 
         binding.recyclerViewPermissionsList.layoutManager = LinearLayoutManager(context)
+        binding.recyclerViewPermissionsList.addItemDecoration(
+            DividerItemDecoration(
+                context,
+                DividerItemDecoration.VERTICAL
+            )
+        )
 
         Qonversion.checkPermissions(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
