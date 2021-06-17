@@ -223,8 +223,10 @@ class QProductCenterManager internal constructor(
 
     private fun executeOfferingCallback(callback: QonversionOfferingsCallback) {
         val offerings = getActualOfferings()
+
         if (offerings != null) {
             offerings.availableOfferings.forEach { offering ->
+                offering.observer = null
                 addSkuDetailForProducts(offering.products)
                 offering.observer = this
             }
