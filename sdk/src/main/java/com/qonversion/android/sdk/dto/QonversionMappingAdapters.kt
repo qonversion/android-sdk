@@ -160,11 +160,6 @@ class QOfferingsAdapter {
 }
 
 class QOfferingAdapter {
-    @ToJson
-    private fun toJson(offering: QOffering): String {
-        return offering.offeringID
-    }
-
     @FromJson
     fun fromJson(offering: QOffering): QOffering {
         offering.products.forEach {
