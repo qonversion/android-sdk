@@ -43,4 +43,6 @@ interface Api {
         @QueryMap params: Map<String, String>
     ): Call<Data<ActionPoints>>
 
+    @POST("v2/events")
+    fun events(@Body request: EventRequest): Call<Void>
 }
