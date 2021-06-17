@@ -31,7 +31,7 @@ class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager
-) : QonversionBillingService.PurchasesListener, OfferingsDelegate{
+) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
     private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
