@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
@@ -47,7 +46,7 @@ class HomeFragment : Fragment() {
 
             override fun onError(error: QonversionError) {
                 showLoading(false)
-                showError(error)
+                showError(requireContext(), error, TAG)
             }
         })
 
@@ -69,7 +68,7 @@ class HomeFragment : Fragment() {
 
                 override fun onError(error: QonversionError) {
                     showLoading(false)
-                    showError(error)
+                    showError(requireContext(), error, TAG)
                 }
             })
         }
@@ -141,7 +140,7 @@ class HomeFragment : Fragment() {
                 }
 
                 override fun onError(error: QonversionError) {
-                    showError(error)
+                    showError(requireContext(), error, TAG)
                 }
             })
     }
@@ -152,18 +151,6 @@ class HomeFragment : Fragment() {
         } else {
             ProgressBar.INVISIBLE
         }
-    }
-
-    private fun showError(error: QonversionError) {
-        val code = error.code                           // Error enum code
-        val description = error.description             // Error enum code description
-        val additionalMessage =
-            error.additionalMessage // Additional error information (if possible)
-        Toast.makeText(context, error.description, Toast.LENGTH_LONG).show()
-        Log.e(
-            TAG,
-            "error code: $code, description: $description, additionalMessage: $additionalMessage"
-        )
     }
 
     private fun getStr(stringId: Int): String {

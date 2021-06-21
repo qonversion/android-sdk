@@ -60,11 +60,11 @@ class OfferingsFragment : Fragment() {
         Qonversion.purchase(requireActivity(), product, callback = object :
             QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
-                // handle active permission here
+                Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
             }
 
             override fun onError(error: QonversionError) {
-                // handle error here
+                showError(requireContext(), error, TAG)
             }
         })
     }
