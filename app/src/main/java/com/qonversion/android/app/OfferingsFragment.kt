@@ -13,7 +13,10 @@ import com.qonversion.android.app.databinding.FragmentOfferingsBinding
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionOfferingsCallback
+import com.qonversion.android.sdk.QonversionPermissionsCallback
+import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
 
 class OfferingsFragment : Fragment() {
     private val TAG = "OfferingsFragment"
@@ -38,7 +41,9 @@ class OfferingsFragment : Fragment() {
             override fun onSuccess(offerings: QOfferings) {
                 val mainProducts = offerings.main?.products
                 mainProducts?.let {
-                    binding.recyclerViewProductsList.adapter = ProductsAdapter(it)
+                    binding.recyclerViewProductsList.adapter = ProductsAdapter(it) { product ->
+                        purchase(product)
+                    }
                 } ?:  Toast.makeText(context, "There are no products in main offering", Toast.LENGTH_LONG).show()
             }
 
@@ -49,5 +54,18 @@ class OfferingsFragment : Fragment() {
         })
 
         return binding.root
+    }
+
+    private fun purchase(product: QProduct) {
+        Qonversion.purchase(requireActivity(), product, callback = object :
+            QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) {
+                // handle active permission here
+            }
+
+            override fun onError(error: QonversionError) {
+                // handle error here
+            }
+        })
     }
 }

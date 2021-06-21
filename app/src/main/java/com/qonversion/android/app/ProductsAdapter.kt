@@ -7,13 +7,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.qonversion.android.sdk.dto.products.QProduct
 import kotlinx.android.synthetic.main.table_row_product.view.*
 
-class ProductsAdapter(private val products: List<QProduct>) :
+class ProductsAdapter(
+    private val products: List<QProduct>,
+    private val onItemClicked: (QProduct) -> Unit
+) :
     RecyclerView.Adapter<ProductsAdapter.RowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
         val itemView =
             LayoutInflater.from(parent.context).inflate(R.layout.table_row_product, parent, false)
-        return RowViewHolder(itemView)
+        return RowViewHolder(itemView) { index ->
+            onItemClicked(products[index])
+        }
     }
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) =
@@ -21,7 +26,14 @@ class ProductsAdapter(private val products: List<QProduct>) :
 
     override fun getItemCount() = products.size
 
-    inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class RowViewHolder(itemView: View, onItemClicked: (Int) -> Unit) :
+        RecyclerView.ViewHolder(itemView) {
+        init {
+            itemView.setOnClickListener {
+                onItemClicked(adapterPosition)
+            }
+        }
+
         fun bind(product: QProduct) = with(itemView) {
             txtName.text = product.qonversionID
             txtDescription.text = product.skuDetail?.description
