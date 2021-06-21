@@ -41,6 +41,7 @@ class NetworkModule {
             .add(QProductTypeAdapter())
             .add(QProductRenewStateAdapter())
             .add(QOfferingsAdapter())
+            .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())
             .add(QExperimentGroupTypeAdapter())
             .add(QExperimentsAdapter())

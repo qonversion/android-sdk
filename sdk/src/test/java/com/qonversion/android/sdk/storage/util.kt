@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.storage
 
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -85,7 +86,8 @@ class Util {
                             type = QProductType.Trial,
                             duration = QProductDuration.Weekly
                         )
-                    )
+                    ),
+                    experimentInfo = QExperimentInfo("secondary")
                 ),
                 availableOfferings = listOf(
                     QOffering(
@@ -104,7 +106,8 @@ class Util {
                                 type = QProductType.Trial,
                                 duration = QProductDuration.Weekly
                             )
-                        )
+                        ),
+                        experimentInfo = QExperimentInfo("secondary")
                     )
                 )
             )
@@ -116,7 +119,8 @@ class Util {
                 "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}," +
                 "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\",\"type\":0,\"duration\":4}]," +
                 "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[]," +
-                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}]}]}"
+                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}" +
+                "}]}"
 
         fun buildMoshi(): Moshi =
             Moshi.Builder()
@@ -127,6 +131,7 @@ class Util {
                 .add(QProductTypeAdapter())
                 .add(QProductRenewStateAdapter())
                 .add(QOfferingsAdapter())
+                .add(QOfferingAdapter())
                 .add(QOfferingTagAdapter())
                 .add(QExperimentGroupTypeAdapter())
                 .add(QExperimentsAdapter())
