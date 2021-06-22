@@ -368,8 +368,9 @@ object Qonversion : LifecycleDelegate {
     }
 
     @JvmStatic
-    fun showScreen(withID: String, screenCallback: QonversionShowScreenCallback? = null) {
-        automationsManager?.loadScreen(withID, screenCallback)
+    fun showScreen(withID: String, callback: QonversionShowScreenCallback? = null) {
+        automationsManager?.loadScreen(withID, callback) ?: logLaunchErrorForFunctionName(
+            object {}.javaClass.enclosingMethod?.name)
     }
 
     // Internal functions
