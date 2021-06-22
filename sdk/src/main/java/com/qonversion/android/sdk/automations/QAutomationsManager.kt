@@ -6,7 +6,10 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
+import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.QonversionErrorCode
 import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.QonversionShowScreenCallback
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
@@ -19,12 +22,14 @@ class QAutomationsManager @Inject constructor(
     private val preferences: SharedPreferences,
     private val appContext: Application
 ) {
-    private val logger = ConsoleLogger()
-
     @Volatile
     var automationsDelegate: WeakReference<AutomationsDelegate>? = null
         @Synchronized set
         @Synchronized get
+
+    private var showScreenCallback: QonversionShowScreenCallback? = null
+
+    private val logger = ConsoleLogger()
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
         val pickScreen = remoteMessage.data[PICK_SCREEN]
@@ -45,6 +50,36 @@ class QAutomationsManager @Inject constructor(
         }
     }
 
+    fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
+        showScreenCallback = callback
+
+        repository.screens(screenId,
+            { screen ->
+                val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
+
+                val intent = Intent(context, ScreenActivity::class.java)
+                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
+                intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
+                if (context !is Activity) {
+                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                    logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
+                }
+
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    val errorMessage = "Failed to start screen with id $screenId with exception: $e"
+                    logger.release("loadScreen() -> $errorMessage")
+                    handleScreenLoadingError(QonversionError(QonversionErrorCode.UnknownError, errorMessage))
+                }
+            },
+            {
+                logger.release("loadScreen() -> Failed to load screen with id $screenId. ${it.additionalMessage}")
+                handleScreenLoadingError(it)
+            }
+        )
+    }
+
     fun automationsDidStartExecuting(actionResult: QActionResult) {
         automationsDelegate?.get()?.automationsDidStartExecuting(actionResult)
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
@@ -63,11 +98,18 @@ class QAutomationsManager @Inject constructor(
     fun automationsDidShowScreen(screenId: String) {
         automationsDelegate?.get()?.automationsDidShowScreen(screenId)
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        showScreenCallback?.onSuccess()
+        showScreenCallback = null
     }
 
     fun automationsFinished() {
         automationsDelegate?.get()?.automationsFinished()
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    private fun handleScreenLoadingError(error: QonversionError) {
+        showScreenCallback?.onError(error)
+        showScreenCallback = null
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {
@@ -93,31 +135,6 @@ class QAutomationsManager @Inject constructor(
         return mapOf(
             QUERY_PARAM_TYPE to QUERY_PARAM_TYPE_VALUE,
             QUERY_PARAM_ACTIVE to QUERY_PARAM_ACTIVE_VALUE.toString()
-        )
-    }
-
-    private fun loadScreen(screenId: String) {
-        repository.screens(screenId,
-            { screen ->
-                val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
-
-                val intent = Intent(context, ScreenActivity::class.java)
-                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
-                intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
-                if (context !is Activity) {
-                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    logger.release("loadScreen() -> Screen intent will process with a non-Activity context")
-                }
-
-                try {
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    logger.release("loadScreen() -> Failed to start screen with id $screenId with exception: $e")
-                }
-            },
-            {
-                logger.release("loadScreen() -> Failed to load screen with id $screenId")
-            }
         )
     }
 
