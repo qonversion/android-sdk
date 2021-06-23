@@ -1,10 +1,9 @@
 package com.qonversion.android.sdk.services
 
-import com.qonversion.android.sdk.Constants
 import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.storage.TokenStorage
 import io.mockk.*
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
