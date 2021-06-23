@@ -2,6 +2,8 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
@@ -18,10 +20,11 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
+    private val handler = Handler(Looper.getMainLooper())
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
+        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
     }
 
     override fun onAppBackground() {
@@ -370,6 +373,15 @@ object Qonversion : LifecycleDelegate {
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
+    }
+
+    // Private functions
+    private fun postToMainThread(runnable: () -> Unit) {
+        if (Thread.currentThread() == Looper.getMainLooper().thread) {
+            runnable()
+        } else {
+            handler.post(runnable)
+        }
     }
 }
 
