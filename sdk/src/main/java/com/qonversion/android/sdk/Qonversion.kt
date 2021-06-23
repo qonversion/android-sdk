@@ -377,7 +377,7 @@ object Qonversion : LifecycleDelegate {
 
     // Private functions
     private fun postToMainThread(runnable: () -> Unit) {
-        if (Thread.currentThread() == Looper.getMainLooper().thread) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             runnable()
         } else {
             handler.post(runnable)
