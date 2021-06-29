@@ -44,7 +44,7 @@ Monitor your in-app revenue metrics. Understand your customers and make better d
 
 ## Integrations
 
-Send subscription data to your favorite platforms Share your mobile and web subscription data using our powerful integrations.
+Send subscription data to your favorite platforms. Share your mobile and web subscription data using our powerful integrations.
 
 <p align="center">
      <a href="https://documentation.qonversion.io/docs/integrations-overview"><img width="90%", src="https://qcdn3.sfo3.digitaloceanspaces.com/github/integrations.png">
