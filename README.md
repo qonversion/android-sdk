@@ -88,7 +88,7 @@ Convinced? Let's go!
 
 1. [Create a project and register your app](https://documentation.qonversion.io/docs/quickstart#1-create-a-project-and-register-your-app)
 2. [Configure entitlements](https://documentation.qonversion.io/docs/quickstart#2-configure-products--permissions-entitlements)
-3. [Install the SDK](https://documentation.qonversion.io/docs/ios-sdk-setup)
+3. [Install the SDK](https://documentation.qonversion.io/docs/android-sdk)
 4. [Use all SDK features in a few lines](https://documentation.qonversion.io/docs/using-the-sdks)
 
 ## Documentation
@@ -116,7 +116,7 @@ Contributions are what make the open source community such an amazing place to l
 
 ## Have a question?
 
-Contact us via [issues on GitHub](https://github.com/qonversion/qonversion-ios-sdk/issues) or [ask a question](https://documentation.qonversion.io/discuss-new) on the site.
+Contact us via [issues on GitHub](https://github.com/qonversion/android-sdk/issues) or [ask a question](https://documentation.qonversion.io/discuss-new) on the site.
 
 ## License
 
