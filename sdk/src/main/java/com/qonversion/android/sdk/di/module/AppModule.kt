@@ -68,6 +68,6 @@ class AppModule(
     }
 
     companion object {
-        private const val SDK_VERSION = "2.9.0"
+        private const val SDK_VERSION = "2.9.1"
     }
 }
