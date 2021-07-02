@@ -571,12 +571,17 @@ class QonversionBillingServiceTest {
     @Nested
     inner class GetSkuDetailsFromPurchases {
         @Test
-        fun `get skuDetails from purchases completed`() {
+        fun `should return list with 1 SUBS skuDetails`() {
+            // given
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK)
 
             var skuDetailsList: List<SkuDetails>? = null
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
+            every {
+                purchase.sku
+            } returns skuSubs
 
+            // when
             billingService.getSkuDetailsFromPurchases(listOf(purchase),
                 {
                     skuDetailsList = it
@@ -585,21 +590,28 @@ class QonversionBillingServiceTest {
                     fail("Shouldn't go here")
                 })
 
-            assertThat(skuDetailsList).isNotNull
-            assertThat(skuDetailsList!!.size).isEqualTo(2)
-            assertThat(skuDetailsList!![0].sku).isEqualTo(skuSubs)
-            assertThat(skuDetailsList!![0].type).isEqualTo(BillingClient.SkuType.SUBS)
-            assertThat(skuDetailsList!![1].sku).isEqualTo(skuInapp)
-            assertThat(skuDetailsList!![1].type).isEqualTo(BillingClient.SkuType.INAPP)
+            // then
+            assertAll(
+                "SkuDetails' list is not valid",
+                { assertThat(skuDetailsList).isNotNull },
+                { assertThat(skuDetailsList!!.size).isEqualTo(1) },
+                { assertThat(skuDetailsList!![0].sku).isEqualTo(skuSubs) },
+                { assertThat(skuDetailsList!![0].type).isEqualTo(BillingClient.SkuType.SUBS) }
+            )
         }
 
         @Test
-        fun `get skuDetails from purchases failed with billing error`() {
+        fun `should failed with billing error`() {
+            // given
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE)
 
             var billingError: BillingError? = null
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
+            every {
+                purchase.sku
+            } returns skuSubs
 
+            // when
             billingService.getSkuDetailsFromPurchases(listOf(purchase),
                 {
                     fail("Shouldn't go here")
@@ -608,18 +620,24 @@ class QonversionBillingServiceTest {
                     billingError = it
                 })
 
+            // then
             assertThat(billingError).isNotNull
             assertThat(billingError!!.billingResponseCode)
                 .isEqualTo(BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE)
         }
 
         @Test
-        fun `get skuDetails from purchases failed with null list`() {
+        fun `should failed with null list`() {
+            // given
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK, true)
 
             var billingError: BillingError? = null
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
+            every {
+                purchase.sku
+            } returns skuSubs
 
+            // when
             billingService.getSkuDetailsFromPurchases(listOf(purchase),
                 {
                     fail("Shouldn't go here")
@@ -628,19 +646,25 @@ class QonversionBillingServiceTest {
                     billingError = it
                 })
 
+            // then
             assertThat(billingError).isNotNull
             assertThat(billingError!!.billingResponseCode)
                 .isEqualTo(BillingClient.BillingResponseCode.OK)
         }
 
         @Test
-        fun `get skuDetails from purchases deferred until billing connected`() {
+        fun `should wait for billing connected and then return skuDetails list`() {
+            // given
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK)
             every { mockBillingClient.isReady } returns false
 
             var skuDetailsList: List<SkuDetails>? = null
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
+            every {
+                purchase.sku
+            } returns skuSubs
 
+            // when
             billingService.getSkuDetailsFromPurchases(listOf(purchase),
                 {
                     skuDetailsList = it
@@ -649,6 +673,7 @@ class QonversionBillingServiceTest {
                     fail("Shouldn't go here")
                 })
 
+            // then
             assertThat(skuDetailsList).isNull()
 
             every { mockBillingClient.isReady } returns true
@@ -658,12 +683,17 @@ class QonversionBillingServiceTest {
         }
 
         @Test
-        fun `get skuDetails from purchases deferred until billing connected with error`() {
+        fun `should wait for billing connected and then return error`() {
+            // given
             every { mockBillingClient.isReady } returns false
 
             val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
-
+            every {
+                purchase.sku
+            } returns skuSubs
             var billingError: BillingError? = null
+
+            // when
             billingService.getSkuDetailsFromPurchases(listOf(purchase),
                 {
                     fail("Shouldn't go here")
@@ -672,6 +702,7 @@ class QonversionBillingServiceTest {
                     billingError = it
                 })
 
+            // then
             assertThat(billingError).isNull()
 
             every { mockBillingClient.isReady } returns true
@@ -766,19 +797,28 @@ class QonversionBillingServiceTest {
                 buildResult(BillingClient.BillingResponseCode.OK)
             }
 
-            val mockSubscriptionUpdateParamsBuilder = mockk<BillingFlowParams.SubscriptionUpdateParams.Builder>(relaxed = true)
+            val mockSubscriptionUpdateParamsBuilder =
+                mockk<BillingFlowParams.SubscriptionUpdateParams.Builder>(relaxed = true)
             every {
                 BillingFlowParams.SubscriptionUpdateParams.newBuilder()
             } returns mockSubscriptionUpdateParamsBuilder
 
             val oldSkuPurchaseTokenSlot = slot<String>()
             every {
-                mockSubscriptionUpdateParamsBuilder.setOldSkuPurchaseToken(capture(oldSkuPurchaseTokenSlot))
+                mockSubscriptionUpdateParamsBuilder.setOldSkuPurchaseToken(
+                    capture(
+                        oldSkuPurchaseTokenSlot
+                    )
+                )
             } returns mockSubscriptionUpdateParamsBuilder
 
             val prorationModeSlot = slot<Int>()
             every {
-                mockSubscriptionUpdateParamsBuilder.setReplaceSkusProrationMode(capture(prorationModeSlot))
+                mockSubscriptionUpdateParamsBuilder.setReplaceSkusProrationMode(
+                    capture(
+                        prorationModeSlot
+                    )
+                )
             } returns mockSubscriptionUpdateParamsBuilder
 
             mockQueryPurchaseHistoryResponse(BillingClient.SkuType.SUBS, oldSku)
@@ -796,40 +836,25 @@ class QonversionBillingServiceTest {
                 "SkuDetails contains wrong fields",
                 { assertEquals("Sku is incorrect", sku, skuDetailsSlot.captured.sku) },
                 { assertEquals("SkuType is incorrect", skuType, skuDetailsSlot.captured.type) },
-                { assertEquals("ProrationMode is incorrect", prorationMode, prorationModeSlot.captured)},
-                { assertEquals("PurchaseToken is incorrect", purchaseToken, oldSkuPurchaseTokenSlot.captured)}
+                {
+                    assertEquals(
+                        "ProrationMode is incorrect",
+                        prorationMode,
+                        prorationModeSlot.captured
+                    )
+                },
+                {
+                    assertEquals(
+                        "PurchaseToken is incorrect",
+                        purchaseToken,
+                        oldSkuPurchaseTokenSlot.captured
+                    )
+                }
             )
-        }
-
-        @Test
-        fun `replaceOldPurchase when it exists`() {
-            val activity: Activity = mockk()
-            val skuType = BillingClient.SkuType.SUBS
-            val prorationMode = BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE
-
-            val newSkuDetails = mockk<SkuDetails>(relaxed = true).also {
-                every { it.type } returns skuType
-            }
-            val oldSkuDetails = mockk<SkuDetails>(relaxed = true).also {
-                every { it.type } returns skuType
-            }
-            mockQueryPurchaseHistoryResponse(BillingClient.SkuType.SUBS)
-
-            every {
-                mockBillingClient.launchBillingFlow(any(), any())
-            } returns buildResult(BillingClient.BillingResponseCode.OK)
-
-            billingService.purchase(
-                activity,
-                newSkuDetails,
-                oldSkuDetails,
-                prorationMode
-            )
-
             verify {
                 mockBillingClient.launchBillingFlow(
                     activity,
-                    any()
+                    mockParams
                 )
             }
         }
