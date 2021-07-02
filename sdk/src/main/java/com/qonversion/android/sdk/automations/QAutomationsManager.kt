@@ -27,8 +27,6 @@ class QAutomationsManager @Inject constructor(
         @Synchronized set
         @Synchronized get
 
-    private var showScreenCallback: QonversionShowScreenCallback? = null
-
     private val logger = ConsoleLogger()
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
@@ -51,8 +49,6 @@ class QAutomationsManager @Inject constructor(
     }
 
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
-        showScreenCallback = callback
-
         repository.screens(screenId,
             { screen ->
                 val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
@@ -67,15 +63,23 @@ class QAutomationsManager @Inject constructor(
 
                 try {
                     context.startActivity(intent)
+                    callback?.onSuccess()
                 } catch (e: Exception) {
                     val errorMessage = "Failed to start screen with id $screenId with exception: $e"
                     logger.release("loadScreen() -> $errorMessage")
-                    handleScreenLoadingError(QonversionError(QonversionErrorCode.UnknownError, errorMessage))
+                    callback?.onError(
+                        QonversionError(
+                            QonversionErrorCode.UnknownError,
+                            errorMessage
+                        )
+                    )
                 }
             },
             {
-                logger.release("loadScreen() -> Failed to load screen with id $screenId. ${it.additionalMessage}")
-                handleScreenLoadingError(it)
+                val errorMessage =
+                    "Failed to load screen with id $screenId. ${it.additionalMessage}"
+                logger.release("loadScreen() -> $errorMessage")
+                callback?.onError(QonversionError(QonversionErrorCode.UnknownError, errorMessage))
             }
         )
     }
@@ -98,18 +102,11 @@ class QAutomationsManager @Inject constructor(
     fun automationsDidShowScreen(screenId: String) {
         automationsDelegate?.get()?.automationsDidShowScreen(screenId)
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-        showScreenCallback?.onSuccess()
-        showScreenCallback = null
     }
 
     fun automationsFinished() {
         automationsDelegate?.get()?.automationsFinished()
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    private fun handleScreenLoadingError(error: QonversionError) {
-        showScreenCallback?.onError(error)
-        showScreenCallback = null
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {

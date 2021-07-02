@@ -153,6 +153,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                progressBar.visibility = View.GONE
+                return super.onPageFinished(view, url)
+            }
         }
     }
 

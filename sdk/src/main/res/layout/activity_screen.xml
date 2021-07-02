@@ -12,6 +12,6 @@
         android:layout_height="match_parent" />
     <include
         android:id="@+id/progressBar"
-        android:visibility="gone"
+        android:visibility="visible"
         layout="@layout/progress_bar"/>
 </RelativeLayout>
