@@ -131,7 +131,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
 
     override fun onError(error: QonversionError, shouldCloseActivity: Boolean) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Failure to show the app screen")
+        builder.setTitle("Failure to show the in-app screen")
         builder.setMessage(error.description)
         builder.setPositiveButton(android.R.string.yes) { _, _ ->
             if (shouldCloseActivity) {
@@ -174,7 +174,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
                 })
         } ?: run {
             logger.release("loadWebView() -> Failure to fetch html page for the app screen")
-            onError(QonversionError(QonversionErrorCode.UnknownError))
+            onError(QonversionError(QonversionErrorCode.UnknownError), true)
         }
     }
 
