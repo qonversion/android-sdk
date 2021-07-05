@@ -79,7 +79,7 @@ class QAutomationsManager @Inject constructor(
                 val errorMessage =
                     "Failed to load screen with id $screenId. ${it.additionalMessage}"
                 logger.release("loadScreen() -> $errorMessage")
-                callback?.onError(QonversionError(QonversionErrorCode.BackendError, errorMessage))
+                callback?.onError(QonversionError(it.code, errorMessage))
             }
         )
     }
