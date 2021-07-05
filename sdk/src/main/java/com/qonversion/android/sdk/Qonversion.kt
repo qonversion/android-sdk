@@ -370,12 +370,6 @@ object Qonversion : LifecycleDelegate {
         return@run false
     }
 
-    @JvmStatic
-    fun showScreen(withID: String, callback: QonversionShowScreenCallback) {
-        automationsManager?.loadScreen(withID, callback) ?: logLaunchErrorForFunctionName(
-            object {}.javaClass.enclosingMethod?.name)
-    }
-
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
