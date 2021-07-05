@@ -208,7 +208,7 @@ class QonversionRepository internal constructor(
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
             onFailure = {
-                logger.release("viewsRequest - failure - ${it?.toQonversionError()}")
+                logger.debug("viewsRequest - failure - ${it?.toQonversionError()}")
             }
         }
     }
