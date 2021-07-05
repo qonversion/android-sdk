@@ -129,11 +129,15 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         automationsManager.automationsFinished()
     }
 
-    override fun onError(error: QonversionError) {
+    override fun onError(error: QonversionError, shouldCloseActivity: Boolean) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Failure to show app screen")
+        builder.setTitle("Failure to show the in-app screen")
         builder.setMessage(error.description)
-        builder.setPositiveButton(android.R.string.yes) { _, _ -> }
+        builder.setPositiveButton(android.R.string.yes) { _, _ ->
+            if (shouldCloseActivity) {
+                close()
+            }
+        }
         builder.show()
     }
 
@@ -149,6 +153,11 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                progressBar.visibility = View.GONE
+                return super.onPageFinished(view, url)
+            }
         }
     }
 
@@ -161,8 +170,12 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
                     webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
                 }, { error ->
                     logger.release("loadWebView() -> Failure to process screen macros ${error.description}")
+                    onError(error, true)
                 })
-        } ?: logger.release("loadWebView() -> Failure to fetch html page for app screen")
+        } ?: run {
+            logger.release("loadWebView() -> Failure to fetch html page for the app screen")
+            onError(QonversionError(QonversionErrorCode.UnknownError), true)
+        }
     }
 
     private fun confirmScreenView() {
