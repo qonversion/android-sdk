@@ -17,9 +17,10 @@ import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 import io.mockk.*
-import org.assertj.core.api.Assertions
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -92,9 +93,11 @@ class QProductCenterManagerTest {
             mockBillingService.queryPurchases(any(), any())
         }
 
-        verify(exactly = 0) {
-            mockConsumer.consumePurchases(any(), any())
-            mockRepository.purchase(any(), any(), any())
+        verify {
+            listOf(
+                mockConsumer,
+                mockRepository
+            ) wasNot Called
         }
     }
 
@@ -118,6 +121,8 @@ class QProductCenterManagerTest {
             mockRepository.purchase(
                 capture(installDateSlot),
                 capture(entityPurchaseSlot),
+                null,
+                null,
                 capture(callbackSlot)
             )
         } just Runs
@@ -131,11 +136,13 @@ class QProductCenterManagerTest {
             mockConsumer.consumePurchases(purchases, skuDetails)
         }
 
-        Assertions.assertThat(entityPurchaseSlot.captured.productId).isEqualTo(sku)
-        Assertions.assertThat(entityPurchaseSlot.captured.purchaseToken).isEqualTo(purchaseToken)
-        Assertions.assertThat(entityPurchaseSlot.captured.type).isEqualTo(skuTypeInApp)
-
-        Assertions.assertThat(installDateSlot.captured).isEqualTo(installDate.milliSecondsToSeconds())
+        assertAll(
+            "Repository purchase() method was called with invalid arguments",
+            { Assert.assertEquals("Wrong sku value", sku, entityPurchaseSlot.captured.productId) },
+            { Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) },
+            { Assert.assertEquals("Wrong type value", skuTypeInApp, entityPurchaseSlot.captured.type) },
+            { Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }
+        )
     }
 
     private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {

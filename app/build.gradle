@@ -1,10 +1,19 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
-
 //apply plugin: 'com.google.gms.google-services'
+apply plugin: "androidx.navigation.safeargs.kotlin"
+
+buildscript {
+    ext.nav_version = "2.3.5"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+    }
+}
 
 android {
     compileSdkVersion 29
@@ -52,6 +61,9 @@ android {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -78,5 +90,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
+    // Navigation Component dependencies
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation project(':sdk')
 }

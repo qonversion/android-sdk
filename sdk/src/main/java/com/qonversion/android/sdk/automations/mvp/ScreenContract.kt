@@ -18,7 +18,7 @@ class ScreenContract {
 
         fun close(actionResult: QActionResult = QActionResult(QActionResultType.Close))
 
-        fun onError(error: QonversionError)
+        fun onError(error: QonversionError, shouldCloseActivity: Boolean = false)
     }
 
     internal interface Presenter {

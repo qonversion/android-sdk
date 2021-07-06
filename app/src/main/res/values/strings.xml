@@ -12,6 +12,10 @@
     <string name="product_id">Product Id</string>
     <string name="renew_state">Renew state</string>
     <string name="active_permissions">Active permissions</string>
+    <string name="offerings">Main Offering products</string>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+    <string name="price">Price</string>
     <string name="application_icon">Application icon</string>
     <string name="channel_name">qonversion</string>
 

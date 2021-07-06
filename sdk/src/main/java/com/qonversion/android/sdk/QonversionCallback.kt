@@ -36,3 +36,8 @@ interface QonversionEligibilityCallback {
     fun onSuccess(eligibilities: Map<String, QEligibility>)
     fun onError(error: QonversionError)
 }
+
+interface QonversionShowScreenCallback {
+   fun onSuccess()
+   fun onError(error: QonversionError)
+}

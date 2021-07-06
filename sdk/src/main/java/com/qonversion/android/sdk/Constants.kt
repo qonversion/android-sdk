@@ -6,4 +6,5 @@ object Constants {
     const val PREFS_USER_ID_KEY = "$PREFS_PREFIX.storedUserID"
     const val USER_ID_PREFIX = "QON"
     const val USER_ID_SEPARATOR = "_"
+    const val EXPERIMENT_STARTED_EVENT_NAME = "offering_within_experiment_called"
 }

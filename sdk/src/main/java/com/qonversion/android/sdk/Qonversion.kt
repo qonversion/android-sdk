@@ -10,12 +10,12 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.dto.products.QProduct
 
 object Qonversion : LifecycleDelegate {
 
@@ -29,7 +29,7 @@ object Qonversion : LifecycleDelegate {
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler)
+        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
     }
 
     override fun onAppBackground() {
@@ -102,26 +102,20 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, id, null, null, mainPermissionsCallback(callback))
+        productCenterManager?.purchaseProduct(context, id, null, null, null, mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
-     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * Make a purchase and validate that through server-to-server using Qonversion's Backend
      * @param context current activity context
-     * @param productId Qonversion product identifier for purchase
-     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param product Qonversion product for purchase
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     @JvmStatic
-    fun updatePurchase(
-        context: Activity,
-        productId: String,
-        oldProductId: String,
-        callback: QonversionPermissionsCallback
-    ) {
-        productCenterManager?.purchaseProduct(context, productId, oldProductId, null, mainPermissionsCallback(callback))
+    fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(context, product, null, null, mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -136,16 +130,46 @@ object Qonversion : LifecycleDelegate {
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     @JvmStatic
+    @JvmOverloads
     fun updatePurchase(
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionPermissionsCallback
     ) {
         productCenterManager?.purchaseProduct(
             context,
             productId,
+            oldProductId,
+            prorationMode,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product Qonversion product for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param prorationMode proration mode
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        oldProductId: String,
+        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager?.purchaseProduct(
+            context,
+            product,
             oldProductId,
             prorationMode,
             mainPermissionsCallback(callback)
@@ -384,6 +408,7 @@ object Qonversion : LifecycleDelegate {
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
+}
 
     private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
         object : QonversionPermissionsCallback {
@@ -393,7 +418,7 @@ object Qonversion : LifecycleDelegate {
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
         }
-
+    // Private functions
     private fun postToMainThread(runnable: () -> Unit) {
         handler.post {
             runnable()
