@@ -466,16 +466,17 @@ class QProductCenterManager internal constructor(
         skuDetails: Map<String, SkuDetails>,
         purchases: List<Purchase>
     ): List<com.qonversion.android.sdk.entity.Purchase> {
-        val result = mutableListOf<com.qonversion.android.sdk.entity.Purchase>()
+        val pairs = mutableListOf<Pair<SkuDetails, Purchase>>()
 
         purchases.forEach {
             val skuDetail = skuDetails[it.sku]
             if (skuDetail != null) {
                 val purchaseInfo = Pair.create(skuDetail, it)
-                val purchase = converter.convert(purchaseInfo)
-                result.add(purchase)
+                pairs.add(purchaseInfo)
             }
         }
+
+        val result = converter.convert(pairs)
 
         return result
     }
@@ -837,11 +838,15 @@ class QProductCenterManager internal constructor(
         purchaseInfo: Pair<SkuDetails, Purchase>,
         callback: QonversionLaunchCallback
     ) {
-        val purchase = converter.convert(purchaseInfo)
-
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first
-        val offering  = productPurchaseModel[sku]?.second
+        val offering = productPurchaseModel[sku]?.second
+
+        val purchase = converter.convert(purchaseInfo) ?: run {
+            callback.onError(QonversionError(QonversionErrorCode.ProductUnavailable, "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"))
+            return
+        }
+
         if (sku == product?.storeID) {
             repository.purchase(installDate, purchase, offering?.experimentInfo, product?.qonversionID, callback)
             productPurchaseModel.remove(sku)

@@ -22,47 +22,57 @@ class GooglePurchaseConverter(
         "D" to 1
     )
 
-    override fun convert(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
+    override fun convert(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
+        return purchaseInfo.mapNotNull {
+            convert(it)
+        }
+    }
+
+    override fun convert(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase? {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
+        val sku = purchase.sku ?: return null
+
         return Purchase(
-            detailsToken = extractor.extract(details.originalJson),
-            title = details.title,
-            description = details.description,
-            productId = purchase.sku,
-            type = details.type,
-            originalPrice = details.originalPrice,
-            originalPriceAmountMicros = details.originalPriceAmountMicros,
-            priceCurrencyCode = details.priceCurrencyCode,
-            price = formatPrice(details.priceAmountMicros),
-            priceAmountMicros = details.priceAmountMicros,
-            periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
-            periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
-            freeTrialPeriod = details.freeTrialPeriod,
-            introductoryAvailable = details.introductoryPrice.isNotEmpty(),
-            introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
-            introductoryPrice = getIntroductoryPrice(details),
-            introductoryPriceCycles = getIntroductoryPriceCycles(details),
-            introductoryPeriodUnit = daysPeriodUnit,
-            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod),
-            orderId = purchase.orderId,
-            originalOrderId = formatOriginalTransactionId(purchase.orderId),
-            packageName = purchase.packageName,
-            purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
-            purchaseState = purchase.purchaseState,
-            purchaseToken = purchase.purchaseToken,
-            acknowledged = purchase.isAcknowledged,
-            autoRenewing = purchase.isAutoRenewing,
-            paymentMode = getPaymentMode(details)
-        )
+                detailsToken = extractor.extract(details.originalJson),
+                title = details.title,
+                description = details.description,
+                productId = sku,
+                type = details.type,
+                originalPrice = details.originalPrice ?: "",
+                originalPriceAmountMicros = details.originalPriceAmountMicros,
+                priceCurrencyCode = details.priceCurrencyCode,
+                price = formatPrice(details.priceAmountMicros),
+                priceAmountMicros = details.priceAmountMicros,
+                periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
+                periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
+                freeTrialPeriod = details.freeTrialPeriod ?: "",
+                introductoryAvailable = details.introductoryPrice.isNotEmpty(),
+                introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
+                introductoryPrice = getIntroductoryPrice(details),
+                introductoryPriceCycles = getIntroductoryPriceCycles(details),
+                introductoryPeriodUnit = daysPeriodUnit,
+                introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(
+                    details.freeTrialPeriod ?: details.introductoryPricePeriod
+                ),
+                orderId = purchase.orderId,
+                originalOrderId = formatOriginalTransactionId(purchase.orderId),
+                packageName = purchase.packageName,
+                purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
+                purchaseState = purchase.purchaseState,
+                purchaseToken = purchase.purchaseToken,
+                acknowledged = purchase.isAcknowledged,
+                autoRenewing = purchase.isAutoRenewing,
+                paymentMode = getPaymentMode(details)
+            )
     }
 
     private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
-        return if (details.freeTrialPeriod.isEmpty()) details.introductoryPriceCycles else 0
+        return if (details.freeTrialPeriod.isNullOrEmpty()) details.introductoryPriceCycles else 0
     }
 
     private fun getIntroductoryPrice(details: SkuDetails): String {
-        if (details.freeTrialPeriod.isEmpty()) {
+        if (details.freeTrialPeriod.isNullOrEmpty()) {
             return formatPrice(details.introductoryPriceAmountMicros)
         }
 

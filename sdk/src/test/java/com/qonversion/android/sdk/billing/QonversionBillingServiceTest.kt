@@ -571,7 +571,7 @@ class QonversionBillingServiceTest {
     @Nested
     inner class GetSkuDetailsFromPurchases {
         @Test
-        fun `should return list with 1 SUBS skuDetails`() {
+        fun `should return list with SUBS skuDetails`() {
             // given
             mockSkuDetailsResponse(BillingClient.BillingResponseCode.OK)
 

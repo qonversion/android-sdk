@@ -400,12 +400,18 @@ class QonversionRepository internal constructor(
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
-        return historyRecords.map {
-            History(
-                it.sku,
-                it.purchaseToken,
-                it.purchaseTime.milliSecondsToSeconds()
-            )
+        return historyRecords.mapNotNull {
+            val sku = it.sku
+
+            if (sku == null) {
+                null
+            } else {
+                History(
+                    sku,
+                    it.purchaseToken,
+                    it.purchaseTime.milliSecondsToSeconds()
+                )
+            }
         }
     }
 

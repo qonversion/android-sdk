@@ -204,15 +204,7 @@ class QonversionBillingService internal constructor(
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 if (oldPurchase != null) {
                     logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
-                    makePurchase(
-                        activity,
-                        skuDetails,
-                        UpdatePurchaseInfo(
-                            oldPurchase.sku,
-                            oldPurchase.purchaseToken,
-                            prorationMode
-                        )
-                    )
+                    updatePurchase(activity, skuDetails, oldPurchase, prorationMode)
                 } else {
                     val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
                     purchasesListener.onPurchasesFailed(
@@ -243,6 +235,38 @@ class QonversionBillingService internal constructor(
             onQueryHistoryCompleted(
                 billingResult,
                 purchasesList?.firstOrNull { skuDetails.sku == it.sku }
+            )
+        }
+    }
+
+    private fun updatePurchase(
+        activity: Activity,
+        skuDetails: SkuDetails,
+        oldPurchase: PurchaseHistoryRecord,
+        @BillingFlowParams.ProrationMode prorationMode: Int?
+    ) {
+        val oldPurchaseSku = oldPurchase.sku
+
+        if (oldPurchaseSku == null) {
+            val errorMessage = "There is no SKU for the old product that should be updated"
+            logger.debug("updatePurchase() -> $errorMessage")
+
+            purchasesListener.onPurchasesFailed(
+                emptyList(),
+                BillingError(
+                    BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
+                    errorMessage
+                )
+            )
+        } else {
+            makePurchase(
+                activity,
+                skuDetails,
+                UpdatePurchaseInfo(
+                    oldPurchaseSku,
+                    oldPurchase.purchaseToken,
+                    prorationMode
+                )
             )
         }
     }
@@ -371,7 +395,7 @@ class QonversionBillingService internal constructor(
     }
 
     private fun loadAllProducts(
-        productIDs: List<String>,
+        productIDs: List<String?>,
         onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
@@ -401,7 +425,7 @@ class QonversionBillingService internal constructor(
 
     private fun querySkuDetailsAsync(
         @BillingClient.SkuType productType: String,
-        skuList: List<String>,
+        skuList: List<String?>,
         onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
@@ -439,7 +463,7 @@ class QonversionBillingService internal constructor(
 
     private fun buildSkuDetailsParams(
         @BillingClient.SkuType productType: String,
-        skuList: List<String>
+        skuList: List<String?>
     ): SkuDetailsParams {
         return SkuDetailsParams.newBuilder()
             .setType(productType)
@@ -449,7 +473,7 @@ class QonversionBillingService internal constructor(
 
     private fun logSkuDetails(
         skuDetailsList: List<SkuDetails>,
-        skuList: List<String>
+        skuList: List<String?>
     ) {
         skuDetailsList
             .takeUnless { it.isEmpty() }
