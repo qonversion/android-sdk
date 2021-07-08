@@ -9,8 +9,6 @@ import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import org.json.JSONObject
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,7 +30,7 @@ class InAppRequestTest {
     @Test
     fun inAppRequestInAppWithCorrectData() {
 
-        val purchase = converter.convert(
+        val purchase = converter.convertPurchase(
             Pair(
                 SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON),
                 Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU")
@@ -45,7 +43,7 @@ class InAppRequestTest {
     @Test
     fun inAppRequestSubWithCorrectData() {
 
-        val purchase = converter.convert(
+        val purchase = converter.convertPurchase(
             Pair(
                 SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON),
                 Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU")

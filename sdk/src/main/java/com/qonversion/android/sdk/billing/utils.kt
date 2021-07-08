@@ -24,6 +24,12 @@ fun PurchaseHistoryRecord.getDescription() =
 fun Purchase.getDescription() =
     "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
+val Purchase.sku: String?
+    get() = skus.firstOrNull()
+
+val PurchaseHistoryRecord.sku: String?
+    get() = skus.firstOrNull()
+
 fun Long.milliSecondsToSeconds(): Long = this / 1000
 
 fun Long.secondsToMilliSeconds(): Long = this * 1000

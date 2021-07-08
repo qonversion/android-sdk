@@ -31,7 +31,7 @@ class PurchaseRequestTest {
     @Test
     fun purchaseRequestInApp() {
 
-        val purchase = converter.convert(
+        val purchase = converter.convertPurchase(
             Pair(
                 SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON),
                 Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU")
@@ -44,7 +44,7 @@ class PurchaseRequestTest {
     @Test
     fun purchaseRequestSub() {
 
-        val purchase = converter.convert(
+        val purchase = converter.convertPurchase(
             Pair(
                 SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON),
                 Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU")
