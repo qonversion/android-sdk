@@ -200,19 +200,15 @@ class QonversionBillingService internal constructor(
         @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
         getPurchaseHistoryFromSkuDetails(oldSkuDetails)
-        { billingResult, oldPurchase ->
+        { billingResult, oldPurchaseHistory ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                if (oldPurchase != null) {
-                    logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
-                    updatePurchase(activity, skuDetails, oldPurchase, prorationMode)
-                } else {
-                    val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
-                    purchasesListener.onPurchasesFailed(
-                        emptyList(),
-                        BillingError(billingResult.responseCode, errorMessage)
-                    )
-                    logger.release("replaceOldPurchase() -> $errorMessage")
-                }
+                updatePurchase(
+                    activity,
+                    skuDetails,
+                    oldSkuDetails,
+                    oldPurchaseHistory,
+                    prorationMode
+                )
             } else {
                 val errorMessage =
                     "Failed to update purchase: ${billingResult.getDescription()}"
@@ -242,32 +238,43 @@ class QonversionBillingService internal constructor(
     private fun updatePurchase(
         activity: Activity,
         skuDetails: SkuDetails,
-        oldPurchase: PurchaseHistoryRecord,
+        oldSkuDetails: SkuDetails,
+        oldPurchaseHistory: PurchaseHistoryRecord?,
         @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
-        val oldPurchaseSku = oldPurchase.sku
+        if (oldPurchaseHistory != null) {
+            logger.debug("updatePurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
+            val oldPurchaseSku = oldPurchaseHistory.sku
 
-        if (oldPurchaseSku == null) {
-            val errorMessage = "There is no SKU for the old product that should be updated"
-            logger.debug("updatePurchase() -> $errorMessage")
+            if (oldPurchaseSku == null) {
+                val errorMessage = "There is no SKU for the old product that should be updated"
+                logger.debug("updatePurchase() -> $errorMessage")
 
+                purchasesListener.onPurchasesFailed(
+                    emptyList(),
+                    BillingError(
+                        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
+                        errorMessage
+                    )
+                )
+            } else {
+                makePurchase(
+                    activity,
+                    skuDetails,
+                    UpdatePurchaseInfo(
+                        oldPurchaseSku,
+                        oldPurchaseHistory.purchaseToken,
+                        prorationMode
+                    )
+                )
+            }
+        } else {
+            val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
             purchasesListener.onPurchasesFailed(
                 emptyList(),
-                BillingError(
-                    BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
-                    errorMessage
-                )
+                BillingError(BillingClient.BillingResponseCode.OK, errorMessage)
             )
-        } else {
-            makePurchase(
-                activity,
-                skuDetails,
-                UpdatePurchaseInfo(
-                    oldPurchaseSku,
-                    oldPurchase.purchaseToken,
-                    prorationMode
-                )
-            )
+            logger.release("updatePurchase() -> $errorMessage")
         }
     }
 

@@ -22,13 +22,26 @@ class GooglePurchaseConverter(
         "D" to 1
     )
 
-    override fun convert(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
-        return purchaseInfo.mapNotNull {
-            convert(it)
+    override fun convertPurchases(
+        skuDetails: Map<String, SkuDetails>,
+        purchases: List<com.android.billingclient.api.Purchase>
+    ): List<Purchase> {
+        val pairs = purchases.mapNotNull {
+            val skuDetail = skuDetails[it.sku]
+
+            if (skuDetail != null) {
+                 Pair.create(skuDetail, it)
+            } else {
+                null
+            }
         }
+
+        val result = convertPurchasesFromList(pairs)
+
+        return result
     }
 
-    override fun convert(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase? {
+    override fun convertPurchase(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase? {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
         val sku = purchase.sku ?: return null
@@ -52,7 +65,7 @@ class GooglePurchaseConverter(
                 introductoryPrice = getIntroductoryPrice(details),
                 introductoryPriceCycles = getIntroductoryPriceCycles(details),
                 introductoryPeriodUnit = daysPeriodUnit,
-                introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(
+                introductoryPeriodUnitsCount = getIntroductoryUnitsCountFromPeriod(
                     details.freeTrialPeriod ?: details.introductoryPricePeriod
                 ),
                 orderId = purchase.orderId,
@@ -65,6 +78,12 @@ class GooglePurchaseConverter(
                 autoRenewing = purchase.isAutoRenewing,
                 paymentMode = getPaymentMode(details)
             )
+    }
+
+    private fun convertPurchasesFromList(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
+        return purchaseInfo.mapNotNull {
+            convertPurchase(it)
+        }
     }
 
     private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
@@ -125,7 +144,7 @@ class GooglePurchaseConverter(
         return unitsCount.toInt()
     }
 
-    private fun getIntrodactoryUnitsCountFromPeriod(period: String?): Int? {
+    private fun getIntroductoryUnitsCountFromPeriod(period: String?): Int? {
         if (period.isNullOrEmpty()) {
             return null
         }

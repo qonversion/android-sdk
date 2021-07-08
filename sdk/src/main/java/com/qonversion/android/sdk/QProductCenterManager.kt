@@ -462,25 +462,6 @@ class QProductCenterManager internal constructor(
 
     // Private functions
 
-    private fun configurePurchaseInfo(
-        skuDetails: Map<String, SkuDetails>,
-        purchases: List<Purchase>
-    ): List<com.qonversion.android.sdk.entity.Purchase> {
-        val pairs = mutableListOf<Pair<SkuDetails, Purchase>>()
-
-        purchases.forEach {
-            val skuDetail = skuDetails[it.sku]
-            if (skuDetail != null) {
-                val purchaseInfo = Pair.create(skuDetail, it)
-                pairs.add(purchaseInfo)
-            }
-        }
-
-        val result = converter.convert(pairs)
-
-        return result
-    }
-
     private fun configureSkuDetails(skuDetails: List<SkuDetails>): Map<String, SkuDetails> {
         val formattedData = mutableMapOf<String, SkuDetails>()
         skuDetails.forEach {
@@ -510,7 +491,7 @@ class QProductCenterManager internal constructor(
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
-                        val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, purchases)
+                        val purchasesInfo = converter.convertPurchases(formattedSkuDetails, purchases)
                         repository.init(installDate, advertisingId, purchasesInfo, callback)
                     },
                     onFailed = {
@@ -842,7 +823,7 @@ class QProductCenterManager internal constructor(
         val product = productPurchaseModel[sku]?.first
         val offering = productPurchaseModel[sku]?.second
 
-        val purchase = converter.convert(purchaseInfo) ?: run {
+        val purchase = converter.convertPurchase(purchaseInfo) ?: run {
             callback.onError(QonversionError(QonversionErrorCode.ProductUnavailable, "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"))
             return
         }
