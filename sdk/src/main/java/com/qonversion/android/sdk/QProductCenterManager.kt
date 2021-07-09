@@ -462,24 +462,6 @@ class QProductCenterManager internal constructor(
 
     // Private functions
 
-    private fun configurePurchaseInfo(
-        skuDetails: Map<String, SkuDetails>,
-        purchases: List<Purchase>
-    ): List<com.qonversion.android.sdk.entity.Purchase> {
-        val result = mutableListOf<com.qonversion.android.sdk.entity.Purchase>()
-
-        purchases.forEach {
-            val skuDetail = skuDetails[it.sku]
-            if (skuDetail != null) {
-                val purchaseInfo = Pair.create(skuDetail, it)
-                val purchase = converter.convert(purchaseInfo)
-                result.add(purchase)
-            }
-        }
-
-        return result
-    }
-
     private fun configureSkuDetails(skuDetails: List<SkuDetails>): Map<String, SkuDetails> {
         val formattedData = mutableMapOf<String, SkuDetails>()
         skuDetails.forEach {
@@ -509,7 +491,7 @@ class QProductCenterManager internal constructor(
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
-                        val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, purchases)
+                        val purchasesInfo = converter.convertPurchases(formattedSkuDetails, purchases)
                         repository.init(installDate, advertisingId, purchasesInfo, callback)
                     },
                     onFailed = {
@@ -837,11 +819,15 @@ class QProductCenterManager internal constructor(
         purchaseInfo: Pair<SkuDetails, Purchase>,
         callback: QonversionLaunchCallback
     ) {
-        val purchase = converter.convert(purchaseInfo)
-
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first
-        val offering  = productPurchaseModel[sku]?.second
+        val offering = productPurchaseModel[sku]?.second
+
+        val purchase = converter.convertPurchase(purchaseInfo) ?: run {
+            callback.onError(QonversionError(QonversionErrorCode.ProductUnavailable, "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"))
+            return
+        }
+
         if (sku == product?.storeID) {
             repository.purchase(installDate, purchase, offering?.experimentInfo, product?.qonversionID, callback)
             productPurchaseModel.remove(sku)

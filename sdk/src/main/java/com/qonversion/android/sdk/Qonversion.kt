@@ -11,6 +11,11 @@ import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOfferings
 
 object Qonversion : LifecycleDelegate {
 
@@ -20,7 +25,7 @@ object Qonversion : LifecycleDelegate {
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private var isDebugMode = false
-    private val handler = Handler(Looper.getMainLooper())
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -78,8 +83,21 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
-        productCenterManager?.launch(callback)
+        productCenterManager = factory.createProductCenterManager(
+            repository,
+            observeMode,
+            purchasesCache,
+            launchResultCacheWrapper,
+            userInfoService,
+            identityManager
+        )
+        productCenterManager?.launch(object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) =
+                postToMainThread { callback?.onSuccess(launchResult) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback?.onError(error) }
+        })
     }
 
     /**
@@ -91,8 +109,14 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, id, null, null, null, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.purchaseProduct(
+            context,
+            id,
+            null,
+            null,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -104,8 +128,13 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(context, product, null, null, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.purchaseProduct(
+            context,
+            product,
+            null,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -133,7 +162,7 @@ object Qonversion : LifecycleDelegate {
             oldProductId,
             prorationMode,
             null,
-            callback
+            mainPermissionsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -161,7 +190,7 @@ object Qonversion : LifecycleDelegate {
             product,
             oldProductId,
             prorationMode,
-            callback
+            mainPermissionsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -175,8 +204,13 @@ object Qonversion : LifecycleDelegate {
     fun products(
         callback: QonversionProductsCallback
     ) {
-        productCenterManager?.loadProducts(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.loadProducts(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) =
+                postToMainThread { callback.onSuccess(products) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -191,8 +225,13 @@ object Qonversion : LifecycleDelegate {
     fun offerings(
         callback: QonversionOfferingsCallback
     ) {
-        productCenterManager?.offerings(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.offerings(object : QonversionOfferingsCallback {
+            override fun onSuccess(offerings: QOfferings) =
+                postToMainThread { callback.onSuccess(offerings) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -203,8 +242,13 @@ object Qonversion : LifecycleDelegate {
     fun experiments(
         callback: QonversionExperimentsCallback
     ) {
-        productCenterManager?.experiments(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.experiments(object : QonversionExperimentsCallback {
+            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
+                postToMainThread { callback.onSuccess(experiments) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -218,8 +262,15 @@ object Qonversion : LifecycleDelegate {
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     ) {
-        productCenterManager?.checkTrialIntroEligibilityForProductIds(productIds, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.checkTrialIntroEligibilityForProductIds(
+            productIds,
+            object : QonversionEligibilityCallback {
+                override fun onSuccess(eligibilities: Map<String, QEligibility>) =
+                    callback.onSuccess(eligibilities)
+
+                override fun onError(error: QonversionError) =
+                    callback.onError(error)
+            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -231,7 +282,7 @@ object Qonversion : LifecycleDelegate {
     fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
-        productCenterManager?.checkPermissions(callback)
+        productCenterManager?.checkPermissions(mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -242,7 +293,7 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager?.restore(callback)
+        productCenterManager?.restore(mainPermissionsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -280,7 +331,10 @@ object Qonversion : LifecycleDelegate {
      * Call this function to reset user ID and generate new anonymous user ID.
      * Call this function before Qonversion.launch()
      */
-    @Deprecated("This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.",
+        level = DeprecationLevel.WARNING
+    )
     @JvmStatic
     fun resetUser() {
         logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
@@ -339,7 +393,11 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
-        productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.setUpdatedPurchasesListener(object : UpdatedPurchasesListener {
+            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+                postToMainThread { listener.onPermissionsUpdate(permissions) }
+            }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -365,10 +423,11 @@ object Qonversion : LifecycleDelegate {
      * Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
-    fun handleNotification(remoteMessage: RemoteMessage) = automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
-        logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-        return@run false
-    }
+    fun handleNotification(remoteMessage: RemoteMessage) =
+        automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
+            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return@run false
+        }
 
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
@@ -376,13 +435,20 @@ object Qonversion : LifecycleDelegate {
     }
 
     // Private functions
+    private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
+        object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) =
+                postToMainThread { callback.onSuccess(permissions) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }
+
     private fun postToMainThread(runnable: () -> Unit) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             runnable()
         } else {
-            handler.post(runnable)
+            mainHandler.post(runnable)
         }
     }
 }
-
-
