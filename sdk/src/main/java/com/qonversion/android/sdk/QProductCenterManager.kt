@@ -412,14 +412,6 @@ class QProductCenterManager internal constructor(
     fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
-        if (isAppBackground) {
-            val cachedLaunchResult = getActualLaunchResult()
-            cachedLaunchResult?.let {
-                callback.onSuccess(it.permissions)
-            }
-            return
-        }
-
         permissionsCallbacks.add(callback)
 
         if (!isLaunchingFinished || identityInProgress) {
