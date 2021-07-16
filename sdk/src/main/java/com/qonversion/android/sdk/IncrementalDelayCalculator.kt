@@ -18,7 +18,11 @@ class IncrementalDelayCalculator(private val randomizer: Random) {
     fun countDelay(minDelay: Int, retriesCount: Int): Int {
         var delay = minDelay + FACTOR.pow(retriesCount)
         var delta = (delay * JITTER).roundToInt()
-        delta = max(delta, delta + 1)
+
+        if (delta != Int.MAX_VALUE) {
+            delta += 1
+        }
+
         delay += randomizer.nextInt(delta)
         val resultDelay = min(delay.roundToInt(), MAX_DELAY)
 
