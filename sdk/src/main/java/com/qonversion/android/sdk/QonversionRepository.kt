@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.*
+import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
@@ -43,14 +44,11 @@ class QonversionRepository internal constructor(
     // Public functions
 
     fun init(
-        installDate: Long,
-        idfa: String? = null,
-        purchases: List<Purchase>? = null,
-        callback: QonversionLaunchCallback?
+        initRequestData: InitRequestData
     ) {
-        advertisingId = idfa
-        this.installDate = installDate
-        initRequest(purchases, callback)
+        advertisingId = initRequestData.idfa
+        this.installDate = initRequestData.installDate
+        initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
     fun purchase(

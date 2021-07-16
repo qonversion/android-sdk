@@ -17,6 +17,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.services.QUserInfoService
@@ -56,6 +57,9 @@ class QProductCenterManager internal constructor(
     private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
+    private var advertisingID: String? = null
+    private var isAppBackground: Boolean = true
+    private var pendingInitRequestData: InitRequestData? = null
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
@@ -91,6 +95,12 @@ class QProductCenterManager internal constructor(
 
     fun onAppForeground() {
         handlePendingPurchases()
+        isAppBackground = false
+        processPendingInitIfAvailable()
+    }
+
+    fun onAppBackground() {
+        isAppBackground = true
     }
 
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
@@ -105,11 +115,12 @@ class QProductCenterManager internal constructor(
 
         adProvider.init(context, object : AdvertisingProvider.Callback {
             override fun onSuccess(advertisingId: String) {
-                continueLaunchWithPurchasesInfo(advertisingId, launchCallback)
+                advertisingID = advertisingId
+                continueLaunchWithPurchasesInfo(launchCallback)
             }
 
             override fun onFailure(t: Throwable) {
-                continueLaunchWithPurchasesInfo(callback = launchCallback)
+                continueLaunchWithPurchasesInfo(launchCallback)
             }
         })
     }
@@ -117,6 +128,7 @@ class QProductCenterManager internal constructor(
     fun loadProducts(
         callback: QonversionProductsCallback
     ) {
+
         productsCallbacks.add(callback)
         val isProductsLoaded = loadProductsState in listOf(Loaded, Failed)
         if (!isProductsLoaded || !isLaunchingFinished) {
@@ -147,7 +159,7 @@ class QProductCenterManager internal constructor(
         identityInProgress = true
 
         if (launchError != null) {
-            repository.init(installDate = installDate, callback = object: QonversionLaunchCallback {
+            val callback = object: QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     processIdentity(userID)
                 }
@@ -155,7 +167,10 @@ class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError) {
                     executePermissionsBlock()
                 }
-            })
+            }
+
+            val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+            repository.init(initRequestData)
         } else {
             processIdentity(userID)
         }
@@ -398,6 +413,14 @@ class QProductCenterManager internal constructor(
     fun checkPermissions(
         callback: QonversionPermissionsCallback
     ) {
+        if (isAppBackground) {
+            val cachedLaunchResult = getActualLaunchResult()
+            cachedLaunchResult?.let {
+                callback.onSuccess(it.permissions)
+            }
+            return
+        }
+
         permissionsCallbacks.add(callback)
 
         if (!isLaunchingFinished || identityInProgress) {
@@ -489,18 +512,30 @@ class QProductCenterManager internal constructor(
         return formattedData
     }
 
+    private fun processPendingInitIfAvailable() {
+        pendingInitRequestData?.let {
+            processInit(it)
+            pendingInitRequestData = null
+        }
+    }
+
+    private fun processInit(initRequestData: InitRequestData) {
+        if (isAppBackground) {
+            pendingInitRequestData = initRequestData
+            return
+        }
+
+        repository.init(initRequestData)
+    }
+
     private fun continueLaunchWithPurchasesInfo(
-        advertisingId: String? = null,
         callback: QonversionLaunchCallback?
     ) {
         billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
-                    repository.init(
-                        installDate = installDate,
-                        idfa = advertisingId,
-                        callback = callback
-                    )
+                    val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                    processInit(initRequestData)
                     return@queryPurchases
                 }
 
@@ -510,22 +545,18 @@ class QProductCenterManager internal constructor(
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
                         val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, purchases)
-                        repository.init(installDate, advertisingId, purchasesInfo, callback)
+
+                        val initRequestData = InitRequestData(installDate, advertisingID, purchasesInfo, callback)
+                        processInit(initRequestData)
                     },
                     onFailed = {
-                        repository.init(
-                            installDate = installDate,
-                            idfa = advertisingId,
-                            callback = callback
-                        )
+                        val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                        processInit(initRequestData)
                     })
             },
             onQueryFailed = {
-                repository.init(
-                    installDate = installDate,
-                    idfa = advertisingId,
-                    callback = callback
-                )
+                val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                processInit(initRequestData)
             })
     }
 
