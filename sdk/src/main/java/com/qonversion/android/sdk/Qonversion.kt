@@ -28,12 +28,17 @@ object Qonversion : LifecycleDelegate {
     }
 
     override fun onAppBackground() {
-        userPropertiesManager?.forceSendProperties()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        userPropertiesManager?.onAppBackground()
+        productCenterManager?.onAppBackground()
+        automationsManager?.onAppBackground()
+        attributionManager?.onAppBackground()
     }
 
     override fun onAppForeground() {
+        userPropertiesManager?.onAppForeground()
         productCenterManager?.onAppForeground()
+        automationsManager?.onAppForeground()
+        attributionManager?.onAppForeground()
     }
 
     /**

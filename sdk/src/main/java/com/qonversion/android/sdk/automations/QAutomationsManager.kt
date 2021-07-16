@@ -28,6 +28,19 @@ class QAutomationsManager @Inject constructor(
         @Synchronized get
 
     private val logger = ConsoleLogger()
+    private var isAppBackground: Boolean = true
+    private var pendingToken: String? = null
+
+    fun onAppForeground() {
+        isAppBackground = false
+        pendingToken?.let {
+            sendPushToken(it)
+        }
+    }
+
+    fun onAppBackground() {
+        isAppBackground = true
+    }
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
         val pickScreen = remoteMessage.data[PICK_SCREEN]
@@ -42,9 +55,13 @@ class QAutomationsManager @Inject constructor(
 
     fun setPushToken(token: String) {
         val oldToken = loadToken()
-        if (!oldToken.equals(token)) {
-            repository.setPushToken(token)
-            saveToken(token)
+        if (token.isNotEmpty() && !oldToken.equals(token)) {
+            if (isAppBackground) {
+                pendingToken = token
+                return
+            }
+
+            sendPushToken(token)
         }
     }
 
@@ -133,6 +150,12 @@ class QAutomationsManager @Inject constructor(
             QUERY_PARAM_TYPE to QUERY_PARAM_TYPE_VALUE,
             QUERY_PARAM_ACTIVE to QUERY_PARAM_ACTIVE_VALUE.toString()
         )
+    }
+
+    private fun sendPushToken(token: String) {
+        repository.setPushToken(token)
+        saveToken(token)
+        pendingToken = null
     }
 
     private fun saveToken(token: String) =
