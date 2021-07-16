@@ -67,8 +67,13 @@ class QUserPropertiesManager @Inject internal constructor(
                 onError = {
                     isRequestInProgress = false
                     retriesCounter++
-                    retryDelay = delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
-                    sendPropertiesWithDelay(retryDelay)
+                    try {
+                        retryDelay =
+                            delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
+                        sendPropertiesWithDelay(retryDelay)
+                    } catch (e: IllegalArgumentException) {
+                        logger.debug("The error occurred during send properties. $e")
+                    }
                 })
         }
     }
