@@ -14,6 +14,8 @@ class QAttributionManagerTest {
 
     private lateinit var attributionManager: QAttributionManager
 
+    private val fieldIsAppBackground = "isAppBackground"
+
     @Before
     fun setUp() {
         clearAllMocks()
@@ -23,13 +25,17 @@ class QAttributionManagerTest {
 
     @Test
     fun attribution() {
+        // given
         val key = "key"
         val value = "value"
         val conversionInfo = mutableMapOf<String, String>()
         conversionInfo[key] = value
+        attributionManager.mockPrivateField(fieldIsAppBackground, false)
 
+        // when
         attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
 
+        // then
         verify(exactly = 1) {
             mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
         }
