@@ -182,11 +182,11 @@ class QProductCenterManager internal constructor(
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
                 pendingIdentityUserID = null
+                identityInProgress = false
 
                 if (currentUserID == identityID) {
                     executePermissionsBlock()
                 } else {
-                    identityInProgress = false
                     repository.uid = identityID
 
                     launch()
