@@ -34,7 +34,7 @@ class QAutomationsManager @Inject constructor(
     fun onAppForeground() {
         isAppBackground = false
         pendingToken?.let {
-            repository.setPushToken(it)
+            sendPushToken(it)
         }
     }
 
@@ -55,10 +55,13 @@ class QAutomationsManager @Inject constructor(
 
     fun setPushToken(token: String) {
         val oldToken = loadToken()
-        if ((!oldToken.equals(token) || isAppBackground) && token.isNotEmpty()) {
-            pendingToken = token
-            repository.setPushToken(token)
-            saveToken(token)
+        if (token.isNotEmpty() && !oldToken.equals(token)) {
+            if (isAppBackground) {
+                pendingToken = token
+                return
+            }
+
+            sendPushToken(token)
         }
     }
 
@@ -147,6 +150,12 @@ class QAutomationsManager @Inject constructor(
             QUERY_PARAM_TYPE to QUERY_PARAM_TYPE_VALUE,
             QUERY_PARAM_ACTIVE to QUERY_PARAM_ACTIVE_VALUE.toString()
         )
+    }
+
+    private fun sendPushToken(token: String) {
+        repository.setPushToken(token)
+        saveToken(token)
+        pendingToken = null
     }
 
     private fun saveToken(token: String) =
