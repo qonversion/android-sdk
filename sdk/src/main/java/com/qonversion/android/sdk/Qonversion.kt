@@ -31,12 +31,14 @@ object Qonversion : LifecycleDelegate {
         userPropertiesManager?.onAppBackground()
         productCenterManager?.onAppBackground()
         automationsManager?.onAppBackground()
+        attributionManager?.onAppBackground()
     }
 
     override fun onAppForeground() {
         userPropertiesManager?.onAppForeground()
         productCenterManager?.onAppForeground()
         automationsManager?.onAppForeground()
+        attributionManager?.onAppForeground()
     }
 
     /**

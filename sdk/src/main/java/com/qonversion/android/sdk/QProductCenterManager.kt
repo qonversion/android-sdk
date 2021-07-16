@@ -128,7 +128,6 @@ class QProductCenterManager internal constructor(
     fun loadProducts(
         callback: QonversionProductsCallback
     ) {
-
         productsCallbacks.add(callback)
         val isProductsLoaded = loadProductsState in listOf(Loaded, Failed)
         if (!isProductsLoaded || !isLaunchingFinished) {
