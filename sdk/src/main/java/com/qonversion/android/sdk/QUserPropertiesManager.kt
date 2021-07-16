@@ -20,6 +20,7 @@ class QUserPropertiesManager @Inject internal constructor(
     private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
+    private var isAppBackgrounded = true
 
     companion object {
         private const val LOOPER_THREAD_NAME = "userPropertiesThread"
@@ -30,6 +31,16 @@ class QUserPropertiesManager @Inject internal constructor(
         val thread = HandlerThread(LOOPER_THREAD_NAME)
         thread.start()
         handler = Handler(thread.looper)
+    }
+
+    fun onAppBackground() {
+        forceSendProperties()
+        isAppBackgrounded = true
+    }
+
+    fun onAppForeground() {
+        isAppBackgrounded = false
+        sendPropertiesWithDelay(retryDelay)
     }
 
     fun sendFacebookAttribution() {
@@ -47,7 +58,7 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     fun forceSendProperties() {
-        if (isRequestInProgress) {
+        if (isRequestInProgress || isAppBackgrounded) {
             return
         }
 
@@ -67,8 +78,13 @@ class QUserPropertiesManager @Inject internal constructor(
                 onError = {
                     isRequestInProgress = false
                     retriesCounter++
-                    retryDelay = delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
-                    sendPropertiesWithDelay(retryDelay)
+                    try {
+                        retryDelay =
+                            delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
+                        sendPropertiesWithDelay(retryDelay)
+                    } catch (e: IllegalArgumentException) {
+                        logger.debug("The error occurred during send properties. $e")
+                    }
                 })
         }
     }

@@ -5,14 +5,11 @@ import android.app.Application
 import android.content.Intent
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
-import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
-import com.qonversion.android.sdk.toInt
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +28,7 @@ class QAutomationsManagerTest {
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
 
+    private val fieldIsAppBackground = "isAppBackground"
     private val pushTokenKey = "push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
@@ -204,12 +202,17 @@ class QAutomationsManagerTest {
     inner class SetPushToken {
         @Test
         fun `should set token and save it to the sharedPreferences when token is new`() {
+            // given
             val newToken = "newToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns null
+            automationsManager.mockPrivateField(fieldIsAppBackground, false)
 
+            // when
             automationsManager.setPushToken(newToken)
+
+            // then
             verifyOrder {
                 mockPrefs.getString(pushTokenKey, "")
                 mockRepository.setPushToken(newToken)
