@@ -4,6 +4,8 @@ import android.content.Context;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public interface AutomationsDelegate {
 
     /**
@@ -51,5 +53,9 @@ public interface AutomationsDelegate {
      * Called when Automations flow is finished and the Automations screen is closed
      */
     default void automationsFinished() {
+    }
+    
+    default Boolean shouldShowScreenOnEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
+        return true;
     }
 }

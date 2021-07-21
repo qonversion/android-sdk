@@ -48,7 +48,13 @@ class QAutomationsManager @Inject constructor(
         return pickScreen.toBoolean().also {
             if (it) {
                 logger.release("handlePushIfPossible() -> Qonversion push notification was received")
-                loadScreenIfPossible()
+
+                val eventStr = remoteMessage.data[EVENT_NAME]
+                val event = AutomationsEvent.fromType(eventStr)
+                val shouldShowScreen = automationsDelegate?.get()?.shouldShowScreenOnEvent(event, remoteMessage.data)
+                if (shouldShowScreen == true) {
+                    loadScreenIfPossible()
+                }
             }
         }
     }
@@ -164,7 +170,10 @@ class QAutomationsManager @Inject constructor(
     private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
 
     companion object {
+        // Payload Data
         private const val PICK_SCREEN = "qonv.pick_screen"
+        private const val EVENT_NAME = "qonv.event_name"
+
         private const val PUSH_TOKEN_KEY = "push_token_key"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"
