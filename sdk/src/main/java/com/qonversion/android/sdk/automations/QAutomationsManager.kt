@@ -13,17 +13,14 @@ import com.qonversion.android.sdk.QonversionShowScreenCallback
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
-import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import org.json.JSONException
-import org.json.JSONObject
 import java.lang.Exception
 import java.lang.ref.WeakReference
-import java.util.*
 import javax.inject.Inject
 
 class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences,
+    private val eventMapper: AutomationsEventMapper,
     private val appContext: Application
 ) {
     @Volatile
@@ -46,21 +43,21 @@ class QAutomationsManager @Inject constructor(
         isAppBackground = true
     }
 
-    fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
-        val pickScreen = remoteMessage.data[PICK_SCREEN]
+    fun handlePushIfPossible(message: RemoteMessage): Boolean {
+        val pickScreen = message.data[PICK_SCREEN]
 
         return pickScreen.toBoolean().also {
             if (it) {
                 logger.release("handlePushIfPossible() -> Qonversion push notification was received")
 
-                val event = mapAutomationsEvent(remoteMessage)
-                if (event != null) {
+                val event = eventMapper.getEventFromRemoteMessage(message)
+                event?.let {
                     val shouldShowScreen =
-                        automationsDelegate?.get()?.shouldHandleEvent(event, remoteMessage.data)
+                        automationsDelegate?.get()?.shouldHandleEvent(event, message.data)
                     if (shouldShowScreen == true) {
                         loadScreenIfPossible()
                     }
-                }
+                } ?: logger.release("handlePushIfPossible() -> Failed to find any event that triggered push notification")
             }
         }
     }
@@ -138,25 +135,6 @@ class QAutomationsManager @Inject constructor(
             ?: logDelegateErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    private fun mapAutomationsEvent(remoteMessage: RemoteMessage): AutomationsEvent? {
-        try {
-            val eventJsonStr = remoteMessage.data[EVENT]
-            if (eventJsonStr != null) {
-                val eventJsonObj = JSONObject(eventJsonStr)
-                val eventName = eventJsonObj.getString(EVENT_NAME)
-                val eventDate = eventJsonObj.getLong(EVENT_DATE)
-                val date = Date(eventDate.secondsToMilliSeconds())
-                val eventType = AutomationsEventType.fromType(eventName)
-
-                return AutomationsEvent(eventType, date)
-            }
-        } catch (e: JSONException) {
-            logger.release("mapAutomationsEvent() -> Failed to retrieve event that triggered push notification")
-        }
-
-        return null
-    }
-
     private fun logDelegateErrorForFunctionName(functionName: String?) {
         logger.release("AutomationsDelegate.$functionName() function can not be executed. It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
     }
@@ -195,12 +173,7 @@ class QAutomationsManager @Inject constructor(
     private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
 
     companion object {
-        // Payload Data
         private const val PICK_SCREEN = "qonv.pick_screen"
-        private const val EVENT = "qonv.event"
-        private const val EVENT_NAME = "name"
-        private const val EVENT_DATE = "happened"
-
         private const val PUSH_TOKEN_KEY = "push_token_key"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"

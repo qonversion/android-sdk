@@ -23,6 +23,7 @@ class QAutomationsManagerTest {
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockEventMapper: AutomationsEventMapper = mockk(relaxed = true)
     private val mockApplication: Application = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
@@ -56,7 +57,7 @@ class QAutomationsManagerTest {
         mockIntent()
         mockSharedPreferences()
 
-        automationsManager = QAutomationsManager(mockRepository, mockPrefs, mockApplication)
+        automationsManager = QAutomationsManager(mockRepository, mockPrefs, mockEventMapper, mockApplication)
 
         automationsManager.automationsDelegate = WeakReference(delegate)
     }
