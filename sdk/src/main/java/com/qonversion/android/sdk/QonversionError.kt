@@ -34,5 +34,12 @@ enum class QonversionErrorCode(val specification: String) {
     ProductNotFound("Failure to purchase since the Qonversion product was not found"),
     OfferingsNotFound("No offerings found"),
     LaunchError("There was an error on launching Qonversion SDK"),
-    SkuDetailsError("Failure to retrieve SkuDetails for the in-app product ID")
+    SkuDetailsError("Failure to retrieve SkuDetails for the in-app product ID"),
+    InvalidCredentials(""),
+    InvalidClientUid(""),
+    UnknownClientPlatform(""),
+    FraudPurchase(""),
+    ProjectConfigError(""),
+    InvalidStoreCredentials("")
+
 }

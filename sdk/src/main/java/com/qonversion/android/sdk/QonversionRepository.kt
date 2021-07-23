@@ -31,7 +31,8 @@ class QonversionRepository internal constructor(
     private val key: String,
     private val isDebugMode: Boolean,
     private val logger: Logger,
-    private val purchasesCache: PurchasesCache
+    private val purchasesCache: PurchasesCache,
+    private val errorMapper: BackendErrorMapper
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -96,7 +97,7 @@ class QonversionRepository internal constructor(
         api.properties(propertiesRequest).enqueue {
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
-                
+
                 if (it.isSuccessful) onSuccess() else onError()
             }
             onFailure = {
@@ -130,7 +131,7 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data.productsEligibility)
                 } else {
-                    callback.onError(it.toQonversionError())
+                    callback.onError(errorMapper.toQonversionError(it))
                 }
             }
             onFailure = {
@@ -157,7 +158,7 @@ class QonversionRepository internal constructor(
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.userID)
                 } else {
-                    onError(it.toQonversionError())
+                    onError(errorMapper.toQonversionError(it))
                 }
             }
             onFailure = {
@@ -186,7 +187,7 @@ class QonversionRepository internal constructor(
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data)
                 } else {
-                    onError(it.toQonversionError())
+                    onError(errorMapper.toQonversionError(it))
                 }
             }
             onFailure = {
@@ -223,7 +224,7 @@ class QonversionRepository internal constructor(
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.items.lastOrNull()?.data)
                 } else {
-                    onError(it.toQonversionError())
+                    onError(errorMapper.toQonversionError(it))
                 }
             }
             onFailure = {
@@ -309,7 +310,7 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
                 } else {
-                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)
+                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, errorMapper.toQonversionError(it), retries)
                 }
             }
             onFailure = {
@@ -445,7 +446,7 @@ class QonversionRepository internal constructor(
         if (body != null && body.success) {
             callback?.onSuccess(body.data)
         } else {
-            callback?.onError(response.toQonversionError())
+            callback?.onError(errorMapper.toQonversionError(response))
         }
     }
 
@@ -473,7 +474,7 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback?.onSuccess(body.data)
                 } else {
-                    callback?.onError(it.toQonversionError())
+                    callback?.onError(errorMapper.toQonversionError(it))
                 }
             }
             onFailure = {
@@ -485,7 +486,7 @@ class QonversionRepository internal constructor(
         }
     }
 
-    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${this.toQonversionError()}"
+    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${errorMapper.toQonversionError(this)}"
 
     companion object {
         private const val MAX_RETRIES_NUMBER = 3
