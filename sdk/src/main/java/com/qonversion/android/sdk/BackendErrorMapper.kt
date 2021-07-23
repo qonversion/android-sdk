@@ -7,7 +7,7 @@ import retrofit2.Response
 import java.nio.charset.Charset
 
 class BackendErrorMapper {
-    fun <T> toQonversionError(value: Response<T>): QonversionError {
+    fun <T> getErrorFromResponse(value: Response<T>): QonversionError {
         var errorMessage = String()
         var code: Int? = null
 
