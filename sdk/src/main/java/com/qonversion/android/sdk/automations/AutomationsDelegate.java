@@ -55,7 +55,7 @@ public interface AutomationsDelegate {
     default void automationsFinished() {
     }
     
-    default Boolean shouldShowScreenOnEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
+    default Boolean shouldHandleEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
         return true;
     }
 }
