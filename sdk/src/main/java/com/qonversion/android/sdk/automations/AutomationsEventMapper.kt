@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.automations
 
 import com.google.firebase.messaging.RemoteMessage
+import com.qonversion.android.sdk.billing.getCurrentTimeInMillis
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.logger.Logger
 import org.json.JSONException
@@ -14,11 +15,16 @@ class AutomationsEventMapper(private val logger: Logger) {
             if (eventJsonStr != null) {
                 val eventJsonObj = JSONObject(eventJsonStr)
                 val eventName = eventJsonObj.getString(EVENT_NAME)
-                val eventDate = eventJsonObj.getLong(EVENT_DATE)
-                val date = Date(eventDate.secondsToMilliSeconds())
-                val eventType = AutomationsEventType.fromType(eventName)
 
-                return AutomationsEvent(eventType, date)
+                val eventDate: Date = if (!eventJsonObj.isNull(EVENT_DATE)) {
+                    val jsonDate = eventJsonObj.getLong(EVENT_DATE)
+                    Date(jsonDate.secondsToMilliSeconds())
+                } else {
+                    Date(getCurrentTimeInMillis())
+                }
+
+                val eventType = AutomationsEventType.fromType(eventName)
+                return AutomationsEvent(eventType, eventDate)
             }
         } catch (e: JSONException) {
             logger.release("mapAutomationsEvent() -> Failed to retrieve event that triggered push notification")
