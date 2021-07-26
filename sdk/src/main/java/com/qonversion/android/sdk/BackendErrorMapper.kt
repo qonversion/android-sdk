@@ -102,11 +102,10 @@ class BackendErrorMapper {
             10006 -> QonversionErrorCode.UnknownClientPlatform
             10008 -> QonversionErrorCode.FraudPurchase
             20005 -> QonversionErrorCode.FeatureNotSupported
-            20006, 20007, 20300, 20303 -> QonversionErrorCode.PlayStoreError
+            20006, 20007, 20300, 20303, 20399 -> QonversionErrorCode.PlayStoreError
             20008, 20010, 20203, 20210 -> QonversionErrorCode.PurchaseInvalid
             20011, 20012, 20013 -> QonversionErrorCode.ProjectConfigError
             20201 -> QonversionErrorCode.InvalidStoreCredentials
-            20399 -> QonversionErrorCode.UnknownError
             else -> null
         }
 
