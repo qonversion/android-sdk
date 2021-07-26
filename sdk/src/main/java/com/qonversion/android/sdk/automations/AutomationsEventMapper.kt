@@ -15,6 +15,9 @@ class AutomationsEventMapper(private val logger: Logger) {
             if (eventJsonStr != null) {
                 val eventJsonObj = JSONObject(eventJsonStr)
                 val eventName = eventJsonObj.getString(EVENT_NAME)
+                if (eventName.isEmpty()) {
+                    return null
+                }
 
                 val eventDate: Date = if (!eventJsonObj.isNull(EVENT_DATE)) {
                     val jsonDate = eventJsonObj.getLong(EVENT_DATE)

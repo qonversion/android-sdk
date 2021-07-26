@@ -50,14 +50,17 @@ class QAutomationsManager @Inject constructor(
             if (it) {
                 logger.release("handlePushIfPossible() -> Qonversion push notification was received")
 
+                var shouldShowScreen = true
+
                 val event = eventMapper.getEventFromRemoteMessage(message)
-                event?.let {
-                    val shouldShowScreen =
+                if (event != null) {
+                    shouldShowScreen =
                         automationsDelegate?.get()?.shouldHandleEvent(event, message.data) ?: true
-                    if (shouldShowScreen) {
-                        loadScreenIfPossible()
-                    }
-                } ?: logger.release("handlePushIfPossible() -> Failed to find any event that triggered push notification")
+                }
+
+                if (shouldShowScreen) {
+                    loadScreenIfPossible()
+                }
             }
         }
     }
