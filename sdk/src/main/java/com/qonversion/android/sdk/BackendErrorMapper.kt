@@ -4,6 +4,7 @@ import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
+import java.io.IOException
 import java.nio.charset.Charset
 
 class BackendErrorMapper {
@@ -13,22 +14,28 @@ class BackendErrorMapper {
 
         value.errorBody()?.let {
             try {
-                val responseBodyStr = convertResponseBodyToStr(it)
-                val errorObj = JSONObject(responseBodyStr)
+                val responseBodyStr = convertResponseBody(it)
+                val responseObj = JSONObject(responseBodyStr)
 
-                if (errorObj.has(DATA)) {
-                    val dataObj = errorObj.getJsonObject(DATA)
-                    errorMessage = dataObj.toFormatString(DATA)
+                if (isResponseV1(responseObj)) {
+                    val dataObj = responseObj.getJsonObject(DATA)
+                    dataObj.toFormatString(DATA)?.let { errStr ->
+                        errorMessage = errStr
+                    }
+
                     code = dataObj.getInt(CODE)
-                }
-                if (errorObj.has(ERROR)) {
-                    errorMessage = errorObj.getErrorMessage(ERROR)
-                }
-                if (errorObj.has(META)) {
-                    errorMessage += errorObj.getErrorMessage(META)
+                } else {
+                    val errorObj = responseObj.getJsonObject(ERROR)
+
+                    val errStr = errorObj.getString(MESSAGE)
+                    errStr.toFormatString(ERROR)?.let { formatErrStr ->
+                        errorMessage = formatErrStr
+                    }
                 }
             } catch (e: JSONException) {
                 errorMessage = "$ERROR=failed to parse the backend response"
+            } catch (e: IOException) {
+                errorMessage = "$ERROR=${e.localizedMessage}"
             }
         }
 
@@ -41,13 +48,18 @@ class BackendErrorMapper {
         )
     }
 
-    private fun convertResponseBodyToStr(response: ResponseBody): String {
+    @Throws(IOException::class)
+    private fun convertResponseBody(response: ResponseBody): String {
         val source = response.source()
         source.request(Long.MAX_VALUE)
         val buffer = source.buffer
         val responseBodyStr = buffer.clone().readString(Charset.forName("UTF-8"))
 
         return responseBodyStr
+    }
+
+    private fun isResponseV1(jsonObject: JSONObject): Boolean {
+        return jsonObject.has(DATA)
     }
 
     @Throws(JSONException::class)
@@ -69,14 +81,17 @@ class BackendErrorMapper {
     }
 
     @Throws(JSONException::class)
-    private fun JSONObject.getErrorMessage(field: String): String {
-        val value = getJsonObject(field)
-        return value.toFormatString(field)
+    private fun JSONObject?.getString(field: String): String? {
+        if (this == null || isNull(field)) {
+            return null
+        }
+
+        return getString(field)
     }
 
-    private fun JSONObject?.toFormatString(fieldName: String): String {
+    private fun Any?.toFormatString(fieldName: String): String? {
         return if (this == null) {
-            ""
+            null
         } else "$fieldName=${this}"
     }
 
@@ -111,7 +126,7 @@ class BackendErrorMapper {
     companion object {
         private const val DATA = "data"
         private const val ERROR = "error"
-        private const val META = "_meta"
         private const val CODE = "code"
+        private const val MESSAGE = "message"
     }
 }
