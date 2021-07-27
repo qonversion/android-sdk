@@ -28,7 +28,7 @@ fun Long.milliSecondsToSeconds(): Long = this / 1000
 
 fun Long.secondsToMilliSeconds(): Long = this * 1000
 
-fun getCurrentTimeInMillis(): Long = System.currentTimeMillis()
+fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
 
 private fun Long.convertLongToTime(): String {
     val date = Date(this)
