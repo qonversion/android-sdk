@@ -1,13 +1,16 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.api
 
+import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.QonversionErrorCode
 import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
 import java.io.IOException
 import java.nio.charset.Charset
+import javax.inject.Inject
 
-class BackendErrorMapper {
+class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
     fun <T> getErrorFromResponse(value: Response<T>): QonversionError {
         var errorMessage = String()
         var code: Int? = null
@@ -17,7 +20,8 @@ class BackendErrorMapper {
                 val responseBodyStr = convertResponseBody(it)
                 val responseObj = JSONObject(responseBodyStr)
 
-                if (isResponseV1(responseObj)) {
+                val request = value.raw().request()
+                if (helper.isV1Request(request)) {
                     val dataObj = responseObj.getJsonObject(DATA)
                     dataObj.toFormatString(DATA)?.let { errStr ->
                         errorMessage = errStr
@@ -56,10 +60,6 @@ class BackendErrorMapper {
         val responseBodyStr = buffer.clone().readString(Charset.forName("UTF-8"))
 
         return responseBodyStr
-    }
-
-    private fun isResponseV1(jsonObject: JSONObject): Boolean {
-        return jsonObject.has(DATA)
     }
 
     @Throws(JSONException::class)

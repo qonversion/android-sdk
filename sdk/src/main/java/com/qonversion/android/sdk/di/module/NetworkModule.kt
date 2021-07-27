@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.di.module
 import android.app.Application
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.api.ApiHeadersProvider
+import com.qonversion.android.sdk.api.ApiHelper
 import com.qonversion.android.sdk.api.NetworkInterceptor
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.dto.*
@@ -68,9 +69,17 @@ class NetworkModule {
     @Provides
     fun provideHeadersInterceptor(
         apiHeadersProvider: ApiHeadersProvider,
-        config: QonversionConfig
+        config: QonversionConfig,
+        apiHelper: ApiHelper
     ): NetworkInterceptor {
-        return NetworkInterceptor(apiHeadersProvider, config)
+        return NetworkInterceptor(apiHeadersProvider, apiHelper, config)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideApiHelper(
+    ): ApiHelper {
+        return ApiHelper()
     }
 
     companion object {

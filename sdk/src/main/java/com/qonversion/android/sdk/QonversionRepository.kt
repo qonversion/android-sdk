@@ -3,6 +3,7 @@ package com.qonversion.android.sdk
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.api.Api
+import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
@@ -32,7 +33,7 @@ class QonversionRepository internal constructor(
     private val isDebugMode: Boolean,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
-    private val errorMapper: BackendErrorMapper
+    private val errorMapper: ApiErrorMapper
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
