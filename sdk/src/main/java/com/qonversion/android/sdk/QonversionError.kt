@@ -22,11 +22,11 @@ enum class QonversionErrorCode(val specification: String) {
     PlayStoreError("There was an issue with the Play Store service"),
     BillingUnavailable("The Billing service is unavailable on the device"),
     PurchasePending("Purchase is pending"),
-    PurchaseInvalid("Failure to purchase"),
+    PurchaseInvalid("Failure of purchase"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),
     ProductNotOwned("Failure to consume purchase since item is not owned"),
     ProductAlreadyOwned("Failure to purchase since item is already owned"),
-    FeatureNotSupported("Requested feature is not supported by Play Store on the current device"),
+    FeatureNotSupported("The requested feature is not supported"),
     ProductUnavailable("Requested product is not available for purchase"),
     NetworkConnectionFailed("There was a network issue. Please make sure that the Internet connection is available on the device"),
     ParseResponseFailed("A problem occurred when serializing or deserializing data"),
@@ -35,11 +35,10 @@ enum class QonversionErrorCode(val specification: String) {
     OfferingsNotFound("No offerings found"),
     LaunchError("There was an error on launching Qonversion SDK"),
     SkuDetailsError("Failure to retrieve SkuDetails for the in-app product ID"),
-    InvalidCredentials(""),
-    InvalidClientUid(""),
-    UnknownClientPlatform(""),
-    FraudPurchase(""),
-    ProjectConfigError(""),
-    InvalidStoreCredentials("")
-
+    InvalidCredentials("Access token is invalid or not set"),
+    InvalidClientUid("Client Uid is invalid or not set"),
+    UnknownClientPlatform("The current platform is not supported"),
+    FraudPurchase("Fraud purchase was detected"),
+    ProjectConfigError("The project is not configured or configured incorrectly in the Qonversion Dashboard"),
+    InvalidStoreCredentials("This account does not have access to the requested application")
 }

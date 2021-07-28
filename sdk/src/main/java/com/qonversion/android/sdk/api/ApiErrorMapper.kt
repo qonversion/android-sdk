@@ -114,8 +114,8 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
 
     private fun getAdditionalMessageForCode(value: Int?): String? {
         val qonversionErrorMessage = when (value) {
-            20201 -> "This account does not have access to the requested application"
-            20203 -> "Possible reasons for the error are fraud purchases and incorrect configuration of the project key on the Qonversion Dashboard."
+            20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)\n"
+            20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"
             else -> null
         }
 
