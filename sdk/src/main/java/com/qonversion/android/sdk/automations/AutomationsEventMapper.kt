@@ -19,16 +19,19 @@ class AutomationsEventMapper(private val logger: Logger) {
                 return null
             }
 
-            val eventDate: Date = if (!eventJsonObj.isNull(EVENT_DATE)) {
-                val jsonDate = eventJsonObj.getLong(EVENT_DATE)
-                Date(jsonDate.secondsToMilliSeconds())
-            } else {
+            val jsonDate = eventJsonObj.optLong(EVENT_DATE)
+            val eventDate: Date = if (jsonDate == 0L) {
                 Date(getCurrentTimeInMillis())
+            } else {
+                Date(jsonDate.secondsToMilliSeconds())
             }
 
             val eventType = AutomationsEventType.fromType(eventName)
-            return AutomationsEvent(eventType, eventDate)
-
+            return if (eventType != AutomationsEventType.Unknown) {
+                AutomationsEvent(eventType, eventDate)
+            } else {
+                null
+            }
         } catch (e: JSONException) {
             logger.release("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification")
         }
