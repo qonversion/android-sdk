@@ -47,7 +47,7 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
         val additionalErrorMessage = getAdditionalMessageForCode(code)
 
         return QonversionError(
-            qonversionCode ?: QonversionErrorCode.BackendError,
+            qonversionCode,
             "HTTP status code=${value.code()}, $errorMessage. ${additionalErrorMessage ?: ""}"
         )
     }
@@ -95,7 +95,7 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
         } else "$fieldName=${this}"
     }
 
-    private fun getQonversionErrorCode(value: Int?): QonversionErrorCode? {
+    private fun getQonversionErrorCode(value: Int?): QonversionErrorCode {
         val qonversionErrorCode = when (value) {
             10002, 10003 -> QonversionErrorCode.InvalidCredentials
             10004, 10005, 20014 -> QonversionErrorCode.InvalidClientUid
@@ -106,7 +106,7 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
             20008, 20010, 20203, 20210 -> QonversionErrorCode.PurchaseInvalid
             20011, 20012, 20013 -> QonversionErrorCode.ProjectConfigError
             20201 -> QonversionErrorCode.InvalidStoreCredentials
-            else -> null
+            else -> QonversionErrorCode.BackendError
         }
 
         return qonversionErrorCode
