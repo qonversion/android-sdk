@@ -114,7 +114,7 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
 
     private fun getAdditionalMessageForCode(value: Int?): String? {
         val qonversionErrorMessage = when (value) {
-            20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)\n"
+            20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"
             20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"
             else -> null
         }
