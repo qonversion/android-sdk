@@ -2,12 +2,8 @@ package com.qonversion.android.sdk
 
 import com.android.billingclient.api.BillingClient
 import com.qonversion.android.sdk.billing.BillingError
-import okhttp3.ResponseBody
 import org.json.JSONException
-import org.json.JSONObject
-import retrofit2.Response
 import java.io.IOException
-import java.nio.charset.Charset
 
 fun BillingError.toQonversionError(): QonversionError {
     val errorCode = when (this.billingResponseCode) {
@@ -51,57 +47,3 @@ fun Throwable.toQonversionError(): QonversionError {
         else -> QonversionError(QonversionErrorCode.UnknownError, localizedMessage ?: "")
     }
 }
-
-fun <T> Response<T>.toQonversionError(): QonversionError {
-    val data = "data"
-    val error = "error"
-    val meta = "_meta"
-    var errorMessage = String()
-
-    errorBody()?.let {
-        try {
-            val responseBodyStr = it.convertToStr()
-            val errorObj = JSONObject(responseBodyStr)
-
-            if (errorObj.has(data)) {
-                errorMessage = errorObj.getErrorMessage(data)
-            }
-            if (errorObj.has(error)) {
-                errorMessage = errorObj.getErrorMessage(error)
-            }
-            if (errorObj.has(meta)) {
-                errorMessage += errorObj.getErrorMessage(meta)
-            }
-        } catch (e: JSONException) {
-            errorMessage = formatError(error, "failed to parse the backend response")
-        }
-    }
-
-    return QonversionError(
-        QonversionErrorCode.BackendError,
-        "HTTP status code=${this.code()}$errorMessage"
-    )
-}
-
-private fun ResponseBody.convertToStr(): String {
-    val source = source()
-    source.request(Long.MAX_VALUE)
-    val buffer = source.buffer
-    val responseBodyStr = buffer.clone().readString(Charset.forName("UTF-8"))
-
-    return responseBodyStr
-}
-
-@Throws(JSONException::class)
-private fun JSONObject.getErrorMessage(field: String): String {
-    if (!isNull(field)) {
-        val value = getJSONObject(field).toString()
-        return formatError(
-            field,
-            value
-        )
-    }
-    return ""
-}
-
-private fun formatError(name: String, value: String) = String.format(", %s=%s", name, value)
