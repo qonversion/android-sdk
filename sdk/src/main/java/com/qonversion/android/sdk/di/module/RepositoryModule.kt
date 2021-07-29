@@ -2,11 +2,13 @@ package com.qonversion.android.sdk.di.module
 
 import android.app.Application
 import android.content.SharedPreferences
+import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.EnvironmentProvider
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiHeadersProvider
+import com.qonversion.android.sdk.api.ApiHelper
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.*
@@ -25,7 +27,8 @@ class RepositoryModule {
         environmentProvider: EnvironmentProvider,
         config: QonversionConfig,
         logger: Logger,
-        purchasesCache: PurchasesCache
+        purchasesCache: PurchasesCache,
+        apiErrorMapper: ApiErrorMapper
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
@@ -34,7 +37,8 @@ class RepositoryModule {
             config.key,
             config.isDebugMode,
             logger,
-            purchasesCache
+            purchasesCache,
+            apiErrorMapper
         )
     }
 
@@ -61,8 +65,16 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideHeadersProvider(config: QonversionConfig, sharedPreferencesCache: SharedPreferencesCache
+    fun provideHeadersProvider(
+        config: QonversionConfig, sharedPreferencesCache: SharedPreferencesCache
     ): ApiHeadersProvider {
         return ApiHeadersProvider(config, sharedPreferencesCache)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideApiErrorMapper(apiHelper: ApiHelper
+    ): ApiErrorMapper {
+        return ApiErrorMapper(apiHelper)
     }
 }
