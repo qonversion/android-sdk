@@ -29,17 +29,18 @@ object Qonversion : LifecycleDelegate {
     }
 
     override fun onAppBackground() {
+        appState = AppState.Background
+
         if (!QDependencyInjector.isAppComponentInitialized()) {
             appState = AppState.PendingBackground
             return
         }
-
         userPropertiesManager?.onAppBackground()
-
-        appState = AppState.Background
     }
 
     override fun onAppForeground() {
+        appState = AppState.Foreground
+
         if (!QDependencyInjector.isAppComponentInitialized()) {
             appState = AppState.PendingForeground
             return
@@ -49,8 +50,6 @@ object Qonversion : LifecycleDelegate {
         productCenterManager?.onAppForeground()
         automationsManager?.onAppForeground()
         attributionManager?.onAppForeground()
-
-        appState = AppState.Foreground
     }
 
     /**

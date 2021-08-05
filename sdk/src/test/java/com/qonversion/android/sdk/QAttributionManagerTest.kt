@@ -1,43 +1,74 @@
 package com.qonversion.android.sdk
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.mockk.clearAllMocks
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import android.os.Looper
+import io.mockk.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
-@RunWith(AndroidJUnit4::class)
 class QAttributionManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
 
     private lateinit var attributionManager: QAttributionManager
 
-    private val fieldIsAppBackground = "isAppBackground"
-
-    @Before
+    @BeforeEach
     fun setUp() {
         clearAllMocks()
 
         attributionManager = QAttributionManager(mockRepository)
     }
 
-    @Test
-    fun attribution() {
-        // given
-        val key = "key"
-        val value = "value"
-        val conversionInfo = mutableMapOf<String, String>()
-        conversionInfo[key] = value
-        attributionManager.mockPrivateField(fieldIsAppBackground, false)
+    @Nested
+    inner class Attribution {
+        @Test
+        fun `should send attribution on foreground`() {
+            // given
+            val key = "key"
+            val value = "value"
+            val conversionInfo = mutableMapOf<String, String>()
+            conversionInfo[key] = value
 
-        // when
-        attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
+            mockLooper()
+            Qonversion.appState = AppState.Foreground
 
-        // then
-        verify(exactly = 1) {
-            mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            // when
+            attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
+
+            // then
+            verify(exactly = 1) {
+                mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            }
         }
+
+        @Test
+        fun `should not send attribution on background`() {
+            // given
+            val key = "key"
+            val value = "value"
+            val conversionInfo = mutableMapOf<String, String>()
+            conversionInfo[key] = value
+
+            mockLooper()
+            Qonversion.appState = AppState.Background
+
+            // when
+            attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
+
+            // then
+            verify {
+                mockRepository wasNot called
+            }
+        }
+    }
+
+    private fun mockLooper() {
+        val mockLooper = mockk<Looper>()
+        mockkStatic(Looper::class)
+        every {
+            Looper.getMainLooper()
+        } returns mockLooper
+        every {
+            Looper.myLooper()
+        } returns mockLooper
     }
 }

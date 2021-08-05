@@ -24,7 +24,6 @@ class QUserPropertiesManagerTest {
     private val mockLogger: Logger = mockk(relaxed = true)
 
     private val fieldIsRequestInProgress = "isRequestInProgress"
-    private val fieldIsAppBackgrounded = "isAppBackgrounded"
     private val fieldRetryDelay = "retryDelay"
     private val fieldRetriesCounter = "retriesCounter"
     private val fieldIsSendingScheduled = "isSendingScheduled"
@@ -63,7 +62,7 @@ class QUserPropertiesManagerTest {
         val fbAttributionId = "fbAttributionId"
         mockkConstructor(FacebookAttribution::class)
         every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
 
         // when
         spykPropertiesManager.sendFacebookAttribution()
@@ -133,7 +132,7 @@ class QUserPropertiesManagerTest {
     fun `should not force send properties when properties storage is empty`() {
         // given
         mockPropertiesStorage(mapOf())
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
 
         // when
         propertiesManager.forceSendProperties()
@@ -172,7 +171,8 @@ class QUserPropertiesManagerTest {
     fun `should set isRequestInProgress to true and isSendingScheduled to false when properties storage is not empty `() {
         // given
         mockPropertiesStorage(properties)
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
+
         // when
         propertiesManager.forceSendProperties()
 
@@ -193,7 +193,7 @@ class QUserPropertiesManagerTest {
         mockPropertiesStorage(properties)
         mockErrorSendPropertiesResponse(properties)
         mockIncrementalCounterResponse(calculatedDelay)
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
 
         // when
         propertiesManager.forceSendProperties()
@@ -234,7 +234,7 @@ class QUserPropertiesManagerTest {
         mockErrorSendPropertiesResponse(properties)
         mockIncrementalCounterResponse(calculatedDelay)
         mockPostDelayed((calculatedDelay * 1000).toLong())
-        spykPropertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
 
         // when
         spykPropertiesManager.forceSendProperties()
@@ -249,7 +249,8 @@ class QUserPropertiesManagerTest {
     fun `should force send properties and get response in onSuccess callback`() {
         // given
         mockPropertiesStorage(properties)
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
+
         every {
             mockRepository.sendProperties(properties, captureLambda(), any())
         } answers {
@@ -357,7 +358,7 @@ class QUserPropertiesManagerTest {
         val value = "some value"
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)
-        propertiesManager.mockPrivateField(fieldIsAppBackgrounded, false)
+        Qonversion.appState = AppState.Foreground
 
         every{
             propertiesManager.forceSendProperties()
