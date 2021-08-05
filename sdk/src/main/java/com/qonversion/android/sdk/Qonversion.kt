@@ -21,7 +21,7 @@ object Qonversion : LifecycleDelegate {
     private var logger = ConsoleLogger()
     private var isDebugMode = false
     private val handler = Handler(Looper.getMainLooper())
-    private var pendingAppState = AppState.None
+    internal var appState = AppState.Background
 
     init {
         val lifecycleHandler = AppLifecycleHandler(this)
@@ -30,21 +30,18 @@ object Qonversion : LifecycleDelegate {
 
     override fun onAppBackground() {
         if (!QDependencyInjector.isAppComponentInitialized()) {
-            pendingAppState = AppState.Background
+            appState = AppState.PendingBackground
             return
         }
 
         userPropertiesManager?.onAppBackground()
-        productCenterManager?.onAppBackground()
-        automationsManager?.onAppBackground()
-        attributionManager?.onAppBackground()
 
-        pendingAppState = AppState.None
+        appState = AppState.Background
     }
 
     override fun onAppForeground() {
         if (!QDependencyInjector.isAppComponentInitialized()) {
-            pendingAppState = AppState.Foreground
+            appState = AppState.PendingForeground
             return
         }
 
@@ -53,7 +50,7 @@ object Qonversion : LifecycleDelegate {
         automationsManager?.onAppForeground()
         attributionManager?.onAppForeground()
 
-        pendingAppState = AppState.None
+        appState = AppState.Foreground
     }
 
     /**
@@ -100,9 +97,9 @@ object Qonversion : LifecycleDelegate {
 
         productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
 
-        when (pendingAppState) {
-            AppState.Foreground -> onAppForeground()
-            AppState.Background-> onAppBackground()
+        when (appState) {
+            AppState.PendingForeground -> onAppForeground()
+            AppState.PendingBackground-> onAppBackground()
             else -> {}
         }
 

@@ -20,7 +20,6 @@ class QUserPropertiesManager @Inject internal constructor(
     private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
-    private var isAppBackgrounded = true
 
     companion object {
         private const val LOOPER_THREAD_NAME = "userPropertiesThread"
@@ -35,11 +34,9 @@ class QUserPropertiesManager @Inject internal constructor(
 
     fun onAppBackground() {
         forceSendProperties()
-        isAppBackgrounded = true
     }
 
     fun onAppForeground() {
-        isAppBackgrounded = false
         sendPropertiesWithDelay(retryDelay)
     }
 
@@ -58,7 +55,7 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     fun forceSendProperties() {
-        if (isRequestInProgress || isAppBackgrounded) {
+        if (isRequestInProgress || Qonversion.appState.isBackground()) {
             return
         }
 
