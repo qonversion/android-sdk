@@ -207,7 +207,6 @@ class QUserPropertiesManagerTest {
 
         val isRequestInProgress =
             propertiesManager.getPrivateField<Boolean>(fieldIsRequestInProgress)
-        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         val retryDelay = propertiesManager.getPrivateField<Int>(fieldRetryDelay)
         val retriesCounter = propertiesManager.getPrivateField<Int>(fieldRetriesCounter)
 
@@ -215,8 +214,7 @@ class QUserPropertiesManagerTest {
             "Private members haven't been changed to calculate new delay",
             { assertEquals("The field isRequestInProgress is not equal false", false, isRequestInProgress) },
             { assertEquals("The field retryDelay is not equal calculatedDelay", retryDelay, calculatedDelay) },
-            { assertEquals("The field retriesCounter is not equal 1", 1, retriesCounter) },
-            { assertEquals("The field isSendingScheduled is not equal true", true, isSendingScheduled) }
+            { assertEquals("The field retriesCounter is not equal 1", 1, retriesCounter) }
         )
     }
 
@@ -409,6 +407,67 @@ class QUserPropertiesManagerTest {
         verify(exactly = 0) {
             mockHandler.postDelayed(any(), any())
             propertiesManager.forceSendProperties()
+        }
+    }
+
+    @Test
+    fun `should send properties with delay when onAppForeground called on foreground`() {
+        // given
+        val handlerDelay = (minDelay * 1000).toLong()
+        mockPostDelayed(handlerDelay)
+
+        Qonversion.appState = AppState.Foreground
+
+        every {
+            propertiesManager.forceSendProperties()
+        } just Runs
+
+        // when
+        propertiesManager.onAppForeground()
+
+        // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(true, isSendingScheduled)
+
+        verifyOrder {
+            mockHandler.postDelayed(any(), handlerDelay)
+            propertiesManager.forceSendProperties()
+        }
+    }
+
+    @Test
+    fun `should not send properties with delay when onAppForeground called on background`() {
+        // given
+        Qonversion.appState = AppState.Background
+
+        // when
+        propertiesManager.onAppForeground()
+
+        // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(false, isSendingScheduled)
+
+        verify(exactly = 0) {
+            mockHandler.postDelayed(any(), any())
+            propertiesManager.forceSendProperties()
+        }
+    }
+
+    @Test
+    fun `should force send properties when onAppBackground is called`() {
+        // given
+        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
+
+        every {
+            spykPropertiesManager.forceSendProperties()
+        } just Runs
+
+        // when
+        spykPropertiesManager.onAppBackground()
+
+        // then
+        verify (exactly = 1) {
+            spykPropertiesManager.forceSendProperties()
         }
     }
 

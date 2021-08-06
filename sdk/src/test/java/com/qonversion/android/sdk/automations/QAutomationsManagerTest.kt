@@ -202,7 +202,7 @@ class QAutomationsManagerTest {
     @Nested
     inner class SetPushToken {
         @Test
-        fun `should send and save token when it is new on foreground`() {
+        fun `should send and save new token on foreground`() {
             // given
             val newToken = "newToken"
             every {
@@ -225,7 +225,7 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `shouldn't send token when it is new on background`() {
+        fun `shouldn't send and save new token on background`() {
             // given
             val newToken = "newToken"
             every {
@@ -242,13 +242,18 @@ class QAutomationsManagerTest {
             val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
             assertThat(pendingToken).isEqualTo(newToken)
 
-            verify  {
-                mockRepository wasNot called
+            verify(exactly = 1) {
+                mockPrefs.getString(pushTokenKey, "")
+            }
+            verify(exactly = 0) {
+                mockRepository.setPushToken(newToken)
+                mockEditor.putString(pushTokenKey, newToken)
+                mockEditor.apply()
             }
         }
 
         @Test
-        fun `shouldn't send and save token when it is old`() {
+        fun `shouldn't send and save old token`() {
             val oldToken = "oldToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
@@ -272,9 +277,6 @@ class QAutomationsManagerTest {
         fun `should send new pending token after app switched to foreground`() {
             // given
             val newToken = "newToken"
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns null
             automationsManager.mockPrivateField(fieldPendingToken, newToken)
 
             // when
@@ -294,11 +296,8 @@ class QAutomationsManagerTest {
         @Test
         fun `should not send null pending token after app switched to foreground`() {
             // given
-            val newToken = null
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns null
-            automationsManager.mockPrivateField(fieldPendingToken, newToken)
+            val nullToken = null
+            automationsManager.mockPrivateField(fieldPendingToken, nullToken)
 
             // when
             automationsManager.onAppForeground()
