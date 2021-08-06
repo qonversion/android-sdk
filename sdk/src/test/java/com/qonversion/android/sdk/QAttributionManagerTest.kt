@@ -51,8 +51,10 @@ class QAttributionManagerTest {
             attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
 
             // then
-            val pendingSource = attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
-            val pendingInfo = attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
             assertAll(
                 "Pending attribution info wasn't saved.",
                 { Assert.assertEquals(AttributionSource.AppsFlyer, pendingSource) },
@@ -63,20 +65,24 @@ class QAttributionManagerTest {
                 mockRepository wasNot called
             }
         }
+    }
 
+    @Nested
+    inner class OnAppForeground {
         @Test
-        fun `should send attribution after app switched from background to foreground`(){
+        fun `should send pending attribution after app switched to foreground`() {
             // given
-            mockLooper()
-            Qonversion.appState = AppState.Background
+            attributionManager.mockPrivateField(fieldPendingAttrSource, AttributionSource.AppsFlyer)
+            attributionManager.mockPrivateField(fieldPendingInfo, conversionInfo)
 
             // when
-            attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
             attributionManager.onAppForeground()
 
             // then
-            val pendingSource = attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
-            val pendingInfo = attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
             assertAll(
                 "Pending attribution info wasn't cleared.",
                 { Assert.assertEquals(null, pendingSource) },
@@ -85,6 +91,31 @@ class QAttributionManagerTest {
 
             verify(exactly = 1) {
                 mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            }
+        }
+
+        @Test
+        fun `should not send null pending attribution after app switched to foreground`() {
+            // given
+            attributionManager.mockPrivateField(fieldPendingAttrSource, null)
+            attributionManager.mockPrivateField(fieldPendingInfo, null)
+
+            // when
+            attributionManager.onAppForeground()
+
+            // then
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            assertAll(
+                "Pending attribution info wasn't cleared.",
+                { Assert.assertEquals(null, pendingSource) },
+                { Assert.assertEquals(null, pendingInfo) }
+            )
+
+            verify {
+                mockRepository wasNot called
             }
         }
     }
@@ -100,3 +131,4 @@ class QAttributionManagerTest {
         } returns mockLooper
     }
 }
+
