@@ -184,12 +184,11 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should force send properties and get response in onError callback on foreground`() {
+    fun `should force send properties and get response in onError callback`() {
         // given
         mockPropertiesStorage(properties)
         mockErrorSendPropertiesResponse(properties)
         mockIncrementalCounterResponse(calculatedDelay)
-        Qonversion.appState = AppState.Foreground
 
         // when
         propertiesManager.forceSendProperties()
@@ -219,7 +218,7 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should force send properties recursively after calculated delay on foreground`() {
+    fun `should force send properties again after failed attempt on foreground`() {
         // given
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 
@@ -239,7 +238,7 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should not force send properties recursively after calculated delay on background`() {
+    fun `should not force send properties again after failed attempt on background`() {
         // given
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 
@@ -387,7 +386,7 @@ class QUserPropertiesManagerTest {
         }
 
         val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
-        assertEquals("The field isSendingScheduled hasn't been changed to true", true, isSendingScheduled)
+        assertEquals("The field isSendingScheduled is not equal true", true, isSendingScheduled)
     }
 
     @Test
@@ -401,6 +400,8 @@ class QUserPropertiesManagerTest {
         propertiesManager.setUserProperty(key, value)
 
         // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled)
         verify(exactly = 1) {
             mockPropertiesStorage.save(key, value)
         }
