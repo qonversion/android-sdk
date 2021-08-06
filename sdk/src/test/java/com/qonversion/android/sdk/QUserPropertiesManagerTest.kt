@@ -390,7 +390,7 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should not set and send user property when it is not empty and sending is not scheduled on background`() {
+    fun `should set and not send user property when it is not empty and sending is not scheduled on background`() {
         // given
         val key = "_q_email"
         val value = "some value"
