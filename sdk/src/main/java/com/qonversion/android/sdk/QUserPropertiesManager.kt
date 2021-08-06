@@ -55,7 +55,7 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     fun forceSendProperties() {
-        if (isRequestInProgress || Qonversion.appState.isBackground()) {
+        if (isRequestInProgress) {
             return
         }
 
@@ -106,6 +106,10 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     private fun sendPropertiesWithDelay(delaySec: Int) {
+        if (Qonversion.appState.isBackground()) {
+            return
+        }
+
         val delayMillis = delaySec.toLong().secondsToMilliSeconds()
         isSendingScheduled = true
         handler?.postDelayed({

@@ -29,22 +29,23 @@ object Qonversion : LifecycleDelegate {
     }
 
     override fun onAppBackground() {
-        appState = AppState.Background
-
         if (!QDependencyInjector.isAppComponentInitialized()) {
             appState = AppState.PendingBackground
             return
         }
+
+        appState = AppState.Background
+
         userPropertiesManager?.onAppBackground()
     }
 
     override fun onAppForeground() {
-        appState = AppState.Foreground
-
         if (!QDependencyInjector.isAppComponentInitialized()) {
             appState = AppState.PendingForeground
             return
         }
+
+        appState = AppState.Foreground
 
         userPropertiesManager?.onAppForeground()
         productCenterManager?.onAppForeground()
