@@ -6,10 +6,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
-import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.QonversionShowScreenCallback
+import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
@@ -28,18 +25,12 @@ class QAutomationsManager @Inject constructor(
         @Synchronized get
 
     private val logger = ConsoleLogger()
-    private var isAppBackground: Boolean = true
     private var pendingToken: String? = null
 
     fun onAppForeground() {
-        isAppBackground = false
         pendingToken?.let {
             sendPushToken(it)
         }
-    }
-
-    fun onAppBackground() {
-        isAppBackground = true
     }
 
     fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
@@ -56,7 +47,7 @@ class QAutomationsManager @Inject constructor(
     fun setPushToken(token: String) {
         val oldToken = loadToken()
         if (token.isNotEmpty() && !oldToken.equals(token)) {
-            if (isAppBackground) {
+            if (Qonversion.appState.isBackground()) {
                 pendingToken = token
                 return
             }
