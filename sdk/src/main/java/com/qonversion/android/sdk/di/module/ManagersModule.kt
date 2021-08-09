@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.QUserPropertiesManager
+import com.qonversion.android.sdk.automations.AutomationsEventMapper
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.UserPropertiesStorage
 
@@ -24,9 +25,18 @@ class ManagersModule {
     fun provideAutomationsManager(
         repository: QonversionRepository,
         preferences: SharedPreferences,
+        eventMapper: AutomationsEventMapper,
         appContext: Application
     ): QAutomationsManager {
-        return QAutomationsManager(repository, preferences, appContext)
+        return QAutomationsManager(repository, preferences, eventMapper, appContext)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideAutomationsEventMapper(
+        logger: Logger
+    ): AutomationsEventMapper {
+        return AutomationsEventMapper(logger)
     }
 
     @ApplicationScope
