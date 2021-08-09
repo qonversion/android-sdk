@@ -1,43 +1,134 @@
 package com.qonversion.android.sdk
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.mockk.clearAllMocks
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import android.os.Looper
+import io.mockk.*
+import org.junit.Assert
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
-@RunWith(AndroidJUnit4::class)
 class QAttributionManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
 
     private lateinit var attributionManager: QAttributionManager
 
-    private val fieldIsAppBackground = "isAppBackground"
+    private val fieldPendingAttrSource = "pendingAttributionSource"
+    private val fieldPendingInfo = "pendingConversionInfo"
+    private val conversionInfo = mapOf("key" to "value")
 
-    @Before
+    @BeforeEach
     fun setUp() {
         clearAllMocks()
 
         attributionManager = QAttributionManager(mockRepository)
     }
 
-    @Test
-    fun attribution() {
-        // given
-        val key = "key"
-        val value = "value"
-        val conversionInfo = mutableMapOf<String, String>()
-        conversionInfo[key] = value
-        attributionManager.mockPrivateField(fieldIsAppBackground, false)
+    @Nested
+    inner class Attribution {
+        @Test
+        fun `should send attribution on foreground`() {
+            // given
+            mockLooper()
+            Qonversion.appState = AppState.Foreground
 
-        // when
-        attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
+            // when
+            attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
 
-        // then
-        verify(exactly = 1) {
-            mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            // then
+            verify(exactly = 1) {
+                mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            }
+        }
+
+        @Test
+        fun `should not send attribution on background`() {
+            // given
+            mockLooper()
+            Qonversion.appState = AppState.Background
+
+            // when
+            attributionManager.attribution(conversionInfo, AttributionSource.AppsFlyer)
+
+            // then
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            assertAll(
+                "Pending attribution info wasn't saved.",
+                { Assert.assertEquals(AttributionSource.AppsFlyer, pendingSource) },
+                { Assert.assertEquals(pendingInfo, conversionInfo) }
+            )
+
+            verify {
+                mockRepository wasNot called
+            }
         }
     }
+
+    @Nested
+    inner class OnAppForeground {
+        @Test
+        fun `should send pending attribution after app switched to foreground`() {
+            // given
+            attributionManager.mockPrivateField(fieldPendingAttrSource, AttributionSource.AppsFlyer)
+            attributionManager.mockPrivateField(fieldPendingInfo, conversionInfo)
+
+            // when
+            attributionManager.onAppForeground()
+
+            // then
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            assertAll(
+                "Pending attribution info wasn't cleared.",
+                { Assert.assertEquals(null, pendingSource) },
+                { Assert.assertEquals(null, pendingInfo) }
+            )
+
+            verify(exactly = 1) {
+                mockRepository.attribution(conversionInfo, AttributionSource.AppsFlyer.id)
+            }
+        }
+
+        @Test
+        fun `should not send null pending attribution after app switched to foreground`() {
+            // given
+            attributionManager.mockPrivateField(fieldPendingAttrSource, null)
+            attributionManager.mockPrivateField(fieldPendingInfo, null)
+
+            // when
+            attributionManager.onAppForeground()
+
+            // then
+            val pendingSource =
+                attributionManager.getPrivateField<AttributionSource?>(fieldPendingAttrSource)
+            val pendingInfo =
+                attributionManager.getPrivateField<Map<String, Any>?>(fieldPendingInfo)
+            assertAll(
+                "Pending attribution info wasn't cleared.",
+                { Assert.assertEquals(null, pendingSource) },
+                { Assert.assertEquals(null, pendingInfo) }
+            )
+
+            verify {
+                mockRepository wasNot called
+            }
+        }
+    }
+
+    private fun mockLooper() {
+        val mockLooper = mockk<Looper>()
+        mockkStatic(Looper::class)
+        every {
+            Looper.getMainLooper()
+        } returns mockLooper
+        every {
+            Looper.myLooper()
+        } returns mockLooper
+    }
 }
+

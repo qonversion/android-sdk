@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Looper
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
@@ -30,7 +31,7 @@ class QAutomationsManagerTest {
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
 
-    private val fieldIsAppBackground = "isAppBackground"
+    private val fieldPendingToken = "pendingToken"
     private val pushTokenKey = "push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
@@ -281,13 +282,15 @@ class QAutomationsManagerTest {
     @Nested
     inner class SetPushToken {
         @Test
-        fun `should set and save token when it is new`() {
+        fun `should send and save new token on foreground`() {
             // given
             val newToken = "newToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns null
-            automationsManager.mockPrivateField(fieldIsAppBackground, false)
+
+            mockLooper()
+            Qonversion.appState = AppState.Foreground
 
             // when
             automationsManager.setPushToken(newToken)
@@ -302,8 +305,35 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `shouldn't set and save token when it is old`() {
+        fun `shouldn't send and save new token on background`() {
             // given
+            val newToken = "newToken"
+            every {
+                mockPrefs.getString(pushTokenKey, "")
+            } returns null
+
+            mockLooper()
+            Qonversion.appState = AppState.Background
+
+            // when
+            automationsManager.setPushToken(newToken)
+
+            // then
+            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
+            assertThat(pendingToken).isEqualTo(newToken)
+
+            verify(exactly = 1) {
+                mockPrefs.getString(pushTokenKey, "")
+            }
+            verify(exactly = 0) {
+                mockRepository.setPushToken(newToken)
+                mockEditor.putString(pushTokenKey, newToken)
+                mockEditor.apply()
+            }
+        }
+
+        @Test
+        fun `shouldn't send and save old token`() {
             val oldToken = "oldToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
@@ -332,7 +362,7 @@ class QAutomationsManagerTest {
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns null
-            automationsManager.mockPrivateField(fieldIsAppBackground, false)
+            Qonversion.appState = AppState.Foreground
 
             // when
             automationsManager.setPushToken(newToken)
@@ -346,6 +376,47 @@ class QAutomationsManagerTest {
                     mockEditor,
                     mockRepository
                 ) wasNot Called
+            }
+        }
+    }
+
+    @Nested
+    inner class OnAppForeground {
+        @Test
+        fun `should send new pending token after app switched to foreground`() {
+            // given
+            val newToken = "newToken"
+            automationsManager.mockPrivateField(fieldPendingToken, newToken)
+
+            // when
+            automationsManager.onAppForeground()
+
+            // then
+            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
+            assertThat(pendingToken).isNull()
+
+            verifyOrder {
+                mockRepository.setPushToken(newToken)
+                mockEditor.putString(pushTokenKey, newToken)
+                mockEditor.apply()
+            }
+        }
+
+        @Test
+        fun `should not send null pending token after app switched to foreground`() {
+            // given
+            val nullToken = null
+            automationsManager.mockPrivateField(fieldPendingToken, nullToken)
+
+            // when
+            automationsManager.onAppForeground()
+
+            // then
+            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
+            assertThat(pendingToken).isNull()
+
+            verify {
+                listOf(mockRepository, mockEditor) wasNot called
             }
         }
     }
@@ -406,5 +477,16 @@ class QAutomationsManagerTest {
         mockkConstructor(ConsoleLogger::class)
         every { anyConstructed<ConsoleLogger>().debug(any()) } just Runs
         every { anyConstructed<ConsoleLogger>().release(any()) } just Runs
+    }
+
+    private fun mockLooper() {
+        val mockLooper = mockk<Looper>()
+        mockkStatic(Looper::class)
+        every {
+            Looper.getMainLooper()
+        } returns mockLooper
+        every {
+            Looper.myLooper()
+        } returns mockLooper
     }
 }

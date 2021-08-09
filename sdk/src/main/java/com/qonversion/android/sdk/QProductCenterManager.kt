@@ -58,7 +58,6 @@ class QProductCenterManager internal constructor(
 
     private var installDate: Long = 0
     private var advertisingID: String? = null
-    private var isAppBackground: Boolean = true
     private var pendingInitRequestData: InitRequestData? = null
 
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
@@ -95,12 +94,8 @@ class QProductCenterManager internal constructor(
 
     fun onAppForeground() {
         handlePendingPurchases()
-        isAppBackground = false
-        processPendingInitIfAvailable()
-    }
 
-    fun onAppBackground() {
-        isAppBackground = true
+        processPendingInitIfAvailable()
     }
 
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
@@ -511,7 +506,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun processInit(initRequestData: InitRequestData) {
-        if (isAppBackground) {
+        if (Qonversion.appState.isBackground()) {
             pendingInitRequestData = initRequestData
             return
         }
