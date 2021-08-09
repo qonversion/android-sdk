@@ -28,7 +28,8 @@ class RepositoryModule {
         config: QonversionConfig,
         logger: Logger,
         purchasesCache: PurchasesCache,
-        apiErrorMapper: ApiErrorMapper
+        apiErrorMapper: ApiErrorMapper,
+        sharedPreferences: SharedPreferences
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
@@ -38,7 +39,8 @@ class RepositoryModule {
             config.isDebugMode,
             logger,
             purchasesCache,
-            apiErrorMapper
+            apiErrorMapper,
+            sharedPreferences
         )
     }
 

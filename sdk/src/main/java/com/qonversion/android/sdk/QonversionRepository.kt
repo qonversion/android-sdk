@@ -1,7 +1,10 @@
 package com.qonversion.android.sdk
 
+import android.content.SharedPreferences
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
+import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
@@ -33,7 +36,8 @@ class QonversionRepository internal constructor(
     private val isDebugMode: Boolean,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
-    private val errorMapper: ApiErrorMapper
+    private val errorMapper: ApiErrorMapper,
+    private val preferences: SharedPreferences
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -50,7 +54,10 @@ class QonversionRepository internal constructor(
     ) {
         advertisingId = initRequestData.idfa
         this.installDate = initRequestData.installDate
-        initRequest(initRequestData.purchases, initRequestData.callback)
+
+        val token = preferences.getString(PENDING_PUSH_TOKEN_KEY, null)
+
+        initRequest(initRequestData.purchases, initRequestData.callback, token)
     }
 
     fun purchase(
@@ -473,6 +480,11 @@ class QonversionRepository internal constructor(
 
                 val body = it.body()
                 if (body != null && body.success) {
+                    if (!pushToken.isNullOrEmpty()) {
+                        preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
+                        preferences.edit().putString(PUSH_TOKEN_KEY, pushToken).apply()
+                    }
+
                     callback?.onSuccess(body.data)
                 } else {
                     callback?.onError(errorMapper.getErrorFromResponse(it))
