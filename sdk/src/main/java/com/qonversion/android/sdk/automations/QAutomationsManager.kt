@@ -17,6 +17,7 @@ import javax.inject.Inject
 class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences,
+    private val eventMapper: AutomationsEventMapper,
     private val appContext: Application
 ) {
     @Volatile
@@ -33,13 +34,24 @@ class QAutomationsManager @Inject constructor(
         }
     }
 
-    fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
-        val pickScreen = remoteMessage.data[PICK_SCREEN]
+    fun handlePushIfPossible(message: RemoteMessage): Boolean {
+        val pickScreen = message.data[PICK_SCREEN]
 
         return pickScreen.toBoolean().also {
             if (it) {
                 logger.release("handlePushIfPossible() -> Qonversion push notification was received")
-                loadScreenIfPossible()
+
+                var shouldShowScreen = true
+
+                val event = eventMapper.getEventFromRemoteMessage(message)
+                if (event != null) {
+                    shouldShowScreen =
+                        automationsDelegate?.get()?.shouldHandleEvent(event, message.data) ?: true
+                }
+
+                if (shouldShowScreen) {
+                    loadScreenIfPossible()
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.automations
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Looper
@@ -24,6 +25,7 @@ class QAutomationsManagerTest {
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockEventMapper: AutomationsEventMapper = mockk(relaxed = true)
     private val mockApplication: Application = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
@@ -57,42 +59,112 @@ class QAutomationsManagerTest {
         mockIntent()
         mockSharedPreferences()
 
-        automationsManager = QAutomationsManager(mockRepository, mockPrefs, mockApplication)
-
-        automationsManager.automationsDelegate = WeakReference(delegate)
+        automationsManager =
+            QAutomationsManager(mockRepository, mockPrefs, mockEventMapper, mockApplication)
     }
 
     @Nested
     inner class HandlePushIfPossible {
         @Test
-        fun `should return true when push was sent from Qonversion`() {
-            val remoteMessage = mockRemoteMessage()
-
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
-            assertThat(result).isTrue()
-        }
-
-        @Test
-        fun `should start screen activity when push was sent from Qonversion and screen and actionPoints requests succeeded`() {
+        fun `should show screen on Qonversion push when screen and actionPoints requests succeeded`() {
+            // given
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse()
+            automationsManager.automationsDelegate = WeakReference(delegate)
 
+            // when
             val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
             assertThat(result).isTrue()
-            verify(exactly = 1) {
+            verifySequence {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
             }
-            verifyActivityStart(true)
+            verifyActivityWasStarted(mockActivity)
         }
 
         @Test
-        fun `shouldn't start screen activity when push was sent from Qonversion and actionPoints request failed`() {
+        fun `should show screen on Qonversion push when trigger event is null`() {
+            // given
+            val remoteMessage = mockRemoteMessage()
+            mockActionPointsResponse()
+            mockScreensResponse()
+            automationsManager.automationsDelegate = WeakReference(delegate)
+            every {
+                mockEventMapper.getEventFromRemoteMessage(any())
+            } returns null
+
+            // when
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
+            assertThat(result).isTrue()
+            verifySequence {
+                mockRepository.actionPoints(getQueryParams(), any(), any())
+                mockRepository.screens(screenId, any(), any())
+            }
+            verifyActivityWasStarted(mockActivity)
+        }
+
+        @Test
+        fun `should show screen on Qonversion push when delegate is null`() {
+            // given
+            val remoteMessage = mockRemoteMessage()
+            mockActionPointsResponse()
+            mockScreensResponse()
+            automationsManager.automationsDelegate = null
+
+            // when
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
+            assertThat(result).isTrue()
+            verifySequence {
+                mockRepository.actionPoints(getQueryParams(), any(), any())
+                mockRepository.screens(screenId, any(), any())
+            }
+            verifyActivityWasStarted(mockApplication)
+        }
+
+        @Test
+        fun `shouldn't show screen on Qonversion push when shouldHandleEvent delegate returns false`() {
+            // given
+            val remoteMessage = mockRemoteMessage()
+            mockActionPointsResponse()
+            mockScreensResponse()
+            automationsManager.automationsDelegate = WeakReference(object : AutomationsDelegate {
+                override fun contextForScreenIntent(): Activity = mockActivity
+
+                override fun shouldHandleEvent(
+                    event: AutomationsEvent,
+                    payload: MutableMap<String, String>
+                ): Boolean = false
+            })
+
+            // when
+            val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
+            assertThat(result).isTrue()
+            verify {
+                mockRepository wasNot Called
+            }
+            verifyActivityWasNotStarted()
+        }
+
+        @Test
+        fun `shouldn't show screen on Qonversion push when actionPoints request failed`() {
+            // given
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse(false)
+            automationsManager.automationsDelegate = WeakReference(delegate)
 
+            // when
             val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
@@ -100,42 +172,43 @@ class QAutomationsManagerTest {
             verify(exactly = 0) {
                 mockRepository.screens(screenId, any(), any())
             }
-            verifyActivityStart(false)
+            verifyActivityWasNotStarted()
         }
 
         @Test
-        fun `shouldn't start screen activity when push was sent from Qonversion and screens request failed`() {
+        fun `shouldn't show screen on Qonversion push when screens request failed`() {
+            // given
             val remoteMessage = mockRemoteMessage()
             mockActionPointsResponse()
             mockScreensResponse(false)
+            automationsManager.automationsDelegate = WeakReference(delegate)
 
+            // when
             val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
             assertThat(result).isTrue()
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
             }
-            verifyActivityStart(false)
+            verifyActivityWasNotStarted()
         }
 
         @Test
-        fun `should return false when push wasn't sent from Qonversion`() {
+        fun `shouldn't show screen on non-Qonversion`() {
+            // given
             val remoteMessage = mockRemoteMessage(false)
 
+            // when
             val result = automationsManager.handlePushIfPossible(remoteMessage)
+
+            // then
             assertThat(result).isFalse()
-        }
-
-        @Test
-        fun `shouldn't start screen activity when push wasn't sent from Qonversion`() {
-            val remoteMessage = mockRemoteMessage(false)
-
-            automationsManager.handlePushIfPossible(remoteMessage)
-            verify(exactly = 0) {
-                mockRepository.actionPoints(getQueryParams(), any(), any())
-                mockRepository.screens(screenId, any(), any())
+            verify {
+                mockRepository wasNot called
             }
-            verifyActivityStart(false)
+            verifyActivityWasNotStarted()
         }
 
         private fun mockActionPointsResponse(isResponseSuccess: Boolean = true) {
@@ -190,13 +263,20 @@ class QAutomationsManagerTest {
             return remoteMessage
         }
 
-        private fun verifyActivityStart(isActivityWasStarted: Boolean) {
-            verify(exactly = isActivityWasStarted.toInt()) {
-                mockIntent.putExtra(ScreenActivity.INTENT_HTML_PAGE, html)
-                mockIntent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
-                mockActivity.startActivity(withArg { mockIntent })
+        private fun verifyActivityWasNotStarted() {
+            verify {
+                listOf(mockIntent, mockApplication, mockActivity) wasNot called
             }
         }
+
+        private fun verifyActivityWasStarted(context: Context){
+            verify(exactly = 1) {
+                mockIntent.putExtra(ScreenActivity.INTENT_HTML_PAGE, html)
+                mockIntent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
+                context.startActivity(withArg { mockIntent })
+            }
+        }
+
     }
 
     @Nested
@@ -259,14 +339,43 @@ class QAutomationsManagerTest {
                 mockPrefs.getString(pushTokenKey, "")
             } returns oldToken
 
+            // when
             automationsManager.setPushToken(oldToken)
+
+            // then
             verify(exactly = 1) {
                 mockPrefs.getString(pushTokenKey, "")
             }
-            verify(exactly = 0) {
-                mockRepository.setPushToken(any())
-                mockEditor.putString(pushTokenKey, any())
-                mockEditor.apply()
+            verify {
+                listOf(
+                    mockEditor,
+                    mockRepository
+                ) wasNot Called
+            }
+        }
+
+
+        @Test
+        fun `shouldn't set and save token when it is empty`() {
+            // given
+            val newToken = ""
+            every {
+                mockPrefs.getString(pushTokenKey, "")
+            } returns null
+            Qonversion.appState = AppState.Foreground
+
+            // when
+            automationsManager.setPushToken(newToken)
+
+            // then
+            verify(exactly = 1) {
+                mockPrefs.getString(pushTokenKey, "")
+            }
+            verify {
+                listOf(
+                    mockEditor,
+                    mockRepository
+                ) wasNot Called
             }
         }
     }
@@ -357,6 +466,10 @@ class QAutomationsManagerTest {
                 ScreenActivity.INTENT_SCREEN_ID,
                 screenId
             )
+        } answers { mockIntent }
+
+        every {
+            anyConstructed<Intent>().addFlags(any())
         } answers { mockIntent }
     }
 
