@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.dto.QLaunchResult
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +33,8 @@ class QAutomationsManagerTest {
     private lateinit var automationsManager: QAutomationsManager
 
     private val fieldPendingToken = "pendingToken"
-    private val pushTokenKey = "push_token_key"
+    private val pushTokenKey = "com.qonversion.keys.push_token_key"
+    private val pendingPushTokenKey = "com.qonversion.keys.pending_push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
     private val delegate = object : AutomationsDelegate {
@@ -282,7 +284,7 @@ class QAutomationsManagerTest {
     @Nested
     inner class SetPushToken {
         @Test
-        fun `should send and save new token on foreground`() {
+        fun `should send new token when app is foreground`() {
             // given
             val newToken = "newToken"
             every {
@@ -296,16 +298,17 @@ class QAutomationsManagerTest {
             automationsManager.setPushToken(newToken)
 
             // then
-            verifyOrder {
+            verifySequence {
                 mockPrefs.getString(pushTokenKey, "")
-                mockRepository.setPushToken(newToken)
-                mockEditor.putString(pushTokenKey, newToken)
+                mockPrefs.edit()
+                mockEditor.putString(pendingPushTokenKey, newToken)
                 mockEditor.apply()
+                mockRepository.setPushToken(newToken)
             }
         }
 
         @Test
-        fun `shouldn't send and save new token on background`() {
+        fun `shouldn't send new token on background`() {
             // given
             val newToken = "newToken"
             every {
@@ -324,16 +327,16 @@ class QAutomationsManagerTest {
 
             verify(exactly = 1) {
                 mockPrefs.getString(pushTokenKey, "")
+                mockEditor.putString(pendingPushTokenKey, newToken)
+                mockEditor.apply()
             }
             verify(exactly = 0) {
                 mockRepository.setPushToken(newToken)
-                mockEditor.putString(pushTokenKey, newToken)
-                mockEditor.apply()
             }
         }
 
         @Test
-        fun `shouldn't send and save old token`() {
+        fun `shouldn't send an old token`() {
             val oldToken = "oldToken"
             every {
                 mockPrefs.getString(pushTokenKey, "")
@@ -356,12 +359,14 @@ class QAutomationsManagerTest {
 
 
         @Test
-        fun `shouldn't set and save token when it is empty`() {
+        fun `shouldn't send token when it is empty`() {
             // given
             val newToken = ""
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns null
+
+            mockLooper()
             Qonversion.appState = AppState.Foreground
 
             // when
@@ -397,8 +402,6 @@ class QAutomationsManagerTest {
 
             verifyOrder {
                 mockRepository.setPushToken(newToken)
-                mockEditor.putString(pushTokenKey, newToken)
-                mockEditor.apply()
             }
         }
 
@@ -440,6 +443,10 @@ class QAutomationsManagerTest {
     private fun mockSharedPreferences() {
         every {
             mockEditor.putString(pushTokenKey, any())
+        } returns mockEditor
+
+        every {
+            mockEditor.putString(pendingPushTokenKey, any())
         } returns mockEditor
 
         every {
