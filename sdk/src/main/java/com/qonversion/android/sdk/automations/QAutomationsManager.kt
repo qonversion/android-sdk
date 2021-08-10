@@ -6,10 +6,9 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
-import com.qonversion.android.sdk.QonversionRepository
-import com.qonversion.android.sdk.QonversionShowScreenCallback
+import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
@@ -20,6 +19,7 @@ import javax.inject.Inject
 class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences,
+    private val eventMapper: AutomationsEventMapper,
     private val appContext: Application
 ) {
     @Volatile
@@ -28,27 +28,32 @@ class QAutomationsManager @Inject constructor(
         @Synchronized get
 
     private val logger = ConsoleLogger()
-    private var isAppBackground: Boolean = true
     private var pendingToken: String? = null
 
     fun onAppForeground() {
-        isAppBackground = false
         pendingToken?.let {
             sendPushToken(it)
         }
     }
 
-    fun onAppBackground() {
-        isAppBackground = true
-    }
-
-    fun handlePushIfPossible(remoteMessage: RemoteMessage): Boolean {
-        val pickScreen = remoteMessage.data[PICK_SCREEN]
+    fun handlePushIfPossible(message: RemoteMessage): Boolean {
+        val pickScreen = message.data[PICK_SCREEN]
 
         return pickScreen.toBoolean().also {
             if (it) {
                 logger.release("handlePushIfPossible() -> Qonversion push notification was received")
-                loadScreenIfPossible()
+
+                var shouldShowScreen = true
+
+                val event = eventMapper.getEventFromRemoteMessage(message)
+                if (event != null) {
+                    shouldShowScreen =
+                        automationsDelegate?.get()?.shouldHandleEvent(event, message.data) ?: true
+                }
+
+                if (shouldShowScreen) {
+                    loadScreenIfPossible()
+                }
             }
         }
     }
@@ -56,7 +61,8 @@ class QAutomationsManager @Inject constructor(
     fun setPushToken(token: String) {
         val oldToken = loadToken()
         if (token.isNotEmpty() && !oldToken.equals(token)) {
-            if (isAppBackground) {
+            savePendingTokenToPref(token)
+            if (Qonversion.appState.isBackground()) {
                 pendingToken = token
                 return
             }
@@ -154,18 +160,17 @@ class QAutomationsManager @Inject constructor(
 
     private fun sendPushToken(token: String) {
         repository.setPushToken(token)
-        saveToken(token)
+
         pendingToken = null
     }
 
-    private fun saveToken(token: String) =
-        preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
+    private fun savePendingTokenToPref(token: String) =
+        preferences.edit().putString(PENDING_PUSH_TOKEN_KEY, token).apply()
 
     private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
-        private const val PUSH_TOKEN_KEY = "push_token_key"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"
         private const val QUERY_PARAM_TYPE_VALUE = "screen_view"

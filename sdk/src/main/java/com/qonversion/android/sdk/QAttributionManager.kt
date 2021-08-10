@@ -3,12 +3,10 @@ package com.qonversion.android.sdk
 class QAttributionManager internal constructor(
     private val repository: QonversionRepository
 ){
-    private var isAppBackground: Boolean = true
     private var pendingAttributionSource: AttributionSource? = null
     private var pendingConversionInfo: Map<String, Any>? = null
 
     fun onAppForeground() {
-        isAppBackground = false
         val source = pendingAttributionSource
         val info = pendingConversionInfo
         if (source != null && !info.isNullOrEmpty()) {
@@ -19,15 +17,11 @@ class QAttributionManager internal constructor(
         }
     }
 
-    fun onAppBackground() {
-        isAppBackground = true
-    }
-
     fun attribution(
         conversionInfo: Map<String, Any>,
         from: AttributionSource
     ) {
-        if (isAppBackground) {
+        if (Qonversion.appState.isBackground()) {
             pendingAttributionSource = from
             pendingConversionInfo = conversionInfo
             return

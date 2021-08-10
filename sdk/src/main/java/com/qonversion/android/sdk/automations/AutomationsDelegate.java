@@ -4,6 +4,8 @@ import android.content.Context;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public interface AutomationsDelegate {
 
     /**
@@ -51,5 +53,21 @@ public interface AutomationsDelegate {
      * Called when Automations flow is finished and the Automations screen is closed
      */
     default void automationsFinished() {
+    }
+
+    /**
+     * Called when Automation event is being processed.
+     * For example, you have set up push notifications for various events, such as purchase, cancellation of trial, etc.
+     * If Qonversion sent a push notification with an event, and you want to handle the event yourself (for example, show your custom screen),
+     * then override this function and return false.
+     * Otherwise, Qonversion will handle this event itself and show the Automation screen (if it's configured).
+     *
+     * @param event event that triggered the Automation
+     * @param payload notification payload
+     * @return the flag that indicates whether Qonversion should handle the event or not
+     * @see [Automation Overview](https://documentation.qonversion.io/docs/automations)
+     */
+    default Boolean shouldHandleEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
+        return true;
     }
 }
