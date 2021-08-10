@@ -64,7 +64,7 @@ public interface AutomationsDelegate {
      *
      * @param event event that triggered the Automation
      * @param payload notification payload
-     * @return false if you want to handle Automation yourself
+     * @return the flag that indicates whether Qonversion should handle the event or not
      * @see [Automation Overview](https://documentation.qonversion.io/docs/automations)
      */
     default Boolean shouldHandleEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
