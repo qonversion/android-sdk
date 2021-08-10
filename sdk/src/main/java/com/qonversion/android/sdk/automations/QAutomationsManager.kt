@@ -12,7 +12,6 @@ import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
-import com.qonversion.android.sdk.dto.QLaunchResult
 import java.lang.Exception
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -62,7 +61,7 @@ class QAutomationsManager @Inject constructor(
     fun setPushToken(token: String) {
         val oldToken = loadToken()
         if (token.isNotEmpty() && !oldToken.equals(token)) {
-            savePendingToken(token)
+            savePendingTokenToPref(token)
             if (Qonversion.appState.isBackground()) {
                 pendingToken = token
                 return
@@ -165,7 +164,7 @@ class QAutomationsManager @Inject constructor(
         pendingToken = null
     }
 
-    private fun savePendingToken(token: String) =
+    private fun savePendingTokenToPref(token: String) =
         preferences.edit().putString(PENDING_PUSH_TOKEN_KEY, token).apply()
 
     private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
