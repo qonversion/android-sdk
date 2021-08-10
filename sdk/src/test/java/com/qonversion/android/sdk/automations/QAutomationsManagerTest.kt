@@ -284,7 +284,7 @@ class QAutomationsManagerTest {
     @Nested
     inner class SetPushToken {
         @Test
-        fun `should send new token when app is foreground`() {
+        fun `should send new token when app is in foreground`() {
             // given
             val newToken = "newToken"
             every {
@@ -308,7 +308,7 @@ class QAutomationsManagerTest {
         }
 
         @Test
-        fun `shouldn't send new token on background`() {
+        fun `shouldn't send new token when app is in background`() {
             // given
             val newToken = "newToken"
             every {
