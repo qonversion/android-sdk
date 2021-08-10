@@ -7,9 +7,12 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.dto.QLaunchResult
 import java.lang.Exception
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -59,6 +62,7 @@ class QAutomationsManager @Inject constructor(
     fun setPushToken(token: String) {
         val oldToken = loadToken()
         if (token.isNotEmpty() && !oldToken.equals(token)) {
+            savePendingToken(token)
             if (Qonversion.appState.isBackground()) {
                 pendingToken = token
                 return
@@ -157,18 +161,17 @@ class QAutomationsManager @Inject constructor(
 
     private fun sendPushToken(token: String) {
         repository.setPushToken(token)
-        saveToken(token)
+
         pendingToken = null
     }
 
-    private fun saveToken(token: String) =
-        preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
+    private fun savePendingToken(token: String) =
+        preferences.edit().putString(PENDING_PUSH_TOKEN_KEY, token).apply()
 
     private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
-        private const val PUSH_TOKEN_KEY = "push_token_key"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"
         private const val QUERY_PARAM_TYPE_VALUE = "screen_view"
