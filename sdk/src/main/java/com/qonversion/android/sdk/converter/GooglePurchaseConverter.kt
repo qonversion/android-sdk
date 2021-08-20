@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.converter
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.Extractor
 
@@ -21,39 +22,68 @@ class GooglePurchaseConverter(
         "D" to 1
     )
 
-    override fun convert(purchaseInfo: android.util.Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase {
+    override fun convertPurchases(
+        skuDetails: Map<String, SkuDetails>,
+        purchases: List<com.android.billingclient.api.Purchase>
+    ): List<Purchase> {
+        val pairs = purchases.mapNotNull {
+            val skuDetail = skuDetails[it.sku]
+
+            if (skuDetail != null) {
+                 Pair.create(skuDetail, it)
+            } else {
+                null
+            }
+        }
+
+        val result = convertPurchasesFromList(pairs)
+
+        return result
+    }
+
+    override fun convertPurchase(purchaseInfo: Pair<SkuDetails, com.android.billingclient.api.Purchase>): Purchase? {
         val details = purchaseInfo.first
         val purchase = purchaseInfo.second
+        val sku = purchase.sku ?: return null
+
         return Purchase(
-            detailsToken = extractor.extract(details.originalJson),
-            title = details.title,
-            description = details.description,
-            productId = purchase.sku,
-            type = details.type,
-            originalPrice = details.originalPrice ?: "",
-            originalPriceAmountMicros = details.originalPriceAmountMicros,
-            priceCurrencyCode = details.priceCurrencyCode,
-            price = formatPrice(details.priceAmountMicros),
-            priceAmountMicros = details.priceAmountMicros,
-            periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
-            periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
-            freeTrialPeriod = details.freeTrialPeriod ?: "",
-            introductoryAvailable = details.introductoryPrice.isNotEmpty(),
-            introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
-            introductoryPrice = getIntroductoryPrice(details),
-            introductoryPriceCycles = getIntroductoryPriceCycles(details),
-            introductoryPeriodUnit = daysPeriodUnit,
-            introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod),
-            orderId = purchase.orderId,
-            originalOrderId = formatOriginalTransactionId(purchase.orderId),
-            packageName = purchase.packageName,
-            purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
-            purchaseState = purchase.purchaseState,
-            purchaseToken = purchase.purchaseToken,
-            acknowledged = purchase.isAcknowledged,
-            autoRenewing = purchase.isAutoRenewing,
-            paymentMode = getPaymentMode(details)
-        )
+                detailsToken = extractor.extract(details.originalJson),
+                title = details.title,
+                description = details.description,
+                productId = sku,
+                type = details.type,
+                originalPrice = details.originalPrice ?: "",
+                originalPriceAmountMicros = details.originalPriceAmountMicros,
+                priceCurrencyCode = details.priceCurrencyCode,
+                price = formatPrice(details.priceAmountMicros),
+                priceAmountMicros = details.priceAmountMicros,
+                periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
+                periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
+                freeTrialPeriod = details.freeTrialPeriod ?: "",
+                introductoryAvailable = details.introductoryPrice.isNotEmpty(),
+                introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
+                introductoryPrice = getIntroductoryPrice(details),
+                introductoryPriceCycles = getIntroductoryPriceCycles(details),
+                introductoryPeriodUnit = daysPeriodUnit,
+                introductoryPeriodUnitsCount = getIntroductoryUnitsCountFromPeriod(
+                    details.freeTrialPeriod ?: details.introductoryPricePeriod
+                ),
+                orderId = purchase.orderId,
+                originalOrderId = formatOriginalTransactionId(purchase.orderId),
+                packageName = purchase.packageName,
+                purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
+                purchaseState = purchase.purchaseState,
+                purchaseToken = purchase.purchaseToken,
+                acknowledged = purchase.isAcknowledged,
+                autoRenewing = purchase.isAutoRenewing,
+                paymentMode = getPaymentMode(details)
+            )
+    }
+
+    private fun convertPurchasesFromList(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
+        return purchaseInfo.mapNotNull {
+            convertPurchase(it)
+        }
     }
 
     private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
@@ -114,7 +144,7 @@ class GooglePurchaseConverter(
         return unitsCount.toInt()
     }
 
-    private fun getIntrodactoryUnitsCountFromPeriod(period: String?): Int? {
+    private fun getIntroductoryUnitsCountFromPeriod(period: String?): Int? {
         if (period.isNullOrEmpty()) {
             return null
         }

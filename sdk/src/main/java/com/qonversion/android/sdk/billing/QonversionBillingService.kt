@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.*
+import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams
 import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -126,8 +127,8 @@ class QonversionBillingService internal constructor(
                     val unconsumedInApp = queryPurchases(BillingClient.SkuType.INAPP)
                     val purchasesResult = mutableListOf<Purchase>()
 
-                    if (activeSubs?.responseCode == BillingClient.BillingResponseCode.OK
-                        && unconsumedInApp?.responseCode == BillingClient.BillingResponseCode.OK
+                    if (activeSubs.responseCode == BillingClient.BillingResponseCode.OK
+                        && unconsumedInApp.responseCode == BillingClient.BillingResponseCode.OK
                     ) {
                         purchasesResult.addAll(activeSubs.purchasesList ?: emptyList())
                         purchasesResult.addAll(unconsumedInApp.purchasesList ?: emptyList())
@@ -199,18 +200,15 @@ class QonversionBillingService internal constructor(
         @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
         getPurchaseHistoryFromSkuDetails(oldSkuDetails)
-        { billingResult, oldPurchase ->
+        { billingResult, oldPurchaseHistory ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                if (oldPurchase != null) {
+                if (oldPurchaseHistory != null) {
                     logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
+
                     makePurchase(
                         activity,
                         skuDetails,
-                        UpdatePurchaseInfo(
-                            oldPurchase.sku,
-                            oldPurchase.purchaseToken,
-                            prorationMode
-                        )
+                        UpdatePurchaseInfo(oldPurchaseHistory.purchaseToken, prorationMode)
                     )
                 } else {
                     val errorMessage = "No existing purchase for sku: ${oldSkuDetails.sku}"
@@ -257,18 +255,29 @@ class QonversionBillingService internal constructor(
             if (billingSetupError == null) {
                 val params = BillingFlowParams.newBuilder()
                     .setSkuDetails(skuDetails)
-                    .apply {
-                        if (updatePurchaseInfo != null) {
-                            setOldSku(updatePurchaseInfo.oldSku, updatePurchaseInfo.purchaseToken)
-                            updatePurchaseInfo.prorationMode?.let { prorationMode ->
-                                setReplaceSkusProrationMode(prorationMode)
-                            }
-                        }
-                    }.build()
+                    .setSubscriptionUpdateParams(updatePurchaseInfo)
+                    .build()
 
                 this@QonversionBillingService.launchBillingFlow(activity, params)
             }
         }
+    }
+
+    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(info: UpdatePurchaseInfo? = null): BillingFlowParams.Builder {
+        if (info != null) {
+            val updateParams = SubscriptionUpdateParams.newBuilder()
+                .setOldSkuPurchaseToken(info.purchaseToken)
+                .apply {
+                    info.prorationMode?.let {
+                        setReplaceSkusProrationMode(it)
+                    }
+                }
+                .build()
+
+            setSubscriptionUpdateParams(updateParams)
+        }
+
+        return this
     }
 
     @UiThread
@@ -277,7 +286,7 @@ class QonversionBillingService internal constructor(
         params: BillingFlowParams
     ) = withReadyClient {
         launchBillingFlow(activity, params)
-            .takeIf { billingResult -> billingResult?.responseCode != BillingClient.BillingResponseCode.OK }
+            .takeIf { billingResult -> billingResult.responseCode != BillingClient.BillingResponseCode.OK }
             ?.let { billingResult ->
                 logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
             }
@@ -359,7 +368,7 @@ class QonversionBillingService internal constructor(
     }
 
     private fun loadAllProducts(
-        productIDs: List<String>,
+        productIDs: List<String?>,
         onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
@@ -389,7 +398,7 @@ class QonversionBillingService internal constructor(
 
     private fun querySkuDetailsAsync(
         @BillingClient.SkuType productType: String,
-        skuList: List<String>,
+        skuList: List<String?>,
         onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
@@ -427,8 +436,8 @@ class QonversionBillingService internal constructor(
 
     private fun buildSkuDetailsParams(
         @BillingClient.SkuType productType: String,
-        skuList: List<String>
-    ): SkuDetailsParams{
+        skuList: List<String?>
+    ): SkuDetailsParams {
         return SkuDetailsParams.newBuilder()
             .setType(productType)
             .setSkusList(skuList)
@@ -437,7 +446,7 @@ class QonversionBillingService internal constructor(
 
     private fun logSkuDetails(
         skuDetailsList: List<SkuDetails>,
-        skuList: List<String>
+        skuList: List<String?>
     ) {
         skuDetailsList
             .takeUnless { it.isEmpty() }

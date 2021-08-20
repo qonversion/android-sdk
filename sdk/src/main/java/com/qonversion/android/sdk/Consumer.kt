@@ -4,6 +4,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.entity.PurchaseHistory
 
 class Consumer internal constructor(

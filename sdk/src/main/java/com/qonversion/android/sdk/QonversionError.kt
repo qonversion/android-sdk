@@ -27,7 +27,7 @@ enum class QonversionErrorCode(val specification: String) {
     ProductNotOwned("Failure to consume purchase since item is not owned"),
     ProductAlreadyOwned("Failure to purchase since item is already owned"),
     FeatureNotSupported("The requested feature is not supported"),
-    ProductUnavailable("Requested product is not available for purchase"),
+    ProductUnavailable("Requested product is not available for purchase or its SKU was not found"),
     NetworkConnectionFailed("There was a network issue. Please make sure that the Internet connection is available on the device"),
     ParseResponseFailed("A problem occurred when serializing or deserializing data"),
     BackendError("There was a backend error"),

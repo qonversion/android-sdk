@@ -61,7 +61,7 @@ ext {
     moshiVersion = '1.9.2'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.13'
-    billing = '3.0.0'
+    billing = '4.0.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
