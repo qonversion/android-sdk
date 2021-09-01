@@ -1,0 +1,731 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ChainWrapping:com.qonversion.android.sdk.QonversionRepository.kt:372</ID>
+    <ID>ChainWrapping:com.qonversion.android.sdk.QonversionRepository.kt:373</ID>
+    <ID>ChainWrapping:com.qonversion.android.sdk.billing.QonversionBillingService.kt:130</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.QIdentityManagerTest.kt:166</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.di.module.NetworkModule.kt:88</ID>
+    <ID>ComplexCondition:QonversionRepository.kt$QonversionRepository$(purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &amp;&amp; purchase.introductoryPeriodUnit != null &amp;&amp; purchase.introductoryPeriodUnitsCount != null</ID>
+    <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
+    <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
+    <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
+    <ID>EmptyClassBlock:AttributionRequest.kt$AttributionRequest${ }</ID>
+    <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
+    <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
+    <ID>Filename:com.qonversion.android.sdk.converter.util.kt:1</ID>
+    <ID>Filename:com.qonversion.android.sdk.requests.queue.util.kt:1</ID>
+    <ID>Filename:com.qonversion.android.sdk.storage.util.kt:1</ID>
+    <ID>Filename:com.qonversion.android.sdk.validator.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.FirebaseMessageReceiver.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.HomeFragment.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.MainActivity.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.ManualTrackingActivityKt.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.OfferingsFragment.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.PermissionsAdapter.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.PermissionsFragment.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.ProductsAdapter.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.app.utils.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.AppLifeCycleHandler.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.AppState.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.AttributionSource.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.Constants.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.Consumer.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.ConsumerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.EnvironmentProvider.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.FacebookAttribution.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.HttpError.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.IncrementalDelayCalculator.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.OfferingsDelegate.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QAttributionManager.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QProductCenterManager.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QProductCenterManagerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QUserPropertiesManager.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QonversionCallback.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QonversionConfig.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QonversionError.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QonversionFactory.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.UpdatedPurchasesListener.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.ad.AdvertisingProvider.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.ad.LoadStoreProductsState.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.Api.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.ApiErrorMapper.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.ApiHeadersProvider.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.ApiHelper.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.ApiHelperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.api.NetworkInterceptor.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.Automations.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.AutomationsEvent.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.AutomationsEventMapper.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.QActionResult.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.QAutomationsManager.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.macros.Macros.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.macros.MacrosType.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.macros.ScreenProcessor.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.mvp.ScreenActivity.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.mvp.ScreenContract.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.mvp.ScreenPresenter.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.billing.BillingService.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.billing.QonversionBillingService.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.billing.utils.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.converter.SkuDetailsTokenExtractorTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.converter.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.QDependencyInjector.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.component.ActivityComponent.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.component.AppComponent.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.module.NetworkModule.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.module.RepositoryModule.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.di.module.ServicesModule.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.ActionPoints.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.BaseResponse.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.Data.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.Environment.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.ProviderData.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.QLaunchResult.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.QPermission.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.Response.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.app.App.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.automations.ActionPointScreen.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.device.Os.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.eligibility.EligibilityResult.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.eligibility.ProductEligibility.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.eligibility.QEligibility.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.eligibility.StoreProductInfo.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.experiments.QExperimentGroup.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.experiments.QExperimentGroupType.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.experiments.QExperimentInfo.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.identity.IdentityResult.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.offerings.QOffering.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.offerings.QOfferingTag.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.offerings.QOfferings.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.products.QProduct.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.products.QProductRenewState.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.purchase.History.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.AttributionRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.EligibilityRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.EventRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.IdentityRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.InitRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.PropertiesRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.PurchaseRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.RequestData.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.RestoreRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.ViewsRequest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.dto.request.data.InitRequestData.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.entity.PurchaseHistory.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.extensions.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.extractor.Extractor.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.extractor.TokenExtractor.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.AppRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.AttributionRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.EnvironmentRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.InAppRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.InitRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.OsRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.PurchaseRequestTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.queue.RequestQueueTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.requests.queue.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.services.QUserInfoService.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.Cache.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.LaunchResultCacheWrapper.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.PropertiesStorage.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.PurchasesCache.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.SharedPreferencesCache.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.Storage.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.TokenExtractorTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.TokenStorage.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.TokenStorageTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.UserPropertiesStorage.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.storage.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.validator.TokenValidator.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.validator.Validator.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.validator.util.kt:1</ID>
+    <ID>ForbiddenComment:AttributionRequestTest.kt$AttributionRequestTest$// TODO: Update test for new AttributionRequest format</ID>
+    <ID>ForbiddenComment:EnvironmentRequestTest.kt$EnvironmentRequestTest$// TODO: Update test for new Environment format</ID>
+    <ID>ForbiddenComment:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$// TODO: Update test for new Purchase fields</ID>
+    <ID>ForbiddenComment:InAppRequestTest.kt$InAppRequestTest$// TODO: Update test for new InApp format</ID>
+    <ID>ForbiddenComment:InitRequestTest.kt$InitRequestTest$// TODO: Update test for new InitRequest format</ID>
+    <ID>ForbiddenComment:PropertiesRequestTest.kt$PropertiesRequestTest$// TODO: Update test for new PropertiesRequest format</ID>
+    <ID>ForbiddenComment:PurchaseRequestTest.kt$PurchaseRequestTest$// TODO: Update test for new Purchase request</ID>
+    <ID>ForbiddenComment:RequestQueueTest.kt$RequestQueueTest$// TODO: Update test for new AttributionRequest format</ID>
+    <ID>ForbiddenComment:RequestValidatorTest.kt$RequestValidatorTest$// TODO: Update test for new AttributionRequest format</ID>
+    <ID>ForbiddenComment:util.kt$Util.Companion$// TODO: Update test for new AttributionRequest format</ID>
+    <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
+    <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s / %s", getStr(R.string.subscribe_for), subscription.prettyPrice, subscription.duration?.name )</ID>
+    <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
+    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( context: Activity, id: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
+    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
+    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( private val context: Application, private val repository: QonversionRepository, private val logger: Logger, private val purchasesCache: PurchasesCache, private val launchResultCache: LaunchResultCacheWrapper, private val userInfoService: QUserInfoService, private val identityManager: QIdentityManager )</ID>
+    <ID>LongParameterList:QonversionFactory.kt$QonversionFactory$( repository: QonversionRepository, isObserveMode: Boolean, purchasesCache: PurchasesCache, launchResultCacheWrapper: LaunchResultCacheWrapper, userInfoService: QUserInfoService, identityManager: QIdentityManager )</ID>
+    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( installDate: Long, purchase: Purchase, experimentInfo: QExperimentInfo?, qProductId: String?, callback: QonversionLaunchCallback, error: QonversionError, retries: Int )</ID>
+    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( installDate: Long, purchase: Purchase, experimentInfo: QExperimentInfo?, qProductId: String?, callback: QonversionLaunchCallback, retries: Int = MAX_RETRIES_NUMBER )</ID>
+    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( private val api: Api, private val environmentProvider: EnvironmentProvider, private val sdkVersion: String, private val key: String, private val isDebugMode: Boolean, private val logger: Logger, private val purchasesCache: PurchasesCache, private val errorMapper: ApiErrorMapper, private val preferences: SharedPreferences )</ID>
+    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences )</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10004</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10005</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10006</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10008</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20005</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20006</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20007</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20008</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20010</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20011</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20012</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20013</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20014</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20201</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20203</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20210</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20300</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20303</ID>
+    <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20399</ID>
+    <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
+    <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$30</ID>
+    <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$365</ID>
+    <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$7</ID>
+    <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
+    <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
+    <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
+    <ID>MagicNumber:QProductDuration.kt$QProductDuration.SixMonthly$3</ID>
+    <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.BillingIssue$3</ID>
+    <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.Companion$3</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$3</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$4</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$5</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$6</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$7</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$8</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Companion$9</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Month$4</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Other$9</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.SixMonths$7</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.ThreeMonths$6</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoMonths$5</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoWeeks$3</ID>
+    <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Year$8</ID>
+    <ID>MagicNumber:utils.kt$1000</ID>
+    <ID>MatchingDeclarationName:util.kt$Util</ID>
+    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
+    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
+    <ID>MaxLineLength:AppComponent.kt$AppComponent$@Component(modules = [AppModule::class, RepositoryModule::class, NetworkModule::class, ManagersModule::class, ServicesModule::class])</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionBillingRetry</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_canceled\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionCanceled</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_downgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionDowngraded</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_expired\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionExpired</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_product_changed\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionProductChanged</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_refunded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionRefunded</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_renewed\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionRenewed</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
+    <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
+    <ID>MaxLineLength:FirebaseMessageReceiver.kt$FirebaseMessageReceiver$.</ID>
+    <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod)</ID>
+    <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
+    <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
+    <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
+    <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
+    <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
+    <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$logger.release("AutomationsDelegate.$functionName() function can not be executed. It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")</ID>
+    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$logger.release("purchaseProduct() -&gt; Purchase with id = $productId is already in progress. This one call will be ignored")</ID>
+    <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest$productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger, mockDeviceStorage, mockLaunchResultCacheWrapper, mockUserInfoService, mockIdentityManager)</ID>
+    <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
+    <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
+    <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$@Deprecated("This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.", level = DeprecationLevel.WARNING)</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$fun</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$if</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -&gt; Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $skuType is retrieved ${record.getDescription()}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("querySkuDetailsAsync() -&gt; Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("replaceOldPurchase() -&gt; Purchase was found successfully for sku: ${oldSkuDetails.sku}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.release("launchBillingFlow() -&gt; Failed to launch billing flow. ${billingResult.getDescription()}")</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.LoadProducts$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.LoadProducts$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchases$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchases$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
+    <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
+    <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
+    <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$NetworkConnectionFailed : QonversionErrorCode</ID>
+    <ID>MaxLineLength:QonversionFactory.kt$QonversionFactory$val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)</ID>
+    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, errorMapper.getErrorFromResponse(it), retries)</ID>
+    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)</ID>
+    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$private fun &lt;T&gt; Response&lt;T&gt;.getLogMessage()</ID>
+    <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong experimentInfo value", expectedValue.offerings?.main?.experimentInfo, realValue?.offerings?.main?.experimentInfo) }</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) }</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong userProducts value", expectedValue.userProducts, realValue?.userProducts) }</ID>
+    <ID>MaxLineLength:errors.kt$QonversionErrorCode.BillingUnavailable -&gt; "Billing service is not connected to any Google account at the moment."</ID>
+    <ID>MaxLineLength:errors.kt$QonversionErrorCode.PurchaseInvalid -&gt; "Please make sure that you are using the google account where purchases are allowed and the application was correctly signed and properly set up for billing."</ID>
+    <ID>MaxLineLength:errors.kt$QonversionErrorCode.SkuDetailsError -&gt; "Please make sure that the products were configured correctly in Google Play Console."</ID>
+    <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
+    <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
+    <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManager.kt:351</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:141</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:143</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:58</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:307</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:310</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:366</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:392</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:98</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionError.kt:31</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionFactory.kt:27</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:321</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:327</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:502</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:105</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:106</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:107</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:108</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:109</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:110</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:112</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:115</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:116</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:117</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.QAutomationsManager.kt:136</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:108</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:205</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:239</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:282</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:318</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:354</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:396</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:404</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:175</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:178</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:316</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:319</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:538</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:541</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:676</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:679</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:24</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:46</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.di.component.AppComponent.kt:15</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:30</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:199</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:21</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:245</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:82</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:223</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:224</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:225</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:226</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:227</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:121</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:122</ID>
+    <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
+    <ID>NewLineAtEndOfFile:ActionPointScreen.kt$com.qonversion.android.sdk.dto.automations.ActionPointScreen.kt</ID>
+    <ID>NewLineAtEndOfFile:ActionPoints.kt$com.qonversion.android.sdk.dto.ActionPoints.kt</ID>
+    <ID>NewLineAtEndOfFile:ActivityComponent.kt$com.qonversion.android.sdk.di.component.ActivityComponent.kt</ID>
+    <ID>NewLineAtEndOfFile:AdvertisingProvider.kt$com.qonversion.android.sdk.ad.AdvertisingProvider.kt</ID>
+    <ID>NewLineAtEndOfFile:Api.kt$com.qonversion.android.sdk.api.Api.kt</ID>
+    <ID>NewLineAtEndOfFile:ApiErrorMapper.kt$com.qonversion.android.sdk.api.ApiErrorMapper.kt</ID>
+    <ID>NewLineAtEndOfFile:ApiHeadersProvider.kt$com.qonversion.android.sdk.api.ApiHeadersProvider.kt</ID>
+    <ID>NewLineAtEndOfFile:ApiHelper.kt$com.qonversion.android.sdk.api.ApiHelper.kt</ID>
+    <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.api.ApiHelperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:App.kt$com.qonversion.android.sdk.dto.app.App.kt</ID>
+    <ID>NewLineAtEndOfFile:AppComponent.kt$com.qonversion.android.sdk.di.component.AppComponent.kt</ID>
+    <ID>NewLineAtEndOfFile:AppLifeCycleHandler.kt$com.qonversion.android.sdk.AppLifeCycleHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.requests.AppRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:AppState.kt$com.qonversion.android.sdk.AppState.kt</ID>
+    <ID>NewLineAtEndOfFile:AttributionRequest.kt$com.qonversion.android.sdk.dto.request.AttributionRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.requests.AttributionRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:AttributionSource.kt$com.qonversion.android.sdk.AttributionSource.kt</ID>
+    <ID>NewLineAtEndOfFile:Automations.kt$com.qonversion.android.sdk.automations.Automations.kt</ID>
+    <ID>NewLineAtEndOfFile:AutomationsEvent.kt$com.qonversion.android.sdk.automations.AutomationsEvent.kt</ID>
+    <ID>NewLineAtEndOfFile:AutomationsEventMapper.kt$com.qonversion.android.sdk.automations.AutomationsEventMapper.kt</ID>
+    <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:BaseResponse.kt$com.qonversion.android.sdk.dto.BaseResponse.kt</ID>
+    <ID>NewLineAtEndOfFile:BillingService.kt$com.qonversion.android.sdk.billing.BillingService.kt</ID>
+    <ID>NewLineAtEndOfFile:Cache.kt$com.qonversion.android.sdk.storage.Cache.kt</ID>
+    <ID>NewLineAtEndOfFile:Constants.kt$com.qonversion.android.sdk.Constants.kt</ID>
+    <ID>NewLineAtEndOfFile:Consumer.kt$com.qonversion.android.sdk.Consumer.kt</ID>
+    <ID>NewLineAtEndOfFile:ConsumerTest.kt$com.qonversion.android.sdk.ConsumerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:Data.kt$com.qonversion.android.sdk.dto.Data.kt</ID>
+    <ID>NewLineAtEndOfFile:EligibilityRequest.kt$com.qonversion.android.sdk.dto.request.EligibilityRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:EligibilityResult.kt$com.qonversion.android.sdk.dto.eligibility.EligibilityResult.kt</ID>
+    <ID>NewLineAtEndOfFile:Environment.kt$com.qonversion.android.sdk.dto.Environment.kt</ID>
+    <ID>NewLineAtEndOfFile:EnvironmentProvider.kt$com.qonversion.android.sdk.EnvironmentProvider.kt</ID>
+    <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.requests.EnvironmentRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:EventRequest.kt$com.qonversion.android.sdk.dto.request.EventRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:Extractor.kt$com.qonversion.android.sdk.extractor.Extractor.kt</ID>
+    <ID>NewLineAtEndOfFile:FacebookAttribution.kt$com.qonversion.android.sdk.FacebookAttribution.kt</ID>
+    <ID>NewLineAtEndOfFile:FirebaseMessageReceiver.kt$com.qonversion.android.app.FirebaseMessageReceiver.kt</ID>
+    <ID>NewLineAtEndOfFile:GooglePurchaseConverter.kt$com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt</ID>
+    <ID>NewLineAtEndOfFile:GooglePurchaseConverterTest.kt$com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt</ID>
+    <ID>NewLineAtEndOfFile:History.kt$com.qonversion.android.sdk.dto.purchase.History.kt</ID>
+    <ID>NewLineAtEndOfFile:HomeFragment.kt$com.qonversion.android.app.HomeFragment.kt</ID>
+    <ID>NewLineAtEndOfFile:HttpError.kt$com.qonversion.android.sdk.HttpError.kt</ID>
+    <ID>NewLineAtEndOfFile:IdentityRequest.kt$com.qonversion.android.sdk.dto.request.IdentityRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:IdentityResult.kt$com.qonversion.android.sdk.dto.identity.IdentityResult.kt</ID>
+    <ID>NewLineAtEndOfFile:InAppRequestTest.kt$com.qonversion.android.sdk.requests.InAppRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:IncrementalDelayCalculator.kt$com.qonversion.android.sdk.IncrementalDelayCalculator.kt</ID>
+    <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt</ID>
+    <ID>NewLineAtEndOfFile:InitRequest.kt$com.qonversion.android.sdk.dto.request.InitRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:InitRequestData.kt$com.qonversion.android.sdk.dto.request.data.InitRequestData.kt</ID>
+    <ID>NewLineAtEndOfFile:InitRequestTest.kt$com.qonversion.android.sdk.requests.InitRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:LaunchResultCacheWrapper.kt$com.qonversion.android.sdk.storage.LaunchResultCacheWrapper.kt</ID>
+    <ID>NewLineAtEndOfFile:LaunchResultCacheWrapperTest.kt$com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:LoadStoreProductsState.kt$com.qonversion.android.sdk.ad.LoadStoreProductsState.kt</ID>
+    <ID>NewLineAtEndOfFile:Macros.kt$com.qonversion.android.sdk.automations.macros.Macros.kt</ID>
+    <ID>NewLineAtEndOfFile:MacrosType.kt$com.qonversion.android.sdk.automations.macros.MacrosType.kt</ID>
+    <ID>NewLineAtEndOfFile:MainActivity.kt$com.qonversion.android.app.MainActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:ManualTrackingActivityKt.kt$com.qonversion.android.app.ManualTrackingActivityKt.kt</ID>
+    <ID>NewLineAtEndOfFile:NetworkInterceptor.kt$com.qonversion.android.sdk.api.NetworkInterceptor.kt</ID>
+    <ID>NewLineAtEndOfFile:NetworkModule.kt$com.qonversion.android.sdk.di.module.NetworkModule.kt</ID>
+    <ID>NewLineAtEndOfFile:OfferingsDelegate.kt$com.qonversion.android.sdk.OfferingsDelegate.kt</ID>
+    <ID>NewLineAtEndOfFile:OfferingsFragment.kt$com.qonversion.android.app.OfferingsFragment.kt</ID>
+    <ID>NewLineAtEndOfFile:Os.kt$com.qonversion.android.sdk.dto.device.Os.kt</ID>
+    <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.requests.OsRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:PermissionsAdapter.kt$com.qonversion.android.app.PermissionsAdapter.kt</ID>
+    <ID>NewLineAtEndOfFile:PermissionsFragment.kt$com.qonversion.android.app.PermissionsFragment.kt</ID>
+    <ID>NewLineAtEndOfFile:ProductEligibility.kt$com.qonversion.android.sdk.dto.eligibility.ProductEligibility.kt</ID>
+    <ID>NewLineAtEndOfFile:ProductsAdapter.kt$com.qonversion.android.app.ProductsAdapter.kt</ID>
+    <ID>NewLineAtEndOfFile:PropertiesRequest.kt$com.qonversion.android.sdk.dto.request.PropertiesRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:PropertiesRequestTest.kt$com.qonversion.android.sdk.requests.PropertiesRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:PropertiesStorage.kt$com.qonversion.android.sdk.storage.PropertiesStorage.kt</ID>
+    <ID>NewLineAtEndOfFile:ProviderData.kt$com.qonversion.android.sdk.dto.ProviderData.kt</ID>
+    <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:PurchaseHistory.kt$com.qonversion.android.sdk.entity.PurchaseHistory.kt</ID>
+    <ID>NewLineAtEndOfFile:PurchaseRequest.kt$com.qonversion.android.sdk.dto.request.PurchaseRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:PurchaseRequestTest.kt$com.qonversion.android.sdk.requests.PurchaseRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:PurchasesCache.kt$com.qonversion.android.sdk.storage.PurchasesCache.kt</ID>
+    <ID>NewLineAtEndOfFile:PurchasesCacheTest.kt$com.qonversion.android.sdk.storage.PurchasesCacheTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QActionResult.kt$com.qonversion.android.sdk.automations.QActionResult.kt</ID>
+    <ID>NewLineAtEndOfFile:QAttributionManager.kt$com.qonversion.android.sdk.QAttributionManager.kt</ID>
+    <ID>NewLineAtEndOfFile:QAutomationsManager.kt$com.qonversion.android.sdk.automations.QAutomationsManager.kt</ID>
+    <ID>NewLineAtEndOfFile:QAutomationsManagerTest.kt$com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QDependencyInjector.kt$com.qonversion.android.sdk.di.QDependencyInjector.kt</ID>
+    <ID>NewLineAtEndOfFile:QEligibility.kt$com.qonversion.android.sdk.dto.eligibility.QEligibility.kt</ID>
+    <ID>NewLineAtEndOfFile:QExperimentGroup.kt$com.qonversion.android.sdk.dto.experiments.QExperimentGroup.kt</ID>
+    <ID>NewLineAtEndOfFile:QExperimentGroupType.kt$com.qonversion.android.sdk.dto.experiments.QExperimentGroupType.kt</ID>
+    <ID>NewLineAtEndOfFile:QExperimentInfo.kt$com.qonversion.android.sdk.dto.experiments.QExperimentInfo.kt</ID>
+    <ID>NewLineAtEndOfFile:QIntroEligibilityStatus.kt$com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus.kt</ID>
+    <ID>NewLineAtEndOfFile:QLaunchResult.kt$com.qonversion.android.sdk.dto.QLaunchResult.kt</ID>
+    <ID>NewLineAtEndOfFile:QOffering.kt$com.qonversion.android.sdk.dto.offerings.QOffering.kt</ID>
+    <ID>NewLineAtEndOfFile:QOfferingTag.kt$com.qonversion.android.sdk.dto.offerings.QOfferingTag.kt</ID>
+    <ID>NewLineAtEndOfFile:QOfferings.kt$com.qonversion.android.sdk.dto.offerings.QOfferings.kt</ID>
+    <ID>NewLineAtEndOfFile:QPermission.kt$com.qonversion.android.sdk.dto.QPermission.kt</ID>
+    <ID>NewLineAtEndOfFile:QProduct.kt$com.qonversion.android.sdk.dto.products.QProduct.kt</ID>
+    <ID>NewLineAtEndOfFile:QProductCenterManager.kt$com.qonversion.android.sdk.QProductCenterManager.kt</ID>
+    <ID>NewLineAtEndOfFile:QProductCenterManagerTest.kt$com.qonversion.android.sdk.QProductCenterManagerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QProductRenewState.kt$com.qonversion.android.sdk.dto.products.QProductRenewState.kt</ID>
+    <ID>NewLineAtEndOfFile:QTrialDuration.kt$com.qonversion.android.sdk.dto.products.QTrialDuration.kt</ID>
+    <ID>NewLineAtEndOfFile:QUserInfoService.kt$com.qonversion.android.sdk.services.QUserInfoService.kt</ID>
+    <ID>NewLineAtEndOfFile:QUserInfoServiceTest.kt$com.qonversion.android.sdk.services.QUserInfoServiceTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QUserPropertiesManager.kt$com.qonversion.android.sdk.QUserPropertiesManager.kt</ID>
+    <ID>NewLineAtEndOfFile:QUserPropertiesManagerTest.kt$com.qonversion.android.sdk.QUserPropertiesManagerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionBillingService.kt$com.qonversion.android.sdk.billing.QonversionBillingService.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionBillingServiceTest.kt$com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionCallback.kt$com.qonversion.android.sdk.QonversionCallback.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionConfig.kt$com.qonversion.android.sdk.QonversionConfig.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionError.kt$com.qonversion.android.sdk.QonversionError.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionFactory.kt$com.qonversion.android.sdk.QonversionFactory.kt</ID>
+    <ID>NewLineAtEndOfFile:QonversionMappingAdapters.kt$com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt</ID>
+    <ID>NewLineAtEndOfFile:RepositoryModule.kt$com.qonversion.android.sdk.di.module.RepositoryModule.kt</ID>
+    <ID>NewLineAtEndOfFile:RequestData.kt$com.qonversion.android.sdk.dto.request.RequestData.kt</ID>
+    <ID>NewLineAtEndOfFile:RequestQueueTest.kt$com.qonversion.android.sdk.requests.queue.RequestQueueTest.kt</ID>
+    <ID>NewLineAtEndOfFile:Response.kt$com.qonversion.android.sdk.dto.Response.kt</ID>
+    <ID>NewLineAtEndOfFile:RestoreRequest.kt$com.qonversion.android.sdk.dto.request.RestoreRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:ScreenActivity.kt$com.qonversion.android.sdk.automations.mvp.ScreenActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:ScreenContract.kt$com.qonversion.android.sdk.automations.mvp.ScreenContract.kt</ID>
+    <ID>NewLineAtEndOfFile:ScreenPresenter.kt$com.qonversion.android.sdk.automations.mvp.ScreenPresenter.kt</ID>
+    <ID>NewLineAtEndOfFile:ScreenPresenterTest.kt$com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ScreenProcessor.kt$com.qonversion.android.sdk.automations.macros.ScreenProcessor.kt</ID>
+    <ID>NewLineAtEndOfFile:ServicesModule.kt$com.qonversion.android.sdk.di.module.ServicesModule.kt</ID>
+    <ID>NewLineAtEndOfFile:SharedPreferencesCache.kt$com.qonversion.android.sdk.storage.SharedPreferencesCache.kt</ID>
+    <ID>NewLineAtEndOfFile:SkuDetailsTokenExtractor.kt$com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor.kt</ID>
+    <ID>NewLineAtEndOfFile:SkuDetailsTokenExtractorTest.kt$com.qonversion.android.sdk.converter.SkuDetailsTokenExtractorTest.kt</ID>
+    <ID>NewLineAtEndOfFile:Storage.kt$com.qonversion.android.sdk.storage.Storage.kt</ID>
+    <ID>NewLineAtEndOfFile:StoreProductInfo.kt$com.qonversion.android.sdk.dto.eligibility.StoreProductInfo.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenExtractor.kt$com.qonversion.android.sdk.extractor.TokenExtractor.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenExtractorTest.kt$com.qonversion.android.sdk.storage.TokenExtractorTest.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenStorage.kt$com.qonversion.android.sdk.storage.TokenStorage.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenStorageTest.kt$com.qonversion.android.sdk.storage.TokenStorageTest.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenValidator.kt$com.qonversion.android.sdk.validator.TokenValidator.kt</ID>
+    <ID>NewLineAtEndOfFile:UpdatedPurchasesListener.kt$com.qonversion.android.sdk.UpdatedPurchasesListener.kt</ID>
+    <ID>NewLineAtEndOfFile:UserPropertiesStorage.kt$com.qonversion.android.sdk.storage.UserPropertiesStorage.kt</ID>
+    <ID>NewLineAtEndOfFile:Validator.kt$com.qonversion.android.sdk.validator.Validator.kt</ID>
+    <ID>NewLineAtEndOfFile:ViewsRequest.kt$com.qonversion.android.sdk.dto.request.ViewsRequest.kt</ID>
+    <ID>NewLineAtEndOfFile:extensions.kt$com.qonversion.android.sdk.extensions.kt</ID>
+    <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.converter.util.kt</ID>
+    <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.requests.queue.util.kt</ID>
+    <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.storage.util.kt</ID>
+    <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.validator.util.kt</ID>
+    <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.app.utils.kt</ID>
+    <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.QProductCenterManager.kt:196</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.UpdatedPurchasesListener.kt:8</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:281</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:670</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:138</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.converter.util.kt:55</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.di.QDependencyInjector.kt:30</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.di.module.ServicesModule.kt:21</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.dto.request.AttributionRequest.kt:16</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.extensions.kt:26</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.storage.PropertiesStorage.kt:9</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.storage.Storage.kt:12</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.storage.TokenStorage.kt:32</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:18</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.TokenValidatorTest.kt:20</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.app.FirebaseMessageReceiver.kt:17</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.app.HomeFragment.kt:193</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.EnvironmentProvider.kt:44</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QAttributionManagerTest.kt:135</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.Qonversion.kt:412</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:360</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.dto.eligibility.StoreProductInfo.kt:6</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.extensions.kt:13</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt:18</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.requests.PurchaseRequestTest.kt:24</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:124</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:63</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:3</ID>
+    <ID>NoEmptyClassBody:com.qonversion.android.sdk.dto.request.AttributionRequest.kt:15</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.app.OfferingsFragment.kt:47</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.app.utils.kt:10</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.app.utils.kt:9</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.FacebookAttribution.kt:28</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.QProductCenterManager.kt:861</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.QonversionRepository.kt:502</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.IncrementalDelayCalculator.kt:4</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:15</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.extractor.Extractor.kt:3</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.extractor.Extractor.kt:4</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.requests.InAppRequestTest.kt:12</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.requests.InAppRequestTest.kt:13</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.app.ExampleInstrumentedTest.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.app.ExampleUnitTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.app.HomeFragment.kt:12</ID>
+    <ID>NoWildcardImports:com.qonversion.android.app.ManualTrackingActivityKt.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.app.ManualTrackingActivityKt.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculator.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QAttributionManagerTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:18</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:26</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QonversionRepository.kt:24</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.ad.AdvertisingProvider.kt:7</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.api.Api.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.api.Api.kt:7</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.api.Api.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.api.ApiHeadersProvider.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEvent.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapper.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:12</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManager.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:16</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.mvp.ScreenActivity.kt:12</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingService.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.di.component.AppComponent.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.RepositoryModule.kt:14</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoService.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:13</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:3</ID>
+    <ID>ParameterListWrapping:com.qonversion.android.sdk.di.module.RepositoryModule.kt:71</ID>
+    <ID>ParameterListWrapping:com.qonversion.android.sdk.di.module.RepositoryModule.kt:78</ID>
+    <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(message: RemoteMessage): AutomationsEvent?</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
+    <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
+    <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.QProductCenterManager.kt:156</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.automations.mvp.ScreenContract.kt:25</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.converter.PurchaseConverter.kt:6</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.dto.request.EligibilityRequest.kt:18</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.dto.request.InitRequest.kt:18</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.dto.request.RestoreRequest.kt:18</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.extensions.kt:14</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt:43</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.validator.TokenValidator.kt:3</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:105</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:121</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:136</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.QAttributionManager.kt:5</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QActionResult.kt:8</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:274</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.billing.QonversionBillingService.kt:202</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.billing.QonversionBillingService.kt:431</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:13</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:19</ID>
+    <ID>SpacingAroundKeyword:com.qonversion.android.sdk.QonversionRepository.kt:502</ID>
+    <ID>SpacingAroundKeyword:com.qonversion.android.sdk.dto.products.QProduct.kt:47</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.Qonversion.kt:102</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:39</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:40</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:41</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:42</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:43</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:44</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:45</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:46</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProduct.kt:47</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductDuration.kt:14</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductDuration.kt:15</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductDuration.kt:16</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductDuration.kt:17</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductRenewState.kt:15</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductRenewState.kt:16</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QProductType.kt:15</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:18</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:19</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:20</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:21</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:22</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:23</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:24</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:25</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:26</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.dto.products.QTrialDuration.kt:27</ID>
+    <ID>SpacingAroundOperators:com.qonversion.android.sdk.extensions.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.HttpError.kt:3</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:470</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.di.module.NetworkModule.kt:80</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.ActionPoints.kt:8</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.eligibility.EligibilityResult.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.eligibility.ProductEligibility.kt:8</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.experiments.QExperimentGroup.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.experiments.QExperimentInfo.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.identity.IdentityResult.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.offerings.QOfferings.kt:3</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.purchase.History.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.request.IdentityRequest.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.request.PropertiesRequest.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.dto.request.ViewsRequest.kt:7</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:212</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:243</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:262</ID>
+    <ID>StringTemplate:com.qonversion.android.sdk.api.ApiErrorMapper.kt:95</ID>
+    <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
+    <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
+    <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
+    <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
+    <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
+    <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
+    <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
+    <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
+    <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
+    <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenActivity.kt$ScreenActivity$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:BaseResponse.kt$throw RuntimeException("backend exception")</ID>
+    <ID>TooGenericExceptionThrown:Qonversion.kt$Qonversion$throw RuntimeException("Qonversion initialization error! Key should not be empty!")</ID>
+    <ID>TooManyFunctions:Api.kt$Api</ID>
+    <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
+    <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
+    <ID>TooManyFunctions:Qonversion.kt$Qonversion$Qonversion</ID>
+    <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
+    <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
+    <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
+    <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
+    <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
+    <ID>UnusedPrivateMember:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$val converted = GooglePurchaseConverter(SkuDetailsTokenExtractor()) .convert( Pair( SkuDetails(CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
+    <ID>UnusedPrivateMember:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$val converted = GooglePurchaseConverter(SkuDetailsTokenExtractor()) .convert( Pair( SkuDetails(CORRECT_SKU_DETAILS_SUB_JSON), Purchase(CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
+    <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convert( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
+    <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convert( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON), Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
+    <ID>UnusedPrivateMember:QProductCenterManagerTest.kt$QProductCenterManagerTest$private val skuTypeSubs = BillingClient.SkuType.SUBS</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility&gt;): List&lt;ProductEligibility&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductDurationAdapter$@ToJson private fun toJson(enum: QProductDuration): Int</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductTypeAdapter$@ToJson private fun toJson(enum: QProductType): Int</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct&gt;): List&lt;QProduct&gt;</ID>
+    <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
+    <ID>VariableNaming:HomeFragment.kt$HomeFragment$private val TAG = "HomeFragment"</ID>
+    <ID>VariableNaming:OfferingsFragment.kt$OfferingsFragment$private val TAG = "OfferingsFragment"</ID>
+    <ID>VariableNaming:PermissionsFragment.kt$PermissionsFragment$private val TAG = "PermissionsFragment"</ID>
+    <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
+    <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.dto.*</ID>
+    <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.dto.request.*</ID>
+    <ID>WildcardImport:Api.kt$import retrofit2.http.*</ID>
+    <ID>WildcardImport:AppComponent.kt$import com.qonversion.android.sdk.di.module.*</ID>
+    <ID>WildcardImport:HomeFragment.kt$import com.qonversion.android.sdk.*</ID>
+    <ID>WildcardImport:ManualTrackingActivityKt.kt$import com.android.billingclient.api.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import com.qonversion.android.sdk.dto.*</ID>
+    <ID>WildcardImport:QAutomationsManager.kt$import com.qonversion.android.sdk.*</ID>
+    <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.ad.LoadStoreProductsState.*</ID>
+    <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.billing.*</ID>
+    <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
+    <ID>WildcardImport:QonversionRepository.kt$import com.qonversion.android.sdk.dto.request.*</ID>
+    <ID>WildcardImport:RepositoryModule.kt$import com.qonversion.android.sdk.storage.*</ID>
+    <ID>WildcardImport:ScreenActivity.kt$import com.qonversion.android.sdk.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
