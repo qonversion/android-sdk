@@ -14,5 +14,4 @@ data class QonversionConfig(
     var uid = ""
         @Synchronized set
         @Synchronized get
-
 }

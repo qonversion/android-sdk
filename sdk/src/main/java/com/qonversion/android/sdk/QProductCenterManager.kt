@@ -24,6 +24,7 @@ import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 
+@SuppressWarnings("LongParameterList")
 class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
@@ -348,7 +349,10 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            logger.release("purchaseProduct() -> Purchase with id = $productId is already in progress. This one call will be ignored")
+            logger.release(
+                "purchaseProduct() -> Purchase with id = " +
+                        "$productId is already in progress. This one call will be ignored"
+            )
             return
         }
 

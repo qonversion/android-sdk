@@ -313,10 +313,14 @@ object Qonversion : LifecycleDelegate {
      * Call this function to reset user ID and generate new anonymous user ID.
      * Call this function before Qonversion.launch()
      */
-    @Deprecated("This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.",
+        level = DeprecationLevel.WARNING
+    )
     @JvmStatic
     fun resetUser() {
-        logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
+        logger.debug(object {}.javaClass.enclosingMethod?.name +
+                " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
     }
 
     /**
@@ -372,7 +376,8 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
-        productCenterManager?.setUpdatedPurchasesListener(listener) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager?.setUpdatedPurchasesListener(listener)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     /**
@@ -398,10 +403,11 @@ object Qonversion : LifecycleDelegate {
      * Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
-    fun handleNotification(remoteMessage: RemoteMessage) = automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
-        logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-        return@run false
-    }
+    fun handleNotification(remoteMessage: RemoteMessage) =
+        automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
+            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return@run false
+        }
 
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
