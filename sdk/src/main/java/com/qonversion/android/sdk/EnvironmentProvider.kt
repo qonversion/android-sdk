@@ -41,7 +41,6 @@ class EnvironmentProvider(private val context: Context) {
     private fun getDeviceId(): String =
         Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
 
-
     private fun getCarrier(): String {
         val manager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         return manager.networkOperatorName

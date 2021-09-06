@@ -77,14 +77,13 @@ class NetworkModule {
 
     @ApplicationScope
     @Provides
-    fun provideApiHelper(
-    ): ApiHelper {
+    fun provideApiHelper(): ApiHelper {
         return ApiHelper()
     }
 
     companion object {
         const val BASE_URL = "https://api.qonversion.io/"
         private const val TIMEOUT = 30L
-        private const val CACHE_SIZE = 10485776L //10 MB
+        private const val CACHE_SIZE = 10485776L // 10 MB
     }
 }

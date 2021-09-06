@@ -15,4 +15,4 @@ data class EligibilityRequest(
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "products_local_data") val productInfos: List<StoreProductInfo>
-): RequestData()
+) : RequestData()
