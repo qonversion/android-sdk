@@ -29,5 +29,4 @@ class TokenStorage(
     override fun delete() {
         preferences.edit().remove(TOKEN_KEY).apply()
     }
-
 }

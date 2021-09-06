@@ -4,14 +4,13 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-fun<T> Call<T>.enqueue(callback: CallBackKt<T>.() -> Unit) {
+fun <T> Call<T>.enqueue(callback: CallBackKt<T>.() -> Unit) {
     val callBackKt = CallBackKt<T>()
     callback.invoke(callBackKt)
     this.enqueue(callBackKt)
 }
 
-
-class CallBackKt<T>: Callback<T> {
+class CallBackKt<T> : Callback<T> {
 
     var onResponse: ((Response<T>) -> Unit)? = null
     var onFailure: ((t: Throwable?) -> Unit)? = null
@@ -23,5 +22,4 @@ class CallBackKt<T>: Callback<T> {
     override fun onResponse(call: Call<T>, response: Response<T>) {
         onResponse?.invoke(response)
     }
-
 }

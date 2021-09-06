@@ -6,5 +6,4 @@ interface PropertiesStorage {
     fun clear(properties: Map<String, String>)
 
     fun getProperties(): Map<String, String>
-
 }

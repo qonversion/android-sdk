@@ -11,10 +11,10 @@ enum class QProductDuration(val type: Int) {
         fun fromType(type: Int): QProductDuration? {
             return when (type) {
                 0 -> Weekly
-                1-> Monthly
-                2-> ThreeMonthly
-                3-> SixMonthly
-                4-> Annual
+                1 -> Monthly
+                2 -> ThreeMonthly
+                3 -> SixMonthly
+                4 -> Annual
                 else -> null
             }
         }

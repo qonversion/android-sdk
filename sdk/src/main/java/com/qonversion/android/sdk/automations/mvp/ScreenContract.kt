@@ -22,7 +22,7 @@ class ScreenContract {
     }
 
     internal interface Presenter {
-        fun confirmScreenView(screenId:String)
+        fun confirmScreenView(screenId: String)
 
         fun shouldOverrideUrlLoading(url: String?): Boolean
     }

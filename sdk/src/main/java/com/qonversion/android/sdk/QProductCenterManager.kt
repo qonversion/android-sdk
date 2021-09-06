@@ -154,7 +154,7 @@ class QProductCenterManager internal constructor(
         identityInProgress = true
 
         if (launchError != null) {
-            val callback = object: QonversionLaunchCallback {
+            val callback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     processIdentity(userID)
                 }
@@ -194,7 +194,6 @@ class QProductCenterManager internal constructor(
 
                 executePermissionsBlock()
             }
-
         })
     }
 
@@ -859,7 +858,7 @@ class QProductCenterManager internal constructor(
 
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first
-        val offering  = productPurchaseModel[sku]?.second
+        val offering = productPurchaseModel[sku]?.second
         if (sku == product?.storeID) {
             repository.purchase(installDate, purchase, offering?.experimentInfo, product?.qonversionID, callback)
             productPurchaseModel.remove(sku)

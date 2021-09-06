@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk
 
-data class HttpError (
+data class HttpError(
     val code: Int,
     val message: String
 )

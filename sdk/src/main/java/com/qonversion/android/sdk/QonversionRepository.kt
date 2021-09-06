@@ -366,9 +366,9 @@ class QonversionRepository internal constructor(
     private fun convertIntroductoryPurchaseDetail(purchase: Purchase): IntroductoryOfferDetails? {
         var introductoryOfferDetails: IntroductoryOfferDetails? = null
 
-        if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable)
-            && purchase.introductoryPeriodUnit != null
-            && purchase.introductoryPeriodUnitsCount != null) {
+        if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &&
+            purchase.introductoryPeriodUnit != null &&
+            purchase.introductoryPeriodUnitsCount != null) {
             introductoryOfferDetails = IntroductoryOfferDetails(
                 purchase.introductoryPrice,
                 purchase.introductoryPeriodUnit,
@@ -497,7 +497,7 @@ class QonversionRepository internal constructor(
         }
     }
 
-    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${errorMapper.getErrorFromResponse(this)}"
+    private fun <T> Response<T>.getLogMessage() = if (isSuccessful) "success - $this" else "failure - ${errorMapper.getErrorFromResponse(this)}"
 
     companion object {
         private const val MAX_RETRIES_NUMBER = 3
