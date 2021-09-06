@@ -15,16 +15,16 @@ enum class QTrialDuration(val type: Int) {
     companion object {
         fun fromType(type: Int): QTrialDuration {
             return when (type) {
-                -1-> NotAvailable
-                1-> ThreeDays
-                2-> Week
-                3-> TwoWeeks
-                4-> Month
-                5-> TwoMonths
-                6-> ThreeMonths
-                7-> SixMonths
-                8-> Year
-                9-> Other
+                -1 -> NotAvailable
+                1 -> ThreeDays
+                2 -> Week
+                3 -> TwoWeeks
+                4 -> Month
+                5 -> TwoMonths
+                6 -> ThreeMonths
+                7 -> SixMonths
+                8 -> Year
+                9 -> Other
                 else -> Other
             }
         }

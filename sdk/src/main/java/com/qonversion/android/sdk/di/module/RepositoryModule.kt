@@ -68,14 +68,16 @@ class RepositoryModule {
     @ApplicationScope
     @Provides
     fun provideHeadersProvider(
-        config: QonversionConfig, sharedPreferencesCache: SharedPreferencesCache
+        config: QonversionConfig,
+        sharedPreferencesCache: SharedPreferencesCache
     ): ApiHeadersProvider {
         return ApiHeadersProvider(config, sharedPreferencesCache)
     }
 
     @ApplicationScope
     @Provides
-    fun provideApiErrorMapper(apiHelper: ApiHelper
+    fun provideApiErrorMapper(
+        apiHelper: ApiHelper
     ): ApiErrorMapper {
         return ApiErrorMapper(apiHelper)
     }

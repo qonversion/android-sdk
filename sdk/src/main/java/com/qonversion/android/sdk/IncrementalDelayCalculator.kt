@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk
 
 import java.util.*
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt

@@ -165,5 +165,4 @@ class GooglePurchaseConverter(
 
         return totalCount
     }
-
 }

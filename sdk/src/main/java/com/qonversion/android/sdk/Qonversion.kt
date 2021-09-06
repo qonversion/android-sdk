@@ -104,7 +104,7 @@ object Qonversion : LifecycleDelegate {
 
         when (appState) {
             AppState.PendingForeground -> onAppForeground()
-            AppState.PendingBackground-> onAppBackground()
+            AppState.PendingBackground -> onAppBackground()
             else -> {}
         }
 

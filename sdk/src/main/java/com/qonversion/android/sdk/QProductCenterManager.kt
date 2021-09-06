@@ -153,7 +153,7 @@ class QProductCenterManager internal constructor(
         identityInProgress = true
 
         if (launchError != null) {
-            val callback = object: QonversionLaunchCallback {
+            val callback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     processIdentity(userID)
                 }
@@ -193,7 +193,6 @@ class QProductCenterManager internal constructor(
 
                 executePermissionsBlock()
             }
-
         })
     }
 

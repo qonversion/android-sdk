@@ -12,7 +12,7 @@ enum class QProductType(val type: Int) {
             return when (type) {
                 0 -> Trial
                 1 -> Subscription
-                2-> InApp
+                2 -> InApp
                 else -> throw IllegalArgumentException("Undefined enum type")
             }
         }
