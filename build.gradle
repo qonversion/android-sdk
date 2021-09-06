@@ -53,12 +53,10 @@ def testFiles = "**/test/**"
 def appFiles = "**/app/**"
 
 tasks.register("detektAll", io.gitlab.arturbosch.detekt.Detekt) {
-    def autoFix = project.hasProperty('detektAutoFix')
-
     description = "Detekt build for all modules"
     parallel = true
     ignoreFailures = false
-    autoCorrect = autoFix
+    autoCorrect = true
     buildUponDefaultConfig = true
     setSource(projectSource)
     baseline.set(baselineFile)
@@ -77,7 +75,7 @@ tasks.register("detektAll", io.gitlab.arturbosch.detekt.Detekt) {
 tasks.register("detektGenerateBaseline", io.gitlab.arturbosch.detekt.DetektCreateBaselineTask) {
     description = "Build baseline for all modules\""
     parallel = true
-    ignoreFailures = false
+    ignoreFailures = true
     buildUponDefaultConfig = true
     setSource(projectSource)
     baseline.set(baselineFile)

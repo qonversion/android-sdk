@@ -25,7 +25,7 @@ class FacebookAttribution {
     }
 
     companion object {
-        private  val ATTRIBUTION_ID_CONTENT_URI =
+        private val ATTRIBUTION_ID_CONTENT_URI =
             Uri.parse("content://com.facebook.katana.provider.AttributionIdProvider")
         private const val ATTRIBUTION_ID_COLUMN_NAME = "aid"
     }

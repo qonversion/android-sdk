@@ -92,7 +92,7 @@ class ApiErrorMapper @Inject constructor(private val helper: ApiHelper) {
     private fun Any?.toFormatString(fieldName: String): String? {
         return if (this == null) {
             null
-        } else "$fieldName=${this}"
+        } else "$fieldName=$this"
     }
 
     private fun getQonversionErrorCode(value: Int?): QonversionErrorCode {

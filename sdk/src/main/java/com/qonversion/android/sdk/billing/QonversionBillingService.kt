@@ -127,8 +127,8 @@ class QonversionBillingService internal constructor(
                     val unconsumedInApp = queryPurchases(BillingClient.SkuType.INAPP)
                     val purchasesResult = mutableListOf<Purchase>()
 
-                    if (activeSubs.responseCode == BillingClient.BillingResponseCode.OK
-                        && unconsumedInApp.responseCode == BillingClient.BillingResponseCode.OK
+                    if (activeSubs.responseCode == BillingClient.BillingResponseCode.OK &&
+                        unconsumedInApp.responseCode == BillingClient.BillingResponseCode.OK
                     ) {
                         purchasesResult.addAll(activeSubs.purchasesList ?: emptyList())
                         purchasesResult.addAll(unconsumedInApp.purchasesList ?: emptyList())
@@ -199,8 +199,7 @@ class QonversionBillingService internal constructor(
         oldSkuDetails: SkuDetails,
         @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
-        getPurchaseHistoryFromSkuDetails(oldSkuDetails)
-        { billingResult, oldPurchaseHistory ->
+        getPurchaseHistoryFromSkuDetails(oldSkuDetails) { billingResult, oldPurchaseHistory ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 if (oldPurchaseHistory != null) {
                     logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")

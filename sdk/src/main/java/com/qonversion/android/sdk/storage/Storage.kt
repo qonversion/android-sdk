@@ -9,5 +9,4 @@ interface Storage {
     fun exist(): Boolean
 
     fun delete()
-
 }

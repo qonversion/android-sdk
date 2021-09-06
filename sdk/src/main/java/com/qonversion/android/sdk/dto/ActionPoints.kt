@@ -5,6 +5,6 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class ActionPoints (
+data class ActionPoints(
     @Json(name = "items") val items: List<Data<ActionPointScreen>>
 )

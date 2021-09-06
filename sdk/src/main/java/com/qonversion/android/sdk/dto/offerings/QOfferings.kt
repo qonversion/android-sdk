@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto.offerings
 
-data class QOfferings (
+data class QOfferings(
     val main: QOffering?,
     val availableOfferings: List<QOffering> = listOf()
 ) {
