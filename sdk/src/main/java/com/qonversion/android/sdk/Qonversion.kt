@@ -81,10 +81,11 @@ object Qonversion : LifecycleDelegate {
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
+        val config = QDependencyInjector.appComponent.qonversionConfig()
 
         val userID = userInfoService.obtainUserID()
 
-        repository.uid = userID
+        config.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -95,7 +96,15 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
+        productCenterManager = factory.createProductCenterManager(
+            repository,
+            observeMode,
+            purchasesCache,
+            launchResultCacheWrapper,
+            userInfoService,
+            identityManager,
+            config
+        )
 
         when (appState) {
             AppState.PendingForeground -> onAppForeground()

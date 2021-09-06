@@ -31,9 +31,7 @@ import retrofit2.Response
 class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
-    private val sdkVersion: String,
-    private val key: String,
-    private val isDebugMode: Boolean,
+    private val config: QonversionConfig,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
@@ -42,10 +40,10 @@ class QonversionRepository internal constructor(
     private var advertisingId: String? = null
     private var installDate: Long = 0
 
-    @Volatile
-    var uid = ""
-        @Synchronized set
-        @Synchronized get
+    private val key = config.key
+    private val isDebugMode = config.isDebugMode
+    private val sdkVersion = config.sdkVersion
+    private val uid get() = config.uid
 
     // Public functions
 

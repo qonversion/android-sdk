@@ -9,4 +9,10 @@ data class QonversionConfig(
     var fatalError: HttpError? = null
         @Synchronized set
         @Synchronized get
+
+    @Volatile
+    var uid = ""
+        @Synchronized set
+        @Synchronized get
+
 }

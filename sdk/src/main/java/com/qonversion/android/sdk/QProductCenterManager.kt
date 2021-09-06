@@ -31,7 +31,8 @@ class QProductCenterManager internal constructor(
     private val purchasesCache: PurchasesCache,
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
-    private val identityManager: QIdentityManager
+    private val identityManager: QIdentityManager,
+    private val config: QonversionConfig
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -181,7 +182,7 @@ class QProductCenterManager internal constructor(
                 if (currentUserID == identityID) {
                     executePermissionsBlock()
                 } else {
-                    repository.uid = identityID
+                    config.uid = identityID
 
                     launch()
                 }
@@ -591,7 +592,7 @@ class QProductCenterManager internal constructor(
             unhandledLogoutAvailable = true
 
             val userID = userInfoService.obtainUserID()
-            repository.uid = userID
+            config.uid = userID
         }
     }
 

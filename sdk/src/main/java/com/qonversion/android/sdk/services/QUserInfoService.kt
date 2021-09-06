@@ -22,7 +22,7 @@ class QUserInfoService @Inject constructor(
             tokenStorage.delete()
         }
 
-        if (resultUserID.isNullOrEmpty()) {
+        if (resultUserID.isNullOrEmpty() || resultUserID == "testUId") {
             resultUserID = generateRandomUserID()
         }
 

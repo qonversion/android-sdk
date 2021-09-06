@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.di.component
 
 import com.qonversion.android.sdk.QIdentityManager
 import com.qonversion.android.sdk.QUserPropertiesManager
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.QAutomationsManager
@@ -21,4 +22,5 @@ interface AppComponent {
     fun identityManager(): QIdentityManager
     fun userInfoService(): QUserInfoService
     fun userPropertiesManager(): QUserPropertiesManager
+    fun qonversionConfig(): QonversionConfig
 }

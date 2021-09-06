@@ -34,9 +34,7 @@ class RepositoryModule {
         return QonversionRepository(
             retrofit.create(Api::class.java),
             environmentProvider,
-            config.sdkVersion,
-            config.key,
-            config.isDebugMode,
+            config,
             logger,
             purchasesCache,
             apiErrorMapper,

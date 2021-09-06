@@ -22,9 +22,10 @@ class QonversionFactory internal constructor(
         purchasesCache: PurchasesCache,
         launchResultCacheWrapper: LaunchResultCacheWrapper,
         userInfoService: QUserInfoService,
-        identityManager: QIdentityManager
+        identityManager: QIdentityManager,
+        config: QonversionConfig
     ): QProductCenterManager {
-        val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
+        val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager, config)
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService
