@@ -15,4 +15,4 @@ data class RestoreRequest(
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "history") val history: List<History>
-): RequestData()
+) : RequestData()

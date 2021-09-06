@@ -18,5 +18,4 @@ class ServicesModule {
     ): QUserInfoService {
         return QUserInfoService(cacheStorage, tokenStorage)
     }
-
 }
