@@ -3,6 +3,9 @@ apply plugin: 'signing'
 
 ext["ossrhUsername"] = project.hasProperty('ossrhUsername') ? project.property('ossrhUsername') : System.getenv('OSSRH_USERNAME')
 ext["ossrhPassword"] = project.hasProperty('ossrhPassword') ? project.property('ossrhPassword') : System.getenv('OSSRH_PASSWORD')
+ext["signing.keyId"] = project.hasProperty('signing.keyId') ? project.property('signing.keyId') : System.getenv('SONATYPE_GPG_ID')
+ext["signing.password"] = project.hasProperty('signing.password') ? project.property('signing.password') : System.getenv('SONATYPE_GPG_PASSWORD')
+ext["signing.secretKeyRingFile"] = project.hasProperty('signing.secretKeyRingFile') ? project.property('signing.secretKeyRingFile') : System.getenv('SONATYPE_GPG_FILE')
 
 afterEvaluate { project ->
     uploadArchives {
