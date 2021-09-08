@@ -20,9 +20,10 @@ jobs:
           echo "signing.keyId=${{ secrets.SONATYPE_GPG_ID }}" >> ~/.gradle/gradle.properties
           echo "signing.password=${{ secrets.SONATYPE_GPG_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.secretKeyRingFile=$HOME/.gradle/key.gpg" >> ~/.gradle/gradle.properties
+          echo "sonatypeStagingProfileId=${{ secrets.SONATYPE_STAGING_PROFILE_ID }}" >> ~/.gradle/gradle.properties
 
       - name: Publish to MavenCentral
-        run: ./gradlew uploadArchives
+        run: ./gradlew publishToSonatype closeSonatypeStagingRepository
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
