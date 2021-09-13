@@ -171,4 +171,4 @@ dependencies {
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 
 }
-apply from: "../maven-release.gradle"
+apply from: "../scripts/maven-release.gradle"

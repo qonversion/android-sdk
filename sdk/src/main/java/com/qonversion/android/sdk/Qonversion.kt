@@ -86,10 +86,11 @@ object Qonversion : LifecycleDelegate {
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
+        val config = QDependencyInjector.appComponent.qonversionConfig()
 
         val userID = userInfoService.obtainUserID()
 
-        repository.uid = userID
+        config.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -100,11 +101,19 @@ object Qonversion : LifecycleDelegate {
 
         val factory = QonversionFactory(context, logger)
 
-        productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
+        productCenterManager = factory.createProductCenterManager(
+            repository,
+            observeMode,
+            purchasesCache,
+            launchResultCacheWrapper,
+            userInfoService,
+            identityManager,
+            config
+        )
 
         when (appState) {
             AppState.PendingForeground -> onAppForeground()
-            AppState.PendingBackground-> onAppBackground()
+            AppState.PendingBackground -> onAppBackground()
             else -> {}
         }
 
@@ -354,7 +363,8 @@ object Qonversion : LifecycleDelegate {
     )
     @JvmStatic
     fun resetUser() {
-        logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
+        logger.debug(object {}.javaClass.enclosingMethod?.name +
+                " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
     }
 
     /**

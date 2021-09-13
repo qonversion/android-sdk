@@ -2,7 +2,7 @@ package com.qonversion.android.sdk
 
 class QAttributionManager internal constructor(
     private val repository: QonversionRepository
-){
+) {
     private var pendingAttributionSource: AttributionSource? = null
     private var pendingConversionInfo: Map<String, Any>? = null
 

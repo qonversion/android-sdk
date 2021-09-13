@@ -1,0 +1,29 @@
+name: Publish
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    name: Upload archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Prepare Sonatype Gradle properties
+        run: |
+          mkdir -p ~/.gradle
+          echo "${{ secrets.SONATYPE_GPG_FILE }}" > key.gpg.asc
+          gpg -d --passphrase "${{ secrets.SONATYPE_GPG_PASSPHRASE }}" --batch "key.gpg.asc" > "$HOME/.gradle/key.gpg"
+          echo "signing.keyId=${{ secrets.SONATYPE_GPG_ID }}" >> ~/.gradle/gradle.properties
+          echo "signing.password=${{ secrets.SONATYPE_GPG_PASSWORD }}" >> ~/.gradle/gradle.properties
+          echo "signing.secretKeyRingFile=$HOME/.gradle/key.gpg" >> ~/.gradle/gradle.properties
+          echo "sonatypeStagingProfileId=${{ secrets.SONATYPE_STAGING_PROFILE_ID }}" >> ~/.gradle/gradle.properties
+
+      - name: Publish to MavenCentral
+        run: ./gradlew publishToSonatype closeSonatypeStagingRepository
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}

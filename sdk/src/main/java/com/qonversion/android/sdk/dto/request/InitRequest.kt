@@ -15,4 +15,4 @@ data class InitRequest(
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
     @Json(name = "purchases") val purchases: List<Inapp>? = null
-): RequestData()
+) : RequestData()

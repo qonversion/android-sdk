@@ -12,8 +12,8 @@ enum class QProductRenewState(val type: Int) {
             return when (type) {
                 -1 -> NonRenewable
                 1 -> WillRenew
-                2-> Canceled
-                3-> BillingIssue
+                2 -> Canceled
+                3 -> BillingIssue
                 else -> Unknown
             }
         }

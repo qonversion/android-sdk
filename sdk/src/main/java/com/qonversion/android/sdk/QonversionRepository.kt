@@ -29,12 +29,11 @@ import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
 
+@SuppressWarnings("LongParameterList")
 class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
-    private val sdkVersion: String,
-    private val key: String,
-    private val isDebugMode: Boolean,
+    private val config: QonversionConfig,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
@@ -43,10 +42,10 @@ class QonversionRepository internal constructor(
     private var advertisingId: String? = null
     private var installDate: Long = 0
 
-    @Volatile
-    var uid = ""
-        @Synchronized set
-        @Synchronized get
+    private val key = config.key
+    private val isDebugMode = config.isDebugMode
+    private val sdkVersion = config.sdkVersion
+    private val uid get() = config.uid
 
     // Public functions
 
@@ -319,13 +318,29 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
                 } else {
-                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, errorMapper.getErrorFromResponse(it), retries)
+                    handleErrorPurchase(
+                        installDate,
+                        purchase,
+                        experimentInfo,
+                        qProductId,
+                        callback,
+                        errorMapper.getErrorFromResponse(it),
+                        retries
+                    )
                 }
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)
+                    handleErrorPurchase(
+                        installDate,
+                        purchase,
+                        experimentInfo,
+                        qProductId,
+                        callback,
+                        it.toQonversionError(),
+                        retries
+                    )
                 }
             }
         }
@@ -369,9 +384,9 @@ class QonversionRepository internal constructor(
     private fun convertIntroductoryPurchaseDetail(purchase: Purchase): IntroductoryOfferDetails? {
         var introductoryOfferDetails: IntroductoryOfferDetails? = null
 
-        if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable)
-            && purchase.introductoryPeriodUnit != null
-            && purchase.introductoryPeriodUnitsCount != null) {
+        if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &&
+            purchase.introductoryPeriodUnit != null &&
+            purchase.introductoryPeriodUnitsCount != null) {
             introductoryOfferDetails = IntroductoryOfferDetails(
                 purchase.introductoryPrice,
                 purchase.introductoryPeriodUnit,
@@ -506,7 +521,8 @@ class QonversionRepository internal constructor(
         }
     }
 
-    private fun <T> Response<T>.getLogMessage() = if(isSuccessful) "success - $this" else  "failure - ${errorMapper.getErrorFromResponse(this)}"
+    private fun <T> Response<T>.getLogMessage() =
+        if (isSuccessful) "success - $this" else "failure - ${errorMapper.getErrorFromResponse(this)}"
 
     companion object {
         private const val MAX_RETRIES_NUMBER = 3
