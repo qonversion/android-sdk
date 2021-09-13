@@ -24,6 +24,7 @@ import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 
+@SuppressWarnings("LongParameterList")
 class QProductCenterManager internal constructor(
     private val context: Application,
     private val repository: QonversionRepository,
@@ -31,7 +32,8 @@ class QProductCenterManager internal constructor(
     private val purchasesCache: PurchasesCache,
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
-    private val identityManager: QIdentityManager
+    private val identityManager: QIdentityManager,
+    private val config: QonversionConfig
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -181,7 +183,7 @@ class QProductCenterManager internal constructor(
                 if (currentUserID == identityID) {
                     executePermissionsBlock()
                 } else {
-                    repository.uid = identityID
+                    config.uid = identityID
 
                     launch()
                 }
@@ -347,7 +349,10 @@ class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[product.storeID]
         purchasingCallback?.let {
-            logger.release("purchaseProduct() -> Purchase with id = $productId is already in progress. This one call will be ignored")
+            logger.release(
+                "purchaseProduct() -> Purchase with id = " +
+                        "$productId is already in progress. This one call will be ignored"
+            )
             return
         }
 
@@ -571,7 +576,7 @@ class QProductCenterManager internal constructor(
             unhandledLogoutAvailable = true
 
             val userID = userInfoService.obtainUserID()
-            repository.uid = userID
+            config.uid = userID
         }
     }
 

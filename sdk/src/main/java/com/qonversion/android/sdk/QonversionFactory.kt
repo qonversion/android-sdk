@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 
+@SuppressWarnings("LongParameterList")
 class QonversionFactory internal constructor(
     private val context: Application,
     private val logger: Logger
@@ -22,9 +23,19 @@ class QonversionFactory internal constructor(
         purchasesCache: PurchasesCache,
         launchResultCacheWrapper: LaunchResultCacheWrapper,
         userInfoService: QUserInfoService,
-        identityManager: QIdentityManager
+        identityManager: QIdentityManager,
+        config: QonversionConfig
     ): QProductCenterManager {
-        val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)
+        val productCenterManager = QProductCenterManager(
+            context,
+            repository,
+            logger,
+            purchasesCache,
+            launchResultCacheWrapper,
+            userInfoService,
+            identityManager,
+            config
+        )
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService
