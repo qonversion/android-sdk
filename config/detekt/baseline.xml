@@ -70,13 +70,6 @@
     <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s / %s", getStr(R.string.subscribe_for), subscription.prettyPrice, subscription.duration?.name )</ID>
     <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
     <ID>LongMethod:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.Purchase$@Test fun `purchase with oldSkuDetails billing flow params is correct`()</ID>
-    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( context: Activity, id: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
-    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
-    <ID>LongParameterList:QProductCenterManager.kt$QProductCenterManager$( private val context: Application, private val repository: QonversionRepository, private val logger: Logger, private val purchasesCache: PurchasesCache, private val launchResultCache: LaunchResultCacheWrapper, private val userInfoService: QUserInfoService, private val identityManager: QIdentityManager )</ID>
-    <ID>LongParameterList:QonversionFactory.kt$QonversionFactory$( repository: QonversionRepository, isObserveMode: Boolean, purchasesCache: PurchasesCache, launchResultCacheWrapper: LaunchResultCacheWrapper, userInfoService: QUserInfoService, identityManager: QIdentityManager )</ID>
-    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( installDate: Long, purchase: Purchase, experimentInfo: QExperimentInfo?, qProductId: String?, callback: QonversionLaunchCallback, error: QonversionError, retries: Int )</ID>
-    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( installDate: Long, purchase: Purchase, experimentInfo: QExperimentInfo?, qProductId: String?, callback: QonversionLaunchCallback, retries: Int = MAX_RETRIES_NUMBER )</ID>
-    <ID>LongParameterList:QonversionRepository.kt$QonversionRepository$( private val api: Api, private val environmentProvider: EnvironmentProvider, private val sdkVersion: String, private val key: String, private val isDebugMode: Boolean, private val logger: Logger, private val purchasesCache: PurchasesCache, private val errorMapper: ApiErrorMapper, private val preferences: SharedPreferences )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -145,15 +138,10 @@
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
     <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$logger.release("AutomationsDelegate.$functionName() function can not be executed. It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")</ID>
-    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$callback.onError(QonversionError(QonversionErrorCode.ProductUnavailable, "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"))</ID>
-    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$logger.release("purchaseProduct() -&gt; Purchase with id = $productId is already in progress. This one call will be ignored")</ID>
-    <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest$productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger, mockDeviceStorage, mockLaunchResultCacheWrapper, mockUserInfoService, mockIdentityManager)</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
-    <ID>MaxLineLength:Qonversion.kt$Qonversion$logger.debug(object {}.javaClass.enclosingMethod?.name + " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")</ID>
-    <ID>MaxLineLength:Qonversion.kt$Qonversion$productCenterManager = factory.createProductCenterManager(repository, observeMode, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$if</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -&gt; Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
@@ -172,10 +160,6 @@
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$NetworkConnectionFailed : QonversionErrorCode</ID>
-    <ID>MaxLineLength:QonversionFactory.kt$QonversionFactory$val productCenterManager = QProductCenterManager(context, repository, logger, purchasesCache, launchResultCacheWrapper, userInfoService, identityManager)</ID>
-    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, errorMapper.getErrorFromResponse(it), retries)</ID>
-    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$handleErrorPurchase(installDate, purchase, experimentInfo, qProductId, callback, it.toQonversionError(), retries)</ID>
-    <ID>MaxLineLength:QonversionRepository.kt$QonversionRepository$private fun &lt;T&gt; Response&lt;T&gt;.getLogMessage()</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong experimentInfo value", expectedValue.offerings?.main?.experimentInfo, realValue?.offerings?.main?.experimentInfo) }</ID>
@@ -188,19 +172,10 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManager.kt:350</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManager.kt:842</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:142</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:144</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:59</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:152</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:154</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:103</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:357</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionError.kt:31</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionFactory.kt:27</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:322</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:328</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionRepository.kt:509</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:105</ID>
@@ -234,7 +209,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:712</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:83</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.di.component.AppComponent.kt:15</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.di.component.AppComponent.kt:16</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:30</ID>
@@ -347,12 +322,11 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.di.component.AppComponent.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.di.component.AppComponent.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.RepositoryModule.kt:14</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoService.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:4</ID>

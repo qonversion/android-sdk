@@ -844,7 +844,12 @@ class QProductCenterManager internal constructor(
         val offering = productPurchaseModel[sku]?.second
 
         val purchase = converter.convertPurchase(purchaseInfo) ?: run {
-            callback.onError(QonversionError(QonversionErrorCode.ProductUnavailable, "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"))
+            callback.onError(
+                QonversionError(
+                    QonversionErrorCode.ProductUnavailable,
+                    "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"
+                )
+            )
             return
         }
 
