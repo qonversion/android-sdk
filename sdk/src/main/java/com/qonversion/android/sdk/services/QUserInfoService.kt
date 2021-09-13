@@ -27,7 +27,7 @@ class QUserInfoService @Inject constructor(
             resultUserID = generateRandomUserID()
         }
 
-        if (cachedUserID.isNullOrEmpty()) {
+        if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
             preferences.putString(PREFS_USER_ID_KEY, resultUserID)
             preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserID)
         }
