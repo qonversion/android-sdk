@@ -62,6 +62,6 @@ class ApiHeadersProvider @Inject constructor(
         const val SOURCE_VERSION = "Source-Version"
         const val PLATFORM = "Platform"
         const val PLATFORM_VERSION = "Platform-Version"
-        const val UID = "Uid"
+        const val UID = "User-Id"
     }
 }
