@@ -6,7 +6,8 @@ import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
 import com.qonversion.android.sdk.Constants.USER_ID_SEPARATOR
 import com.qonversion.android.sdk.storage.Cache
 import com.qonversion.android.sdk.storage.TokenStorage
-import java.util.*
+import java.util.UUID
+
 import javax.inject.Inject
 
 class QUserInfoService @Inject constructor(
@@ -22,11 +23,11 @@ class QUserInfoService @Inject constructor(
             tokenStorage.delete()
         }
 
-        if (resultUserID.isNullOrEmpty()) {
+        if (resultUserID.isNullOrEmpty() || resultUserID == TEST_UID) {
             resultUserID = generateRandomUserID()
         }
 
-        if (cachedUserID.isNullOrEmpty()) {
+        if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
             preferences.putString(PREFS_USER_ID_KEY, resultUserID)
             preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserID)
         }
@@ -64,5 +65,9 @@ class QUserInfoService @Inject constructor(
         val result = "$USER_ID_PREFIX$USER_ID_SEPARATOR$uuid"
 
         return result
+    }
+
+    companion object {
+        const val TEST_UID = "40egafre6_e_"
     }
 }

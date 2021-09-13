@@ -109,7 +109,7 @@ class QUserInfoServiceTest {
         }
 
         @Test
-        fun `should not generate random UID when UID from token storage is empty`() {
+        fun `should not generate random UID when UID from token storage is not empty`() {
             // given
             val userID = ""
             val token = "token"

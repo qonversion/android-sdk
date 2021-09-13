@@ -38,6 +38,7 @@ class QProductCenterManagerTest {
     private val mockIdentityManager = mockk<QIdentityManager>(relaxed = true)
     private val mockBillingService: QonversionBillingService = mockk()
     private val mockConsumer = mockk<Consumer>(relaxed = true)
+    private val mockConfig = mockk<QonversionConfig>(relaxed = true)
 
     private lateinit var productCenterManager: QProductCenterManager
 
@@ -56,7 +57,16 @@ class QProductCenterManagerTest {
 
         mockInstallDate()
 
-        productCenterManager = QProductCenterManager(mockContext, mockRepository, mockLogger, mockDeviceStorage, mockLaunchResultCacheWrapper, mockUserInfoService, mockIdentityManager)
+        productCenterManager = QProductCenterManager(
+            mockContext,
+            mockRepository,
+            mockLogger,
+            mockDeviceStorage,
+            mockLaunchResultCacheWrapper,
+            mockUserInfoService,
+            mockIdentityManager,
+            mockConfig
+        )
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
         mockLaunchResult()
