@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.converter
 
 import android.util.Pair
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -131,20 +132,10 @@ class GooglePurchaseConverterTest {
 
         // then
         Assert.assertNotNull(result)
+        assertCommonSubsFields(result)
+        // Assert intro and trial period fields of subscription
         assertAll(
             "Converted purchase contains incorrect fields:",
-            { assertEquals(mockToken, result!!.detailsToken, "detailsToken is incorrect") },
-            { assertEquals("Qonversion Subs", result!!.title) },
-            { assertEquals("Weekly", result!!.description) },
-            { assertEquals(weeklySku, result!!.productId) },
-            { assertEquals("subs", result!!.type) },
-            { assertEquals("RUB 439.00", result!!.originalPrice) },
-            { assertEquals(439000000, result!!.originalPriceAmountMicros) },
-            { assertEquals("RUB", result!!.priceCurrencyCode) },
-            { assertEquals("439.00", result!!.price) },
-            { assertEquals(439000000, result!!.priceAmountMicros) },
-            { assertEquals(1, result!!.periodUnit, "periodUnit is incorrect") },
-            { assertEquals(1, result!!.periodUnitsCount, "periodUnitsCount is incorrect") },
             { assertEquals(0, result!!.freeTrialPeriod.length, "freeTrialPeriod should be empty")},
             { assertEquals(true, result!!.introductoryAvailable, "introductoryAvailable should be true") },
             { assertEquals(85000000, result!!.introductoryPriceAmountMicros) },
@@ -152,14 +143,6 @@ class GooglePurchaseConverterTest {
             { assertEquals(1, result!!.introductoryPriceCycles, "introductoryPriceCycles is incorrect") },
             { assertEquals(0, result!!.introductoryPeriodUnit, "introductoryPeriodUnit is incorrect") },
             { assertEquals(null, result!!.introductoryPeriodUnitsCount, "introductoryPeriodUnitsCount should be null")},
-            { assertEquals(mockOrderId, result!!.orderId, "orderId is incorrect") },
-            { assertEquals(mockOrderId, result!!.originalOrderId, "originalOrderId is incorrect") },
-            { assertEquals("com.qonversion.sample", result!!.packageName, "packageName is incorrect") },
-            { assertEquals(1631867965, result!!.purchaseTime) },
-            { assertEquals( 1, result!!.purchaseState, "purchaseState is incorrect") },
-            { assertEquals(mockToken, result!!.purchaseToken, "purchaseToken is incorrect") },
-            { assertEquals(true, result!!.acknowledged, "acknowledged should be true") },
-            { assertEquals(true, result!!.autoRenewing, "autoRenewing should be true") },
             { assertEquals(0, result!!.paymentMode,"paymentMode is incorrect") }
         )
     }
@@ -187,20 +170,10 @@ class GooglePurchaseConverterTest {
 
         // then
         Assert.assertNotNull(result)
+        assertCommonSubsFields(result)
+        // Assert intro and trial period fields of subscription
         assertAll(
             "Converted purchase contains incorrect fields",
-            { assertEquals(mockToken, result!!.detailsToken, "detailsToken token is incorrect") },
-            { assertEquals("Qonversion Subs", result!!.title) },
-            { assertEquals("Weekly", result!!.description) },
-            { assertEquals(weeklySku, result!!.productId) },
-            { assertEquals("subs", result!!.type) },
-            { assertEquals("RUB 439.00", result!!.originalPrice) },
-            { assertEquals(439000000, result!!.originalPriceAmountMicros) },
-            { assertEquals("RUB", result!!.priceCurrencyCode) },
-            { assertEquals("439.00", result!!.price) },
-            { assertEquals(439000000, result!!.priceAmountMicros) },
-            { assertEquals(1, result!!.periodUnit, "periodUnit is incorrect") },
-            { assertEquals(1, result!!.periodUnitsCount, "periodUnitsCount is incorrect") },
             { assertEquals("P9W2D", result!!.freeTrialPeriod, "freeTrialPeriod is incorrect") },
             { assertEquals(true, result!!.introductoryAvailable, "introductoryAvailable should be true") },
             { assertEquals(85000000, result!!.introductoryPriceAmountMicros) },
@@ -208,15 +181,33 @@ class GooglePurchaseConverterTest {
             { assertEquals(0, result!!.introductoryPriceCycles, "introductoryPriceCycles is incorrect") },
             { assertEquals(0, result!!.introductoryPeriodUnit, "introductoryPriceCycles is incorrect") },
             { assertEquals(65, result!!.introductoryPeriodUnitsCount) },
-            { assertEquals(mockOrderId, result!!.orderId, "orderId is incorrect") },
-            { assertEquals(mockOrderId, result!!.originalOrderId, "originalOrderId is incorrect") },
-            { assertEquals("com.qonversion.sample", result!!.packageName) },
-            { assertEquals(1631867965, result!!.purchaseTime) },
-            { assertEquals( 1, result!!.purchaseState, "purchaseState is incorrect") },
-            { assertEquals(mockToken, result!!.purchaseToken, "purchaseToken is incorrect") },
-            { assertEquals(true, result!!.acknowledged, "acknowledged should be true") },
-            { assertEquals(true, result!!.autoRenewing, "autoRenewing should be true") },
             { assertEquals(2, result!!.paymentMode, "paymentMode is incorrect") }
+        )
+    }
+
+    private fun assertCommonSubsFields(purchase: Purchase?) {
+        assertAll(
+            "Converted purchase contains incorrect fields",
+            { assertEquals(mockToken, purchase!!.detailsToken, "detailsToken token is incorrect") },
+            { assertEquals("Qonversion Subs", purchase!!.title) },
+            { assertEquals("Weekly", purchase!!.description) },
+            { assertEquals(weeklySku, purchase!!.productId) },
+            { assertEquals("subs", purchase!!.type) },
+            { assertEquals("RUB 439.00", purchase!!.originalPrice) },
+            { assertEquals(439000000, purchase!!.originalPriceAmountMicros) },
+            { assertEquals("RUB", purchase!!.priceCurrencyCode) },
+            { assertEquals("439.00", purchase!!.price) },
+            { assertEquals(439000000, purchase!!.priceAmountMicros) },
+            { assertEquals(1, purchase!!.periodUnit, "periodUnit is incorrect") },
+            { assertEquals(1, purchase!!.periodUnitsCount, "periodUnitsCount is incorrect") },
+            { assertEquals(mockOrderId, purchase!!.orderId, "orderId is incorrect") },
+            { assertEquals(mockOrderId, purchase!!.originalOrderId, "originalOrderId is incorrect") },
+            { assertEquals("com.qonversion.sample", purchase!!.packageName) },
+            { assertEquals(1631867965, purchase!!.purchaseTime) },
+            { assertEquals( 1, purchase!!.purchaseState, "purchaseState is incorrect") },
+            { assertEquals(mockToken, purchase!!.purchaseToken, "purchaseToken is incorrect") },
+            { assertEquals(true, purchase!!.acknowledged, "acknowledged should be true") },
+            { assertEquals(true, purchase!!.autoRenewing, "autoRenewing should be true") }
         )
     }
 
