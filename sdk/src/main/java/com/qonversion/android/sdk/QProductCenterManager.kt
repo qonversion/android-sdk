@@ -8,7 +8,10 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.ad.LoadStoreProductsState.*
-import com.qonversion.android.sdk.billing.*
+import com.qonversion.android.sdk.billing.BillingError
+import com.qonversion.android.sdk.billing.BillingService
+import com.qonversion.android.sdk.billing.QonversionBillingService
+import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -529,12 +532,14 @@ class QProductCenterManager internal constructor(
                     return@queryPurchases
                 }
 
+                val completedPurchases =
+                    purchases.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
                 billingService.getSkuDetailsFromPurchases(
-                    purchases,
+                    completedPurchases,
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
-                        val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, purchases)
+                        val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, completedPurchases)
 
                         val initRequestData = InitRequestData(installDate, advertisingID, purchasesInfo, callback)
                         processInit(initRequestData)
@@ -829,7 +834,7 @@ class QProductCenterManager internal constructor(
             val purchaseCallback = purchasingCallbacks[purchase.sku]
             purchasingCallbacks.remove(purchase.sku)
 
-            if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+            if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
                 purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
                 return@forEach
             }
