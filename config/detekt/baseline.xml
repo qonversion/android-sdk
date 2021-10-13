@@ -298,6 +298,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:10</ID>
@@ -415,6 +416,7 @@
     <ID>WildcardImport:NetworkModule.kt$import com.qonversion.android.sdk.dto.*</ID>
     <ID>WildcardImport:QAutomationsManager.kt$import com.qonversion.android.sdk.*</ID>
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.ad.LoadStoreProductsState.*</ID>
+    <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.billing.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:QonversionRepository.kt$import com.qonversion.android.sdk.dto.request.*</ID>
     <ID>WildcardImport:RepositoryModule.kt$import com.qonversion.android.sdk.storage.*</ID>
