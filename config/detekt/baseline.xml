@@ -55,10 +55,10 @@
     <ID>FinalNewline:com.qonversion.android.sdk.storage.TokenExtractorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.storage.TokenStorageTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.storage.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.validator.util.kt:1</ID>
     <ID>ForbiddenComment:AttributionRequestTest.kt$AttributionRequestTest$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ForbiddenComment:EnvironmentRequestTest.kt$EnvironmentRequestTest$// TODO: Update test for new Environment format</ID>
-    <ID>ForbiddenComment:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$// TODO: Update test for new Purchase fields</ID>
     <ID>ForbiddenComment:InAppRequestTest.kt$InAppRequestTest$// TODO: Update test for new InApp format</ID>
     <ID>ForbiddenComment:InitRequestTest.kt$InitRequestTest$// TODO: Update test for new InitRequest format</ID>
     <ID>ForbiddenComment:PropertiesRequestTest.kt$PropertiesRequestTest$// TODO: Update test for new PropertiesRequest format</ID>
@@ -159,7 +159,6 @@
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
-    <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$NetworkConnectionFailed : QonversionErrorCode</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong experimentInfo value", expectedValue.offerings?.main?.experimentInfo, realValue?.offerings?.main?.experimentInfo) }</ID>
@@ -175,7 +174,6 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:154</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionError.kt:31</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:105</ID>
@@ -266,6 +264,7 @@
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.validator.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.app.utils.kt</ID>
+    <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:281</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:18</ID>
@@ -299,7 +298,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:10</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:10</ID>
@@ -322,6 +320,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.component.AppComponent.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
@@ -341,16 +341,25 @@
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt:43</ID>
+    <ID>SpacingAroundComma:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:146</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:106</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:122</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:137</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:274</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:139</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:145</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:297</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:303</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:13</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:19</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:470</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:207</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:308</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:212</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:243</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:262</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.utils.kt:64</ID>
+    <ID>StringTemplate:com.qonversion.android.sdk.utils.kt:49</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
@@ -376,8 +385,6 @@
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
-    <ID>UnusedPrivateMember:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$val converted = GooglePurchaseConverter(SkuDetailsTokenExtractor()) .convertPurchase( Pair( SkuDetails(CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
-    <ID>UnusedPrivateMember:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$val converted = GooglePurchaseConverter(SkuDetailsTokenExtractor()) .convertPurchase( Pair( SkuDetails(CORRECT_SKU_DETAILS_SUB_JSON), Purchase(CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON), Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:QProductCenterManagerTest.kt$QProductCenterManagerTest$private val skuTypeSubs = BillingClient.SkuType.SUBS</ID>
@@ -408,7 +415,6 @@
     <ID>WildcardImport:NetworkModule.kt$import com.qonversion.android.sdk.dto.*</ID>
     <ID>WildcardImport:QAutomationsManager.kt$import com.qonversion.android.sdk.*</ID>
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.ad.LoadStoreProductsState.*</ID>
-    <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.billing.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:QonversionRepository.kt$import com.qonversion.android.sdk.dto.request.*</ID>
     <ID>WildcardImport:RepositoryModule.kt$import com.qonversion.android.sdk.storage.*</ID>
