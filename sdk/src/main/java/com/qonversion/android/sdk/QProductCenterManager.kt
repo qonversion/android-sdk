@@ -834,9 +834,15 @@ class QProductCenterManager internal constructor(
             val purchaseCallback = purchasingCallbacks[purchase.sku]
             purchasingCallbacks.remove(purchase.sku)
 
-            if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
-                purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
-                return@forEach
+            when (purchase.purchaseState) {
+                Purchase.PurchaseState.PENDING -> {
+                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
+                    return@forEach
+                }
+                Purchase.PurchaseState.UNSPECIFIED_STATE -> {
+                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchaseUnspecified))
+                    return@forEach
+                }
             }
 
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
