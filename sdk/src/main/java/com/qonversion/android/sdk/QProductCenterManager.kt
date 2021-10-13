@@ -511,12 +511,14 @@ class QProductCenterManager internal constructor(
                     return@queryPurchases
                 }
 
+                val completedPurchases =
+                    purchases.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
                 billingService.getSkuDetailsFromPurchases(
-                    purchases,
+                    completedPurchases,
                     onCompleted = { skuDetails ->
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
-                        val purchasesInfo = converter.convertPurchases(formattedSkuDetails, purchases)
+                        val purchasesInfo = converter.convertPurchases(formattedSkuDetails, completedPurchases)
                         val initRequestData = InitRequestData(installDate, advertisingID, purchasesInfo, callback)
                         processInit(initRequestData)
                     },
@@ -810,9 +812,15 @@ class QProductCenterManager internal constructor(
             val purchaseCallback = purchasingCallbacks[purchase.sku]
             purchasingCallbacks.remove(purchase.sku)
 
-            if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
-                purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
-                return@forEach
+            when (purchase.purchaseState) {
+                Purchase.PurchaseState.PENDING -> {
+                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
+                    return@forEach
+                }
+                Purchase.PurchaseState.UNSPECIFIED_STATE -> {
+                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchaseUnspecified))
+                    return@forEach
+                }
             }
 
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach

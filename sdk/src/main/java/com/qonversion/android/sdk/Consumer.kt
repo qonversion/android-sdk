@@ -22,7 +22,7 @@ class Consumer internal constructor(
         purchases.forEach { purchase ->
             val skuDetail = skuDetails[purchase.sku]
             skuDetail?.let { sku ->
-                if (purchase.purchaseState != Purchase.PurchaseState.PENDING) {
+                if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                     consume(sku.type, purchase.purchaseToken, purchase.isAcknowledged)
                 }
             }
