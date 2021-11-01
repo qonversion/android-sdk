@@ -1,0 +1,33 @@
+name: Release pull requests
+on:
+  push:
+    tags:
+    - oldprerelease/*
+
+jobs:
+    prerelease:
+      runs-on: macos-latest
+
+      steps:
+        - uses: actions/checkout@v2
+          name: Checkout all
+          with:
+            fetch-depth: 0
+          
+        - uses: olegtarasov/get-tag@v2.1
+          id: tagName
+          with:
+            tagRegex: 'oldprerelease\/(\d*\.\d*\.\d*)'
+            
+        - name: Bump version
+          run: |
+            fastlane bump version:${{ steps.tagName.outputs.tag }}
+
+        - name: Create pull request
+          uses: peter-evans/create-pull-request@v3
+          with:
+            title: Release ${{ steps.tagName.outputs.tag }}
+            body: Release PR
+            labels: autocreated
+            branch: release/${{ steps.tagName.outputs.tag }}
+            base: release/2.x.x
