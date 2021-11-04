@@ -1,5 +1,9 @@
 package com.qonversion.android.app;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
+
 import androidx.multidex.MultiDexApplication;
 
 import com.appsflyer.AppsFlyerConversionListener;
@@ -16,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public class App extends MultiDexApplication {
+    public static final String CHANNEL_ID = "qonversion";
 
     @Override
     public void onCreate() {
@@ -65,5 +70,20 @@ public class App extends MultiDexApplication {
         AppsFlyerLib.getInstance().init("afDevKey", conversionListener, this);
         AppsFlyerLib.getInstance().setDebugLog(true);
         AppsFlyerLib.getInstance().startTracking(this);
+        
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    getString(R.string.channel_name),
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
     }
 }
