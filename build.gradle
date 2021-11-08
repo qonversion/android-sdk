@@ -82,7 +82,7 @@ tasks.register("detektGenerateBaseline", io.gitlab.arturbosch.detekt.DetektCreat
     baseline.set(baselineFile)
     config.setFrom(configFile)
     include(kotlinFiles)
-    exclude(resourceFiles, buildFiles)
+    exclude(resourceFiles, buildFiles, appFiles)
 }
 
 apply from: "${rootDir}/scripts/publish-root.gradle"

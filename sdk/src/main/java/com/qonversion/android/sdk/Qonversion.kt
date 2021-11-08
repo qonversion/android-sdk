@@ -448,7 +448,27 @@ object Qonversion : LifecycleDelegate {
     /**
      * Returns true when a push notification was received from Qonversion.
      * Otherwise returns false, so you need to handle a notification yourself
+     * @param messageData RemoteMessage payload data
+     * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
      */
+    @JvmStatic
+    fun handleNotification(messageData: Map<String, String>) =
+        automationsManager?.handlePushIfPossible(messageData) ?: run {
+            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return@run false
+        }
+
+    /**
+     * Returns true when a push notification was received from Qonversion.
+     * Otherwise returns false, so you need to handle a notification yourself
+     * @param remoteMessage A remote Firebase Message
+     * @see [RemoteMessage](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage)
+     */
+    @Deprecated(
+        message = "Will be removed in a future major release.",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith("Qonversion.handleNotification(messageData)")
+    )
     @JvmStatic
     fun handleNotification(remoteMessage: RemoteMessage) =
         automationsManager?.handlePushIfPossible(remoteMessage) ?: run {

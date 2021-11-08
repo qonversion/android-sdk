@@ -37,7 +37,11 @@ class QAutomationsManager @Inject constructor(
     }
 
     fun handlePushIfPossible(message: RemoteMessage): Boolean {
-        val pickScreen = message.data[PICK_SCREEN]
+        return handlePushIfPossible(message.data)
+    }
+
+    fun handlePushIfPossible(messageData: Map<String, String>): Boolean {
+        val pickScreen = messageData[PICK_SCREEN]
 
         return pickScreen.toBoolean().also {
             if (it) {
@@ -45,10 +49,10 @@ class QAutomationsManager @Inject constructor(
 
                 var shouldShowScreen = true
 
-                val event = eventMapper.getEventFromRemoteMessage(message)
+                val event = eventMapper.getEventFromRemoteMessage(messageData)
                 if (event != null) {
                     shouldShowScreen =
-                        automationsDelegate?.get()?.shouldHandleEvent(event, message.data) ?: true
+                        automationsDelegate?.get()?.shouldHandleEvent(event, messageData) ?: true
                 }
 
                 if (shouldShowScreen) {
@@ -133,7 +137,8 @@ class QAutomationsManager @Inject constructor(
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {
-        logger.release("AutomationsDelegate.$functionName() function can not be executed. It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
+        logger.release("AutomationsDelegate.$functionName() function can not be executed. " +
+                "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
     }
 
     private fun loadScreenIfPossible() {
