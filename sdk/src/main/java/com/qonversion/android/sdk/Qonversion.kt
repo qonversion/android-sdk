@@ -446,23 +446,22 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
-     * Returns true when a push notification was received from Qonversion.
-     * Otherwise returns false, so you need to handle a notification yourself
      * @param messageData RemoteMessage payload data
      * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
+     * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
      */
     @JvmStatic
-    fun handleNotification(messageData: Map<String, String>) =
-        automationsManager?.handlePushIfPossible(messageData) ?: run {
+    fun handleNotification(messageData: Map<String, String>): Boolean {
+        return automationsManager?.handlePushIfPossible(messageData) ?: run {
             logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
             return@run false
         }
+    }
 
     /**
-     * Returns true when a push notification was received from Qonversion.
-     * Otherwise returns false, so you need to handle a notification yourself
      * @param remoteMessage A remote Firebase Message
      * @see [RemoteMessage](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage)
+     * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
      */
     @Deprecated(
         message = "Will be removed in a future major release.",
@@ -470,11 +469,9 @@ object Qonversion : LifecycleDelegate {
         replaceWith = ReplaceWith("Qonversion.handleNotification(messageData)")
     )
     @JvmStatic
-    fun handleNotification(remoteMessage: RemoteMessage) =
-        automationsManager?.handlePushIfPossible(remoteMessage.data) ?: run {
-            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return@run false
-        }
+    fun handleNotification(remoteMessage: RemoteMessage): Boolean {
+        return handleNotification(remoteMessage.data)
+    }
 
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
