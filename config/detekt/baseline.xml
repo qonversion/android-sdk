@@ -240,18 +240,17 @@
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.validator.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
-    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:281</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:280</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:18</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.TokenValidatorTest.kt:20</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QAttributionManagerTest.kt:135</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:360</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:359</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.requests.PurchaseRequestTest.kt:24</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:15</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
@@ -277,9 +276,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEvent.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:6</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManager.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:10</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:16</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:15</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.mvp.ScreenActivity.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingService.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:5</ID>
@@ -310,7 +308,7 @@
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:106</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:122</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.ConsumerTest.kt:137</ID>
-    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:274</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:273</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:139</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:145</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:297</ID>
@@ -373,7 +371,6 @@
     <ID>WildcardImport:Api.kt$import retrofit2.http.*</ID>
     <ID>WildcardImport:AppComponent.kt$import com.qonversion.android.sdk.di.module.*</ID>
     <ID>WildcardImport:NetworkModule.kt$import com.qonversion.android.sdk.dto.*</ID>
-    <ID>WildcardImport:QAutomationsManager.kt$import com.qonversion.android.sdk.*</ID>
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.ad.LoadStoreProductsState.*</ID>
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.billing.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>

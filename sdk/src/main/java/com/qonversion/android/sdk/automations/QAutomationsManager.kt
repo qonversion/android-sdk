@@ -5,9 +5,13 @@ import android.app.Application
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
-import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.QonversionRepository
+import com.qonversion.android.sdk.QonversionShowScreenCallback
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
