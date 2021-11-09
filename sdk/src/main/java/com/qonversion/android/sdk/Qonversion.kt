@@ -471,7 +471,7 @@ object Qonversion : LifecycleDelegate {
     )
     @JvmStatic
     fun handleNotification(remoteMessage: RemoteMessage) =
-        automationsManager?.handlePushIfPossible(remoteMessage) ?: run {
+        automationsManager?.handlePushIfPossible(remoteMessage.data) ?: run {
             logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
             return@run false
         }

@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
@@ -34,10 +33,6 @@ class QAutomationsManager @Inject constructor(
         pendingToken?.let {
             sendPushToken(it)
         }
-    }
-
-    fun handlePushIfPossible(message: RemoteMessage): Boolean {
-        return handlePushIfPossible(message.data)
     }
 
     fun handlePushIfPossible(messageData: Map<String, String>): Boolean {
