@@ -1,17 +1,16 @@
 package com.qonversion.android.sdk.automations
 
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.billing.getCurrentTimeInMillis
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.logger.Logger
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
+import java.util.Date
 
 class AutomationsEventMapper(private val logger: Logger) {
-    fun getEventFromRemoteMessage(message: RemoteMessage): AutomationsEvent? {
+    fun getEventFromRemoteMessage(messageData: Map<String, String>): AutomationsEvent? {
         try {
-            val eventJsonStr = message.data[EVENT] ?: return null
+            val eventJsonStr = messageData[EVENT] ?: return null
 
             val eventJsonObj = JSONObject(eventJsonStr)
             val eventName = eventJsonObj.getString(EVENT_NAME)

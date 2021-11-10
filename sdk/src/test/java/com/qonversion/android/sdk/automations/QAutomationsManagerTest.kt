@@ -12,7 +12,6 @@ import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
-import com.qonversion.android.sdk.dto.QLaunchResult
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -76,7 +75,7 @@ class QAutomationsManagerTest {
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -99,7 +98,7 @@ class QAutomationsManagerTest {
             } returns null
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -119,7 +118,7 @@ class QAutomationsManagerTest {
             automationsManager.automationsDelegate = null
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -146,7 +145,7 @@ class QAutomationsManagerTest {
             })
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -164,7 +163,7 @@ class QAutomationsManagerTest {
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -186,7 +185,7 @@ class QAutomationsManagerTest {
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isTrue()
@@ -203,7 +202,7 @@ class QAutomationsManagerTest {
             val remoteMessage = mockRemoteMessage(false)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage)
+            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
 
             // then
             assertThat(result).isFalse()

@@ -3,7 +3,7 @@
 buildscript {
     ext {
         release = [
-                versionName: "3.1.3",
+                versionName: "3.2.0",
                 versionCode: 1
         ]
     }
@@ -82,7 +82,7 @@ tasks.register("detektGenerateBaseline", io.gitlab.arturbosch.detekt.DetektCreat
     baseline.set(baselineFile)
     config.setFrom(configFile)
     include(kotlinFiles)
-    exclude(resourceFiles, buildFiles)
+    exclude(resourceFiles, buildFiles, appFiles)
 }
 
 apply from: "${rootDir}/scripts/publish-root.gradle"

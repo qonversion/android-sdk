@@ -80,7 +80,7 @@ class HomeFragment : Fragment() {
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
             requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
-        if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage)) {
+        if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }
 

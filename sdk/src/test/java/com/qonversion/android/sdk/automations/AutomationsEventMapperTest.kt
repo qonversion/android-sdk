@@ -34,7 +34,7 @@ class AutomationsEventMapperTest {
             val mockMessage = mockRemoteMessage(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
             // then
             Assert.assertEquals(null, result)
@@ -47,7 +47,7 @@ class AutomationsEventMapperTest {
             val mockMessage = mockRemoteMessage(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
             // then
             Assert.assertEquals(null, result)
@@ -60,7 +60,7 @@ class AutomationsEventMapperTest {
             val mockMessage = mockRemoteMessage(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
             // then
             assertThat(result).isNull()
@@ -74,7 +74,7 @@ class AutomationsEventMapperTest {
             mockCalendar(timeInSec)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
             // then
             assertThat(result).isNotNull
@@ -88,7 +88,7 @@ class AutomationsEventMapperTest {
             val mockMessage = mockRemoteMessage(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
             // then
             assertThat(result).isNotNull
@@ -120,7 +120,7 @@ class AutomationsEventMapperTest {
                 val mockMessage = mockRemoteMessage(json.key)
 
                 // when
-                val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage)
+                val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
 
                 // then
                 Assert.assertEquals(json.value, result?.type)
