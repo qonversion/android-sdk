@@ -53,8 +53,8 @@ class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun providePropertiesStorage(): UserPropertiesStorage {
-        return UserPropertiesStorage()
+    fun providePropertiesStorage(sharedPreferencesCache: SharedPreferencesCache): UserPropertiesStorage {
+        return UserPropertiesStorage(sharedPreferencesCache)
     }
 
     @ApplicationScope

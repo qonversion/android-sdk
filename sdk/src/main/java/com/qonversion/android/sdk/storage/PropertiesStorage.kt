@@ -6,4 +6,8 @@ interface PropertiesStorage {
     fun clear(properties: Map<String, String>)
 
     fun getProperties(): Map<String, String>
+
+    fun getHandledProperties(): Map<String, String>
+
+    fun saveHandledProperties(properties: Map<String, String>)
 }
