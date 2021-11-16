@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
-import android.content.SharedPreferences
 import android.os.Handler
 import android.os.HandlerThread
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds

@@ -35,7 +35,7 @@ class UserPropertiesStorage @Inject internal constructor(
             val jsonObject = JSONObject(jsonString)
 
             jsonObject.toMap() as Map<String, String>
-        } catch (e: Exception) {
+        } catch (commonException: Exception) {
             mapOf()
         }
     }

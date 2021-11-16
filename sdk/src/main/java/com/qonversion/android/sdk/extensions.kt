@@ -27,7 +27,7 @@ class CallBackKt<T> : Callback<T> {
     }
 }
 @Throws(JSONException::class)
-fun JSONObject.toMap(): Map<String, Any>  {
+fun JSONObject.toMap(): Map<String, Any> {
     val map: MutableMap<String, Any> = HashMap()
     val keys: Iterator<String> = keys()
     while (keys.hasNext()) {

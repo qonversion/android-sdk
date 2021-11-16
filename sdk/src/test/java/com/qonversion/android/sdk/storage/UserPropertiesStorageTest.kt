@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.storage
 
+import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -8,11 +9,12 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class UserPropertiesStorageTest {
+    private val mockSharedPreferencesCache = mockk<SharedPreferencesCache>(relaxed = true)
     private lateinit var userPropertiesStorage: UserPropertiesStorage
 
     @Before
     fun setUp() {
-        userPropertiesStorage = UserPropertiesStorage()
+        userPropertiesStorage = UserPropertiesStorage(mockSharedPreferencesCache)
     }
 
     @Test
