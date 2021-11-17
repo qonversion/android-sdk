@@ -120,7 +120,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
     // Billing
-    implementation billing.billingClient
+    api billing.billingClient
 
     // Network
     implementation network.core
