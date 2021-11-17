@@ -1,6 +1,8 @@
 package com.qonversion.android.sdk.di.component
 
 import com.qonversion.android.sdk.QIdentityManager
+
+import com.qonversion.android.sdk.QHandledPurchasesCache
 import com.qonversion.android.sdk.QUserPropertiesManager
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
@@ -17,6 +19,7 @@ import dagger.Component
 interface AppComponent {
     fun repository(): QonversionRepository
     fun purchasesCache(): PurchasesCache
+    fun handledPurchasesCache(): QHandledPurchasesCache
     fun launchResultCacheWrapper(): LaunchResultCacheWrapper
     fun automationsManager(): QAutomationsManager
     fun identityManager(): QIdentityManager

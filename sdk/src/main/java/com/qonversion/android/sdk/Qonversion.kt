@@ -78,6 +78,7 @@ object Qonversion : LifecycleDelegate {
 
         val repository = QDependencyInjector.appComponent.repository()
         val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
+        val handledPurchasesCache = QDependencyInjector.appComponent.handledPurchasesCache()
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
@@ -100,6 +101,7 @@ object Qonversion : LifecycleDelegate {
             repository,
             observeMode,
             purchasesCache,
+            handledPurchasesCache,
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
