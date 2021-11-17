@@ -3,7 +3,6 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import android.os.HandlerThread
-import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage

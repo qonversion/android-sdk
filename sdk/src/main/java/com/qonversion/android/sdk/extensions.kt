@@ -28,7 +28,7 @@ class CallBackKt<T> : Callback<T> {
 }
 
 @Throws(JSONException::class)
-fun JSONObject.toMap(): Map<String, Any>  {
+fun JSONObject.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     keys().forEach { key ->
         val value = get(key).parseJsonValue()
