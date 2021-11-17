@@ -38,7 +38,10 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     fun onAppForeground() {
-        sendPropertiesWithDelay(retryDelay)
+        val properties = propertiesStorage.getProperties()
+        if (properties.isNotEmpty()) {
+            sendPropertiesWithDelay(retryDelay)
+        }
     }
 
     fun sendFacebookAttribution() {
@@ -60,12 +63,11 @@ class QUserPropertiesManager @Inject internal constructor(
             return
         }
 
-        isSendingScheduled = false
-
         val properties = propertiesStorage.getProperties()
 
         if (properties.isNotEmpty()) {
             isRequestInProgress = true
+            isSendingScheduled = false
 
             repository.sendProperties(properties,
                 onSuccess = {
@@ -110,6 +112,13 @@ class QUserPropertiesManager @Inject internal constructor(
         if (!isSendingScheduled) {
             sendPropertiesWithDelay(retryDelay)
         }
+    }
+
+    internal fun renewHandledProperties() {
+        val storedHandledProperties = propertiesStorage.getHandledProperties()
+
+        handledProperties.clear()
+        handledProperties.putAll(storedHandledProperties)
     }
 
     private fun sendPropertiesWithDelay(delaySec: Int) {

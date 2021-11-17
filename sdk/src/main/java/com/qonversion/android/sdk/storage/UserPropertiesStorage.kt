@@ -1,13 +1,15 @@
 package com.qonversion.android.sdk.storage
 
 import com.qonversion.android.sdk.Constants.HANDLED_PROPERTIES_KEY
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.toMap
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 class UserPropertiesStorage @Inject internal constructor(
-    private val preferences: SharedPreferencesCache
+    private val preferences: SharedPreferencesCache,
+    private val config: QonversionConfig
 ) : PropertiesStorage {
     private val userProperties: MutableMap<String, String> =
         ConcurrentHashMap()
@@ -31,7 +33,7 @@ class UserPropertiesStorage @Inject internal constructor(
     @Suppress("UNCHECKED_CAST")
     override fun getHandledProperties(): Map<String, String> {
         return try {
-            val jsonString: String = preferences.getString(HANDLED_PROPERTIES_KEY, null) ?: ""
+            val jsonString: String = preferences.getString(HANDLED_PROPERTIES_KEY + config.uid, null) ?: ""
             val jsonObject = JSONObject(jsonString)
 
             jsonObject.toMap() as Map<String, String>
@@ -42,6 +44,6 @@ class UserPropertiesStorage @Inject internal constructor(
 
     override fun saveHandledProperties(properties: Map<String, String>) {
         val jsonString: String = JSONObject(properties).toString()
-        preferences.putString(HANDLED_PROPERTIES_KEY, jsonString)
+        preferences.putString(HANDLED_PROPERTIES_KEY + config.uid, jsonString)
     }
 }

@@ -27,7 +27,6 @@ class QUserPropertiesManagerTest {
     private val fieldRetryDelay = "retryDelay"
     private val fieldRetriesCounter = "retriesCounter"
     private val fieldIsSendingScheduled = "isSendingScheduled"
-    private val fieldHandledProperties = "handledProperties"
     private val minDelay = 5
     private val calculatedDelay = 1
     private val properties = mapOf("someKey" to "someValue")
@@ -362,7 +361,7 @@ class QUserPropertiesManagerTest {
 
         every {
             mockPropertiesStorage.getHandledProperties()
-        } returns mapOf()
+        } returns emptyMap()
 
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
         spykPropertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
@@ -427,10 +426,14 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should send properties with delay when onAppForeground called on foreground`() {
+    fun `should send properties with delay when onAppForeground called on foreground if properties is not empty`() {
         // given
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)
+
+        every {
+            mockPropertiesStorage.getProperties()
+        } returns mapOf("someKey" to "someValue")
 
         Qonversion.appState = AppState.Foreground
 
@@ -452,9 +455,16 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should not send properties with delay when onAppForeground called on background`() {
+    fun `should not send properties with delay when onAppForeground called on foreground if properties is empty`() {
         // given
-        Qonversion.appState = AppState.Background
+        val handlerDelay = (minDelay * 1000).toLong()
+        mockPostDelayed(handlerDelay)
+
+        every {
+            mockPropertiesStorage.getProperties()
+        } returns emptyMap()
+
+        Qonversion.appState = AppState.Foreground
 
         // when
         propertiesManager.onAppForeground()
@@ -463,9 +473,39 @@ class QUserPropertiesManagerTest {
         val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
         assertEquals(false, isSendingScheduled)
 
+        verify(exactly = 1) {
+            mockPropertiesStorage.getProperties()
+        }
+
+        verify(exactly = 0) {
+            mockHandler.postDelayed(any(), handlerDelay)
+            mockRepository.sendProperties(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `should not send properties with delay when onAppForeground called on background`() {
+        // given
+        Qonversion.appState = AppState.Background
+
+        every {
+            mockPropertiesStorage.getProperties()
+        } returns mapOf("someKey" to "someValue")
+
+        // when
+        propertiesManager.onAppForeground()
+
+        // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(false, isSendingScheduled)
+
+        verify(exactly = 1) {
+            mockPropertiesStorage.getProperties()
+        }
+
         verify(exactly = 0) {
             mockHandler.postDelayed(any(), any())
-            propertiesManager.forceSendProperties()
+            mockRepository.sendProperties(any(), any(), any())
         }
     }
 
@@ -485,6 +525,22 @@ class QUserPropertiesManagerTest {
         verify (exactly = 1) {
             spykPropertiesManager.forceSendProperties()
         }
+    }
+
+    @Test
+    fun renewHandledProperties() {
+        // given
+        val handledProperties = mapOf("someKey7" to "someValue7")
+
+        every {
+            mockPropertiesStorage.getHandledProperties()
+        } returns handledProperties
+
+        // when
+        propertiesManager.renewHandledProperties()
+
+        // then
+        assert(propertiesManager.handledProperties == handledProperties)
     }
 
     private fun mockPropertiesStorage(properties: Map<String, String>) {

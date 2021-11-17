@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.storage
 
+import com.qonversion.android.sdk.QonversionConfig
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,11 +15,12 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class UserPropertiesStorageTest {
     private val mockSharedPreferencesCache = mockk<SharedPreferencesCache>(relaxed = true)
+    private val mockConfig = mockk<QonversionConfig>(relaxed = true)
     private lateinit var userPropertiesStorage: UserPropertiesStorage
 
     @Before
     fun setUp() {
-        userPropertiesStorage = UserPropertiesStorage(mockSharedPreferencesCache)
+        userPropertiesStorage = UserPropertiesStorage(mockSharedPreferencesCache, mockConfig)
     }
 
     @Test
@@ -52,7 +54,7 @@ class UserPropertiesStorageTest {
         val jsonString: String = JSONObject(properties).toString()
 
         every {
-            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = null)
+            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = any())
         } returns jsonString
 
         // when
@@ -68,7 +70,7 @@ class UserPropertiesStorageTest {
         val jsonString: String = JSONArray().toString()
 
         every {
-            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = null)
+            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = any())
         } returns jsonString
 
         // when

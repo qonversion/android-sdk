@@ -103,7 +103,8 @@ object Qonversion : LifecycleDelegate {
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
-            config
+            config,
+            userPropertiesManager
         )
 
         when (appState) {

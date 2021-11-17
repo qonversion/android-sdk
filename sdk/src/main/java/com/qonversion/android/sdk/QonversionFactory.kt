@@ -24,7 +24,8 @@ class QonversionFactory internal constructor(
         launchResultCacheWrapper: LaunchResultCacheWrapper,
         userInfoService: QUserInfoService,
         identityManager: QIdentityManager,
-        config: QonversionConfig
+        config: QonversionConfig,
+        userPropertiesManager: QUserPropertiesManager?
     ): QProductCenterManager {
         val productCenterManager = QProductCenterManager(
             context,
@@ -34,7 +35,8 @@ class QonversionFactory internal constructor(
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
-            config
+            config,
+            userPropertiesManager
         )
         val billingService = createBillingService(productCenterManager)
 

@@ -36,7 +36,8 @@ class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
-    private val config: QonversionConfig
+    private val config: QonversionConfig,
+    private val userPropertiesManager: QUserPropertiesManager?
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -187,6 +188,9 @@ class QProductCenterManager internal constructor(
                     executePermissionsBlock()
                 } else {
                     config.uid = identityID
+
+                    // renew handled properties when userID is changed
+                    userPropertiesManager?.renewHandledProperties()
 
                     launch()
                 }
@@ -601,6 +605,9 @@ class QProductCenterManager internal constructor(
 
             val userID = userInfoService.obtainUserID()
             config.uid = userID
+
+            // renew handled properties when userID is changed
+            userPropertiesManager?.renewHandledProperties()
         }
     }
 
