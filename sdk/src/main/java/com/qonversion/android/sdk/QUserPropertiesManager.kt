@@ -3,6 +3,7 @@ package com.qonversion.android.sdk
 import android.app.Application
 import android.os.Handler
 import android.os.HandlerThread
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
@@ -20,7 +21,7 @@ class QUserPropertiesManager @Inject internal constructor(
     private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
-    private var handledProperties = mapOf<String, String>()
+    internal val handledProperties by lazy { propertiesStorage.getHandledProperties().toMutableMap() }
 
     companion object {
         private const val LOOPER_THREAD_NAME = "userPropertiesThread"
@@ -31,7 +32,6 @@ class QUserPropertiesManager @Inject internal constructor(
         val thread = HandlerThread(LOOPER_THREAD_NAME)
         thread.start()
         handler = Handler(thread.looper)
-        handledProperties = propertiesStorage.getHandledProperties()
     }
 
     fun onAppBackground() {
@@ -127,12 +127,8 @@ class QUserPropertiesManager @Inject internal constructor(
     }
 
     private fun updateHandledProperties(properties: Map<String, String>) {
-        val mutableHandledProperties = handledProperties.toMutableMap()
-        properties.forEach { (key, value) ->
-            mutableHandledProperties[key] = value
-        }
+        handledProperties.putAll(properties)
 
-        handledProperties = mutableHandledProperties.toMap()
         propertiesStorage.saveHandledProperties(handledProperties)
     }
 }

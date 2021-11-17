@@ -1,6 +1,10 @@
 package com.qonversion.android.sdk.storage
 
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import org.json.JSONArray
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -39,5 +43,67 @@ class UserPropertiesStorageTest {
         userPropertiesStorage.clear(mapOf("any_string_key_1" to "any_string_value_1",
         "any_string_key_2" to "any_string_value_2"))
         Assert.assertTrue(userPropertiesStorage.getProperties().isEmpty())
+    }
+
+    @Test
+    fun `get handled properties when storage contains valid value`() {
+        // given
+        val properties = mapOf("someKey" to "someValue")
+        val jsonString: String = JSONObject(properties).toString()
+
+        every {
+            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = null)
+        } returns jsonString
+
+        // when
+        val handledProperties = userPropertiesStorage.getHandledProperties()
+
+        // then
+        assert(handledProperties == properties)
+    }
+
+    @Test
+    fun `get handled properties when storage contains not map`() {
+        // given
+        val jsonString: String = JSONArray().toString()
+
+        every {
+            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = null)
+        } returns jsonString
+
+        // when
+        val handledProperties = userPropertiesStorage.getHandledProperties()
+
+        // then
+        assert(handledProperties.isEmpty())
+    }
+
+    @Test
+    fun `get handled properties when storage is empty`() {
+        // given
+        every {
+            mockSharedPreferencesCache.getString("com.qonversion.keys.handled_properties_key", defValue = null)
+        } returns null
+
+        // when
+        val handledProperties = userPropertiesStorage.getHandledProperties()
+
+        // then
+        assert(handledProperties.isEmpty())
+    }
+
+    @Test
+    fun saveHandledProperties() {
+        //  given
+        val properties = mapOf("someKey" to "someValue")
+        val jsonString: String = JSONObject(properties).toString()
+
+        // when
+        userPropertiesStorage.saveHandledProperties(properties)
+
+        // then
+        verify {
+            mockSharedPreferencesCache.putString("com.qonversion.keys.handled_properties_key", jsonString)
+        }
     }
 }

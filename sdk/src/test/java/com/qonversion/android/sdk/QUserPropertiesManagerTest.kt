@@ -27,6 +27,7 @@ class QUserPropertiesManagerTest {
     private val fieldRetryDelay = "retryDelay"
     private val fieldRetriesCounter = "retriesCounter"
     private val fieldIsSendingScheduled = "isSendingScheduled"
+    private val fieldHandledProperties = "handledProperties"
     private val minDelay = 5
     private val calculatedDelay = 1
     private val properties = mapOf("someKey" to "someValue")
@@ -262,11 +263,18 @@ class QUserPropertiesManagerTest {
         // given
         mockPropertiesStorage(properties)
 
+        val oldHandledProperties: Map<String, String> = mutableMapOf("someKey1" to "someValue1")
+        val newHandledProperties: Map<String, String> = oldHandledProperties + properties
+
         every {
             mockRepository.sendProperties(properties, captureLambda(), any())
         } answers {
             lambda<() -> Unit>().captured.invoke()
         }
+
+        every {
+            mockPropertiesStorage.getHandledProperties()
+        } returns oldHandledProperties
 
         // when
         propertiesManager.forceSendProperties()
@@ -276,6 +284,8 @@ class QUserPropertiesManagerTest {
             mockPropertiesStorage.getProperties()
             mockRepository.sendProperties(properties, any(), any())
             mockPropertiesStorage.clear(properties)
+            mockPropertiesStorage.getHandledProperties()
+            mockPropertiesStorage.saveHandledProperties(newHandledProperties)
         }
 
         val isRequestInProgress =
@@ -289,7 +299,8 @@ class QUserPropertiesManagerTest {
             { assertEquals("The field isRequestInProgress is not equal false", false, isRequestInProgress) },
             { assertEquals("The field retryDelay is not equal minDelay", minDelay, retryDelay) },
             { assertEquals("The field retriesCounter is not equal 0", 0, retriesCounter) },
-            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
+            { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) },
+            { assertEquals("The new handled properties is not equal expected", propertiesManager.handledProperties, newHandledProperties )}
         )
     }
 
@@ -348,6 +359,10 @@ class QUserPropertiesManagerTest {
         val handlerDelay = (minDelay * 1000).toLong()
         val key = "email"
         val value = "some value"
+
+        every {
+            mockPropertiesStorage.getHandledProperties()
+        } returns mapOf()
 
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
         spykPropertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
