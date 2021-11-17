@@ -553,7 +553,12 @@ class QProductCenterManager internal constructor(
                             }
                         }
 
-                        val initRequestData = InitRequestData(installDate, advertisingID, purchasesInfo, handledPurchasesCallback)
+                        val initRequestData = InitRequestData(
+                            installDate,
+                            advertisingID,
+                            purchasesInfo,
+                            handledPurchasesCallback
+                        )
                         processInit(initRequestData)
                     },
                     onFailed = {
