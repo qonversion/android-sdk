@@ -26,18 +26,12 @@ class CallBackKt<T> : Callback<T> {
         onResponse?.invoke(response)
     }
 }
+
 @Throws(JSONException::class)
-fun JSONObject.toMap(): Map<String, Any> {
-    val map: MutableMap<String, Any> = HashMap()
-    val keys: Iterator<String> = keys()
-    while (keys.hasNext()) {
-        val key = keys.next()
-        var value: Any = get(key)
-        if (value is JSONArray) {
-            value = value.toList()
-        } else if (value is JSONObject) {
-            value = value.toMap()
-        }
+fun JSONObject.toMap(): Map<String, Any>  {
+    val map = mutableMapOf<String, Any>()
+    keys().forEach { key ->
+        val value = get(key).parseJsonValue()
         map[key] = value
     }
 
@@ -46,16 +40,18 @@ fun JSONObject.toMap(): Map<String, Any> {
 
 @Throws(JSONException::class)
 fun JSONArray.toList(): List<Any> {
-    val list: MutableList<Any> = ArrayList()
+    val list = mutableListOf<Any>()
     for (i in 0 until length()) {
-        var value: Any = get(i)
-        if (value is JSONArray) {
-            value = value.toList()
-        } else if (value is JSONObject) {
-            value = value.toMap()
-        }
+        val value = get(i).parseJsonValue()
         list.add(value)
     }
 
     return list.toList()
+}
+
+@Throws(JSONException::class)
+private fun Any.parseJsonValue() = when (this) {
+    is JSONArray -> toList()
+    is JSONObject -> toMap()
+    else -> this
 }

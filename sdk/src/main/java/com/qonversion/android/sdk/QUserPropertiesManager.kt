@@ -103,8 +103,7 @@ class QUserPropertiesManager @Inject internal constructor(
             return
         }
 
-        val handledProperty: String? = handledProperties[key]
-        if (handledProperty != null && value == handledProperty) {
+        if (handledProperties[key] == value) {
             return
         }
 

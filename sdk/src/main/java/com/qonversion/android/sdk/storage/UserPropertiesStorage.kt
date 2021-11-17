@@ -36,7 +36,7 @@ class UserPropertiesStorage @Inject internal constructor(
 
             jsonObject.toMap() as Map<String, String>
         } catch (commonException: Exception) {
-            mapOf()
+            emptyMap()
         }
     }
 
