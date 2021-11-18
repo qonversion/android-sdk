@@ -455,7 +455,7 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should not send properties with delay when onAppForeground called on foreground if properties is empty`() {
+    fun `should not send properties with delay when onAppForeground called on foreground if properties are empty`() {
         // given
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)
@@ -530,6 +530,8 @@ class QUserPropertiesManagerTest {
     @Test
     fun renewHandledProperties() {
         // given
+        val oldProperties = mapOf("someKey" to "someValue")
+        propertiesManager.handledProperties.putAll(oldProperties)
         val handledProperties = mapOf("someKey7" to "someValue7")
 
         every {
