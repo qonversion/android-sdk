@@ -542,16 +542,7 @@ class QProductCenterManager internal constructor(
                             configureSkuDetails(skuDetails)
                         val purchasesInfo = configurePurchaseInfo(formattedSkuDetails, completedPurchases)
 
-                        val handledPurchasesCallback = object : QonversionLaunchCallback {
-                            override fun onSuccess(launchResult: QLaunchResult) {
-                                handledPurchasesCache.saveHandledPurchases(completedPurchases)
-                                callback?.onSuccess(launchResult)
-                            }
-
-                            override fun onError(error: QonversionError) {
-                                callback?.onError(error)
-                            }
-                        }
+                        val handledPurchasesCallback = getWrappedPurchasesCallback(completedPurchases, callback)
 
                         val initRequestData = InitRequestData(
                             installDate,
@@ -570,6 +561,22 @@ class QProductCenterManager internal constructor(
                 val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
                 processInit(initRequestData)
             })
+    }
+
+    private fun getWrappedPurchasesCallback(
+        trackingPurchases: List<Purchase>,
+        outerCallback: QonversionLaunchCallback?
+    ): QonversionLaunchCallback {
+        return object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                handledPurchasesCache.saveHandledPurchases(trackingPurchases)
+                outerCallback?.onSuccess(launchResult)
+            }
+
+            override fun onError(error: QonversionError) {
+                outerCallback?.onError(error)
+            }
+        }
     }
 
     private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
