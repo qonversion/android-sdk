@@ -32,9 +32,9 @@ class QHandledPurchasesCacheTest {
     @Test
     fun `non empty cache`() {
         // given
+        handledPurchasesCache.saveHandledPurchase(firstPurchase)
 
         // when
-        handledPurchasesCache.saveHandledPurchase(firstPurchase)
         val shouldHandle1 = handledPurchasesCache.shouldHandlePurchase(firstPurchase)
         val shouldHandle2 = handledPurchasesCache.shouldHandlePurchase(secondPurchase)
 
@@ -47,9 +47,9 @@ class QHandledPurchasesCacheTest {
     fun `saving multiple purchases`() {
         // given
         val handledPurchases = setOf(firstPurchase, secondPurchase)
+        handledPurchasesCache.saveHandledPurchases(handledPurchases)
 
         // when
-        handledPurchasesCache.saveHandledPurchases(handledPurchases)
         val shouldHandle1 = handledPurchasesCache.shouldHandlePurchase(firstPurchase)
         val shouldHandle2 = handledPurchasesCache.shouldHandlePurchase(secondPurchase)
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
@@ -63,10 +63,10 @@ class QHandledPurchasesCacheTest {
     @Test
     fun `sequential saving test`() {
         // given
-
-        // when
         handledPurchasesCache.saveHandledPurchase(firstPurchase)
         handledPurchasesCache.saveHandledPurchase(secondPurchase)
+
+        // when
         val shouldHandle1 = handledPurchasesCache.shouldHandlePurchase(firstPurchase)
         val shouldHandle2 = handledPurchasesCache.shouldHandlePurchase(secondPurchase)
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
