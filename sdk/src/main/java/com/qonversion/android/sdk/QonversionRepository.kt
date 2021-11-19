@@ -325,6 +325,7 @@ class QonversionRepository internal constructor(
                         purchase,
                         callback,
                         errorMapper.getErrorFromResponse(it),
+                        it.code(),
                         attemptIndex
                     ) { nextAttemptIndex ->
                         purchaseRequest(
@@ -345,6 +346,7 @@ class QonversionRepository internal constructor(
                         purchase,
                         callback,
                         it.toQonversionError(),
+                        null,
                         attemptIndex
                     ) { nextAttemptIndex ->
                         purchaseRequest(
@@ -365,10 +367,13 @@ class QonversionRepository internal constructor(
         purchase: Purchase,
         callback: QonversionLaunchCallback,
         error: QonversionError,
+        errorCode: Int?,
         attemptIndex: Int,
         retry: (attemptIndex: Int) -> Unit
     ) {
-        if (attemptIndex < MAX_RETRIES_COUNT) {
+        // Retrying only errors caused by client network connection problems or server side problems
+        if (attemptIndex < MAX_RETRIES_COUNT &&
+            (errorCode == null || (errorCode >= 500 && errorCode <= 599))) {
             val nextAttemptIndex = attemptIndex + 1
             // For the first error retry instantly.
             if (attemptIndex == 0) {
