@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
+import android.os.Handler
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
@@ -8,6 +9,7 @@ import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData
@@ -27,6 +29,7 @@ import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
+import java.lang.RuntimeException
 
 @SuppressWarnings("LongParameterList")
 class QonversionRepository internal constructor(
@@ -36,7 +39,8 @@ class QonversionRepository internal constructor(
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
+    private val delayCalculator: IncrementalDelayCalculator
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -297,7 +301,7 @@ class QonversionRepository internal constructor(
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
         callback: QonversionLaunchCallback,
-        retries: Int = MAX_RETRIES_NUMBER
+        attemptIndex: Int = 0
     ) {
         val purchaseRequest = PurchaseRequest(
             installDate,
@@ -317,45 +321,69 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
                 } else {
-                    handleErrorPurchase(
-                        installDate,
+                    handlePurchaseError(
                         purchase,
-                        experimentInfo,
-                        qProductId,
                         callback,
                         errorMapper.getErrorFromResponse(it),
-                        retries
-                    )
+                        attemptIndex
+                    ) { nextAttemptIndex ->
+                        purchaseRequest(
+                            installDate,
+                            purchase,
+                            experimentInfo,
+                            qProductId,
+                            callback,
+                            nextAttemptIndex
+                        )
+                    }
                 }
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    handleErrorPurchase(
-                        installDate,
+                    handlePurchaseError(
                         purchase,
-                        experimentInfo,
-                        qProductId,
                         callback,
                         it.toQonversionError(),
-                        retries
-                    )
+                        attemptIndex
+                    ) { nextAttemptIndex ->
+                        purchaseRequest(
+                            installDate,
+                            purchase,
+                            experimentInfo,
+                            qProductId,
+                            callback,
+                            nextAttemptIndex
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun handleErrorPurchase(
-        installDate: Long,
+    private fun handlePurchaseError(
         purchase: Purchase,
-        experimentInfo: QExperimentInfo?,
-        qProductId: String?,
         callback: QonversionLaunchCallback,
         error: QonversionError,
-        retries: Int
+        attemptIndex: Int,
+        retry: (attemptIndex: Int) -> Unit
     ) {
-        if (retries > 0) {
-            purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback, retries - 1)
+        if (attemptIndex < MAX_RETRIES_COUNT) {
+            val nextAttemptIndex = attemptIndex + 1
+            // For the first error retry instantly.
+            if (attemptIndex == 0) {
+                retry(nextAttemptIndex)
+            } else {
+                try {
+                    // For the rest - add delay (subtracting 1 from delay index, because first one was instant)
+                    val delay = delayCalculator.countDelay(0, attemptIndex - 1)
+                    Handler().postDelayed({
+                        retry(nextAttemptIndex)
+                    }, delay.toLong().secondsToMilliSeconds())
+                } catch (exception: RuntimeException) {
+                    retry(nextAttemptIndex)
+                }
+            }
         } else {
             callback.onError(error)
             purchasesCache.savePurchase(purchase)
@@ -385,7 +413,8 @@ class QonversionRepository internal constructor(
 
         if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &&
             purchase.introductoryPeriodUnit != null &&
-            purchase.introductoryPeriodUnitsCount != null) {
+            purchase.introductoryPeriodUnitsCount != null
+        ) {
             introductoryOfferDetails = IntroductoryOfferDetails(
                 purchase.introductoryPrice,
                 purchase.introductoryPeriodUnit,
@@ -518,6 +547,6 @@ class QonversionRepository internal constructor(
         if (isSuccessful) "success - $this" else "failure - ${errorMapper.getErrorFromResponse(this)}"
 
     companion object {
-        private const val MAX_RETRIES_NUMBER = 3
+        private const val MAX_RETRIES_COUNT = 3
     }
 }
