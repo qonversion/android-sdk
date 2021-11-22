@@ -30,6 +30,7 @@ class QProductCenterManager internal constructor(
     private val repository: QonversionRepository,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
+    private val handledPurchasesCache: QHandledPurchasesCache,
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
@@ -519,7 +520,15 @@ class QProductCenterManager internal constructor(
                         val formattedSkuDetails: Map<String, SkuDetails> =
                             configureSkuDetails(skuDetails)
                         val purchasesInfo = converter.convertPurchases(formattedSkuDetails, completedPurchases)
-                        val initRequestData = InitRequestData(installDate, advertisingID, purchasesInfo, callback)
+
+                        val handledPurchasesCallback = getWrappedPurchasesCallback(completedPurchases, callback)
+
+                        val initRequestData = InitRequestData(
+                            installDate,
+                            advertisingID,
+                            purchasesInfo,
+                            handledPurchasesCallback
+                        )
                         processInit(initRequestData)
                     },
                     onFailed = {
@@ -531,6 +540,22 @@ class QProductCenterManager internal constructor(
                 val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
                 processInit(initRequestData)
             })
+    }
+
+    private fun getWrappedPurchasesCallback(
+        trackingPurchases: List<Purchase>,
+        outerCallback: QonversionLaunchCallback?
+    ): QonversionLaunchCallback {
+        return object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                handledPurchasesCache.saveHandledPurchases(trackingPurchases)
+                outerCallback?.onSuccess(launchResult)
+            }
+
+            override fun onError(error: QonversionError) {
+                outerCallback?.onError(error)
+            }
+        }
     }
 
     private fun getLaunchCallback(callback: QonversionLaunchCallback?): QonversionLaunchCallback {
@@ -823,6 +848,7 @@ class QProductCenterManager internal constructor(
                 }
             }
 
+            if (!handledPurchasesCache.shouldHandlePurchase(purchase)) return@forEach
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
@@ -833,6 +859,7 @@ class QProductCenterManager internal constructor(
                     purchaseCallback?.onSuccess(launchResult.permissions) ?: run {
                         listener?.onPermissionsUpdate(launchResult.permissions)
                     }
+                    handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {
