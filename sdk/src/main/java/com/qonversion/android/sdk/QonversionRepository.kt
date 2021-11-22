@@ -372,8 +372,7 @@ class QonversionRepository internal constructor(
         retry: (attemptIndex: Int) -> Unit
     ) {
         // Retrying only errors caused by client network connection problems or server side problems
-        if (attemptIndex < MAX_RETRIES_COUNT &&
-            (errorCode == null || (errorCode >= 500 && errorCode <= 599))) {
+        if (attemptIndex < MAX_RETRIES_COUNT && (errorCode == null || errorCode in 500..599)) {
             val nextAttemptIndex = attemptIndex + 1
             // For the first error retry instantly.
             if (attemptIndex == 0) {
