@@ -31,7 +31,6 @@ import java.util.*
 class QProductCenterManagerTest {
     private val mockLogger: Logger = mockk(relaxed = true)
     private val mockDeviceStorage = mockk<PurchasesCache>(relaxed = true)
-    private val mockHandledPurchasesCache = mockk<QHandledPurchasesCache>(relaxed = true)
     private val mockLaunchResultCacheWrapper = mockk<LaunchResultCacheWrapper>(relaxed = true)
     private val mockContext = mockk<Application>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
@@ -57,14 +56,12 @@ class QProductCenterManagerTest {
         clearAllMocks()
 
         mockInstallDate()
-        every { mockHandledPurchasesCache.shouldHandlePurchase(any()) } returns true
 
         productCenterManager = QProductCenterManager(
             mockContext,
             mockRepository,
             mockLogger,
             mockDeviceStorage,
-            mockHandledPurchasesCache,
             mockLaunchResultCacheWrapper,
             mockUserInfoService,
             mockIdentityManager,

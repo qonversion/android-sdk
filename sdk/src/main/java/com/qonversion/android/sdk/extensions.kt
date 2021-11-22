@@ -23,5 +23,3 @@ class CallBackKt<T> : Callback<T> {
         onResponse?.invoke(response)
     }
 }
-
-fun Int.isInternalServerError() = this in Constants.INTERNAL_SERVER_ERROR_MIN..Constants.INTERNAL_SERVER_ERROR_MAX
