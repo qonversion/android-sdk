@@ -23,3 +23,5 @@ class CallBackKt<T> : Callback<T> {
         onResponse?.invoke(response)
     }
 }
+
+fun Int.isInternalServerError() = this in 500..599
