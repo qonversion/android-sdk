@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.EnvironmentProvider
+import com.qonversion.android.sdk.IncrementalDelayCalculator
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.api.Api
@@ -11,7 +12,10 @@ import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.api.ApiHelper
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.*
+import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.TokenStorage
+import com.qonversion.android.sdk.storage.UserPropertiesStorage
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.validator.TokenValidator
 import dagger.Module
 import dagger.Provides
@@ -29,7 +33,8 @@ class RepositoryModule {
         logger: Logger,
         purchasesCache: PurchasesCache,
         apiErrorMapper: ApiErrorMapper,
-        sharedPreferences: SharedPreferences
+        sharedPreferences: SharedPreferences,
+        delayCalculator: IncrementalDelayCalculator
     ): QonversionRepository {
         return QonversionRepository(
             retrofit.create(Api::class.java),
@@ -38,7 +43,8 @@ class RepositoryModule {
             logger,
             purchasesCache,
             apiErrorMapper,
-            sharedPreferences
+            sharedPreferences,
+            delayCalculator
         )
     }
 
