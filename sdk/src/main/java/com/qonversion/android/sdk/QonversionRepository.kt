@@ -23,7 +23,15 @@ import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
-import com.qonversion.android.sdk.dto.request.*
+import com.qonversion.android.sdk.dto.request.PropertiesRequest
+import com.qonversion.android.sdk.dto.request.IdentityRequest
+import com.qonversion.android.sdk.dto.request.PurchaseRequest
+import com.qonversion.android.sdk.dto.request.ViewsRequest
+import com.qonversion.android.sdk.dto.request.EventRequest
+import com.qonversion.android.sdk.dto.request.AttributionRequest
+import com.qonversion.android.sdk.dto.request.RestoreRequest
+import com.qonversion.android.sdk.dto.request.InitRequest
+import com.qonversion.android.sdk.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
@@ -384,7 +392,7 @@ class QonversionRepository internal constructor(
                     Handler().postDelayed({
                         retry(nextAttemptIndex)
                     }, delay.toLong().secondsToMilliSeconds())
-                } catch (exception: RuntimeException) {
+                } catch (_: RuntimeException) {
                     retry(nextAttemptIndex)
                 }
             }

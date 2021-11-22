@@ -24,4 +24,4 @@ class CallBackKt<T> : Callback<T> {
     }
 }
 
-fun Int.isInternalServerError() = this in 500..599
+fun Int.isInternalServerError() = this in Constants.INTERNAL_SERVER_ERROR_MIN..Constants.INTERNAL_SERVER_ERROR_MAX

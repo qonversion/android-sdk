@@ -12,7 +12,10 @@ import com.qonversion.android.sdk.api.ApiHeadersProvider
 import com.qonversion.android.sdk.api.ApiHelper
 import com.qonversion.android.sdk.di.scope.ApplicationScope
 import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.storage.*
+import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.storage.TokenStorage
+import com.qonversion.android.sdk.storage.UserPropertiesStorage
+import com.qonversion.android.sdk.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.validator.TokenValidator
 import dagger.Module
 import dagger.Provides
