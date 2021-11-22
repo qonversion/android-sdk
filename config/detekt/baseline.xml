@@ -26,6 +26,7 @@
     <ID>FinalNewline:com.qonversion.android.app.utils.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.ConsumerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.QHandledPurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.QProductCenterManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.api.ApiHelperTest.kt:1</ID>
@@ -119,7 +120,6 @@
     <ID>MatchingDeclarationName:util.kt$Util</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:AppComponent.kt$AppComponent$@Component(modules = [AppModule::class, RepositoryModule::class, NetworkModule::class, ManagersModule::class, ServicesModule::class])</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionBillingRetry</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_canceled\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionCanceled</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_downgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionDowngraded</ID>
@@ -130,7 +130,6 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
-    <ID>MaxLineLength:FirebaseMessageReceiver.kt$FirebaseMessageReceiver$.</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$introductoryPeriodUnitsCount = getIntrodactoryUnitsCountFromPeriod(details.freeTrialPeriod ?: details.introductoryPricePeriod)</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
@@ -170,8 +169,8 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:151</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:153</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:154</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:156</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
@@ -206,7 +205,6 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:24</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:46</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.di.component.AppComponent.kt:16</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:30</ID>
@@ -248,6 +246,7 @@
     <ID>NewLineAtEndOfFile:PurchaseRequestTest.kt$com.qonversion.android.sdk.requests.PurchaseRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PurchasesCacheTest.kt$com.qonversion.android.sdk.storage.PurchasesCacheTest.kt</ID>
     <ID>NewLineAtEndOfFile:QAutomationsManagerTest.kt$com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QHandledPurchasesCacheTest.kt$com.qonversion.android.sdk.QHandledPurchasesCacheTest.kt</ID>
     <ID>NewLineAtEndOfFile:QProductCenterManagerTest.kt$com.qonversion.android.sdk.QProductCenterManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:QUserInfoServiceTest.kt$com.qonversion.android.sdk.services.QUserInfoServiceTest.kt</ID>
     <ID>NewLineAtEndOfFile:QUserPropertiesManagerTest.kt$com.qonversion.android.sdk.QUserPropertiesManagerTest.kt</ID>
@@ -267,7 +266,6 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:18</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.validator.TokenValidatorTest.kt:20</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.app.FirebaseMessageReceiver.kt:17</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.app.HomeFragment.kt:193</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QAttributionManagerTest.kt:135</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:360</ID>
@@ -295,6 +293,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QAttributionManagerTest.kt:4</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QIdentityManagerTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManager.kt:10</ID>
@@ -321,7 +320,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:11</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.di.component.AppComponent.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.RepositoryModule.kt:14</ID>
@@ -400,7 +398,6 @@
     <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.dto.*</ID>
     <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.dto.request.*</ID>
     <ID>WildcardImport:Api.kt$import retrofit2.http.*</ID>
-    <ID>WildcardImport:AppComponent.kt$import com.qonversion.android.sdk.di.module.*</ID>
     <ID>WildcardImport:HomeFragment.kt$import com.qonversion.android.sdk.*</ID>
     <ID>WildcardImport:ManualTrackingActivityKt.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:NetworkModule.kt$import com.qonversion.android.sdk.dto.*</ID>
