@@ -1,16 +1,14 @@
 package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
-import android.os.Handler
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
-import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
-import com.qonversion.android.sdk.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.billing.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData
@@ -24,21 +22,12 @@ import com.qonversion.android.sdk.dto.purchase.History
 import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
-import com.qonversion.android.sdk.dto.request.PropertiesRequest
-import com.qonversion.android.sdk.dto.request.IdentityRequest
-import com.qonversion.android.sdk.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.dto.request.ViewsRequest
-import com.qonversion.android.sdk.dto.request.EventRequest
-import com.qonversion.android.sdk.dto.request.AttributionRequest
-import com.qonversion.android.sdk.dto.request.RestoreRequest
-import com.qonversion.android.sdk.dto.request.InitRequest
-import com.qonversion.android.sdk.dto.request.EligibilityRequest
+import com.qonversion.android.sdk.dto.request.*
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
-import java.lang.RuntimeException
 
 @SuppressWarnings("LongParameterList")
 class QonversionRepository internal constructor(
@@ -48,8 +37,7 @@ class QonversionRepository internal constructor(
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
-    private val preferences: SharedPreferences,
-    private val delayCalculator: IncrementalDelayCalculator
+    private val preferences: SharedPreferences
 ) {
     private var advertisingId: String? = null
     private var installDate: Long = 0
@@ -310,7 +298,7 @@ class QonversionRepository internal constructor(
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
         callback: QonversionLaunchCallback,
-        attemptIndex: Int = 0
+        retries: Int = MAX_RETRIES_NUMBER
     ) {
         val purchaseRequest = PurchaseRequest(
             installDate,
@@ -330,73 +318,45 @@ class QonversionRepository internal constructor(
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
                 } else {
-                    handlePurchaseError(
+                    handleErrorPurchase(
+                        installDate,
                         purchase,
+                        experimentInfo,
+                        qProductId,
                         callback,
                         errorMapper.getErrorFromResponse(it),
-                        it.code(),
-                        attemptIndex
-                    ) { nextAttemptIndex ->
-                        purchaseRequest(
-                            installDate,
-                            purchase,
-                            experimentInfo,
-                            qProductId,
-                            callback,
-                            nextAttemptIndex
-                        )
-                    }
+                        retries
+                    )
                 }
             }
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    handlePurchaseError(
+                    handleErrorPurchase(
+                        installDate,
                         purchase,
+                        experimentInfo,
+                        qProductId,
                         callback,
                         it.toQonversionError(),
-                        null,
-                        attemptIndex
-                    ) { nextAttemptIndex ->
-                        purchaseRequest(
-                            installDate,
-                            purchase,
-                            experimentInfo,
-                            qProductId,
-                            callback,
-                            nextAttemptIndex
-                        )
-                    }
+                        retries
+                    )
                 }
             }
         }
     }
 
-    private fun handlePurchaseError(
+    private fun handleErrorPurchase(
+        installDate: Long,
         purchase: Purchase,
+        experimentInfo: QExperimentInfo?,
+        qProductId: String?,
         callback: QonversionLaunchCallback,
         error: QonversionError,
-        errorCode: Int?,
-        attemptIndex: Int,
-        retry: (attemptIndex: Int) -> Unit
+        retries: Int
     ) {
-        // Retrying only errors caused by client network connection problems (errorCode == null) or server side problems
-        if (attemptIndex < MAX_RETRIES_COUNT && (errorCode == null || errorCode.isInternalServerError())) {
-            val nextAttemptIndex = attemptIndex + 1
-            // For the first error retry instantly.
-            if (attemptIndex == 0) {
-                retry(nextAttemptIndex)
-            } else {
-                try {
-                    // For the rest - add delay (subtracting 1 from delay index, because first one was instant)
-                    val delay = delayCalculator.countDelay(0, attemptIndex - 1)
-                    Handler().postDelayed({
-                        retry(nextAttemptIndex)
-                    }, delay.toLong().secondsToMilliSeconds())
-                } catch (_: RuntimeException) {
-                    retry(nextAttemptIndex)
-                }
-            }
+        if (retries > 0) {
+            purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback, retries - 1)
         } else {
             callback.onError(error)
             purchasesCache.savePurchase(purchase)
@@ -426,8 +386,7 @@ class QonversionRepository internal constructor(
 
         if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &&
             purchase.introductoryPeriodUnit != null &&
-            purchase.introductoryPeriodUnitsCount != null
-        ) {
+            purchase.introductoryPeriodUnitsCount != null) {
             introductoryOfferDetails = IntroductoryOfferDetails(
                 purchase.introductoryPrice,
                 purchase.introductoryPeriodUnit,
@@ -566,6 +525,6 @@ class QonversionRepository internal constructor(
         if (isSuccessful) "success - $this" else "failure - ${errorMapper.getErrorFromResponse(this)}"
 
     companion object {
-        private const val MAX_RETRIES_COUNT = 3
+        private const val MAX_RETRIES_NUMBER = 3
     }
 }

@@ -9,6 +9,4 @@ object Constants {
     const val USER_ID_PREFIX = "QON"
     const val USER_ID_SEPARATOR = "_"
     const val EXPERIMENT_STARTED_EVENT_NAME = "offering_within_experiment_called"
-    const val INTERNAL_SERVER_ERROR_MIN = 500
-    const val INTERNAL_SERVER_ERROR_MAX = 599
 }
