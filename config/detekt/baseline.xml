@@ -60,7 +60,7 @@
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongMethod:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.Purchase$@Test fun `purchase with oldSkuDetails billing flow params is correct`()</ID>
-    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences )</ID>
+    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10004</ID>
@@ -269,7 +269,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.QProductCenterManagerTest.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:11</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.QonversionRepository.kt:25</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ad.AdvertisingProvider.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.api.Api.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.api.Api.kt:7</ID>
@@ -289,7 +288,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.RepositoryModule.kt:14</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:5</ID>
@@ -374,8 +372,6 @@
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.ad.LoadStoreProductsState.*</ID>
     <ID>WildcardImport:QProductCenterManager.kt$import com.qonversion.android.sdk.billing.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
-    <ID>WildcardImport:QonversionRepository.kt$import com.qonversion.android.sdk.dto.request.*</ID>
-    <ID>WildcardImport:RepositoryModule.kt$import com.qonversion.android.sdk.storage.*</ID>
     <ID>WildcardImport:ScreenActivity.kt$import com.qonversion.android.sdk.*</ID>
   </CurrentIssues>
 </SmellBaseline>
