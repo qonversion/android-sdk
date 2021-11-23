@@ -6,9 +6,11 @@ import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.ad.AdvertisingProvider
-import com.qonversion.android.sdk.old.ad.LoadStoreProductsState.*
+import com.qonversion.android.sdk.old.ad.LoadStoreProductsState.NotStartedYet
+import com.qonversion.android.sdk.old.ad.LoadStoreProductsState.Loading
+import com.qonversion.android.sdk.old.ad.LoadStoreProductsState.Loaded
+import com.qonversion.android.sdk.old.ad.LoadStoreProductsState.Failed
 import com.qonversion.android.sdk.old.billing.*
 import com.qonversion.android.sdk.old.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.old.converter.PurchaseConverter
