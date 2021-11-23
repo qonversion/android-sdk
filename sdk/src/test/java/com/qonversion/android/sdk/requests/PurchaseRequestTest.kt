@@ -3,10 +3,10 @@ package com.qonversion.android.sdk.requests
 import android.util.Pair
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.converter.GooglePurchaseConverter
-import com.qonversion.android.sdk.converter.Util
-import com.qonversion.android.sdk.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
+import com.qonversion.android.sdk.old.converter.GooglePurchaseConverter
+import com.qonversion.android.sdk.old.converter.Util
+import com.qonversion.android.sdk.old.dto.request.PurchaseRequest
+import com.qonversion.android.sdk.old.extractor.SkuDetailsTokenExtractor
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import org.junit.Before

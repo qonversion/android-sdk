@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.old.dto.products.QProduct
 import kotlinx.android.synthetic.main.table_row_product.view.*
 
 class ProductsAdapter(

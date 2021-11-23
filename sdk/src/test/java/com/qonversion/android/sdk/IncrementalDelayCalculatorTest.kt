@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk
 
+import com.qonversion.android.sdk.old.IncrementalDelayCalculator
 import io.mockk.*
 import org.junit.Assert.*
 import org.junit.jupiter.api.BeforeEach

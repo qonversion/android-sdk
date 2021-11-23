@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.App.CHANNEL_ID
-import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.old.Qonversion
 
 class FirebaseMessageReceiver : FirebaseMessagingService() {
     private val tag = "FirebaseMessageReceiver"

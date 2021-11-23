@@ -4,7 +4,7 @@
     android:id="@+id/screen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".automations.mvp.ScreenActivity">
+    tools:context=".old.automations.mvp.ScreenActivity">
 
     <WebView
         android:id="@+id/webView"

@@ -2,13 +2,13 @@ package com.qonversion.android.sdk
 
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.Constants.DEFAULT_SUBS_PERIOD
-import com.qonversion.android.sdk.Constants.DEFAULT_SUBS_SKU
-import com.qonversion.android.sdk.Constants.INAPP_PURCHASE
-import com.qonversion.android.sdk.Constants.INAPP_SKU_DETAILS
-import com.qonversion.android.sdk.Constants.SUBS_PURCHASE_INCOMPLETE
-import com.qonversion.android.sdk.Constants.PURCHASE_SIGNATURE
-import com.qonversion.android.sdk.Constants.SUBS_SKU_DETAILS_INCOMPLETE
+import com.qonversion.android.sdk.old.Constants.DEFAULT_SUBS_PERIOD
+import com.qonversion.android.sdk.old.Constants.DEFAULT_SUBS_SKU
+import com.qonversion.android.sdk.old.Constants.INAPP_PURCHASE
+import com.qonversion.android.sdk.old.Constants.INAPP_SKU_DETAILS
+import com.qonversion.android.sdk.old.Constants.SUBS_PURCHASE_INCOMPLETE
+import com.qonversion.android.sdk.old.Constants.PURCHASE_SIGNATURE
+import com.qonversion.android.sdk.old.Constants.SUBS_SKU_DETAILS_INCOMPLETE
 import java.lang.reflect.Modifier
 
 fun Any.mockPrivateField(fieldName: String, field: Any?) {

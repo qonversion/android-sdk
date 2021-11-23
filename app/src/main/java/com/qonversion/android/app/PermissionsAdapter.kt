@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.old.dto.QPermission
 import kotlinx.android.synthetic.main.table_row_permission.view.*
 
 class PermissionsAdapter(private val permissions: List<QPermission>) :

@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
-import com.qonversion.android.sdk.services.QUserInfoService
+import com.qonversion.android.sdk.old.*
+import com.qonversion.android.sdk.old.services.QUserInfoService
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*

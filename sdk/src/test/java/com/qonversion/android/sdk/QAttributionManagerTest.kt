@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import android.os.Looper
+import com.qonversion.android.sdk.old.*
 import io.mockk.*
 import org.junit.Assert
 import org.junit.jupiter.api.BeforeEach

@@ -10,10 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentPermissionsBinding
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionPermissionsCallback
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.old.Qonversion
+import com.qonversion.android.sdk.old.QonversionError
+import com.qonversion.android.sdk.old.QonversionPermissionsCallback
+import com.qonversion.android.sdk.old.dto.QPermission
 
 class PermissionsFragment : Fragment() {
     private val TAG = "PermissionsFragment"

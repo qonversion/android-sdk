@@ -7,15 +7,16 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.billing.BillingError
-import com.qonversion.android.sdk.billing.QonversionBillingService
-import com.qonversion.android.sdk.billing.milliSecondsToSeconds
-import com.qonversion.android.sdk.billing.sku
-import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.logger.Logger
-import com.qonversion.android.sdk.services.QUserInfoService
-import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
-import com.qonversion.android.sdk.storage.PurchasesCache
+import com.qonversion.android.sdk.old.*
+import com.qonversion.android.sdk.old.billing.BillingError
+import com.qonversion.android.sdk.old.billing.QonversionBillingService
+import com.qonversion.android.sdk.old.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.old.billing.sku
+import com.qonversion.android.sdk.old.dto.QLaunchResult
+import com.qonversion.android.sdk.old.logger.Logger
+import com.qonversion.android.sdk.old.services.QUserInfoService
+import com.qonversion.android.sdk.old.storage.LaunchResultCacheWrapper
+import com.qonversion.android.sdk.old.storage.PurchasesCache
 import io.mockk.*
 import org.junit.Assert
 import org.junit.Before
@@ -129,7 +130,7 @@ class QProductCenterManagerTest {
 
         val installDateSlot = slot<Long>()
         val callbackSlot = slot<QonversionLaunchCallback>()
-        val entityPurchaseSlot = slot<com.qonversion.android.sdk.entity.Purchase>()
+        val entityPurchaseSlot = slot<com.qonversion.android.sdk.old.entity.Purchase>()
         every {
             mockRepository.purchase(
                 capture(installDateSlot),

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
-import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.old.Qonversion
 import java.util.*
 
 class ManualTrackingActivityKt : AppCompatActivity() {

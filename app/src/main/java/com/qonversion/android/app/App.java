@@ -8,12 +8,12 @@ import androidx.multidex.MultiDexApplication;
 
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
-import com.qonversion.android.sdk.AttributionSource;
-import com.qonversion.android.sdk.QUserProperties;
-import com.qonversion.android.sdk.Qonversion;
-import com.qonversion.android.sdk.QonversionError;
-import com.qonversion.android.sdk.QonversionLaunchCallback;
-import com.qonversion.android.sdk.dto.QLaunchResult;
+import com.qonversion.android.sdk.old.AttributionSource;
+import com.qonversion.android.sdk.old.QUserProperties;
+import com.qonversion.android.sdk.old.Qonversion;
+import com.qonversion.android.sdk.old.QonversionError;
+import com.qonversion.android.sdk.old.QonversionLaunchCallback;
+import com.qonversion.android.sdk.old.dto.QLaunchResult;
 
 import org.jetbrains.annotations.NotNull;
 

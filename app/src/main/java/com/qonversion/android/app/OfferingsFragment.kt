@@ -10,13 +10,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentOfferingsBinding
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionOfferingsCallback
-import com.qonversion.android.sdk.QonversionPermissionsCallback
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.old.Qonversion
+import com.qonversion.android.sdk.old.QonversionError
+import com.qonversion.android.sdk.old.QonversionOfferingsCallback
+import com.qonversion.android.sdk.old.QonversionPermissionsCallback
+import com.qonversion.android.sdk.old.dto.QPermission
+import com.qonversion.android.sdk.old.dto.offerings.QOfferings
+import com.qonversion.android.sdk.old.dto.products.QProduct
 
 class OfferingsFragment : Fragment() {
     private val TAG = "OfferingsFragment"

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.requests
 
-import com.qonversion.android.sdk.dto.app.App
+import com.qonversion.android.sdk.old.dto.app.App
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import org.json.JSONObject

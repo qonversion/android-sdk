@@ -9,13 +9,13 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
-import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.Automations
-import com.qonversion.android.sdk.automations.AutomationsDelegate
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.old.*
+import com.qonversion.android.sdk.old.automations.Automations
+import com.qonversion.android.sdk.old.automations.AutomationsDelegate
+import com.qonversion.android.sdk.old.automations.QActionResult
+import com.qonversion.android.sdk.old.automations.QActionResultType
+import com.qonversion.android.sdk.old.dto.QPermission
+import com.qonversion.android.sdk.old.dto.products.QProduct
 
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding

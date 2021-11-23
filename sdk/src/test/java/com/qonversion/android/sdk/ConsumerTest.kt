@@ -4,9 +4,10 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.billing.QonversionBillingService
-import com.qonversion.android.sdk.billing.sku
-import com.qonversion.android.sdk.entity.PurchaseHistory
+import com.qonversion.android.sdk.old.Consumer
+import com.qonversion.android.sdk.old.billing.QonversionBillingService
+import com.qonversion.android.sdk.old.billing.sku
+import com.qonversion.android.sdk.old.entity.PurchaseHistory
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test

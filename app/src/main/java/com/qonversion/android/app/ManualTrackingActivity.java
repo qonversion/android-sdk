@@ -16,7 +16,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
-import com.qonversion.android.sdk.Qonversion;
+import com.qonversion.android.sdk.old.Qonversion;
 
 import java.util.Collections;
 import java.util.HashMap;
