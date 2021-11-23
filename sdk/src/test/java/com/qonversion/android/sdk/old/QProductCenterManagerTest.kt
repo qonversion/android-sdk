@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.old
 
 import android.app.Application
 import android.content.pm.PackageInfo
@@ -7,7 +7,6 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.billing.BillingError
 import com.qonversion.android.sdk.old.billing.QonversionBillingService
 import com.qonversion.android.sdk.old.billing.milliSecondsToSeconds

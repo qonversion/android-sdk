@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.old.converter
 
 import android.util.Pair
-import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.entity.Purchase
 import com.qonversion.android.sdk.old.extractor.SkuDetailsTokenExtractor
 import io.mockk.*

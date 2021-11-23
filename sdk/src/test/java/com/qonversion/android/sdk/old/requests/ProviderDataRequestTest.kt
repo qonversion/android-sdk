@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.requests
+package com.qonversion.android.sdk.old.requests
 
 import com.qonversion.android.sdk.old.dto.ProviderData
 import com.squareup.moshi.JsonAdapter

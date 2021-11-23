@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.old
 
 import com.qonversion.android.sdk.old.IncrementalDelayCalculator
 import io.mockk.*

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.requests
+package com.qonversion.android.sdk.old.requests
 
 import android.os.Build
 import com.qonversion.android.sdk.old.dto.device.Os

@@ -1,6 +1,6 @@
-package com.qonversion.android.sdk.requests
+package com.qonversion.android.sdk.old.requests
 
-import com.qonversion.android.sdk.old.dto.request.AttributionRequest
+import com.qonversion.android.sdk.old.dto.request.InitRequest
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import org.junit.Before
@@ -9,18 +9,18 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class AttributionRequestTest {
+class InitRequestTest {
 
-    private lateinit var adapter: JsonAdapter<AttributionRequest>
+    private lateinit var adapter: JsonAdapter<InitRequest>
 
     @Before
     fun setup() {
         val moshi = Moshi.Builder().build()
-        adapter = moshi.adapter(AttributionRequest::class.java)
+        adapter = moshi.adapter(InitRequest::class.java)
     }
 
     @Test
     fun appRequestWithCorrectData() {
-        // TODO: Update test for new AttributionRequest format
+        // TODO: Update test for new InitRequest format
     }
 }

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.old
 
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.old.QHandledPurchasesCache

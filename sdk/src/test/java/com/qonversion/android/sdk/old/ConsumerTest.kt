@@ -1,10 +1,9 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.old
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.Consumer
 import com.qonversion.android.sdk.old.billing.QonversionBillingService
 import com.qonversion.android.sdk.old.billing.sku
 import com.qonversion.android.sdk.old.entity.PurchaseHistory

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.requests
+package com.qonversion.android.sdk.old.requests
 
 import android.util.Pair
 import com.android.billingclient.api.Purchase

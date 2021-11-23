@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.requests.queue
+package com.qonversion.android.sdk.old.requests.queue
 
 import org.junit.Test
 import org.junit.runner.RunWith

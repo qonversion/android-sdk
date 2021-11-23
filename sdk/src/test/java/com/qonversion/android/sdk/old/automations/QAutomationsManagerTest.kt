@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Looper
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.old.dto.automations.Screen

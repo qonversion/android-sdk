@@ -1,11 +1,10 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.old
 
 import android.app.Application
 import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.logger.Logger
 import com.qonversion.android.sdk.old.storage.PropertiesStorage
 import io.mockk.*
