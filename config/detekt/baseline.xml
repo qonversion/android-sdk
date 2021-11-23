@@ -367,7 +367,7 @@
     <ID>TooManyFunctions:Qonversion.kt$Qonversion$Qonversion</ID>
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
-    <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
+    <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : ActivityView</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:GooglePurchaseConverterTest.kt$GooglePurchaseConverterTest$val converted = GooglePurchaseConverter(SkuDetailsTokenExtractor()) .convert( Pair( SkuDetails(CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
