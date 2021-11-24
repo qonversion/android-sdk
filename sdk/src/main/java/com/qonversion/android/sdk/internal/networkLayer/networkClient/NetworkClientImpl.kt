@@ -4,9 +4,7 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializer
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -19,23 +17,25 @@ class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
 ): NetworkClient {
 
-    fun test() {
-        val r = Request.post(
-            "https://postman-echo.com/post",
-            mapOf(Pair("a", "av"), Pair("b", "bv")),
-            mapOf(Pair("someval", 123))
-        )
-
-        CoroutineScope(Dispatchers.IO).launch {
-            execute(r)
-        }
-    }
-
     override suspend fun execute(request: Request): Response {
-        return if (request.type == Request.Type.POST) {
-            post(request)
-        } else {
-            get(request)
+        return withContext(Dispatchers.IO) {
+            val url = URL(request.url)
+            val connection = url.openConnection() as HttpURLConnection
+
+            connection.requestMethod = request.type.toString()
+            request.headers.forEach {
+                connection.addRequestProperty(it.key, it.value)
+            }
+            connection.addRequestProperty("Content-Type", "application/json")
+            connection.addRequestProperty("Accept", "application/json")
+
+            request.body?.let {
+                connection.doOutput = true
+                write(it, connection)
+            }
+            val code = connection.responseCode
+            val response = read(connection)
+            Response(code, response)
         }
     }
 
@@ -59,31 +59,5 @@ class NetworkClientImpl(
             val responsePayload = responseStringBuilder.toString()
             return serializer.deserialize(responsePayload)
         }
-    }
-
-    private fun post(request: Request): Response {
-        val url = URL(request.url)
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "POST"
-        request.headers.forEach {
-            connection.addRequestProperty(it.key, it.value)
-        }
-        connection.addRequestProperty("Content-Type", "application/json")
-        connection.addRequestProperty("Accept", "application/json")
-        connection.doOutput = true
-
-        if (request.body == null) {
-            throw IllegalStateException("Request body can't be null for POST request")
-        }
-
-        write(request.body, connection)
-        val code = connection.responseCode
-        val response = read(connection)
-
-        return Response(code, response)
-    }
-
-    private fun get(request: Request): Response {
-        return Response(0, Unit)
     }
 }
