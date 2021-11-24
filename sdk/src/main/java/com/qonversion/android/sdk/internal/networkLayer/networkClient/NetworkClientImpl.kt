@@ -4,8 +4,13 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializer
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
@@ -13,6 +18,18 @@ import java.net.URL
 class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
 ): NetworkClient {
+
+    fun test() {
+        val r = Request.post(
+            "https://postman-echo.com/post",
+            mapOf(Pair("a", "av"), Pair("b", "bv")),
+            mapOf(Pair("someval", 123))
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            execute(r)
+        }
+    }
 
     override suspend fun execute(request: Request): Response {
         return if (request.type == Request.Type.POST) {
@@ -24,9 +41,10 @@ class NetworkClientImpl(
 
     private fun write(body: Map<String, Any?>, connection: HttpURLConnection) {
         val requestPayload = serializer.serialize(body)
-        connection.outputStream.use {
-            val input = requestPayload.toByteArray()
-            it.write(input)
+        val outputStreamWriter = OutputStreamWriter(connection.outputStream, "utf-8")
+        BufferedWriter(outputStreamWriter).use { bw ->
+            bw.write(requestPayload)
+            bw.flush()
         }
     }
 
@@ -50,7 +68,7 @@ class NetworkClientImpl(
         request.headers.forEach {
             connection.addRequestProperty(it.key, it.value)
         }
-        connection.addRequestProperty("Content-Type", "application/json; utf-8")
+        connection.addRequestProperty("Content-Type", "application/json")
         connection.addRequestProperty("Accept", "application/json")
         connection.doOutput = true
 
@@ -59,8 +77,8 @@ class NetworkClientImpl(
         }
 
         write(request.body, connection)
-        val response = read(connection)
         val code = connection.responseCode
+        val response = read(connection)
 
         return Response(code, response)
     }

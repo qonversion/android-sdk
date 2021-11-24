@@ -20,6 +20,6 @@ class Request(
         POST,
         GET,
         DELETE,
-        UPDATE
+        PUT
     }
 }
