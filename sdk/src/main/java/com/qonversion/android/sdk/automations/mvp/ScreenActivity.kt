@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.automations.mvp
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -8,7 +9,6 @@ import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.automations.macros.ScreenProcessor
 import com.qonversion.android.sdk.automations.QActionResult
@@ -22,7 +22,7 @@ import com.qonversion.android.sdk.logger.ConsoleLogger
 import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
 
-class ScreenActivity : AppCompatActivity(), ScreenContract.View {
+class ScreenActivity : Activity(), ScreenContract.View {
     @Inject
     lateinit var automationsManager: QAutomationsManager
 
