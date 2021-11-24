@@ -58,6 +58,7 @@ ext {
     PUBLISH_ARTIFACT_ID = 'sdk'
 
     kotlinVersion = '1.3.61'
+    coroutines_version = '1.3.6'
     moshiVersion = '1.9.2'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.13'
@@ -141,6 +142,9 @@ dependencies {
 
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    // Kotlin Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     // Firebase
     implementation "com.google.firebase:firebase-messaging:$firebase_messaging_version"

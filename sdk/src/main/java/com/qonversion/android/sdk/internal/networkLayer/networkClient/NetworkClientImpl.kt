@@ -14,7 +14,7 @@ class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
 ): NetworkClient {
 
-    override fun execute(request: Request): Response {
+    override suspend fun execute(request: Request): Response {
         return if (request.type == Request.Type.POST) {
             post(request)
         } else {
@@ -34,7 +34,7 @@ class NetworkClientImpl(
         val inputStreamReader = InputStreamReader(connection.inputStream, "utf-8")
         BufferedReader(inputStreamReader).use { br ->
             val responseStringBuilder = StringBuilder()
-            var responseLine: String? = null
+            var responseLine: String?
             while (br.readLine().also { responseLine = it } != null) {
                 responseStringBuilder.append(responseLine!!.trim { it <= ' ' })
             }
