@@ -1,3 +1,5 @@
 package com.qonversion.android.sdk.internal.networkLayer.headerBuilder
 
-interface HeaderBuilder
+interface HeaderBuilder {
+    fun buildCommonHeaders(): Map<String, String>
+}
