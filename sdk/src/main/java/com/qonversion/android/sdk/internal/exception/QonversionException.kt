@@ -4,9 +4,9 @@ import java.lang.StringBuilder
 
 class QonversionException(
     val code: ErrorCode,
-    additionalMessage: String? = null,
+    details: String? = null,
     cause: Throwable? = null
-): Exception(additionalMessage, cause) {
+): Exception(details, cause) {
 
     override fun toString(): String {
         val builder = StringBuilder()

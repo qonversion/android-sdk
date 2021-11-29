@@ -38,8 +38,8 @@ class JsonSerializer: RequestSerializer {
             // If we caught the exception above
             // then there was not an array in payload,
             // so we should try to parse as object.
-            val obj = JSONObject(payload)
             try {
+                val obj = JSONObject(payload)
                 obj.toMap()
             } catch (cause: JSONException) {
                 throw QonversionException(
