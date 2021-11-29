@@ -16,7 +16,7 @@ class JsonSerializer: RequestSerializer {
             JSONObject(data).toString()
         } catch (cause: NullPointerException) {
             throw QonversionException(
-                ErrorCode.SERIALIZATION,
+                ErrorCode.Serialization,
                 cause = cause
             )
         }
@@ -29,7 +29,7 @@ class JsonSerializer: RequestSerializer {
                 array.toList()
             } catch (cause: JSONException) {
                 throw QonversionException(
-                    ErrorCode.DESERIALIZATION,
+                    ErrorCode.Deserialization,
                     "Failed to parse json array",
                     cause
                 )
@@ -43,7 +43,7 @@ class JsonSerializer: RequestSerializer {
                 obj.toMap()
             } catch (cause: JSONException) {
                 throw QonversionException(
-                    ErrorCode.DESERIALIZATION,
+                    ErrorCode.Deserialization,
                     "Failed to parse json object",
                     cause
                 )

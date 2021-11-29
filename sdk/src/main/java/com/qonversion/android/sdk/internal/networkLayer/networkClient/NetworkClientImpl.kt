@@ -27,7 +27,7 @@ class NetworkClientImpl(
                 URL(request.url)
             } catch (cause: MalformedURLException) {
                 throw QonversionException(
-                    ErrorCode.NETWORK_REQUEST_EXECUTION,
+                    ErrorCode.NetworkRequestExecution,
                     "Wrong url - \"${request.url}\"",
                     cause
                 )
@@ -37,7 +37,7 @@ class NetworkClientImpl(
                 url.openConnection() as HttpURLConnection
             } catch (cause: IOException) {
                 throw QonversionException(
-                    ErrorCode.NETWORK_REQUEST_EXECUTION,
+                    ErrorCode.NetworkRequestExecution,
                     "Connection opening failed",
                     cause
                 )
@@ -50,7 +50,7 @@ class NetworkClientImpl(
                 }
             } catch (cause: NullPointerException) {
                 throw QonversionException(
-                    ErrorCode.NETWORK_REQUEST_EXECUTION,
+                    ErrorCode.NetworkRequestExecution,
                     "Header key can not be null",
                     cause
                 )
@@ -79,7 +79,7 @@ class NetworkClientImpl(
             }
         } catch (cause: IOException) {
             throw QonversionException(
-                ErrorCode.NETWORK_REQUEST_EXECUTION,
+                ErrorCode.NetworkRequestExecution,
                 "Failed to send payload",
                 cause
             )
@@ -97,7 +97,7 @@ class NetworkClientImpl(
                 }
             } catch (cause: IOException) {
                 throw QonversionException(
-                    ErrorCode.NETWORK_REQUEST_EXECUTION,
+                    ErrorCode.NetworkRequestExecution,
                     "Failed to read response",
                     cause
                 )

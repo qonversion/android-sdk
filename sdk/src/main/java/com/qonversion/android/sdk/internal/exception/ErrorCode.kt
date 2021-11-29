@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.exception
 
 enum class ErrorCode(val defaultMessage: String) {
-    NETWORK_REQUEST_EXECUTION("Failed to execute network request"),
-    SERIALIZATION("Failed to serialize data"),
-    DESERIALIZATION("Failed to deserialize data")
+    NetworkRequestExecution("Failed to execute network request"),
+    Serialization("Failed to serialize data"),
+    Deserialization("Failed to deserialize data")
 }
