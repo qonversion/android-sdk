@@ -6,7 +6,8 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializer
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -19,7 +20,7 @@ import java.net.URL
 
 class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
-): NetworkClient {
+) : NetworkClient {
 
     override suspend fun execute(request: Request): Response {
         return withContext(Dispatchers.IO) {

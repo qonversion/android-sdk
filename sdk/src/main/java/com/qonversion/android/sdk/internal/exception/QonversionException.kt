@@ -6,7 +6,7 @@ class QonversionException(
     val code: ErrorCode,
     details: String? = null,
     cause: Throwable? = null
-): Exception(details, cause) {
+) : Exception(details, cause) {
 
     override fun toString(): String {
         val builder = StringBuilder()
