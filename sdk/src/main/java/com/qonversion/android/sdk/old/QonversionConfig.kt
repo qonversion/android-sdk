@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.old
 
-import com.qonversion.android.sdk.old.HttpError
-
 data class QonversionConfig(
     val key: String,
     val sdkVersion: String,
