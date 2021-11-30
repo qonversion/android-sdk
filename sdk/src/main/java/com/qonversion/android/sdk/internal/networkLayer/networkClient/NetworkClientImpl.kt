@@ -21,7 +21,6 @@ import java.net.URL
 class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
 ) : NetworkClient {
-
     override suspend fun execute(request: Request): Response {
         return withContext(Dispatchers.IO) {
             val url = try {
