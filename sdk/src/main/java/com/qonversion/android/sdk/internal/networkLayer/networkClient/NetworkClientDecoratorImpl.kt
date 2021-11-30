@@ -33,7 +33,7 @@ class NetworkClientDecoratorImpl internal constructor(
             return Response(200, mapOf<String, Any>())
         }
         val response = networkClient.execute(request)
-        return if (response.isSuccess()) {
+        return if (response.isSuccess) {
             response
         } else {
             val retryConfig: RetryConfig = prepareRetryConfig(retryPolicy, attemptIndex)

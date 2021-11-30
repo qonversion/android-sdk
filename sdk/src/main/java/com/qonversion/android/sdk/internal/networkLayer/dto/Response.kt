@@ -7,9 +7,5 @@ class Response(
     val code: Int,
     val payload: Any // Array or Map
 ) {
-
-    internal fun isSuccess(): Boolean {
-        return code in MIN_SUCCESS_CODE..MAX_SUCCESS_CODE
-    }
-
+    val isSuccess: Boolean = code in MIN_SUCCESS_CODE..MAX_SUCCESS_CODE
 }
