@@ -65,6 +65,10 @@ class NetworkClientDecoratorImpl internal constructor(
             minDelay = retryPolicy.minDelay
         }
 
+        if (minDelay < 0) {
+            shouldRetry = false
+        }
+
         if (shouldRetry) {
             delay = delayCalculator.countDelay(minDelay, newAttemptIndex)
         }

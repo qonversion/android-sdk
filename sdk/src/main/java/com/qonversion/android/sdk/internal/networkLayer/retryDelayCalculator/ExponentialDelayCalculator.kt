@@ -5,12 +5,16 @@ import kotlin.math.pow
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
+private const val JITTER = 0.4f
+private const val FACTOR = 2.4f
+private const val MAX_DELAY_MS = 1000000L
+
 class ExponentialDelayCalculator(
     private val randomizer: Random
 ) : RetryDelayCalculator {
-    private val jitter = 0.4f
-    private val factor = 2.4f
-    private val maxDelayMS = 1000000L
+    private val jitter = JITTER
+    private val factor = FACTOR
+    private val maxDelayMS = MAX_DELAY_MS
 
     @Throws(IllegalArgumentException::class)
     override fun countDelay(minDelay: Long, retriesCount: Int): Long {
