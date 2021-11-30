@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer.dto
 
-class Request(
+class Request private constructor(
     val url: String,
     val type: Type,
     val headers: Map<String, String>,
@@ -13,13 +13,13 @@ class Request(
             body: Map<String, Any?>
         ) = Request(url, Type.POST, headers, body)
 
-        fun get(url: String, headers: Map<String, String>) = Request(url, Type.POST, headers)
+        fun get(url: String, headers: Map<String, String>) = Request(url, Type.GET, headers)
     }
 
     enum class Type {
         POST,
         GET,
         DELETE,
-        UPDATE
+        PUT
     }
 }

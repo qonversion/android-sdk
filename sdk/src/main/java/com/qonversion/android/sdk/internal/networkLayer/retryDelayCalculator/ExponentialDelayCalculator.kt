@@ -7,7 +7,7 @@ import kotlin.random.Random
 
 class ExponentialDelayCalculator(
     private val randomizer: Random
-    ): RetryDelayCalculator {
+) : RetryDelayCalculator {
     private val jitter = 0.4f
     private val factor = 2.4f
     private val maxDelayMS = 1000000L
