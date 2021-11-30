@@ -8,5 +8,5 @@ interface Mapper<T> {
     fun fromMap(data: Map<String, Any?>): T?
 
     @Throws(IllegalStateException::class)
-    fun arrayFromMap(data: Map<String, Any?>): List<T> { return emptyList() }
+    fun arrayFromMap(data: Map<*, *>): List<T> { return emptyList() }
 }

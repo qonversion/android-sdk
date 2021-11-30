@@ -2,12 +2,12 @@ package com.qonversion.android.sdk.internal.extensions.mapping
 
 import java.util.Date
 
-fun Map<String, Any?>.getMap(key: String): Map<String, Any?>? {
-    return this[key] as? Map<String, Any?>
+fun Map<String, Any?>.getMap(key: String): Map<*, *>? {
+    return this[key] as? Map<*, *>
 }
 
-fun Map<String, Any?>.getList(key: String): List<Map<String, Any?>>? {
-    return this[key] as? List<Map<String, Any?>>
+fun Map<String, Any?>.getList(key: String): List<*>? {
+    return this[key] as? List<*>
 }
 
 fun Map<String, Any?>.getBoolean(key: String): Boolean? {
@@ -35,8 +35,4 @@ fun Map<String, Any?>.getDate(key: String): Date? {
     }
 
     return date
-}
-
-fun <T> Any.getFromMap(map: Map<String, Any?>, key: String): T? {
-    return map[key] as? T
 }

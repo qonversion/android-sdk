@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.mappers
 
 import com.qonversion.android.sdk.internal.extensions.mapping.getString
 import com.qonversion.android.sdk.internal.extensions.mapping.getDate
+import com.qonversion.android.sdk.internal.extensions.mapping.getMap
 import com.qonversion.android.sdk.public.Entitlement
 import com.qonversion.android.sdk.public.User
 import com.qonversion.android.sdk.public.UserPurchase
@@ -17,13 +18,14 @@ class UserMapper internal constructor(
         if (id.isNullOrEmpty()) {
             return null
         }
+
         val createdDate = data.getDate("created")
         val lastOnlineDate = data.getDate("last_online")
 
-        val entitlementsData = data["entitlements"] as? Map<String, Any?>
+        val entitlementsData = data.getMap("entitlements")
         var entitlements: List<Entitlement> = emptyList()
 
-        val purchasesData = data["purchases"] as? Map<String, Any?>
+        val purchasesData = data.getMap("purchases")
         var purchases: List<UserPurchase> = emptyList()
 
         if (entitlementsData != null) {
