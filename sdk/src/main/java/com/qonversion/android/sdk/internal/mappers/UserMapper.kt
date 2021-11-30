@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.mappers
 
-import com.qonversion.android.sdk.internal.extensions.mapping.*
+import com.qonversion.android.sdk.internal.extensions.mapping.getString
+import com.qonversion.android.sdk.internal.extensions.mapping.getDate
 import com.qonversion.android.sdk.public.Entitlement
 import com.qonversion.android.sdk.public.User
 import com.qonversion.android.sdk.public.UserPurchase
@@ -8,7 +9,7 @@ import com.qonversion.android.sdk.public.UserPurchase
 class UserMapper internal constructor(
     private val purchasesMapper: Mapper<UserPurchase>,
     private val entitlementMapper: Mapper<Entitlement>
-): Mapper<User> {
+) : Mapper<User> {
 
     override fun fromMap(data: Map<String, Any?>): User? {
         val id = data.getString("id")
