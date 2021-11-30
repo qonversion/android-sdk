@@ -1,4 +1,3 @@
 package com.qonversion.android.sdk.public
 
-enum class RenewState {
-}
+enum class RenewState

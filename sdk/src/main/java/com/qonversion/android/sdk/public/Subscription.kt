@@ -9,4 +9,4 @@ data class Subscription(
     val currentPeriodEndDate: Date,
     val currentPeriodType: PeriodType,
     val renewState: RenewState
-    )
+)
