@@ -20,7 +20,7 @@ internal class UserServiceImpl(
     private val networkClient: NetworkClient,
     private val mapper: UserMapper,
     private val localStorage: LocalStorage
-): UserService {
+) : UserService {
     override fun obtainUserId(): String {
         val cachedUserID = localStorage.getString(StorageConstants.UserId.key)
         var resultUserID = cachedUserID

@@ -14,8 +14,8 @@ internal class HeaderBuilderImpl(
     private val locale: Locale,
     private val config: InternalConfig
 ) : HeaderBuilder {
-    private val source by lazy { localStorage.getString(StorageConstants.SourceKey.key, PLATFORM) }
-    private val sourceVersion by lazy { localStorage.getString(StorageConstants.VersionKey.key, config.sdkVersion) }
+    private val source by lazy { localStorage.getString(StorageConstants.SourceKey.key, PLATFORM) ?: PLATFORM }
+    private val sourceVersion by lazy { localStorage.getString(StorageConstants.VersionKey.key, config.sdkVersion) ?: config.sdkVersion }
 
     override fun buildCommonHeaders(): Map<String, String> {
         val locale = locale.language
