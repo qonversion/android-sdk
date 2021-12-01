@@ -9,7 +9,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.NullPointerException
 
-class JsonSerializer : RequestSerializer {
+internal class JsonSerializer : RequestSerializer {
 
     override fun serialize(data: Map<String, Any?>): String {
         return try {

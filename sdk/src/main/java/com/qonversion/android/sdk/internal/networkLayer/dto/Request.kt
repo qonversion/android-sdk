@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer.dto
 
-class Request private constructor(
+internal class Request private constructor(
     val url: String,
     val type: Type,
     val headers: Map<String, String>,

@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.networkLayer
 private const val DEFAULT_RETRY_COUNT = 3
 private const val DEFAULT_MIN_DELAY_MS = 500L
 
-sealed class RetryPolicy {
+internal sealed class RetryPolicy {
     object None : RetryPolicy()
 
     class Exponential(
