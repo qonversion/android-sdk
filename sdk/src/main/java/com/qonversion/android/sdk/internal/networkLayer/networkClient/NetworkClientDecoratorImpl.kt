@@ -17,7 +17,7 @@ internal data class RetryConfig(
     internal val delay: Long = 0L
 )
 
-internal class NetworkClientDecoratorImpl internal constructor(
+internal class NetworkClientDecoratorImpl(
     private val networkClient: NetworkClient,
     private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential(),
     private val delayCalculator: RetryDelayCalculator,
