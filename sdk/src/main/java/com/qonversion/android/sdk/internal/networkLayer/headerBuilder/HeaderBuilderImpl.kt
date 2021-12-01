@@ -14,7 +14,7 @@ internal class HeaderBuilderImpl(
     private val localStorage: LocalStorage,
     private val locale: Locale,
     private val config: InternalConfig
-): HeaderBuilder {
+) : HeaderBuilder {
     private val source by lazy { localStorage.getString(PREFS_SOURCE_KEY, PLATFORM) }
     private val sourceVersion by lazy { localStorage.getString(PREFS_SOURCE_VERSION_KEY, config.sdkVersion) }
 

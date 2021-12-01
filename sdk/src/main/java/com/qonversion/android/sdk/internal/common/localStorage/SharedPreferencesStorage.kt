@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 
 internal class SharedPreferencesStorage(
     val preferences: SharedPreferences
-): LocalStorage {
+) : LocalStorage {
     override fun putInt(key: String, value: Int) {
         preferences.edit().putInt(key, value).apply()
     }
