@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuil
 internal class RequestConfiguratorImpl(
     private val headerBuilder: HeaderBuilder,
     private val baseUrl: String
-): RequestConfigurator {
+) : RequestConfigurator {
 
     override fun configureUserRequest(id: String): Request {
         val headers = headerBuilder.buildCommonHeaders()
