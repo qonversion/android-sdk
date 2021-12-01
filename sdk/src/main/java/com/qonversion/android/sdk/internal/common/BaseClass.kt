@@ -1,3 +1,3 @@
 package com.qonversion.android.sdk.internal.common
 
-abstract class BaseClass
+internal abstract class BaseClass

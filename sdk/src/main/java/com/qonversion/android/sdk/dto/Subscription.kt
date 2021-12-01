@@ -1,12 +1,12 @@
-package com.qonversion.android.sdk.public
+package com.qonversion.android.sdk.dto
 
 import java.util.Date
 
 data class Subscription(
     val duration: ProductDuration,
-    val startDate: Date,
-    val currentPeriodStartDate: Date,
+    val startedDate: Date,
+    val currentPeriodStartedDate: Date,
     val currentPeriodEndDate: Date,
     val currentPeriodType: PeriodType,
     val renewState: RenewState
-    )
+)
