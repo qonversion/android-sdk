@@ -1,9 +1,9 @@
 package com.qonversion.android.sdk.internal.mappers
 
-import com.qonversion.android.sdk.public.Product
+import com.qonversion.android.sdk.dto.Product
 
-class ProductMapper : Mapper<Product> {
-    override fun fromMap(data: Map<String, Any?>): Product? {
-        TODO("Not yet implemented")
+internal class ProductMapper : Mapper<Product> {
+    override fun fromMap(data: Map<*, *>): Product? {
+        return null
     }
 }

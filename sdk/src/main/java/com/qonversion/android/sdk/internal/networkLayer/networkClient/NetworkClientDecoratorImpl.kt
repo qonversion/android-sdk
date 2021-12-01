@@ -11,13 +11,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-data class RetryConfig(
+internal data class RetryConfig(
     internal val shouldRetry: Boolean,
     internal val attemptIndex: Int = 0,
     internal val delay: Long = 0L
 )
 
-class NetworkClientDecoratorImpl internal constructor(
+internal class NetworkClientDecoratorImpl internal constructor(
     private val networkClient: NetworkClient,
     private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential(),
     private val delayCalculator: RetryDelayCalculator,

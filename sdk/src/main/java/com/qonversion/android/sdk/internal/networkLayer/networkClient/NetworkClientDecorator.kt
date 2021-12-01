@@ -5,7 +5,7 @@ import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 
-interface NetworkClientDecorator : NetworkClient {
+internal interface NetworkClientDecorator : NetworkClient {
     @Throws(QonversionException::class)
     suspend fun execute(request: Request, retryPolicy: RetryPolicy): Response
 }

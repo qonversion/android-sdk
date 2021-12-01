@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer
 
-enum class ApiHeader(val value: String) {
+internal enum class ApiHeader(val value: String) {
     ContentType("Content-Type"),
     Authorization("Authorization"),
     Locale("User-Locale"),

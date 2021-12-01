@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.public
+package com.qonversion.android.sdk.dto
 
 data class Product(
     val id: String,

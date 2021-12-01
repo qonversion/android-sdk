@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.public
+package com.qonversion.android.sdk.dto
 
 import java.util.Date
 
@@ -6,7 +6,7 @@ data class Entitlement(
     val id: String,
     val userID: String,
     val active: Boolean,
-    val startDate: Date,
+    val startedDate: Date,
     val expirationDate: Date,
     val purchases: List<UserPurchase> = emptyList()
 )

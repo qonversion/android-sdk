@@ -1,18 +1,15 @@
 package com.qonversion.android.sdk.internal.mappers
 
-import com.qonversion.android.sdk.internal.extensions.mapping.getString
-import com.qonversion.android.sdk.internal.extensions.mapping.getDate
-import com.qonversion.android.sdk.internal.extensions.mapping.getMap
-import com.qonversion.android.sdk.public.Entitlement
-import com.qonversion.android.sdk.public.User
-import com.qonversion.android.sdk.public.UserPurchase
+import com.qonversion.android.sdk.dto.Entitlement
+import com.qonversion.android.sdk.dto.User
+import com.qonversion.android.sdk.dto.UserPurchase
 
-class UserMapper internal constructor(
+internal class UserMapper(
     private val purchasesMapper: Mapper<UserPurchase>,
     private val entitlementMapper: Mapper<Entitlement>
 ) : Mapper<User> {
 
-    override fun fromMap(data: Map<String, Any?>): User? {
+    override fun fromMap(data: Map<*, *>): User? {
         val id = data.getString("id")
 
         if (id.isNullOrEmpty()) {
@@ -22,19 +19,13 @@ class UserMapper internal constructor(
         val createdDate = data.getDate("created")
         val lastOnlineDate = data.getDate("last_online")
 
-        val entitlementsData = data.getMap("entitlements")
-        var entitlements: List<Entitlement> = emptyList()
+        val entitlements = data.getList("entitlements")?.let {
+            entitlementMapper.fromList(it)
+        } ?: emptyList()
 
-        val purchasesData = data.getMap("purchases")
-        var purchases: List<UserPurchase> = emptyList()
-
-        if (entitlementsData != null) {
-            entitlements = entitlementMapper.arrayFromMap(entitlementsData)
-        }
-
-        if (purchasesData != null) {
-            purchases = purchasesMapper.arrayFromMap(purchasesData)
-        }
+        val purchases: List<UserPurchase> = data.getList("purchases")?.let {
+            purchasesMapper.fromList(it)
+        } ?: emptyList()
 
         return User(id, entitlements, purchases, createdDate, lastOnlineDate)
     }

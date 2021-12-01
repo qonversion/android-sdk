@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal
 
-class InternalConfig {
+internal class InternalConfig {
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = ""
