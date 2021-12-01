@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.dto.UserPurchase
 
 internal class UserMapper(
     private val purchasesMapper: Mapper<UserPurchase>,
-    private val entitlementMapper: Mapper<Entitlement>
+    private val entitlementsMapper: Mapper<Entitlement>
 ) : Mapper<User> {
 
     override fun fromMap(data: Map<*, *>): User? {
@@ -20,7 +20,7 @@ internal class UserMapper(
         val lastOnlineDate = data.getDate("last_online")
 
         val entitlements = data.getList("entitlements")?.let {
-            entitlementMapper.fromList(it)
+            entitlementsMapper.fromList(it)
         } ?: emptyList()
 
         val purchases: List<UserPurchase> = data.getList("purchases")?.let {
