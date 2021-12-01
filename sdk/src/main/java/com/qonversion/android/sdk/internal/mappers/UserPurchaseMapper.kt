@@ -1,9 +1,9 @@
 package com.qonversion.android.sdk.internal.mappers
 
-import com.qonversion.android.sdk.public.UserPurchase
+import com.qonversion.android.sdk.dto.UserPurchase
 
-class UserPurchaseMapper : Mapper<UserPurchase> {
-    override fun fromMap(data: Map<String, Any?>): UserPurchase? {
-        TODO("Not yet implemented")
+internal class UserPurchaseMapper : Mapper<UserPurchase> {
+    override fun fromMap(data: Map<*, *>): UserPurchase? {
+        return null
     }
 }

@@ -9,7 +9,7 @@ private const val JITTER = 0.4f
 private const val FACTOR = 2.4f
 private const val MAX_DELAY_MS = 1000000L
 
-class ExponentialDelayCalculator(
+internal class ExponentialDelayCalculator(
     private val randomizer: Random
 ) : RetryDelayCalculator {
     private val jitter = JITTER

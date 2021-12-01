@@ -18,7 +18,7 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 
-class NetworkClientImpl(
+internal class NetworkClientImpl(
     private val serializer: RequestSerializer = JsonSerializer()
 ) : NetworkClient {
     override suspend fun execute(request: Request): Response {

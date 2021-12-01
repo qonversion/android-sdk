@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.public
+package com.qonversion.android.sdk.dto
 
 enum class ProductType {
     NonRecurring,
