@@ -4,8 +4,7 @@ import android.os.Build
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.common.DEBUG_MODE_PREFIX
 import com.qonversion.android.sdk.internal.common.PLATFORM
-import com.qonversion.android.sdk.internal.common.PREFS_SOURCE_KEY
-import com.qonversion.android.sdk.internal.common.PREFS_SOURCE_VERSION_KEY
+import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.networkLayer.ApiHeader
 import java.util.Locale
@@ -15,8 +14,8 @@ internal class HeaderBuilderImpl(
     private val locale: Locale,
     private val config: InternalConfig
 ) : HeaderBuilder {
-    private val source by lazy { localStorage.getString(PREFS_SOURCE_KEY, PLATFORM) }
-    private val sourceVersion by lazy { localStorage.getString(PREFS_SOURCE_VERSION_KEY, config.sdkVersion) }
+    private val source by lazy { localStorage.getString(StorageConstants.SourceKey.key, PLATFORM) }
+    private val sourceVersion by lazy { localStorage.getString(StorageConstants.VersionKey.key, config.sdkVersion) }
 
     override fun buildCommonHeaders(): Map<String, String> {
         val locale = locale.language

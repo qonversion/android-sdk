@@ -14,7 +14,9 @@ interface LocalStorage {
 
     fun getLong(key: String, defValue: Long): Long
 
-    fun putString(key: String, value: String)
+    fun putString(key: String, value: String?)
 
-    fun getString(key: String, defValue: String): String
+    fun getString(key: String, defValue: String? = null): String?
+
+    fun remove(key: String)
 }
