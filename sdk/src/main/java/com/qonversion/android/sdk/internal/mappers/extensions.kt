@@ -28,7 +28,7 @@ fun Map<*, *>.getFloat(key: String): Float? {
 
 fun Map<*, *>.getDate(key: String): Date? {
     val timestamp: Long? = this[key] as? Long
-    
+
     return timestamp?.let {
         Date(it)
     }

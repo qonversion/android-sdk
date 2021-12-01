@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.mappers
 
-internal interface Mapper<T: Any> {
+internal interface Mapper<T : Any> {
     @Throws(IllegalStateException::class, NotImplementedError::class)
     fun toMap(value: T): Map<String, Any?> { throw NotImplementedError() }
 
