@@ -2,38 +2,32 @@ package com.qonversion.android.sdk.internal.common.localStorage
 
 import android.content.SharedPreferences
 
-class SharedPreferencesStorage internal constructor(
+internal class SharedPreferencesStorage(
     val preferences: SharedPreferences
-): LocalStorage {
+) : LocalStorage {
     override fun putInt(key: String, value: Int) {
-        TODO("Not yet implemented")
+        preferences.edit().putInt(key, value).apply()
     }
 
-    override fun getInt(key: String, defValue: Int): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getInt(key: String, defValue: Int): Int = preferences.getInt(key, defValue)
 
     override fun putFloat(key: String, value: Float) {
-        TODO("Not yet implemented")
+        preferences.edit().putFloat(key, value).apply()
     }
 
-    override fun getFloat(key: String, defValue: Float): Float {
-        TODO("Not yet implemented")
-    }
+    override fun getFloat(key: String, defValue: Float): Float = preferences.getFloat(key, defValue)
 
     override fun putLong(key: String, value: Long) {
-        TODO("Not yet implemented")
+        preferences.edit().putLong(key, value).apply()
     }
 
-    override fun getLong(key: String, defValue: Long): Long {
-        TODO("Not yet implemented")
-    }
+    override fun getLong(key: String, defValue: Long): Long = preferences.getLong(key, defValue)
 
     override fun putString(key: String, value: String) {
-        TODO("Not yet implemented")
+        preferences.edit().putString(key, value).apply()
     }
 
     override fun getString(key: String, defValue: String): String {
-        TODO("Not yet implemented")
+        return preferences.getString(key, defValue) ?: defValue
     }
 }

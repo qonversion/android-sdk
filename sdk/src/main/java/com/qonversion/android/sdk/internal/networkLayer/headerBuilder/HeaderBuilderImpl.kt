@@ -10,25 +10,26 @@ import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.networkLayer.ApiHeader
 import java.util.Locale
 
-class HeaderBuilderImpl internal constructor(
+internal class HeaderBuilderImpl(
     private val localStorage: LocalStorage,
     private val locale: Locale,
     private val config: InternalConfig
-): HeaderBuilder {
+) : HeaderBuilder {
+    private val source by lazy { localStorage.getString(PREFS_SOURCE_KEY, PLATFORM) }
+    private val sourceVersion by lazy { localStorage.getString(PREFS_SOURCE_VERSION_KEY, config.sdkVersion) }
+
     override fun buildCommonHeaders(): Map<String, String> {
         val locale = locale.language
         val projectKey = if (config.debugMode) "$DEBUG_MODE_PREFIX${config.projectKey}" else config.projectKey
         val bearer = "Bearer $projectKey"
-        val source = localStorage.getString(PREFS_SOURCE_KEY, PLATFORM)
-        val sourceVersion = localStorage.getString(PREFS_SOURCE_VERSION_KEY, config.sdkVersion)
 
         return mapOf(
-            ApiHeader.Authorization.value to bearer,
-            ApiHeader.Locale.value to locale,
-            ApiHeader.Source.value to source,
-            ApiHeader.SourceVersion.value to sourceVersion,
-            ApiHeader.Platform.value to PLATFORM,
-            ApiHeader.PlatformVersion.value to Build.VERSION.RELEASE,
-            ApiHeader.UserID.value to config.uid)
+            ApiHeader.Authorization.key to bearer,
+            ApiHeader.Locale.key to locale,
+            ApiHeader.Source.key to source,
+            ApiHeader.SourceVersion.key to sourceVersion,
+            ApiHeader.Platform.key to PLATFORM,
+            ApiHeader.PlatformVersion.key to Build.VERSION.RELEASE,
+            ApiHeader.UserID.key to config.uid)
     }
 }
