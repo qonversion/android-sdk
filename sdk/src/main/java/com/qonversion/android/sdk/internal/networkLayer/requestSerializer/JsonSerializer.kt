@@ -1,24 +1,53 @@
 package com.qonversion.android.sdk.internal.networkLayer.requestSerializer
 
+import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.utils.toList
 import com.qonversion.android.sdk.internal.networkLayer.utils.toMap
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.NullPointerException
 
-class JsonSerializer: RequestSerializer {
+internal class JsonSerializer : RequestSerializer {
 
     override fun serialize(data: Map<String, Any?>): String {
-        return JSONObject(data).toString()
+        return try {
+            JSONObject(data).toString()
+        } catch (cause: NullPointerException) {
+            throw QonversionException(
+                ErrorCode.Serialization,
+                cause = cause
+            )
+        }
     }
 
     override fun deserialize(payload: String): Any {
         return try {
             val array = JSONArray(payload)
-            array.toList()
+            try {
+                array.toList()
+            } catch (cause: JSONException) {
+                throw QonversionException(
+                    ErrorCode.Deserialization,
+                    "Failed to parse json array",
+                    cause
+                )
+            }
         } catch (_: JSONException) {
-            val obj = JSONObject(payload)
-            obj.toMap()
+            // If we caught the exception above
+            // then there was not an array in payload,
+            // so we should try to parse as object.
+            try {
+                val obj = JSONObject(payload)
+                obj.toMap()
+            } catch (cause: JSONException) {
+                throw QonversionException(
+                    ErrorCode.Deserialization,
+                    "Failed to parse json object",
+                    cause
+                )
+            }
         }
     }
 }

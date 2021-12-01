@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.networkLayer.requestConfigurator
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
 
-class ApiV2RequestConfigurator(
+internal class ApiV2RequestConfigurator(
     private val headerBuilder: HeaderBuilder
 ): RequestConfigurator {
 
