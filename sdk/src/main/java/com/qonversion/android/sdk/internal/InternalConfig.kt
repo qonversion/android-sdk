@@ -1,7 +1,9 @@
 package com.qonversion.android.sdk.internal
 
 internal class InternalConfig {
-    var uid: String? = null
-    var projectKey: String? = null
+    var uid: String = ""
+    var projectKey: String = ""
+    var sdkVersion: String = ""
+    var debugMode: Boolean = false
     var requestsShouldBeDenied: Boolean = false
 }
