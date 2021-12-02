@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.networkLayer.networkClient
+package com.qonversion.android.sdk.internal.networkLayer.apiInteractor
 
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
@@ -6,10 +6,13 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
+import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.lang.ClassCastException
+import java.lang.Exception
 
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
@@ -17,12 +20,12 @@ internal data class RetryConfig(
     internal val delay: Long = 0L
 )
 
-internal class NetworkClientDecoratorImpl(
+internal class ApiInteractorImpl(
     private val networkClient: NetworkClient,
-    private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential(),
     private val delayCalculator: RetryDelayCalculator,
-    private val config: InternalConfig
-) : NetworkClientDecorator {
+    private val config: InternalConfig,
+    private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential()
+) : ApiInteractor {
     override suspend fun execute(request: Request): Response {
         return execute(request, defaultRetryPolicy)
     }
@@ -38,14 +41,20 @@ internal class NetworkClientDecoratorImpl(
             }
             val response = networkClient.execute(request)
             if (response.isSuccess) {
-                response
+                val data = try {
+                    (response.payload as Map<*, *>)["data"]
+                } catch (cause: ClassCastException) {
+                    throw QonversionException(ErrorCode.BadResponse, "Unexpected payload type. Map expected", cause = cause)
+                } ?: throw QonversionException(ErrorCode.BadResponse, "No data provided in response")
+                Response.Success(response.code, data)
             } else {
                 val retryConfig: RetryConfig = prepareRetryConfig(retryPolicy, attemptIndex)
                 if (retryConfig.shouldRetry) {
                     delay(retryConfig.delay)
                     execute(request, retryPolicy, retryConfig.attemptIndex)
                 } else {
-                    response
+                    // todo parse api error
+                    Response.Error(response.code, "")
                 }
             }
         }

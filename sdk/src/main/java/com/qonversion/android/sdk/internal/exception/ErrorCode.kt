@@ -5,5 +5,6 @@ internal enum class ErrorCode(val defaultMessage: String) {
     Serialization("Failed to serialize data"),
     Deserialization("Failed to deserialize data"),
     RequestDenied("Request denied"),
-    Mapping("Failed to map response")
+    Mapping("Failed to map response"),
+    BadResponse("API response can not be handled")
 }

@@ -6,8 +6,9 @@ import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.mappers.UserMapper
+import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
-import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
+import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import java.util.UUID
 
@@ -17,7 +18,7 @@ private const val USER_ID_SEPARATOR = "_"
 
 internal class UserServiceImpl(
     private val requestConfigurator: RequestConfigurator,
-    private val networkClient: NetworkClient,
+    private val apiInteractor: ApiInteractor,
     private val mapper: UserMapper,
     private val localStorage: LocalStorage
 ) : UserService {
@@ -77,9 +78,14 @@ internal class UserServiceImpl(
 
     @Throws(QonversionException::class)
     private suspend fun executeUserRequest(request: Request): User {
-        val response = networkClient.execute(request)
+        val response = apiInteractor.execute(request)
+
+        if (response !is Response.Success) {
+            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
+        }
+
         val data = try {
-            response.payload as Map<*, *>
+            response.data as Map<*, *>
         } catch (cause: ClassCastException) {
             throw QonversionException(ErrorCode.Mapping, cause = cause)
         }
