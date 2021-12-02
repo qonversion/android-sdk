@@ -8,6 +8,7 @@ import androidx.multidex.MultiDexApplication;
 
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
+import com.google.firebase.*;
 import com.qonversion.android.sdk.AttributionSource;
 import com.qonversion.android.sdk.QUserProperties;
 import com.qonversion.android.sdk.Qonversion;
@@ -25,6 +26,9 @@ public class App extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        FirebaseApp.initializeApp(this);
+
         //  You can set the flag to distinguish sandbox and production users.
         //  Don't use it in production
         Qonversion.setDebugMode();

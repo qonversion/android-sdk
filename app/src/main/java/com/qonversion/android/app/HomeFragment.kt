@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
 import com.qonversion.android.sdk.*
@@ -73,6 +75,13 @@ class HomeFragment : Fragment() {
             })
         }
 
+        binding.buttonLogout.setOnClickListener {
+            Firebase.auth.signOut()
+            Qonversion.logout()
+
+            goToAuth()
+        }
+
         // Automation
         // You can skip this step if you don't need to handle the Qonversion Automations result
         Automations.setDelegate(automationsDelegate)
@@ -85,6 +94,11 @@ class HomeFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun goToAuth() {
+        val intent = AuthActivity.getCallingIntent(requireContext())
+        startActivity(intent)
     }
 
     private fun updateContent(products: Map<String, QProduct>) {

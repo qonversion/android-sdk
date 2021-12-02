@@ -4,6 +4,9 @@
     <string name="subscribe_for">Subscribe for</string>
     <string name="buy_for">Buy for</string>
     <string name="loading">Loading…</string>
+    <string name="logout">Logout</string>
+    <string name="skip">Skip</string>
+    <string name="auth_with_google">Authorize with Google</string>
     <string name="check_active_permissions">Check active permissions</string>
     <string name="restore_purchases">Restore purchases</string>
     <string name="purchased">Purchased</string>
@@ -18,5 +21,6 @@
     <string name="price">Price</string>
     <string name="application_icon">Application icon</string>
     <string name="channel_name">qonversion</string>
+    <string name="firebase_web_client_id">11599271839-jg1njos9hp2d07jg7d3oqi523io0pdr6.apps.googleusercontent.com</string>
 
 </resources>
