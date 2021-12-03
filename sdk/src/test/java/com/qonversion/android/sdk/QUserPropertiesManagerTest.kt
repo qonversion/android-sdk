@@ -310,21 +310,6 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun setUserID() {
-        // given
-        val userId = "userId"
-        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
-
-        // when
-        spykPropertiesManager.setUserID(userId)
-
-        // then
-        verify(exactly = 1) {
-            spykPropertiesManager.setUserProperty("_q_custom_user_id", userId)
-        }
-    }
-
-    @Test
     fun `should not set user property when its value is empty`() {
         // given
         val key = "email"
