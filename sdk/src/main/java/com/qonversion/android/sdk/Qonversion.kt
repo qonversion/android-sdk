@@ -411,7 +411,7 @@ object Qonversion : LifecycleDelegate {
      */
     @JvmStatic
     @Deprecated(
-        "This method will be removed in future releases. Use setProperty instead.",
+        "Will be removed in a future major release. Use setProperty instead.",
         replaceWith = ReplaceWith(
             "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
             "com.qonversion.android.sdk.QUserProperties"
