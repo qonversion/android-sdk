@@ -90,10 +90,6 @@ class QUserPropertiesManager @Inject internal constructor(
         setUserProperty(key.userPropertyCode, value)
     }
 
-    fun setUserID(value: String) {
-        setUserProperty(QUserProperties.CustomUserId.userPropertyCode, value)
-    }
-
     fun setUserProperty(key: String, value: String) {
         if (value.isEmpty()) {
             return

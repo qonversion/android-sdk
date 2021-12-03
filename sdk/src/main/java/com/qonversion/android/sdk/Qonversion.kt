@@ -410,8 +410,15 @@ object Qonversion : LifecycleDelegate {
      * @param value your database user ID
      */
     @JvmStatic
+    @Deprecated(
+        "This method will be removed in future releases. Use setProperty instead.",
+        replaceWith = ReplaceWith(
+            "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
+            "com.qonversion.android.sdk.QUserProperties"
+        )
+    )
     fun setUserID(value: String) {
-        userPropertiesManager?.setUserID(value)
+        userPropertiesManager?.setProperty(QUserProperties.CustomUserId, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
