@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Qonversion Sample App</string>
     <string name="build_in_app_subscriptions_without_server_code">Build in-app subscriptions\n without server code</string>
+    <string name="welcome_text">Welcome to Qonversion sample\u00A0app.</string>
+    <string name="google_sign_in_explanation">Please use the\u00A0sign-in with\u00A0Google option to\u00A0test cross-platform subscription management.</string>
     <string name="subscribe_for">Subscribe for</string>
     <string name="buy_for">Buy for</string>
     <string name="loading">Loading…</string>
