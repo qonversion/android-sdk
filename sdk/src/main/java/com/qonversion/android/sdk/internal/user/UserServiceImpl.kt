@@ -7,7 +7,6 @@ import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.mappers.UserMapper
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
-import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import java.net.HttpURLConnection

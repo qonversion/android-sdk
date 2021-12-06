@@ -8,7 +8,7 @@ internal sealed class Response(
         val type: String?,
         val apiCode: String?,
         val message: String?
-    ): Response(code)
+    ) : Response(code)
 
-    class Success(code: Int, val data: Any): Response(code)
+    class Success(code: Int, val data: Any) : Response(code)
 }

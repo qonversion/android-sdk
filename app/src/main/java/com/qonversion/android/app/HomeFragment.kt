@@ -9,7 +9,6 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
-import com.qonversion.android.sdk.TestQonversion
 import com.qonversion.android.sdk.old.*
 import com.qonversion.android.sdk.old.automations.Automations
 import com.qonversion.android.sdk.old.automations.AutomationsDelegate
@@ -52,7 +51,7 @@ class HomeFragment : Fragment() {
         })
 
         binding.buttonSubscribe.setOnClickListener {
-            TestQonversion.test(requireContext())
+            purchase(productIdSubs)
         }
 
         binding.buttonInApp.setOnClickListener {

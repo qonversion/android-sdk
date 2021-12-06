@@ -12,7 +12,6 @@ import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.Ret
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.json.JSONException
 import java.lang.ClassCastException
 
 internal data class RetryConfig(
