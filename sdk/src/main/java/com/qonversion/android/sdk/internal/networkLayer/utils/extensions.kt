@@ -5,7 +5,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 @Throws(JSONException::class)
-fun JSONObject.toMap(): Map<String, Any> {
+internal fun JSONObject.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     keys().forEach { key ->
         val value = get(key).parseJsonValue()
@@ -16,7 +16,7 @@ fun JSONObject.toMap(): Map<String, Any> {
 }
 
 @Throws(JSONException::class)
-fun JSONArray.toList(): List<Any> {
+internal fun JSONArray.toList(): List<Any> {
     val list = mutableListOf<Any>()
     for (i in 0 until length()) {
         val value = get(i).parseJsonValue()
@@ -32,3 +32,8 @@ private fun Any.parseJsonValue() = when (this) {
     is JSONObject -> toMap()
     else -> this
 }
+
+private const val MIN_SUCCESS_CODE = 200
+private const val MAX_SUCCESS_CODE = 299
+
+internal val Int.isSuccessHttpCode: Boolean get() = this in MIN_SUCCESS_CODE..MAX_SUCCESS_CODE

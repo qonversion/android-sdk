@@ -23,11 +23,15 @@ internal class SharedPreferencesStorage(
 
     override fun getLong(key: String, defValue: Long): Long = preferences.getLong(key, defValue)
 
-    override fun putString(key: String, value: String) {
+    override fun putString(key: String, value: String?) {
         preferences.edit().putString(key, value).apply()
     }
 
-    override fun getString(key: String, defValue: String): String {
-        return preferences.getString(key, defValue) ?: defValue
+    override fun getString(key: String, defValue: String?): String? {
+        return preferences.getString(key, defValue)
+    }
+
+    override fun remove(key: String) {
+        return preferences.edit().remove(key).apply()
     }
 }

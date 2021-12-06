@@ -3,15 +3,16 @@ package com.qonversion.android.sdk.internal.networkLayer.networkClient
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
-import com.qonversion.android.sdk.internal.networkLayer.dto.Response
-import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializer
+import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
+import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.InputStreamReader
 import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
@@ -19,9 +20,9 @@ import java.net.MalformedURLException
 import java.net.URL
 
 internal class NetworkClientImpl(
-    private val serializer: RequestSerializer = JsonSerializer()
+    private val serializer: RequestSerializer
 ) : NetworkClient {
-    override suspend fun execute(request: Request): Response {
+    override suspend fun execute(request: Request): RawResponse {
         return withContext(Dispatchers.IO) {
             val url = try {
                 URL(request.url)
@@ -63,8 +64,13 @@ internal class NetworkClientImpl(
                 write(it, connection)
             }
             val code = connection.responseCode
-            val response = read(connection)
-            Response(code, response)
+            val stream = if (code.isSuccessHttpCode) {
+                connection.inputStream
+            } else {
+                connection.errorStream
+            }
+            val response = read(stream)
+            RawResponse(code, response)
         }
     }
 
@@ -86,8 +92,8 @@ internal class NetworkClientImpl(
         }
     }
 
-    private fun read(connection: HttpURLConnection): Any {
-        val inputStreamReader = InputStreamReader(connection.inputStream, "utf-8")
+    private fun read(stream: InputStream): Any {
+        val inputStreamReader = InputStreamReader(stream, "utf-8")
         BufferedReader(inputStreamReader).use { br ->
             val responseStringBuilder = StringBuilder()
             var responseLine: String?
