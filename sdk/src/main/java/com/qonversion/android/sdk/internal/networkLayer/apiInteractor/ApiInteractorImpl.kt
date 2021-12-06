@@ -65,7 +65,7 @@ internal class ApiInteractorImpl(
                     }
                     errorData?.let {
                         errorMapper.fromMap(it, response.code)
-                    } ?: Response.Error(response.code)
+                    } ?: Response.Error(response.code, "No error data provided")
                 }
             }
         }

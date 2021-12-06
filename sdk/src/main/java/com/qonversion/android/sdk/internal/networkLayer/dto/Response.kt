@@ -5,9 +5,9 @@ internal sealed class Response(
 ) {
     class Error(
         code: Int,
+        val message: String,
         val type: String? = null,
-        val apiCode: String? = null,
-        val message: String? = null
+        val apiCode: String? = null
     ) : Response(code)
 
     class Success(code: Int, val data: Any) : Response(code)
