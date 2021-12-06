@@ -13,7 +13,7 @@ internal class JsonSerializer : RequestSerializer {
 
     override fun serialize(data: Map<String, Any?>): String {
         return try {
-            // toString() might return null on some cases, which are not documented.
+            // toString() might return null on some cases despite the declaration.
             JSONObject(data).toString() ?: throw QonversionException(
                 ErrorCode.Serialization,
                 details = "Json might contain unsupported elements (f.e. null keys)"
