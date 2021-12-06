@@ -125,12 +125,12 @@ class HomeFragment : Fragment() {
         var isNothingToRestore = true
         val permissionPlus = permissions[permissionPlus]
         if (permissionPlus != null && permissionPlus.isActive()) {
-            binding.buttonSubscribe.text = getStr(R.string.purchased)
+            binding.buttonSubscribe.text = getStr(R.string.successfully_purchased)
             isNothingToRestore = false
         }
         val permissionStandart = permissions[permissionStandart]
         if (permissionStandart != null && permissionStandart.isActive()) {
-            binding.buttonInApp.text = getStr(R.string.purchased)
+            binding.buttonInApp.text = getStr(R.string.successfully_purchased)
             isNothingToRestore = false
         }
 
@@ -145,11 +145,24 @@ class HomeFragment : Fragment() {
             productId,
             callback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
+                    val successColor = resources.getColor(R.color.colorGreen)
+                    val textColor = resources.getColor(R.color.colorWhite)
+
                     when (productId) {
-                        productIdInApp -> binding.buttonInApp.text =
-                            getStr(R.string.purchased)
-                        productIdSubs -> binding.buttonSubscribe.text =
-                            getStr(R.string.purchased)
+                        productIdInApp -> {
+                            binding.buttonInApp.text =
+                                getStr(R.string.successfully_purchased)
+                            binding.buttonInApp.setBackgroundColor(successColor)
+                            binding.buttonInApp.setStrokeColorResource(R.color.colorGreen)
+                            binding.buttonInApp.setTextColor(textColor)
+                        }
+                        productIdSubs -> {
+                            binding.buttonSubscribe.text =
+                                getStr(R.string.successfully_purchased)
+                            binding.buttonSubscribe.setBackgroundColor(successColor)
+                            binding.buttonSubscribe.setStrokeColorResource(R.color.colorGreen)
+                            binding.buttonSubscribe.setTextColor(textColor)
+                        }
                     }
                 }
 

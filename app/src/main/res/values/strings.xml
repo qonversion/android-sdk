@@ -11,7 +11,7 @@
     <string name="auth_with_google">Authorize with Google</string>
     <string name="check_active_permissions">Check active permissions</string>
     <string name="restore_purchases">Restore purchases</string>
-    <string name="purchased">Purchased</string>
+    <string name="successfully_purchased">Successfully purchased</string>
     <string name="nothing_to_restore">Nothing to restore</string>
     <string name="permission_id">Permission Id</string>
     <string name="product_id">Product Id</string>

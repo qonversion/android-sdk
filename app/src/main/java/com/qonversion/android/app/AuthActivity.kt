@@ -71,6 +71,9 @@ class AuthActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     firebaseAuth.currentUser?.let {
+                        // Sign out from google to disable auto-auth on next attempt.
+                        // Used to allow to choose another account.
+                        googleSignInClient.signOut()
                         goToMainFlow(it.uid)
                     } ?: showGoogleLoginError()
                 } else {
