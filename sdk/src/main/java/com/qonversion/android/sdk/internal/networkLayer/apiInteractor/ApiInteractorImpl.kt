@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.internal.networkLayer.apiInteractor
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.mappers.ErrorResponseMapper
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
@@ -11,8 +12,8 @@ import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.Ret
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import java.lang.ClassCastException
-import java.lang.Exception
 
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
@@ -24,6 +25,7 @@ internal class ApiInteractorImpl(
     private val networkClient: NetworkClient,
     private val delayCalculator: RetryDelayCalculator,
     private val config: InternalConfig,
+    private val errorMapper: ErrorResponseMapper,
     private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential()
 ) : ApiInteractor {
     override suspend fun execute(request: Request): Response {
@@ -40,12 +42,16 @@ internal class ApiInteractorImpl(
                 throw QonversionException(ErrorCode.RequestDenied)
             }
             val response = networkClient.execute(request)
+
+            val payload = try {
+                (response.payload as Map<*, *>)
+            } catch (cause: ClassCastException) {
+                throw QonversionException(ErrorCode.BadResponse, "Unexpected payload type. Map expected", cause = cause)
+            }
+
             if (response.isSuccess) {
-                val data = try {
-                    (response.payload as Map<*, *>)["data"]
-                } catch (cause: ClassCastException) {
-                    throw QonversionException(ErrorCode.BadResponse, "Unexpected payload type. Map expected", cause = cause)
-                } ?: throw QonversionException(ErrorCode.BadResponse, "No data provided in response")
+                val data = payload["data"]
+                    ?: throw QonversionException(ErrorCode.BadResponse, "No data provided in response")
                 Response.Success(response.code, data)
             } else {
                 val retryConfig: RetryConfig = prepareRetryConfig(retryPolicy, attemptIndex)
@@ -53,8 +59,14 @@ internal class ApiInteractorImpl(
                     delay(retryConfig.delay)
                     execute(request, retryPolicy, retryConfig.attemptIndex)
                 } else {
-                    // todo parse api error
-                    Response.Error(response.code, "")
+                    val errorData = try {
+                        payload["error"] as Map<*, *>
+                    } catch (_: ClassCastException) {
+                        null
+                    }
+                    errorData?.let {
+                        errorMapper.fromMap(it, response.code)
+                    } ?: Response.Error(response.code, null, null, null)
                 }
             }
         }

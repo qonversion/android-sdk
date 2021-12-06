@@ -5,6 +5,7 @@ import androidx.preference.PreferenceManager
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.common.API_URL
 import com.qonversion.android.sdk.internal.common.localStorage.SharedPreferencesStorage
+import com.qonversion.android.sdk.internal.mappers.ApiErrorMapper
 import com.qonversion.android.sdk.internal.mappers.EntitlementMapper
 import com.qonversion.android.sdk.internal.mappers.UserMapper
 import com.qonversion.android.sdk.internal.mappers.UserPurchaseMapper
@@ -35,8 +36,9 @@ object TestQonversion {
             sdkVersion = "3.2.1"
         }
 
+        val errorMapper = ApiErrorMapper()
         val networkClient = NetworkClientImpl(serializer)
-        val apiInteractor = ApiInteractorImpl(networkClient, delayCalculator, config)
+        val apiInteractor = ApiInteractorImpl(networkClient, delayCalculator, config, errorMapper)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val localStorage = SharedPreferencesStorage(prefs)
@@ -48,17 +50,11 @@ object TestQonversion {
 
         val userService = UserServiceImpl(requestConfigurator, apiInteractor, userMapper, localStorage)
 
-        var e = userService.obtainUserId()
-        userService.updateCurrentUserId("erjgwkrw")
-        e = userService.obtainUserId()
-        val w = userService.logoutIfNeeded()
-        e = userService.obtainUserId()
-        userService.resetUser()
-        e = userService.obtainUserId()
-
-        val user = CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val resp = userService.createUser("QON_85c3ef6a6fc245c89cfc24e6420cc579")
-            userService.getUser("QON_85c3ef6a6fc245c89cfc24e6420cc578")
+            val resp2 = userService.getUser("QON_85c3ef6a6fc245c89cfc24e6420cc579")
+            val re = userService.getUser("QON_85c3ef6a6fc245c89cfc24e6420cc575")
+            val edq = 3
         }
     }
 }

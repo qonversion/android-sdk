@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInterac
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
+import java.net.HttpURLConnection
 import java.util.UUID
 
 private const val TEST_UID = "40egafre6_e_"
@@ -68,22 +69,29 @@ internal class UserServiceImpl(
 
     override suspend fun getUser(id: String): User {
         val request = requestConfigurator.configureUserRequest(id)
-        return executeUserRequest(request)
+        val response = apiInteractor.execute(request)
+
+        if (response !is Response.Success) {
+            if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
+                return createUser(id)
+            }
+            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
+        }
+        return mapUser(response)
     }
 
     override suspend fun createUser(id: String): User {
         val request = requestConfigurator.configureCreateUserRequest(id)
-        return executeUserRequest(request)
-    }
-
-    @Throws(QonversionException::class)
-    private suspend fun executeUserRequest(request: Request): User {
         val response = apiInteractor.execute(request)
 
         if (response !is Response.Success) {
             throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
         }
+        return mapUser(response)
+    }
 
+    @Throws(QonversionException::class)
+    private fun mapUser(response: Response.Success): User {
         val data = try {
             response.data as Map<*, *>
         } catch (cause: ClassCastException) {
