@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.networkLayer.networkClient
 
-import androidx.annotation.RawRes
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
@@ -9,7 +8,13 @@ import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.Reques
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.*
+import java.io.BufferedWriter
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.OutputStreamWriter
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -68,7 +73,6 @@ internal class NetworkClientImpl(
         }
         connection.addRequestProperty("Content-Type", "application/json")
         connection.addRequestProperty("Accept", "application/json")
-
     }
 
     // Internal for tests.
