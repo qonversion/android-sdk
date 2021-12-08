@@ -14,7 +14,8 @@ class JsonSerializerTest {
         mapOf("key" to "value") to """{"key":"value"}""", // simple map
         mapOf("key" to listOf(1, 2, 3)) to """{"key":[1,2,3]}""", // nested array
         mapOf("key" to mapOf("nestedKey" to "value")) to """{"key":{"nestedKey":"value"}}""", // nested map
-        mapOf("key" to null) to "{}" // null value
+        mapOf("key" to null) to "{}", // null value
+        mapOf("key1" to null, "key2" to "value") to """{"key2":"value"}""" // null and non-null values
     )
 
     private val deserializationTests = mapOf(
