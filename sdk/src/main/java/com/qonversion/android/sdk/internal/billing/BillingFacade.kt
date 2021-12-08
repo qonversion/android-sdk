@@ -4,7 +4,6 @@ import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.billing.BillingError
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
 interface BillingFacade {
