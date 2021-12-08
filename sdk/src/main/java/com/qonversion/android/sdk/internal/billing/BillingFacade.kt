@@ -8,15 +8,9 @@ import com.qonversion.android.sdk.old.billing.BillingError
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
 interface BillingFacade {
-    suspend fun queryPurchasesHistory(
-        onQueryHistoryCompleted: (purchases: List<PurchaseHistory>) -> Unit,
-        onQueryHistoryFailed: (error: BillingError) -> Unit
-    )
+    suspend fun queryPurchasesHistory(): List<PurchaseHistory>
 
-    suspend fun queryPurchases(
-        onQueryCompleted: (purchases: List<Purchase>) -> Unit,
-        onQueryFailed: (error: BillingError) -> Unit
-    )
+    suspend fun queryPurchases(): List<Purchase>
 
     suspend fun purchase(
         activity: Activity,
@@ -25,23 +19,11 @@ interface BillingFacade {
         @BillingFlowParams.ProrationMode prorationMode: Int? = null
     )
 
-    suspend fun loadProducts(
-        productIDs: Set<String>,
-        onLoadCompleted: (products: List<SkuDetails>) -> Unit,
-        onLoadFailed: (error: BillingError) -> Unit
-    )
+    suspend fun loadProducts(productIDs: Set<String>): List<SkuDetails>
 
-    suspend fun consume(
-        purchaseToken: String
-    )
+    suspend fun consume(purchaseToken: String)
 
-    suspend fun acknowledge(
-        purchaseToken: String
-    )
+    suspend fun acknowledge(purchaseToken: String)
 
-    suspend fun getSkuDetailsFromPurchases(
-        purchases: List<Purchase>,
-        onCompleted: (List<SkuDetails>) -> Unit,
-        onFailed: (BillingError) -> Unit
-    )
+    suspend fun getSkuDetailsFromPurchases(purchases: List<Purchase>): List<SkuDetails>
 }
