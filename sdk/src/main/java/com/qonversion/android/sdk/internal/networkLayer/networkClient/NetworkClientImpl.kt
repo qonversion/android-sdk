@@ -40,7 +40,6 @@ internal class NetworkClientImpl(
         }
     }
 
-    // Internal for tests.
     internal fun parseUrl(url: String): URL {
         return try {
             URL(url)
@@ -53,7 +52,6 @@ internal class NetworkClientImpl(
         }
     }
 
-    // Internal for tests.
     internal fun connect(url: URL): HttpURLConnection {
         return try {
             url.openConnection() as HttpURLConnection
@@ -66,7 +64,6 @@ internal class NetworkClientImpl(
         }
     }
 
-    // Internal for tests.
     internal fun prepareHeaders(connection: HttpURLConnection, headers: Map<String, String>) {
         headers.forEach {
             connection.addRequestProperty(it.key, it.value)
@@ -75,7 +72,6 @@ internal class NetworkClientImpl(
         connection.addRequestProperty("Accept", "application/json")
     }
 
-    // Internal for tests.
     internal fun write(body: Map<String, Any?>, stream: OutputStream) {
         val requestPayload = serializer.serialize(body)
         val outputStreamWriter = OutputStreamWriter(stream, "utf-8")
@@ -94,7 +90,6 @@ internal class NetworkClientImpl(
         }
     }
 
-    // Internal for tests
     internal fun handleResponse(connection: HttpURLConnection): RawResponse {
         val code = connection.responseCode
         val stream = if (code.isSuccessHttpCode) {
@@ -106,7 +101,6 @@ internal class NetworkClientImpl(
         return RawResponse(code, response)
     }
 
-    // Internal for tests
     internal fun read(stream: InputStream): Any {
         val inputStreamReader = InputStreamReader(stream, "utf-8")
         BufferedReader(inputStreamReader).use { br ->
