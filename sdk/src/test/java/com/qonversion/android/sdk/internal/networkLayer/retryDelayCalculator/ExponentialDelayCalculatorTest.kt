@@ -15,6 +15,11 @@ internal class ExponentialDelayCalculatorTest {
     private lateinit var delayCalculator: RetryDelayCalculator
     private val random = mockk<Random>()
 
+    private val commonTestCases = mapOf(
+        0L to 0,
+        1000L to 0
+    )
+
     @Before
     fun setUp() {
         delayCalculator = ExponentialDelayCalculator(random)
@@ -28,26 +33,14 @@ internal class ExponentialDelayCalculatorTest {
     }
 
     @Test
-    fun `first retry`() {
-        // given
+    fun `common cases`() {
+        for ((minDelay, retriesCount) in commonTestCases) {
+            // when
+            val delay = delayCalculator.countDelay(minDelay, retriesCount)
 
-        // when
-        val delay = delayCalculator.countDelay(0, 0)
-
-        // then
-        assertThat(delay > 0)
-    }
-
-    @Test
-    fun `min delay`() {
-        // given
-        val minDelay = 1000L
-
-        // when
-        val delay = delayCalculator.countDelay(minDelay, 0)
-
-        // then
-        assertThat(delay >= minDelay)
+            // then
+            assertThat(delay > minDelay)
+        }
     }
 
     @Test
