@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
+import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.RemoteMessage
@@ -42,8 +43,8 @@ class HomeFragment : Fragment() {
 
         Qonversion.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
-                showLoading(false)
                 updateContent(products)
+                Qonversion.checkPermissions(getPermissionsCallback())
             }
 
             override fun onError(error: QonversionError) {
@@ -62,17 +63,7 @@ class HomeFragment : Fragment() {
 
         binding.buttonRestore.setOnClickListener {
             showLoading(true)
-            Qonversion.restore(object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
-                    showLoading(false)
-                    handleRestore(permissions)
-                }
-
-                override fun onError(error: QonversionError) {
-                    showLoading(false)
-                    showError(requireContext(), error, TAG)
-                }
-            })
+            Qonversion.restore(getPermissionsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
@@ -94,6 +85,20 @@ class HomeFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun getPermissionsCallback(): QonversionPermissionsCallback {
+        return object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) {
+                showLoading(false)
+                handlePermissions(permissions)
+            }
+
+            override fun onError(error: QonversionError) {
+                showLoading(false)
+                showError(requireContext(), error, TAG)
+            }
+        }
     }
 
     private fun goToAuth() {
@@ -121,16 +126,16 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun handleRestore(permissions: Map<String, QPermission>) {
+    private fun handlePermissions(permissions: Map<String, QPermission>) {
         var isNothingToRestore = true
         val permissionPlus = permissions[permissionPlus]
         if (permissionPlus != null && permissionPlus.isActive()) {
-            binding.buttonSubscribe.text = getStr(R.string.successfully_purchased)
+            binding.buttonSubscribe.toSuccessState()
             isNothingToRestore = false
         }
         val permissionStandart = permissions[permissionStandart]
         if (permissionStandart != null && permissionStandart.isActive()) {
-            binding.buttonInApp.text = getStr(R.string.successfully_purchased)
+            binding.buttonInApp.toSuccessState()
             isNothingToRestore = false
         }
 
@@ -145,24 +150,9 @@ class HomeFragment : Fragment() {
             productId,
             callback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
-                    val successColor = resources.getColor(R.color.colorGreen)
-                    val textColor = resources.getColor(R.color.colorWhite)
-
                     when (productId) {
-                        productIdInApp -> {
-                            binding.buttonInApp.text =
-                                getStr(R.string.successfully_purchased)
-                            binding.buttonInApp.setBackgroundColor(successColor)
-                            binding.buttonInApp.setStrokeColorResource(R.color.colorGreen)
-                            binding.buttonInApp.setTextColor(textColor)
-                        }
-                        productIdSubs -> {
-                            binding.buttonSubscribe.text =
-                                getStr(R.string.successfully_purchased)
-                            binding.buttonSubscribe.setBackgroundColor(successColor)
-                            binding.buttonSubscribe.setStrokeColorResource(R.color.colorGreen)
-                            binding.buttonSubscribe.setTextColor(textColor)
-                        }
+                        productIdSubs -> binding.buttonSubscribe.toSuccessState()
+                        productIdInApp -> binding.buttonInApp.toSuccessState()
                     }
                 }
 
@@ -221,5 +211,14 @@ class HomeFragment : Fragment() {
         override fun automationsDidStartExecuting(actionResult: QActionResult) {
             // Do some logic or track event
         }
+    }
+
+    private fun MaterialButton.toSuccessState() {
+        val successColor = resources.getColor(R.color.colorGreen)
+        val textColor = resources.getColor(R.color.colorWhite)
+        text = getStr(R.string.successfully_purchased)
+        setBackgroundColor(successColor)
+        setStrokeColorResource(R.color.colorGreen)
+        setTextColor(textColor)
     }
 }
