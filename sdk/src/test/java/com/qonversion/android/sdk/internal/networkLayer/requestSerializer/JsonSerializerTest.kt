@@ -10,57 +10,35 @@ class JsonSerializerTest {
 
     private lateinit var jsonSerializer: JsonSerializer
 
+    private val serializationTests = mapOf(
+        mapOf("key" to "value") to """{"key":"value"}""", // simple map
+        mapOf("key" to listOf(1, 2, 3)) to """{"key":[1,2,3]}""", // nested array
+        mapOf("key" to mapOf("nestedKey" to "value")) to """{"key":{"nestedKey":"value"}}""", // nested map
+        mapOf("key" to null) to "{}" // null value
+    )
+
+    private val deserializationTests = mapOf(
+        """{"field1": "value1"}""" to mapOf("field1" to "value1"), // correct json
+        """["value1", "value2"]""" to listOf("value1", "value2"), // array json
+        """["value", {"field1": "value1"}]""" to listOf("value", mapOf("field1" to "value1")), // array with nested json
+        """{"field1": ["value1", "value2"]}""" to mapOf("field1" to listOf("value1", "value2")), // json with nested array
+        """{}""" to emptyMap<Any?, Any?>() // empty json
+    )
+
     @Before
     fun setUp() {
         jsonSerializer = JsonSerializer()
     }
 
     @Test
-    fun `serialize simple map`() {
-        // given
-        val data = mapOf("key" to "value")
+    fun `serialize tests`() {
+        for ((given, expected) in serializationTests) {
+            // when
+            val result = jsonSerializer.serialize(given)
 
-        // when
-        val result = jsonSerializer.serialize(data)
-
-        // then
-        assertThat(result).isEqualTo("""{"key":"value"}""")
-    }
-
-    @Test
-    fun `serialize nested array`() {
-        // given
-        val data = mapOf("key" to listOf(1, 2, 3))
-
-        // when
-        val result = jsonSerializer.serialize(data)
-
-        // then
-        assertThat(result).isEqualTo("""{"key":[1,2,3]}""")
-    }
-
-    @Test
-    fun `serialize nested map`() {
-        // given
-        val data = mapOf("key" to mapOf("nestedKey" to "value"))
-
-        // when
-        val result = jsonSerializer.serialize(data)
-
-        // then
-        assertThat(result).isEqualTo("""{"key":{"nestedKey":"value"}}""")
-    }
-
-    @Test
-    fun `serialize null value`() {
-        // given
-        val data = mapOf("key" to null)
-
-        // when
-        val result = jsonSerializer.serialize(data)
-
-        // then
-        assertThat(result).isEqualTo("""{}""")
+            // then
+            assertThat(result).isEqualTo(expected)
+        }
     }
 
     @Test
@@ -78,55 +56,14 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `deserialize correct json`() {
-        // given
-        val json = """{"field1": "value1"}"""
-        val expected = mapOf("field1" to "value1")
+    fun `deserialize tests`() {
+        for ((given, expected) in deserializationTests) {
+            // when
+            val result = jsonSerializer.deserialize(given)
 
-        // when
-        val res = jsonSerializer.deserialize(json)
-
-        // then
-        assertThat(res).isEqualTo(expected)
-    }
-
-    @Test
-    fun `deserialize array json`() {
-        // given
-        val json = """["value1", "value2"]"""
-        val expected = listOf("value1", "value2")
-
-        // when
-        val res = jsonSerializer.deserialize(json)
-
-        // then
-        assertThat(res).isEqualTo(expected)
-    }
-
-    @Test
-    fun `deserialize array with nested json`() {
-        // given
-        val json = """["value", {"field1": "value1"}]"""
-        val expected = listOf("value", mapOf("field1" to "value1"))
-
-        // when
-        val res = jsonSerializer.deserialize(json)
-
-        // then
-        assertThat(res).isEqualTo(expected)
-    }
-
-    @Test
-    fun `deserialize json with nested array`() {
-        // given
-        val json = """{"field1": ["value1", "value2"]}"""
-        val expected = mapOf("field1" to listOf("value1", "value2"))
-
-        // when
-        val res = jsonSerializer.deserialize(json)
-
-        // then
-        assertThat(res).isEqualTo(expected)
+            // then
+            assertThat(result).isEqualTo(expected)
+        }
     }
 
     @Test
@@ -164,17 +101,5 @@ class JsonSerializerTest {
         assertThatThrownBy {
             jsonSerializer.deserialize(json2)
         }.isInstanceOf(QonversionException::class.java)
-    }
-
-    @Test
-    fun `deserialize empty json`() {
-        // given
-        val json = """{}"""
-
-        // when
-        val res = jsonSerializer.deserialize(json)
-
-        // then
-        assertThat(res).isEqualTo(emptyMap<Any?, Any?>())
     }
 }
