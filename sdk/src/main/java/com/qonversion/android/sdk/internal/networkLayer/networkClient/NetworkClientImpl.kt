@@ -8,11 +8,12 @@ import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.Reques
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
@@ -24,59 +25,56 @@ internal class NetworkClientImpl(
 ) : NetworkClient {
     override suspend fun execute(request: Request): RawResponse {
         return withContext(Dispatchers.IO) {
-            val url = try {
-                URL(request.url)
-            } catch (cause: MalformedURLException) {
-                throw QonversionException(
-                    ErrorCode.NetworkRequestExecution,
-                    "Wrong url - \"${request.url}\"",
-                    cause
-                )
-            }
-
-            val connection = try {
-                url.openConnection() as HttpURLConnection
-            } catch (cause: IOException) {
-                throw QonversionException(
-                    ErrorCode.NetworkRequestExecution,
-                    "Connection opening failed",
-                    cause
-                )
-            }
+            val url = parseUrl(request.url)
+            val connection = connect(url)
 
             connection.requestMethod = request.type.toString()
-            try {
-                request.headers.forEach {
-                    connection.addRequestProperty(it.key, it.value)
-                }
-            } catch (cause: NullPointerException) {
-                throw QonversionException(
-                    ErrorCode.NetworkRequestExecution,
-                    "Header key can not be null",
-                    cause
-                )
-            }
-            connection.addRequestProperty("Content-Type", "application/json")
-            connection.addRequestProperty("Accept", "application/json")
+            prepareHeaders(connection, request.headers)
 
             request.body?.let {
                 connection.doOutput = true
-                write(it, connection)
+                write(it, connection.outputStream)
             }
-            val code = connection.responseCode
-            val stream = if (code.isSuccessHttpCode) {
-                connection.inputStream
-            } else {
-                connection.errorStream
-            }
-            val response = read(stream)
-            RawResponse(code, response)
+
+            handleResponse(connection)
         }
     }
 
-    private fun write(body: Map<String, Any?>, connection: HttpURLConnection) {
+    internal fun parseUrl(url: String): URL {
+        return try {
+            URL(url)
+        } catch (cause: MalformedURLException) {
+            throw QonversionException(
+                ErrorCode.NetworkRequestExecution,
+                "Wrong url - \"$url\"",
+                cause
+            )
+        }
+    }
+
+    internal fun connect(url: URL): HttpURLConnection {
+        return try {
+            url.openConnection() as HttpURLConnection
+        } catch (cause: IOException) {
+            throw QonversionException(
+                ErrorCode.NetworkRequestExecution,
+                "Connection opening failed",
+                cause
+            )
+        }
+    }
+
+    internal fun prepareHeaders(connection: HttpURLConnection, headers: Map<String, String>) {
+        headers.forEach {
+            connection.addRequestProperty(it.key, it.value)
+        }
+        connection.addRequestProperty("Content-Type", "application/json")
+        connection.addRequestProperty("Accept", "application/json")
+    }
+
+    internal fun write(body: Map<String, Any?>, stream: OutputStream) {
         val requestPayload = serializer.serialize(body)
-        val outputStreamWriter = OutputStreamWriter(connection.outputStream, "utf-8")
+        val outputStreamWriter = OutputStreamWriter(stream, "utf-8")
 
         try {
             BufferedWriter(outputStreamWriter).use { bw ->
@@ -92,7 +90,18 @@ internal class NetworkClientImpl(
         }
     }
 
-    private fun read(stream: InputStream): Any {
+    internal fun handleResponse(connection: HttpURLConnection): RawResponse {
+        val code = connection.responseCode
+        val stream = if (code.isSuccessHttpCode) {
+            connection.inputStream
+        } else {
+            connection.errorStream
+        }
+        val response = read(stream)
+        return RawResponse(code, response)
+    }
+
+    internal fun read(stream: InputStream): Any {
         val inputStreamReader = InputStreamReader(stream, "utf-8")
         BufferedReader(inputStreamReader).use { br ->
             val responseStringBuilder = StringBuilder()
