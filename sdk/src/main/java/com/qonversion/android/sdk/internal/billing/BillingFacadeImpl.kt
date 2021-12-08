@@ -6,7 +6,7 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.old.billing.BillingError
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
-class BillingFacadeImpl: BillingFacade {
+class BillingFacadeImpl : BillingFacade {
     override suspend fun queryPurchasesHistory(
         onQueryHistoryCompleted: (purchases: List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (error: BillingError) -> Unit
