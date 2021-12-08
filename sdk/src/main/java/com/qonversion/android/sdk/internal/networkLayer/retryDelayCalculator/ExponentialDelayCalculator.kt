@@ -7,7 +7,6 @@ import kotlin.random.Random
 
 private const val JITTER = 0.4f
 private const val FACTOR = 2.4f
-// Internal for testing
 internal const val MAX_DELAY_MS = 1000000L
 
 internal class ExponentialDelayCalculator(
