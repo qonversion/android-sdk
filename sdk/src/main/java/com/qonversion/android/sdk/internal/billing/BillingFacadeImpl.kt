@@ -7,21 +7,21 @@ import com.qonversion.android.sdk.old.billing.BillingError
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
 class BillingFacadeImpl: BillingFacade {
-    override fun queryPurchasesHistory(
+    override suspend fun queryPurchasesHistory(
         onQueryHistoryCompleted: (purchases: List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (error: BillingError) -> Unit
     ) {
         TODO("Not yet implemented")
     }
 
-    override fun queryPurchases(
+    override suspend fun queryPurchases(
         onQueryCompleted: (purchases: List<Purchase>) -> Unit,
         onQueryFailed: (error: BillingError) -> Unit
     ) {
         TODO("Not yet implemented")
     }
 
-    override fun purchase(
+    override suspend fun purchase(
         activity: Activity,
         skuDetails: SkuDetails,
         oldSkuDetails: SkuDetails?,
@@ -30,7 +30,7 @@ class BillingFacadeImpl: BillingFacade {
         TODO("Not yet implemented")
     }
 
-    override fun loadProducts(
+    override suspend fun loadProducts(
         productIDs: Set<String>,
         onLoadCompleted: (products: List<SkuDetails>) -> Unit,
         onLoadFailed: (error: BillingError) -> Unit
@@ -38,15 +38,15 @@ class BillingFacadeImpl: BillingFacade {
         TODO("Not yet implemented")
     }
 
-    override fun consume(purchaseToken: String) {
+    override suspend fun consume(purchaseToken: String) {
         TODO("Not yet implemented")
     }
 
-    override fun acknowledge(purchaseToken: String) {
+    override suspend fun acknowledge(purchaseToken: String) {
         TODO("Not yet implemented")
     }
 
-    override fun getSkuDetailsFromPurchases(
+    override suspend fun getSkuDetailsFromPurchases(
         purchases: List<Purchase>,
         onCompleted: (List<SkuDetails>) -> Unit,
         onFailed: (BillingError) -> Unit
