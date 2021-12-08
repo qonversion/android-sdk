@@ -7,7 +7,7 @@ import kotlin.random.Random
 
 private const val JITTER = 0.4f
 private const val FACTOR = 2.4f
-private const val MAX_DELAY_MS = 1000000L
+internal const val MAX_DELAY_MS = 1000000L
 
 internal class ExponentialDelayCalculator(
     private val randomizer: Random
@@ -26,8 +26,12 @@ internal class ExponentialDelayCalculator(
         }
 
         delay += randomizer.nextLong(delta)
-        val resultDelay = min(delay, maxDelayMS)
 
-        return resultDelay
+        // On big attempt indexes may overflow long bounds and become negative.
+        return if (delay >= 0) {
+            min(delay, maxDelayMS)
+        } else {
+            maxDelayMS
+        }
     }
 }
