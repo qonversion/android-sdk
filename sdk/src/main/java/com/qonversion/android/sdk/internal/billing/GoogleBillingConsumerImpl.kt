@@ -2,21 +2,22 @@ package com.qonversion.android.sdk.internal.billing
 
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
-class GoogleBillingConsumerImpl(private val billingClient: BillingClient) : GoogleBillingConsumer {
+internal class GoogleBillingConsumerImpl(private val billingClient: BillingClient) : GoogleBillingConsumer {
     override fun consume(purchaseToken: String) {
         val params = ConsumeParams.newBuilder()
             .setPurchaseToken(purchaseToken)
             .build()
 
-        billingClient.consumeAsync(params) { billingResult, _ ->
+        billingClient.consumeAsync(params) { billingResult, handledPurchaseToken ->
             if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                 throw QonversionException(
                     ErrorCode.Consuming,
-                    getExceptionDetails(purchaseToken, billingResult.responseCode)
+                    getExceptionDetails(handledPurchaseToken, billingResult)
                 )
             }
         }
@@ -31,7 +32,7 @@ class GoogleBillingConsumerImpl(private val billingClient: BillingClient) : Goog
             if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                 throw QonversionException(
                     ErrorCode.Acknowledging,
-                    getExceptionDetails(purchaseToken, billingResult.responseCode)
+                    getExceptionDetails(purchaseToken, billingResult)
                 )
             }
         }
@@ -39,8 +40,8 @@ class GoogleBillingConsumerImpl(private val billingClient: BillingClient) : Goog
 
     private fun getExceptionDetails(
         token: String,
-        @BillingClient.BillingResponseCode errorCode: Int
+        billingResult: BillingResult
     ): String {
-        return "Purchase token: \"$token\", google billing error code: \"${errorCode.getDescription()}\""
+        return "Purchase token: \"$token\". ${billingResult.getDescription()}"
     }
 }

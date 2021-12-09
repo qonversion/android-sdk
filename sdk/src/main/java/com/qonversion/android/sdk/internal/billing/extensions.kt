@@ -1,6 +1,10 @@
 package com.qonversion.android.sdk.internal.billing
 
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingResult
+
+internal fun BillingResult.getDescription() =
+    "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
 internal fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {
     return when (this) {
