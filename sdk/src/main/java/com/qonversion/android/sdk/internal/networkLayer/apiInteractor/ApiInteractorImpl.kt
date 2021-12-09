@@ -71,7 +71,7 @@ internal class ApiInteractorImpl(
         }
     }
 
-    private fun prepareRetryConfig(retryPolicy: RetryPolicy, attemptIndex: Int): RetryConfig {
+    internal fun prepareRetryConfig(retryPolicy: RetryPolicy, attemptIndex: Int): RetryConfig {
         var shouldRetry = false
         val newAttemptIndex = attemptIndex + 1
         var minDelay = 0L
