@@ -26,11 +26,16 @@ internal class GoogleBillingPurchaserImpl(
 
         val billingResult = billingClient.launchBillingFlow(activity, params)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
-            throw QonversionException(ErrorCode.Purchasing, "Failed to launch billing flow. ${billingResult.getDescription()}")
+            throw QonversionException(
+                ErrorCode.Purchasing,
+                "Failed to launch billing flow. ${billingResult.getDescription()}"
+            )
         }
     }
 
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(info: UpdatePurchaseInfo? = null): BillingFlowParams.Builder {
+    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
+        info: UpdatePurchaseInfo? = null
+    ): BillingFlowParams.Builder {
         if (info != null) {
             val updateParams = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
                 .setOldSkuPurchaseToken(info.purchaseToken)

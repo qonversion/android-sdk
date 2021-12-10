@@ -8,7 +8,11 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import io.mockk.*
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.every
+import io.mockk.verify
+import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
