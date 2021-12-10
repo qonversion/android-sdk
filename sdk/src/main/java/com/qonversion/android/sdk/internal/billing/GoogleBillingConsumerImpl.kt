@@ -4,11 +4,19 @@ import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
 
-internal class GoogleBillingConsumerImpl(private val billingClient: BillingClient) : GoogleBillingConsumer {
+internal class GoogleBillingConsumerImpl(
+    private val billingClient: BillingClient,
+    logger: Logger
+) : BaseClass(logger), GoogleBillingConsumer {
+
     override fun consume(purchaseToken: String) {
+        logger.debug("consume() -> Consuming purchase with token $purchaseToken")
+
         val params = ConsumeParams.newBuilder()
             .setPurchaseToken(purchaseToken)
             .build()
@@ -24,6 +32,8 @@ internal class GoogleBillingConsumerImpl(private val billingClient: BillingClien
     }
 
     override fun acknowledge(purchaseToken: String) {
+        logger.debug("acknowledge() -> Acknowledging purchase with token $purchaseToken")
+
         val params = AcknowledgePurchaseParams.newBuilder()
             .setPurchaseToken(purchaseToken)
             .build()
