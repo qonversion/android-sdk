@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.billing
+package com.qonversion.android.sdk.internal.billing.consumer
 
 internal interface GoogleBillingConsumer {
 

@@ -1,9 +1,10 @@
-package com.qonversion.android.sdk.internal.billing
+package com.qonversion.android.sdk.internal.billing.consumer
 
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.qonversion.android.sdk.internal.billing.getDescription
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
