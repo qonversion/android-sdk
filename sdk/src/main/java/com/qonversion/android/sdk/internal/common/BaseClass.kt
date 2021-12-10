@@ -1,3 +1,7 @@
 package com.qonversion.android.sdk.internal.common
 
-internal abstract class BaseClass
+import com.qonversion.android.sdk.old.logger.Logger
+
+internal open class BaseClass(
+    protected val logger: Logger
+)
