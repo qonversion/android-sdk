@@ -11,11 +11,7 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -72,6 +68,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isFalse
+        verify(exactly = 0) { delayCalculator.countDelay(any(), any()) }
     }
 
     @Test
@@ -84,6 +81,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isFalse
+        verify(exactly = 0) { delayCalculator.countDelay(any(), any()) }
     }
 
     @Test
@@ -140,6 +138,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isFalse
+        verify(exactly = 0) { delayCalculator.countDelay(any(), any()) }
     }
 
     @Test
@@ -182,6 +181,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isFalse
+        verify(exactly = 0) { delayCalculator.countDelay(any(), any()) }
     }
 
     @Test
@@ -209,6 +209,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isFalse
+        verify(exactly = 0) { delayCalculator.countDelay(any(), any()) }
     }
 
     @Test
