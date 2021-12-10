@@ -11,7 +11,11 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -59,7 +63,7 @@ internal class ApiInteractorTest {
     }
 
     @Test
-    fun `no retry after first attempt`() {
+    fun `no retry after first attempt for retry policy none`() {
         // given
         val retryPolicy = RetryPolicy.None
 
@@ -67,11 +71,11 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
 
         // then
-        assertThat(retryConfig.shouldRetry).isFalse()
+        assertThat(retryConfig.shouldRetry).isFalse
     }
 
     @Test
-    fun `no retry after several attempts`() {
+    fun `no retry after several attempts for retry policy none`() {
         // given
         val retryPolicy = RetryPolicy.None
 
@@ -79,11 +83,11 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 10)
 
         // then
-        assertThat(retryConfig.shouldRetry).isFalse()
+        assertThat(retryConfig.shouldRetry).isFalse
     }
 
     @Test
-    fun `infinite exponential retry after first attempt`() {
+    fun `retry after first attempt for infinite exponential retry policy`() {
         // given
         val retryPolicy = RetryPolicy.InfiniteExponential()
 
@@ -91,13 +95,13 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(1)
         assertThat(retryConfig.delay >= retryPolicy.minDelay)
     }
 
     @Test
-    fun `infinite exponential retry after several attempts`() {
+    fun `retry after several attempts for infinite exponential retry policy`() {
         // given
         val attemptIndex = 5
         val retryPolicy = RetryPolicy.InfiniteExponential()
@@ -106,13 +110,13 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, attemptIndex)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(attemptIndex + 1)
         assertThat(retryConfig.delay >= retryPolicy.minDelay)
     }
 
     @Test
-    fun `infinite exponential retry with min delay`() {
+    fun `retry for infinite exponential retry policy with min delay`() {
         // given
         val minDelay = 500000L
         val retryPolicy = RetryPolicy.InfiniteExponential(minDelay)
@@ -121,12 +125,25 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.delay >= minDelay)
     }
 
     @Test
-    fun `exponential retry after first attempt`() {
+    fun `no retry for infinite exponential retry policy with negative min delay`() {
+        // given
+        val minDelay = -100000L
+        val retryPolicy = RetryPolicy.InfiniteExponential(minDelay = minDelay)
+
+        // when
+        val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
+
+        // then
+        assertThat(retryConfig.shouldRetry).isFalse
+    }
+
+    @Test
+    fun `retry after first attempt for exponential retry policy`() {
         // given
         val retryPolicy = RetryPolicy.Exponential()
 
@@ -134,13 +151,13 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(1)
         assertThat(retryConfig.delay >= retryPolicy.minDelay)
     }
 
     @Test
-    fun `penultimate exponential retry`() {
+    fun `penultimate retry for exponential retry policy`() {
         // given
         val attemptIndex = 5
         val retryPolicy = RetryPolicy.Exponential(attemptIndex + 1)
@@ -149,13 +166,13 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, attemptIndex)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(attemptIndex + 1)
         assertThat(retryConfig.delay >= retryPolicy.minDelay)
     }
 
     @Test
-    fun `last exponential retry`() {
+    fun `last retry for exponential retry policy`() {
         // given
         val attemptIndex = 5
         val retryPolicy = RetryPolicy.Exponential(attemptIndex)
@@ -164,11 +181,11 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, attemptIndex)
 
         // then
-        assertThat(retryConfig.shouldRetry).isFalse()
+        assertThat(retryConfig.shouldRetry).isFalse
     }
 
     @Test
-    fun `exponential retry with min delay`() {
+    fun `retry for exponential retry policy with min delay`() {
         // given
         val minDelay = 500000L
         val retryPolicy = RetryPolicy.Exponential(minDelay = minDelay)
@@ -177,8 +194,21 @@ internal class ApiInteractorTest {
         val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
 
         // then
-        assertThat(retryConfig.shouldRetry).isTrue()
+        assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.delay >= minDelay)
+    }
+
+    @Test
+    fun `no retry for exponential retry policy with negative min delay`() {
+        // given
+        val minDelay = -100000L
+        val retryPolicy = RetryPolicy.Exponential(minDelay = minDelay)
+
+        // when
+        val retryConfig = interactor.prepareRetryConfig(retryPolicy, 0)
+
+        // then
+        assertThat(retryConfig.shouldRetry).isFalse
     }
 
     @Test
