@@ -35,5 +35,9 @@ private fun Any.parseJsonValue() = when (this) {
 
 private const val MIN_SUCCESS_CODE = 200
 private const val MAX_SUCCESS_CODE = 299
+private const val MIN_INTERNAL_SERVER_ERROR_CODE = 500
+private const val MAX_INTERNAL_SERVER_ERROR_CODE = 599
 
 internal val Int.isSuccessHttpCode: Boolean get() = this in MIN_SUCCESS_CODE..MAX_SUCCESS_CODE
+internal val Int.isInternalServerErrorCode: Boolean get() =
+    this in MIN_INTERNAL_SERVER_ERROR_CODE..MAX_INTERNAL_SERVER_ERROR_CODE

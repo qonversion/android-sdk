@@ -1,20 +1,25 @@
 package com.qonversion.android.sdk.internal.networkLayer.networkClient
 
+import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Test
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.assertDoesNotThrow
-import java.io.*
+import java.io.IOException
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
+@ExperimentalCoroutinesApi
 internal class NetworkClientImplTest {
 
     private lateinit var networkClient: NetworkClientImpl
@@ -45,11 +50,9 @@ internal class NetworkClientImplTest {
         val url = "qonversion.io"
 
         // when and then
-        assertThatThrownBy {
-            runBlocking {
-                networkClient.parseUrl(url)
-            }
-        }.isInstanceOf(QonversionException::class.java)
+        coAssertThatQonversionExceptionThrown(ErrorCode.BadNetworkRequest) {
+            networkClient.parseUrl(url)
+        }
     }
 
     @Test
@@ -73,9 +76,9 @@ internal class NetworkClientImplTest {
         every { url.openConnection() }.throws(IOException())
 
         // when and then
-        assertThatThrownBy {
+        assertThatQonversionExceptionThrown {
             networkClient.connect(url)
-        }.isInstanceOf(QonversionException::class.java)
+        }
     }
 
     @Test
@@ -157,6 +160,21 @@ internal class NetworkClientImplTest {
     }
 
     @Test
+    fun `write incorrect body`() {
+        // given
+        val body = mapOf("firstKey" to "firstValue")
+        every {
+            serializer.serialize(body)
+        } throws QonversionException(ErrorCode.Serialization)
+        val stream = ByteArrayOutputStream()
+
+        // when and then
+        assertThatQonversionExceptionThrown(ErrorCode.BadNetworkRequest) {
+            networkClient.write(body, stream)
+        }
+    }
+
+    @Test
     fun `handle correct response`() {
         // given
         val connection = mockk<HttpURLConnection>()
@@ -211,37 +229,72 @@ internal class NetworkClientImplTest {
     }
 
     @Test
+    fun `handle internal server error response`() {
+        // given
+        val connection = mockk<HttpURLConnection>()
+        val expectedResponseCode = 500
+        val expectedResponseBody = "Internal server error"
+        val inputStream = ByteArrayInputStream(expectedResponseBody.toByteArray())
+        every {
+            connection.responseCode
+        } returns expectedResponseCode
+        every {
+            connection.errorStream
+        } returns inputStream
+
+        // when
+        val response = networkClient.handleResponse(connection)
+
+        // then
+        assertThat(response.code).isEqualTo(expectedResponseCode)
+        assertThat(response.payload).isEqualTo(expectedResponseBody)
+        verify(exactly = 0) { connection.inputStream }
+        verify(exactly = 0) { serializer.deserialize(any()) }
+    }
+
+    @Test
     fun `read correct response`() {
         // given
         val body = "Success"
-        val expectedDeserializedResponse = mapOf("someKey" to "someValue")
         val inputStream = ByteArrayInputStream(body.toByteArray())
-        every {
-            serializer.deserialize(body)
-        } returns expectedDeserializedResponse
 
         // when
         val response = networkClient.read(inputStream)
 
         // then
-        assertThat(response).isEqualTo(expectedDeserializedResponse)
+        assertThat(response).isEqualTo(body)
     }
 
     @Test
     fun `read empty response`() {
         // given
         val body = ""
-        val expectedDeserializedResponse = emptyMap<String, Any?>()
         val inputStream = ByteArrayInputStream(body.toByteArray())
-        every {
-            serializer.deserialize(body)
-        } returns expectedDeserializedResponse
 
         // when
         val response = networkClient.read(inputStream)
 
         // then
-        assertThat(response).isEqualTo(expectedDeserializedResponse)
+        assertThat(response).isEqualTo(body)
+    }
+
+    @Test
+    fun `read multiline response`() {
+        // given
+        val body = """
+            This is simple
+            multiline response
+            to test line-by-line
+            reading.
+        """
+        val expectedResponse = body.trimIndent().replace("\n", "")
+        val inputStream = ByteArrayInputStream(body.toByteArray())
+
+        // when
+        val response = networkClient.read(inputStream)
+
+        // then
+        assertThat(response).isEqualTo(expectedResponse)
     }
 
     private fun prepareConnection(): HttpURLConnection {
