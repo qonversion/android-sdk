@@ -11,10 +11,18 @@
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
+    <ID>Filename:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.converter.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.requests.queue.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.storage.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.validator.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.mappers.ApiErrorMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImplTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.ConsumerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.QHandledPurchasesCacheTest.kt:1</ID>
@@ -48,6 +56,7 @@
     <ID>FinalNewline:com.qonversion.android.sdk.old.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.utils.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.validator.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>ForbiddenComment:AttributionRequestTest.kt$AttributionRequestTest$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ForbiddenComment:EnvironmentRequestTest.kt$EnvironmentRequestTest$// TODO: Update test for new Environment format</ID>
     <ID>ForbiddenComment:InAppRequestTest.kt$InAppRequestTest$// TODO: Update test for new InApp format</ID>
@@ -107,6 +116,7 @@
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoWeeks$3</ID>
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Year$8</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
+    <ID>MatchingDeclarationName:HeaderBuilderImplTest.kt$HeaderBuilderTest</ID>
     <ID>MatchingDeclarationName:util.kt$Util</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
@@ -121,6 +131,7 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$private</ID>
+    <ID>MaxLineLength:JsonSerializerTest.kt$JsonSerializerTest$"""{"field1": ["value1", "value2"]}""" to mapOf("field1" to listOf("value1", "value2"))</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
@@ -155,6 +166,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializerTest.kt:25</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QProductCenterManagerTest.kt:155</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QUserPropertiesManagerTest.kt:169</ID>
@@ -202,17 +214,23 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.storage.util.kt:121</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.storage.util.kt:122</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
+    <ID>NewLineAtEndOfFile:ApiErrorMapperTest.kt$com.qonversion.android.sdk.internal.mappers.ApiErrorMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.old.api.ApiHelperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ApiInteractorTest.kt$com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.old.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.old.requests.AttributionRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.old.automations.AutomationsEventMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ConsumerTest.kt$com.qonversion.android.sdk.old.ConsumerTest.kt</ID>
     <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.old.requests.EnvironmentRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ExponentialDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:GooglePurchaseConverterTest.kt$com.qonversion.android.sdk.old.converter.GooglePurchaseConverterTest.kt</ID>
+    <ID>NewLineAtEndOfFile:HeaderBuilderImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:InAppRequestTest.kt$com.qonversion.android.sdk.old.requests.InAppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:InitRequestTest.kt$com.qonversion.android.sdk.old.requests.InitRequestTest.kt</ID>
+    <ID>NewLineAtEndOfFile:JsonSerializerTest.kt$com.qonversion.android.sdk.internal.networkLayer.requestSerializer.JsonSerializerTest.kt</ID>
     <ID>NewLineAtEndOfFile:LaunchResultCacheWrapperTest.kt$com.qonversion.android.sdk.old.storage.LaunchResultCacheWrapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:NetworkClientImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.old.requests.OsRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PropertiesRequestTest.kt$com.qonversion.android.sdk.old.requests.PropertiesRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.old.requests.ProviderDataRequestTest.kt</ID>
@@ -224,6 +242,7 @@
     <ID>NewLineAtEndOfFile:QUserInfoServiceTest.kt$com.qonversion.android.sdk.old.services.QUserInfoServiceTest.kt</ID>
     <ID>NewLineAtEndOfFile:QUserPropertiesManagerTest.kt$com.qonversion.android.sdk.old.QUserPropertiesManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:QonversionBillingServiceTest.kt$com.qonversion.android.sdk.old.billing.QonversionBillingServiceTest.kt</ID>
+    <ID>NewLineAtEndOfFile:RequestConfiguratorImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:RequestQueueTest.kt$com.qonversion.android.sdk.old.requests.queue.RequestQueueTest.kt</ID>
     <ID>NewLineAtEndOfFile:ScreenPresenterTest.kt$com.qonversion.android.sdk.old.automations.mvp.ScreenPresenterTest.kt</ID>
     <ID>NewLineAtEndOfFile:SkuDetailsTokenExtractorTest.kt$com.qonversion.android.sdk.old.converter.SkuDetailsTokenExtractorTest.kt</ID>
@@ -235,6 +254,7 @@
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.old.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.old.validator.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.old.utils.kt</ID>
+    <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.automations.QAutomationsManagerTest.kt:280</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.validator.RequestValidatorTest.kt:17</ID>
@@ -246,9 +266,13 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.validator.RequestValidatorTest.kt:3</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:359</ID>
+    <ID>NoSemicolons:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:301</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt:3</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.QIdentityManagerTest.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:14</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:15</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.ConsumerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.IncrementalDelayCalculator.kt:3</ID>
@@ -327,11 +351,10 @@
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
-    <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute(request: Request, retryPolicy: RetryPolicy, attemptIndex: Int): Response</ID>
+    <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
-    <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenActivity.kt$ScreenActivity$e: Exception</ID>
     <ID>TooGenericExceptionThrown:BaseResponse.kt$throw RuntimeException("backend exception")</ID>
