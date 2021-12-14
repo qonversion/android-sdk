@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
+import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorCode
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +20,8 @@ import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
+
+private const val NETWORK_ENCODING = "utf-8"
 
 internal class NetworkClientImpl(
     private val serializer: RequestSerializer
@@ -45,7 +48,7 @@ internal class NetworkClientImpl(
             URL(url)
         } catch (cause: MalformedURLException) {
             throw QonversionException(
-                ErrorCode.NetworkRequestExecution,
+                ErrorCode.BadNetworkRequest,
                 "Wrong url - \"$url\"",
                 cause
             )
@@ -73,8 +76,13 @@ internal class NetworkClientImpl(
     }
 
     internal fun write(body: Map<String, Any?>, stream: OutputStream) {
-        val requestPayload = serializer.serialize(body)
-        val outputStreamWriter = OutputStreamWriter(stream, "utf-8")
+        val requestPayload = try {
+            serializer.serialize(body)
+        } catch (cause: QonversionException) {
+            throw QonversionException(ErrorCode.BadNetworkRequest, cause = cause)
+        }
+
+        val outputStreamWriter = OutputStreamWriter(stream, NETWORK_ENCODING)
 
         try {
             BufferedWriter(outputStreamWriter).use { bw ->
@@ -97,12 +105,17 @@ internal class NetworkClientImpl(
         } else {
             connection.errorStream
         }
-        val response = read(stream)
+        val response = if (code.isInternalServerErrorCode) {
+            emptyMap<Any, Any>()
+        } else {
+            val responsePayload = read(stream)
+            serializer.deserialize(responsePayload)
+        }
         return RawResponse(code, response)
     }
 
-    internal fun read(stream: InputStream): Any {
-        val inputStreamReader = InputStreamReader(stream, "utf-8")
+    internal fun read(stream: InputStream): String {
+        val inputStreamReader = InputStreamReader(stream, NETWORK_ENCODING)
         BufferedReader(inputStreamReader).use { br ->
             val responseStringBuilder = StringBuilder()
             var responseLine: String?
@@ -117,8 +130,7 @@ internal class NetworkClientImpl(
                     cause
                 )
             }
-            val responsePayload = responseStringBuilder.toString()
-            return serializer.deserialize(responsePayload)
+            return responseStringBuilder.toString()
         }
     }
 }

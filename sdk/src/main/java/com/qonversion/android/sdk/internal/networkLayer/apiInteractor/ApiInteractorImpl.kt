@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.mappers.ErrorResponseMapper
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
+import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
@@ -13,6 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.lang.ClassCastException
+import java.net.HttpURLConnection
+
+private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(
+    HttpURLConnection.HTTP_UNAUTHORIZED,
+    HttpURLConnection.HTTP_PAYMENT_REQUIRED,
+    418 // "I'm a teapot", for possible api usage.
+)
 
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
@@ -35,43 +43,84 @@ internal class ApiInteractorImpl(
         return execute(request, retryPolicy, 0)
     }
 
-    private suspend fun execute(request: Request, retryPolicy: RetryPolicy, attemptIndex: Int): Response {
+    private suspend fun execute(
+        request: Request,
+        retryPolicy: RetryPolicy,
+        attemptIndex: Int
+    ): Response {
         return withContext(Dispatchers.IO) {
             if (config.requestsShouldBeDenied) {
                 throw QonversionException(ErrorCode.RequestDenied)
             }
-            val response = networkClient.execute(request)
 
-            val payload = try {
-                (response.payload as Map<*, *>)
-            } catch (cause: ClassCastException) {
-                throw QonversionException(ErrorCode.BadResponse, "Unexpected payload type. Map expected", cause = cause)
+            var executionException: QonversionException? = null
+            val response = try {
+                networkClient.execute(request)
+            } catch (cause: QonversionException) {
+                if (cause.code === ErrorCode.BadNetworkRequest) {
+                    throw cause
+                }
+                executionException = cause
+                null
             }
 
-            if (response.isSuccess) {
-                val data = payload["data"]
-                    ?: throw QonversionException(ErrorCode.BadResponse, "No data provided in response")
+            if (response?.isSuccess == true) {
+                val data = response.getResponsePayload()["data"]
+                    ?: throw QonversionException(
+                        ErrorCode.BadResponse,
+                        "No data provided in response"
+                    )
                 Response.Success(response.code, data)
             } else {
-                val retryConfig: RetryConfig = prepareRetryConfig(retryPolicy, attemptIndex)
-                if (retryConfig.shouldRetry) {
+                if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
+                    config.requestsShouldBeDenied = true
+                    return@withContext getErrorResponse(response, executionException)
+                }
+
+                val shouldTryToRetry =
+                    response?.isInternalServerError == true || executionException != null
+
+                val retryConfig = if (shouldTryToRetry) {
+                    prepareRetryConfig(retryPolicy, attemptIndex)
+                } else {
+                    null
+                }
+
+                if (retryConfig?.shouldRetry == true) {
                     delay(retryConfig.delay)
                     execute(request, retryPolicy, retryConfig.attemptIndex)
                 } else {
-                    val errorData = try {
-                        payload["error"] as Map<*, *>
-                    } catch (_: ClassCastException) {
-                        null
-                    }
-                    errorData?.let {
-                        errorMapper.fromMap(it, response.code)
-                    } ?: Response.Error(response.code, "No error data provided")
+                    getErrorResponse(response, executionException)
                 }
             }
         }
     }
 
-    private fun prepareRetryConfig(retryPolicy: RetryPolicy, attemptIndex: Int): RetryConfig {
+    internal fun getErrorResponse(
+        response: RawResponse?,
+        executionException: QonversionException?
+    ): Response.Error {
+        return when {
+            response != null -> {
+                val payload = response.getResponsePayload()
+                val errorData = payload["error"] as? Map<*, *>
+                errorData?.let {
+                    errorMapper.fromMap(it, response.code)
+                } ?: Response.Error(response.code, "No error data provided")
+            }
+            executionException != null -> {
+                throw executionException
+            }
+            else -> {
+                // Unacceptable state.
+                throw IllegalStateException(
+                    "Unreachable code. Either response or executionException should be non-null"
+                )
+            }
+        }
+    }
+
+    internal fun prepareRetryConfig(retryPolicy: RetryPolicy, attemptIndex: Int): RetryConfig {
         var shouldRetry = false
         val newAttemptIndex = attemptIndex + 1
         var minDelay = 0L
@@ -94,5 +143,17 @@ internal class ApiInteractorImpl(
         }
 
         return RetryConfig(shouldRetry, newAttemptIndex, delay)
+    }
+
+    private fun RawResponse.getResponsePayload(): Map<*, *> {
+        return try {
+            (payload as Map<*, *>)
+        } catch (cause: ClassCastException) {
+            throw QonversionException(
+                ErrorCode.BadResponse,
+                "Unexpected payload type. Map expected",
+                cause = cause
+            )
+        }
     }
 }
