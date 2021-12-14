@@ -448,6 +448,34 @@ internal class ApiInteractorTest {
         }
     }
 
+    @Test
+    fun `error response with code, blocking further executions`() = runTest {
+        // given
+        val blockingErrorCode = 401
+        val errorResponse = RawResponse(blockingErrorCode, errorPayload)
+        val parsedErrorResponse = Response.Error(blockingErrorCode, "Test error")
+        coEvery {
+            networkClient.execute(request)
+        } returns errorResponse
+        every {
+            errorMapper.fromMap(errorData, blockingErrorCode)
+        } returns parsedErrorResponse
+        val setValue = slot<Boolean>()
+        every {
+            config.requestsShouldBeDenied = capture(setValue)
+        } just runs
+
+        // when
+        val response = interactor.execute(request, RetryPolicy.InfiniteExponential())
+
+        // then
+        assertThat(response).isEqualTo(parsedErrorResponse)
+        coVerify(exactly = 1) {
+            networkClient.execute(any())
+        }
+        assertThat(setValue.captured).isTrue()
+    }
+
     private fun assertThatIsSuccessResponse(response: Response) {
         assertThat(response).isInstanceOf(Response.Success::class.java)
         assertThat(response.code).isEqualTo(successCode)

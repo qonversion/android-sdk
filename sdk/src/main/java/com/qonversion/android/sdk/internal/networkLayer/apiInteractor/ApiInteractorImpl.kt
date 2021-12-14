@@ -15,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.lang.ClassCastException
 
+private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(401, 407)
+
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
     internal val attemptIndex: Int = 0,
@@ -65,6 +67,10 @@ internal class ApiInteractorImpl(
                     )
                 Response.Success(response.code, data)
             } else {
+                if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
+                    config.requestsShouldBeDenied = true
+                }
+
                 val shouldTryToRetry =
                     response?.isInternalServerError == true || executionException != null
                 val retryConfig: RetryConfig? =
