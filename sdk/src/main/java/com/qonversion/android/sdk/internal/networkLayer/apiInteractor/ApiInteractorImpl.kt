@@ -18,7 +18,8 @@ import java.net.HttpURLConnection
 
 private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(
     HttpURLConnection.HTTP_UNAUTHORIZED,
-    HttpURLConnection.HTTP_PROXY_AUTH
+    HttpURLConnection.HTTP_PAYMENT_REQUIRED,
+    418 // "I'm a teapot", for possible api usage.
 )
 
 internal data class RetryConfig(
