@@ -6,7 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 
-internal fun assertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: () -> Unit) {
+internal fun assertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: () -> Unit): QonversionException {
     val throwable = try {
         callable()
         null
@@ -18,11 +18,12 @@ internal fun assertThatQonversionExceptionThrown(code: ErrorCode? = null, callab
     code?.let {
         assertThat((throwable as QonversionException).code).isEqualTo(code)
     }
+    return throwable as QonversionException
 }
 
 @ExperimentalCoroutinesApi
-internal fun coAssertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: suspend () -> Unit) {
-    assertThatQonversionExceptionThrown(code) {
+internal fun coAssertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: suspend () -> Unit): QonversionException {
+    return assertThatQonversionExceptionThrown(code) {
         runTest {
             callable()
         }

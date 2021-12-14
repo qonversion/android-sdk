@@ -5,7 +5,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
-class GoogleBillingControllerImpl : GoogleBillingController {
+internal class GoogleBillingControllerImpl : GoogleBillingController {
     override suspend fun queryPurchasesHistory(): List<PurchaseHistory> {
         TODO("Not yet implemented")
     }
