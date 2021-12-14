@@ -9,10 +9,12 @@ import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
 
 internal class GoogleBillingPurchaserImpl(
-    private val billingClient: BillingClient
-) : BaseClass(), GoogleBillingPurchaser {
+    private val billingClient: BillingClient,
+    logger: Logger
+) : BaseClass(logger), GoogleBillingPurchaser {
 
     override fun purchase(
         activity: Activity,
