@@ -6,7 +6,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.old.entity.PurchaseHistory
 
-interface GoogleBillingController {
+internal interface GoogleBillingController {
     suspend fun queryPurchasesHistory(): List<PurchaseHistory>
 
     suspend fun queryPurchases(): List<Purchase>
