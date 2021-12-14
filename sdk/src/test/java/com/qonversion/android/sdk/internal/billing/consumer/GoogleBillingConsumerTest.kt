@@ -4,6 +4,7 @@ import com.android.billingclient.api.AcknowledgePurchaseResponseListener
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeResponseListener
+import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -67,17 +68,12 @@ internal class GoogleBillingConsumerTest {
         } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        val exception = try {
+        val exception = assertThatQonversionExceptionThrown(ErrorCode.Consuming) {
             googleBillingConsumer.consume(purchaseToken)
-            null
-        } catch (e: Exception) {
-            e
         }
 
         // then
         verify { billingClient.consumeAsync(any(), any()) }
-        assertThat(exception).isInstanceOf(QonversionException::class.java)
-        assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Consuming)
         assertThat(exception.message).contains(purchaseToken, "ERROR")
     }
 
@@ -105,17 +101,12 @@ internal class GoogleBillingConsumerTest {
         } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        val exception = try {
+        val exception = assertThatQonversionExceptionThrown(ErrorCode.Acknowledging) {
             googleBillingConsumer.acknowledge(purchaseToken)
-            null
-        } catch (e: Exception) {
-            e
         }
 
         // then
         verify { billingClient.acknowledgePurchase(any(), any()) }
-        assertThat(exception).isInstanceOf(QonversionException::class.java)
-        assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Acknowledging)
         assertThat(exception.message).contains(purchaseToken, "ERROR")
     }
 }
