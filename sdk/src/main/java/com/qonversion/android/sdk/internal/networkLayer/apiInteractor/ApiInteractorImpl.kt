@@ -77,8 +77,13 @@ internal class ApiInteractorImpl(
 
                 val shouldTryToRetry =
                     response?.isInternalServerError == true || executionException != null
-                val retryConfig: RetryConfig? =
-                    if (shouldTryToRetry) prepareRetryConfig(retryPolicy, attemptIndex) else null
+
+                val retryConfig = if (shouldTryToRetry) {
+                    prepareRetryConfig(retryPolicy, attemptIndex)
+                } else {
+                    null
+                }
+
                 if (retryConfig?.shouldRetry == true) {
                     delay(retryConfig.delay)
                     execute(request, retryPolicy, retryConfig.attemptIndex)
