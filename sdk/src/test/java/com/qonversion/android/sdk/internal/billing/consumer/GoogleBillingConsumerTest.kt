@@ -7,11 +7,7 @@ import com.android.billingclient.api.ConsumeResponseListener
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.just
-import io.mockk.runs
-import io.mockk.slot
+import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -54,10 +50,13 @@ internal class GoogleBillingConsumerTest {
             billingResult.responseCode
         } returns BillingClient.BillingResponseCode.OK
 
-        // when and then
+        // when
         assertDoesNotThrow {
             googleBillingConsumer.consume(purchaseToken)
         }
+
+        // then
+        verify { billingClient.consumeAsync(any(), any()) }
     }
 
     @Test
@@ -76,6 +75,7 @@ internal class GoogleBillingConsumerTest {
         }
 
         // then
+        verify { billingClient.consumeAsync(any(), any()) }
         assertThat(exception).isInstanceOf(QonversionException::class.java)
         assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Consuming)
         assertThat(exception.message).contains(purchaseToken, "ERROR")
@@ -88,10 +88,13 @@ internal class GoogleBillingConsumerTest {
             billingResult.responseCode
         } returns BillingClient.BillingResponseCode.OK
 
-        // when and then
+        // when
         assertDoesNotThrow {
             googleBillingConsumer.acknowledge(purchaseToken)
         }
+
+        // then
+        verify { billingClient.acknowledgePurchase(any(), any()) }
     }
 
     @Test
@@ -110,6 +113,7 @@ internal class GoogleBillingConsumerTest {
         }
 
         // then
+        verify { billingClient.acknowledgePurchase(any(), any()) }
         assertThat(exception).isInstanceOf(QonversionException::class.java)
         assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Acknowledging)
         assertThat(exception.message).contains(purchaseToken, "ERROR")
