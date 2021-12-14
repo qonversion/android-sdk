@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.exception
 
 internal enum class ErrorCode(val defaultMessage: String) {
+    BadNetworkRequest("Network request is incorrect and thus cannot be executed"),
     NetworkRequestExecution("Failed to execute network request"),
     Serialization("Failed to serialize data"),
     Deserialization("Failed to deserialize data"),

@@ -5,19 +5,17 @@ import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.exception.ErrorCode
-import com.qonversion.android.sdk.internal.exception.QonversionException
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.slot
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import java.lang.Exception
 
 
 internal class GoogleBillingPurchaserTest {
@@ -31,7 +29,7 @@ internal class GoogleBillingPurchaserTest {
 
     @Before
     fun setUp() {
-        purchaser = GoogleBillingPurchaserImpl(billingClient)
+        purchaser = GoogleBillingPurchaserImpl(billingClient, mockk())
 
         every { billingClient.launchBillingFlow(activity, any()) } returns billingResult
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.OK
@@ -48,10 +46,13 @@ internal class GoogleBillingPurchaserTest {
     fun `making new purchase`() {
         // given
 
-        // when and then
+        // when
         assertDoesNotThrow {
             purchaser.purchase(activity, skuDetails)
         }
+
+        // then
+        verify { billingClient.launchBillingFlow(activity, any()) }
     }
 
     @Test
@@ -60,15 +61,12 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        val exception = try {
+        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
             purchaser.purchase(activity, skuDetails)
-        } catch (e: Exception) {
-            e
         }
 
         // then
-        assertThat(exception).isInstanceOf(QonversionException::class.java)
-        assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Purchasing)
+        verify { billingClient.launchBillingFlow(activity, any()) }
     }
 
     @Test
@@ -81,14 +79,28 @@ internal class GoogleBillingPurchaserTest {
         }
 
         // then
+        verify { billingClient.launchBillingFlow(activity, any()) }
         // no other way to check that update info was really used in purchase
         // as it is passed to Params which has no suitable public getters.
-        verify(atLeast = 1) {
-            updateInfo.purchaseToken
+        verify { updateInfo.purchaseToken }
+        verify { updateInfo.prorationMode }
+    }
+
+    @Test
+    fun `updating purchase without passing proration mode`() {
+        // given
+        every { updateInfo.prorationMode } returns null
+
+        // when
+        assertDoesNotThrow {
+            purchaser.purchase(activity, skuDetails, updateInfo)
         }
-        verify(atLeast = 1) {
-            updateInfo.prorationMode
-        }
+
+        // then
+        verify { billingClient.launchBillingFlow(activity, any()) }
+        // no other way to check that update info was really used in purchase
+        // as it is passed to Params which has no suitable public getters.
+        verify { updateInfo.purchaseToken }
     }
 
     @Test
@@ -97,14 +109,11 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        val exception = try {
+        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
             purchaser.purchase(activity, skuDetails, updateInfo)
-        } catch (e: Exception) {
-            e
         }
 
         // then
-        assertThat(exception).isInstanceOf(QonversionException::class.java)
-        assertThat((exception as QonversionException).code).isEqualTo(ErrorCode.Purchasing)
+        verify { billingClient.launchBillingFlow(activity, any()) }
     }
 }
