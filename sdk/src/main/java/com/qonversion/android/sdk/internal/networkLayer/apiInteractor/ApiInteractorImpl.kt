@@ -14,8 +14,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.lang.ClassCastException
+import java.net.HttpURLConnection
 
-private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(401, 407)
+private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(
+    HttpURLConnection.HTTP_UNAUTHORIZED,
+    HttpURLConnection.HTTP_PROXY_AUTH
+)
 
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
