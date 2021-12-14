@@ -235,6 +235,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(errorResponse.code).isEqualTo(errorCode)
+        assertThat(errorResponse.message).isEqualTo("No error data provided")
     }
 
     @Test
@@ -256,6 +257,18 @@ internal class ApiInteractorTest {
         assertThatThrownBy {
             interactor.getErrorResponse(null, null)
         }.isInstanceOf(IllegalStateException::class.java)
+    }
+
+    @Test
+    fun `get error from both response and exception`() {
+        // given
+        val exception = QonversionException(ErrorCode.NetworkRequestExecution)
+
+        // when
+        val errorResponse = interactor.getErrorResponse(rawErrorResponse, exception)
+
+        // then
+        assertThat(errorResponse).isEqualTo(parsedErrorResponse)
     }
 
     @Test
