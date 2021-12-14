@@ -73,6 +73,7 @@ internal class ApiInteractorImpl(
             } else {
                 if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
                     config.requestsShouldBeDenied = true
+                    return@withContext getErrorResponse(response, executionException)
                 }
 
                 val shouldTryToRetry =
