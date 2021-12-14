@@ -247,7 +247,7 @@ internal class NetworkClientImplTest {
 
         // then
         assertThat(response.code).isEqualTo(expectedResponseCode)
-        assertThat(response.payload).isEqualTo(expectedResponseBody)
+        assertThat(response.payload).isEqualTo(emptyMap<Any, Any>())
         verify(exactly = 0) { connection.inputStream }
         verify(exactly = 0) { serializer.deserialize(any()) }
     }

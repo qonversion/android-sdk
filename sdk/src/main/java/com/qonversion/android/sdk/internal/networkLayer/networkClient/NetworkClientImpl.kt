@@ -105,10 +105,10 @@ internal class NetworkClientImpl(
         } else {
             connection.errorStream
         }
-        val responsePayload = read(stream)
         val response = if (code.isInternalServerErrorCode) {
-            responsePayload
+            emptyMap<Any, Any>()
         } else {
+            val responsePayload = read(stream)
             serializer.deserialize(responsePayload)
         }
         return RawResponse(code, response)
