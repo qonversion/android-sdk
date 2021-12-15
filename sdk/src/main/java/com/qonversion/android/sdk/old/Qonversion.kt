@@ -5,10 +5,8 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.internal.billing.GoogleBillingDataFetcher
 import com.qonversion.android.sdk.old.di.QDependencyInjector
 import com.qonversion.android.sdk.old.logger.ConsoleLogger
 import com.qonversion.android.sdk.old.automations.QAutomationsManager

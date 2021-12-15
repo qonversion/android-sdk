@@ -11,7 +11,9 @@ internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
 fun PurchaseHistoryRecord.getDescription() =
-    "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: ${this.sku}; " +
+            "PurchaseTime: ${this.purchaseTime.convertLongToTime()}; " +
+            "PurchaseToken: ${this.purchaseToken}"
 
 val PurchaseHistoryRecord.sku: String?
     get() = skus.firstOrNull()
