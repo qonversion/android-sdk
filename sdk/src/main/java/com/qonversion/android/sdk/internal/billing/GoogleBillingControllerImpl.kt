@@ -1,17 +1,136 @@
 package com.qonversion.android.sdk.internal.billing
 
 import android.app.Activity
-import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.entity.PurchaseHistory
+import com.android.billingclient.api.*
+import com.qonversion.android.sdk.dto.PurchaseHistory
+import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
+import com.qonversion.android.sdk.internal.billing.dto.BillingError
+import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
+import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
+import com.qonversion.android.sdk.internal.common.BaseClass
+import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.utils.sku
+import com.qonversion.android.sdk.old.billing.getDescription
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 
-internal class GoogleBillingControllerImpl : GoogleBillingController {
+internal class GoogleBillingControllerImpl(
+    private val consumer: GoogleBillingConsumer,
+    private val purchaser: GoogleBillingPurchaser,
+    private val dataFetcher: GoogleBillingDataFetcher,
+    private val purchasesListener: PurchasesListener,
+    logger: Logger
+) : BaseClass(logger), GoogleBillingController {
+
+    @set:Synchronized
+    @get:Synchronized
+    @Volatile
+    var billingClient: BillingClient? = null
+        set(value) {
+            field = value
+            @Suppress("DeferredResultUnused")
+            connectToBillingAsync()
+        }
+
+    @Volatile
+    private var deferred: CompletableDeferred<BillingError?>? = null
+
+    val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
+        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+            logger.debug("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
+            purchasesListener.onPurchasesCompleted(purchases)
+        } else {
+            val errorMessage = billingResult.getDescription()
+            purchasesListener.onPurchasesFailed(
+                purchases ?: emptyList(),
+                BillingError(billingResult.responseCode, errorMessage)
+            )
+
+            logger.release("onPurchasesUpdated() -> failed to update purchases $errorMessage")
+            if (!purchases.isNullOrEmpty()) {
+                logger.release(
+                    "Purchases: " + purchases.joinToString(
+                        ", ",
+                        transform = { it.getDescription() })
+                )
+            }
+        }
+    }
+
+    private val billingClientStateListener = object : BillingClientStateListener {
+        override fun onBillingServiceDisconnected() {
+            logger.debug("billingClientStateListener -> BillingClient disconnected ($billingClient).")
+        }
+
+        override fun onBillingSetupFinished(billingResult: BillingResult) {
+            when (billingResult.responseCode) {
+                BillingClient.BillingResponseCode.OK -> {
+                    logger.debug("billingClientStateListener -> BillingClient successfully connected ($billingClient).")
+                    completeConnectionDeferred()
+                }
+                BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
+                BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
+                    logger.release("billingClientStateListener -> BillingClient connection failed with error: ${billingResult.getDescription()} ($billingClient).")
+                    val error = BillingError(
+                        billingResult.responseCode,
+                        "Billing is not available on this device. ${billingResult.getDescription()}"
+                    )
+                    completeConnectionDeferred(error)
+                }
+                BillingClient.BillingResponseCode.DEVELOPER_ERROR -> {
+                    // Client is already in the process of connecting to billing service
+                }
+                else -> {
+                    // These errors might be fixed for the next attempt, so we don't do anything here
+                    logger.release("billingClientStateListener -> BillingClient connection failed with error: ${billingResult.getDescription()} ($billingClient).")
+                }
+            }
+        }
+    }
+
+    @Synchronized
+    private fun completeConnectionDeferred(error: BillingError? = null) {
+        deferred?.complete(error)
+        deferred = null
+    }
+
+    @Synchronized
+    private fun connectToBillingAsync(): Deferred<BillingError?> {
+        return deferred ?: CompletableDeferred<BillingError?>().also {
+            deferred = it
+            billingClient?.let { client ->
+                client.startConnection(billingClientStateListener)
+                logger.debug("Trying to connect to BillingClient ($billingClient)")
+            }
+        }
+    }
+
+    private suspend fun waitForReadyClient(): BillingError? {
+        if (billingClient?.isReady == true) {
+            return null
+        }
+
+        return connectToBillingAsync().await()
+    }
+
     override suspend fun queryPurchasesHistory(): List<PurchaseHistory> {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
+
+        return dataFetcher.queryAllPurchasesHistory()
     }
 
     override suspend fun queryPurchases(): List<Purchase> {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
+
+        return dataFetcher.queryPurchases()
     }
 
     override suspend fun purchase(
@@ -20,22 +139,67 @@ internal class GoogleBillingControllerImpl : GoogleBillingController {
         oldSkuDetails: SkuDetails?,
         prorationMode: Int?
     ) {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
+
+        if (oldSkuDetails == null) {
+            purchaser.purchase(activity, skuDetails)
+        } else {
+            // todo replace with method, that queries history for given skuType
+            val purchaseHistoryRecord = dataFetcher
+                .queryAllPurchasesHistory()
+                .map { it.historyRecord }
+                .find { it.sku == oldSkuDetails.sku }
+
+            if (purchaseHistoryRecord != null) {
+                val updatePurchaseInfo = UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, prorationMode)
+                purchaser.purchase(activity, skuDetails, updatePurchaseInfo)
+            } else {
+                throw QonversionException(ErrorCode.Purchasing, "No existing purchase for sku: ${oldSkuDetails.sku}")
+            }
+        }
     }
 
-    override suspend fun loadProducts(productIDs: Set<String>): List<SkuDetails> {
-        TODO("Not yet implemented")
+    override suspend fun loadProducts(productIds: Set<String>): List<SkuDetails> {
+        val billingError = waitForReadyClient()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
+
+        return dataFetcher.loadProducts(productIds)
     }
 
     override suspend fun consume(purchaseToken: String) {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        billingError ?: run {
+            try {
+                consumer.consume(purchaseToken)
+            } catch (e: QonversionException) {
+                logger.release("Failed to consume purchase with token $purchaseToken: $e")
+            }
+        }
     }
 
     override suspend fun acknowledge(purchaseToken: String) {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        billingError ?: run {
+            try {
+                consumer.acknowledge(purchaseToken)
+            } catch (e: QonversionException) {
+                logger.release("Failed to acknowledge purchase with token $purchaseToken: $e")
+            }
+        }
     }
 
     override suspend fun getSkuDetailsFromPurchases(purchases: List<Purchase>): List<SkuDetails> {
-        TODO("Not yet implemented")
+        val billingError = waitForReadyClient()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
+
+        val skuList = purchases.map { it.sku }.toSet()
+        return dataFetcher.loadProducts(skuList)
     }
 }

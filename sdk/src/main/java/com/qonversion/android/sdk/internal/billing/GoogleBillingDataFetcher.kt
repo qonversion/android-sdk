@@ -6,21 +6,22 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
+import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.old.billing.getDescription
-import com.qonversion.android.sdk.old.entity.PurchaseHistory
-import com.qonversion.android.sdk.old.logger.Logger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 internal class GoogleBillingDataFetcher(
-    private val billingClient: BillingClient
-) : BaseClass() {
+    private val billingClient: BillingClient,
+    logger: Logger
+) : BaseClass(logger) {
 
     @Throws(QonversionException::class)
-    suspend fun loadProducts(ids: List<String?>): List<SkuDetails> {
+    suspend fun loadProducts(ids: Set<String?>): List<SkuDetails> {
         val skuDetails = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
 
         val subsIds = skuDetails.map { it.sku }.toMutableList()
@@ -38,7 +39,7 @@ internal class GoogleBillingDataFetcher(
     @Throws(QonversionException::class)
     private suspend fun querySkuDetails(
         @BillingClient.SkuType productType: String,
-        skuList: List<String?>
+        skuList: Set<String?>
     ): List<SkuDetails> {
         logger.debug("querySkuDetailsAsync() -> Querying skuDetails for type $productType, " +
                 "identifiers: ${skuList.joinToString()}")
@@ -142,7 +143,7 @@ internal class GoogleBillingDataFetcher(
 
     private fun logSkuDetails(
         skuDetailsList: List<SkuDetails>,
-        skuList: List<String?>
+        skuList: Set<String?>
     ) {
         skuDetailsList
             .takeUnless { it.isEmpty() }
@@ -153,11 +154,11 @@ internal class GoogleBillingDataFetcher(
 
     private fun buildSkuDetailsParams(
         @BillingClient.SkuType productType: String,
-        skuList: List<String?>
+        skuList: Set<String?>
     ): SkuDetailsParams {
         return SkuDetailsParams.newBuilder()
             .setType(productType)
-            .setSkusList(skuList)
+            .setSkusList(skuList.toList())
             .build()
     }
 }

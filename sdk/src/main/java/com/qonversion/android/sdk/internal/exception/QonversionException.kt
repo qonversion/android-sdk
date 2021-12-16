@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.exception
 
 import java.lang.StringBuilder
 
-internal class QonversionException(
+class QonversionException(
     val code: ErrorCode,
     details: String? = null,
     cause: Throwable? = null

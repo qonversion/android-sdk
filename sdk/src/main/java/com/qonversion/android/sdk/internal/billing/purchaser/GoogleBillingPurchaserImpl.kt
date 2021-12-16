@@ -10,13 +10,15 @@ import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal class GoogleBillingPurchaserImpl(
     private val billingClient: BillingClient,
     logger: Logger
 ) : BaseClass(logger), GoogleBillingPurchaser {
 
-    override fun purchase(
+    override suspend fun purchase(
         activity: Activity,
         skuDetails: SkuDetails,
         updatePurchaseInfo: UpdatePurchaseInfo?
@@ -26,12 +28,14 @@ internal class GoogleBillingPurchaserImpl(
             .setSubscriptionUpdateParams(updatePurchaseInfo)
             .build()
 
-        val billingResult = billingClient.launchBillingFlow(activity, params)
-        if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
-            throw QonversionException(
-                ErrorCode.Purchasing,
-                "Failed to launch billing flow. ${billingResult.getDescription()}"
-            )
+        withContext(Dispatchers.Main) {
+            val billingResult = billingClient.launchBillingFlow(activity, params)
+            if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                throw QonversionException(
+                    ErrorCode.Purchasing,
+                    "Failed to launch billing flow. ${billingResult.getDescription()}"
+                )
+            }
         }
     }
 

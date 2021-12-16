@@ -4,7 +4,7 @@ import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.old.entity.PurchaseHistory
+import com.qonversion.android.sdk.dto.PurchaseHistory
 
 internal interface GoogleBillingController {
     suspend fun queryPurchasesHistory(): List<PurchaseHistory>
@@ -18,7 +18,7 @@ internal interface GoogleBillingController {
         @BillingFlowParams.ProrationMode prorationMode: Int? = null
     )
 
-    suspend fun loadProducts(productIDs: Set<String>): List<SkuDetails>
+    suspend fun loadProducts(productIds: Set<String>): List<SkuDetails>
 
     suspend fun consume(purchaseToken: String)
 

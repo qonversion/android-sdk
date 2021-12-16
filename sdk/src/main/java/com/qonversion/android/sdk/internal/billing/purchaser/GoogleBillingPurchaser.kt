@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 
 internal interface GoogleBillingPurchaser {
 
-    fun purchase(
+    suspend fun purchase(
         activity: Activity,
         skuDetails: SkuDetails,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
