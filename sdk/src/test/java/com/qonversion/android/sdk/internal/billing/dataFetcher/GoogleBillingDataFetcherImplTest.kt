@@ -10,7 +10,6 @@ import com.android.billingclient.api.SkuDetails
 import com.android.billingclient.api.SkuDetailsParams
 import com.android.billingclient.api.SkuDetailsResponseListener
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.internal.billing.GoogleBillingDataFetcher
 import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -23,7 +22,6 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import java.lang.IllegalStateException
-import java.util.ArrayList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -31,8 +29,8 @@ import org.junit.Assert
 import org.junit.jupiter.api.assertAll
 
 @ExperimentalCoroutinesApi
-class GoogleBillingDataFetcherTest {
-    private lateinit var dataFetcher: GoogleBillingDataFetcher
+class GoogleBillingDataFetcherImplTest {
+    private lateinit var dataFetcherImpl: GoogleBillingDataFetcherImpl
     private val mockBillingClient = mockk<BillingClient>()
     private val mockLogger = mockk<Logger>()
     private val slotQuerySkuDetailsCallback = slot<SkuDetailsResponseListener>()
@@ -57,7 +55,7 @@ class GoogleBillingDataFetcherTest {
             mockLogger.release(any())
         } just runs
 
-        dataFetcher = GoogleBillingDataFetcher(mockBillingClient, mockLogger)
+        dataFetcherImpl = GoogleBillingDataFetcherImpl(mockBillingClient, mockLogger)
     }
 
     @Test
@@ -95,7 +93,7 @@ class GoogleBillingDataFetcherTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcher.loadProducts(listOf(firstInAppId, secondInAppId, firstSubsId, secondSubsId))
+        val result = dataFetcherImpl.loadProducts(listOf(firstInAppId, secondInAppId, firstSubsId, secondSubsId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockSubsSkuFirst, mockSubsSkuSecond, mockInAppSkuFirst, mockInAppSkuSecond))
@@ -139,7 +137,7 @@ class GoogleBillingDataFetcherTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcher.loadProducts(listOf(firstInAppId, secondInAppId))
+        val result = dataFetcherImpl.loadProducts(listOf(firstInAppId, secondInAppId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockInAppSkuFirst, mockInAppSkuSecond))
@@ -174,7 +172,7 @@ class GoogleBillingDataFetcherTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcher.loadProducts(listOf(firstSubsId, secondSubsId))
+        val result = dataFetcherImpl.loadProducts(listOf(firstSubsId, secondSubsId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockSubsSkuFirst, mockSubsSkuSecond))
@@ -223,7 +221,7 @@ class GoogleBillingDataFetcherTest {
         val ids = listOf(firstSubsId, secondSubsId)
 
         // when
-        val result = dataFetcher.querySkuDetails(skuType, ids)
+        val result = dataFetcherImpl.querySkuDetails(skuType, ids)
 
         // then
         verify(exactly = 1) {
@@ -268,7 +266,7 @@ class GoogleBillingDataFetcherTest {
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.SkuDetailsFetching) {
-            dataFetcher.querySkuDetails(skuType, ids)
+            dataFetcherImpl.querySkuDetails(skuType, ids)
         }
 
         // then
@@ -324,7 +322,7 @@ class GoogleBillingDataFetcherTest {
         }
 
         // when
-        val result = dataFetcher.queryPurchases()
+        val result = dataFetcherImpl.queryPurchases()
 
         // then
         verify(exactly = 1) {
@@ -399,7 +397,7 @@ class GoogleBillingDataFetcherTest {
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.PurchasesFetching) {
-            dataFetcher.queryPurchases()
+            dataFetcherImpl.queryPurchases()
         }
 
         // then
@@ -462,7 +460,7 @@ class GoogleBillingDataFetcherTest {
         }
 
         // when
-        val result = dataFetcher.queryAllPurchasesHistory()
+        val result = dataFetcherImpl.queryAllPurchasesHistory()
 
         // then
         verify(exactly = 1) {
@@ -517,7 +515,7 @@ class GoogleBillingDataFetcherTest {
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.PurchasesHistoryFetching) {
-            dataFetcher.queryAllPurchasesHistory()
+            dataFetcherImpl.queryAllPurchasesHistory()
         }
 
         // then
@@ -562,7 +560,7 @@ class GoogleBillingDataFetcherTest {
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.PurchasesHistoryFetching) {
-            dataFetcher.queryAllPurchasesHistory()
+            dataFetcherImpl.queryAllPurchasesHistory()
         }
 
         // then
@@ -607,7 +605,7 @@ class GoogleBillingDataFetcherTest {
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.PurchasesHistoryFetching) {
-            dataFetcher.queryAllPurchasesHistory()
+            dataFetcherImpl.queryAllPurchasesHistory()
         }
 
         // then
@@ -622,7 +620,7 @@ class GoogleBillingDataFetcherTest {
         // given
 
         // when
-        val result = dataFetcher.getHistoryFromRecords(BillingClient.SkuType.SUBS, null)
+        val result = dataFetcherImpl.getHistoryFromRecords(BillingClient.SkuType.SUBS, null)
 
         // then
         assertThat(result).isEmpty()
@@ -633,7 +631,7 @@ class GoogleBillingDataFetcherTest {
         // given
 
         // when
-        val result = dataFetcher.getHistoryFromRecords(BillingClient.SkuType.INAPP, null)
+        val result = dataFetcherImpl.getHistoryFromRecords(BillingClient.SkuType.INAPP, null)
 
         // then
         assertThat(result).isEmpty()
@@ -666,7 +664,7 @@ class GoogleBillingDataFetcherTest {
         every { mockSecondHistoryRecord.skus } returns arrayListOf("2")
 
         // when
-        val result = dataFetcher.getHistoryFromRecords(skuType, historyRecords)
+        val result = dataFetcherImpl.getHistoryFromRecords(skuType, historyRecords)
 
         // then
         verify(exactly = 1) {
@@ -690,7 +688,7 @@ class GoogleBillingDataFetcherTest {
         val skuList = listOf(firstSubsId, firstInAppId)
 
         // when
-        dataFetcher.logSkuDetails(emptyList(), skuList)
+        dataFetcherImpl.logSkuDetails(emptyList(), skuList)
 
         // then
         verify(exactly = 1) {
@@ -705,7 +703,7 @@ class GoogleBillingDataFetcherTest {
         val skuDetails = listOf(mockSubsSkuFirst, mockInAppSkuFirst)
 
         // when
-        dataFetcher.logSkuDetails(skuDetails, skuList)
+        dataFetcherImpl.logSkuDetails(skuDetails, skuList)
 
         // then
         skuDetails.forEach {
