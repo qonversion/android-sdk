@@ -13,11 +13,14 @@ import io.mockk.mockkStatic
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.slot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 
+@ExperimentalCoroutinesApi
 internal class GoogleBillingPurchaserTest {
 
     private lateinit var purchaser: GoogleBillingPurchaser
@@ -48,7 +51,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails)
+            runTest {
+                purchaser.purchase(activity, skuDetails)
+            }
         }
 
         // then
@@ -62,7 +67,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
-            purchaser.purchase(activity, skuDetails)
+            runTest {
+                purchaser.purchase(activity, skuDetails)
+            }
         }
 
         // then
@@ -75,7 +82,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails, updateInfo)
+            runTest {
+                purchaser.purchase(activity, skuDetails, updateInfo)
+            }
         }
 
         // then
@@ -93,7 +102,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails, updateInfo)
+            runTest {
+                purchaser.purchase(activity, skuDetails, updateInfo)
+            }
         }
 
         // then
@@ -110,7 +121,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
-            purchaser.purchase(activity, skuDetails, updateInfo)
+            runTest {
+                purchaser.purchase(activity, skuDetails, updateInfo)
+            }
         }
 
         // then
