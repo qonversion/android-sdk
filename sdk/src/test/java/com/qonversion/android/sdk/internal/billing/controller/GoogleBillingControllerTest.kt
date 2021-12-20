@@ -20,13 +20,18 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 @ExperimentalCoroutinesApi
 internal class GoogleBillingControllerTest {
@@ -172,13 +177,103 @@ internal class GoogleBillingControllerTest {
         }
     }
 
-    private fun mockConnection(result: BillingResult = mockk(relaxed = true), timeout: Long = 0L) {
+    @Nested
+    inner class WaitForReadyClientTest {
+
+        private val waitingEpsilonMs = 10L
+
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockBillingClient.startConnection(any())
+            } just runs
+            billingController.billingClient = mockBillingClient
+        }
+
+        @Test
+        fun `client is already ready`() = runTest {
+            // given
+            every { mockBillingClient.isReady } returns true
+
+            // when
+            val error = withTimeout(waitingEpsilonMs) {
+                billingController.waitForReadyClient()
+            }
+
+            // then
+            assertThat(error).isNull()
+        }
+
+        @Test
+        fun `client is not ready and connects immediately`() = runTest {
+            // given
+            every { mockBillingClient.isReady } returns false
+            billingController.connectionDeferred = CompletableDeferred()
+
+            // when
+            val error = withTimeout(waitingEpsilonMs) {
+                launch {
+                    billingController.connectionDeferred?.complete(null)
+                }
+                billingController.waitForReadyClient()
+            }
+
+            // then
+            assertThat(error).isNull()
+        }
+
+        @Test
+        fun `client is not ready and connects with delay`() {
+            // given
+            every { mockBillingClient.isReady } returns false
+            billingController.connectionDeferred = CompletableDeferred()
+            val delay = 100000L
+
+            // when and then
+            // assert that it really waits for the whole connection time
+            assertThatThrownBy {
+                runTest {
+                    withTimeout(delay - 1) {
+                        launch {
+                            delay(delay)
+                            billingController.connectionDeferred?.complete(null)
+                        }
+                        billingController.waitForReadyClient()
+                    }
+                }
+            }.isInstanceOf(TimeoutCancellationException::class.java)
+        }
+
+        @Test
+        fun `client is not ready and connects with error`() = runTest {
+            // given
+            every { mockBillingClient.isReady } returns false
+            billingController.connectionDeferred = CompletableDeferred()
+            val billingError = mockk<BillingError>()
+
+            // when
+            val error = withTimeout(waitingEpsilonMs) {
+                launch {
+                    billingController.connectionDeferred?.complete(billingError)
+                }
+                billingController.waitForReadyClient()
+            }
+
+            // then
+            assertThat(error === billingError)
+        }
+    }
+
+    private fun mockConnection(result: BillingResult? = null, timeout: Long = 0L) {
+        val actualResult = result ?: mockk<BillingResult>().apply {
+            every { responseCode } returns BillingClient.BillingResponseCode.OK
+        }
         val slotListener = slot<BillingClientStateListener>()
         every {
             mockBillingClient.startConnection(capture(slotListener))
         } answers {
-            Thread.sleep(timeout)
-            slotListener.captured.onBillingSetupFinished(result)
+            runTest { delay(timeout) }
+            slotListener.captured.onBillingSetupFinished(actualResult)
         }
     }
 }

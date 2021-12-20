@@ -197,7 +197,7 @@ internal class GoogleBillingControllerImpl(
         }
     }
 
-    private suspend fun waitForReadyClient(): BillingError? {
+    suspend fun waitForReadyClient(): BillingError? {
         if (billingClient?.isReady == true) {
             return null
         }
