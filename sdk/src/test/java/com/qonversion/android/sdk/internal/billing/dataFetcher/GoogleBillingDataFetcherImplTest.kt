@@ -218,10 +218,10 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.OK
 
         val skuType = BillingClient.SkuType.SUBS
-        val ids = setOf(firstSubsId, secondSubsId)
+        val ids = listOf(firstSubsId, secondSubsId)
 
         // when
-        val result = dataFetcherImpl.querySkuDetails(skuType, ids)
+        val result = dataFetcherImpl.querySkuDetails(skuType, ids.toSet())
 
         // then
         verify(exactly = 1) {
