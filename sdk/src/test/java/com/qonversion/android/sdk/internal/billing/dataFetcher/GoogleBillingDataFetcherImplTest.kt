@@ -93,7 +93,7 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcherImpl.loadProducts(listOf(firstInAppId, secondInAppId, firstSubsId, secondSubsId))
+        val result = dataFetcherImpl.loadProducts(setOf(firstInAppId, secondInAppId, firstSubsId, secondSubsId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockSubsSkuFirst, mockSubsSkuSecond, mockInAppSkuFirst, mockInAppSkuSecond))
@@ -137,7 +137,7 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcherImpl.loadProducts(listOf(firstInAppId, secondInAppId))
+        val result = dataFetcherImpl.loadProducts(setOf(firstInAppId, secondInAppId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockInAppSkuFirst, mockInAppSkuSecond))
@@ -172,7 +172,7 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.OK
 
         // when
-        val result = dataFetcherImpl.loadProducts(listOf(firstSubsId, secondSubsId))
+        val result = dataFetcherImpl.loadProducts(setOf(firstSubsId, secondSubsId))
 
         // then
         assertThat(result).isEqualTo(listOf(mockSubsSkuFirst, mockSubsSkuSecond))
