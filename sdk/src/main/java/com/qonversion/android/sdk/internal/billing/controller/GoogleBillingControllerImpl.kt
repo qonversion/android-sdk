@@ -1,9 +1,11 @@
-package com.qonversion.android.sdk.internal.billing
+package com.qonversion.android.sdk.internal.billing.controller
 
 import android.app.Activity
 import com.android.billingclient.api.*
 import com.qonversion.android.sdk.dto.PurchaseHistory
+import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
+import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
 import com.qonversion.android.sdk.internal.billing.dto.BillingError
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
@@ -35,7 +37,7 @@ internal class GoogleBillingControllerImpl(
         }
 
     @Volatile
-    private var deferred: CompletableDeferred<BillingError?>? = null
+    var connectionDeferred: CompletableDeferred<BillingError?>? = null
 
     val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
@@ -59,7 +61,7 @@ internal class GoogleBillingControllerImpl(
         }
     }
 
-    private val billingClientStateListener = object : BillingClientStateListener {
+    val billingClientStateListener = object : BillingClientStateListener {
         override fun onBillingServiceDisconnected() {
             logger.debug("billingClientStateListener -> BillingClient disconnected ($billingClient).")
         }
@@ -88,31 +90,6 @@ internal class GoogleBillingControllerImpl(
                 }
             }
         }
-    }
-
-    @Synchronized
-    private fun completeConnectionDeferred(error: BillingError? = null) {
-        deferred?.complete(error)
-        deferred = null
-    }
-
-    @Synchronized
-    private fun connectToBillingAsync(): Deferred<BillingError?> {
-        return deferred ?: CompletableDeferred<BillingError?>().also {
-            deferred = it
-            billingClient?.let { client ->
-                client.startConnection(billingClientStateListener)
-                logger.debug("Trying to connect to BillingClient ($billingClient)")
-            }
-        }
-    }
-
-    private suspend fun waitForReadyClient(): BillingError? {
-        if (billingClient?.isReady == true) {
-            return null
-        }
-
-        return connectToBillingAsync().await()
     }
 
     override suspend fun queryPurchasesHistory(): List<PurchaseHistory> {
@@ -199,7 +176,32 @@ internal class GoogleBillingControllerImpl(
             throw billingError.toQonversionException()
         }
 
-        val skuList = purchases.map { it.sku }.toSet()
+        val skuList = purchases.mapNotNull { it.sku }.toSet()
         return dataFetcher.loadProducts(skuList)
+    }
+
+    @Synchronized
+    fun completeConnectionDeferred(error: BillingError? = null) {
+        connectionDeferred?.complete(error)
+        connectionDeferred = null
+    }
+
+    @Synchronized
+    private fun connectToBillingAsync(): Deferred<BillingError?> {
+        return connectionDeferred ?: CompletableDeferred<BillingError?>().also {
+            connectionDeferred = it
+            billingClient?.let { client ->
+                client.startConnection(billingClientStateListener)
+                logger.debug("Trying to connect to BillingClient ($billingClient)")
+            }
+        }
+    }
+
+    private suspend fun waitForReadyClient(): BillingError? {
+        if (billingClient?.isReady == true) {
+            return null
+        }
+
+        return connectToBillingAsync().await()
     }
 }

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.billing
+package com.qonversion.android.sdk.internal.billing.controller
 
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
