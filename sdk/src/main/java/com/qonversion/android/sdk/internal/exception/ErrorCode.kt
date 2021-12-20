@@ -11,6 +11,9 @@ enum class ErrorCode(val defaultMessage: String) {
     Consuming("Failed to consume purchase in Google Billing"),
     Acknowledging("Failed to acknowledge purchase in Google Billing"),
     Purchasing("Failed to make purchase"),
+    PurchasesFetching("Failed to retrieve purchase"),
+    PurchasesHistoryFetching("Failed to retrieve purchases history"),
+    SkuDetailsFetching("Failure to retrieve SkuDetails"),
     PlayStore("There was an issue with the Play Store service"),
     FeatureNotSupported("The requested feature is not supported"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),
@@ -18,5 +21,5 @@ enum class ErrorCode(val defaultMessage: String) {
     ProductUnavailable("Requested product is not available for purchase or its SKU was not found"),
     ProductAlreadyOwned("Failed to purchase since item is already owned"),
     ProductNotOwned("Failed to consume purchase since item is not owned"),
-    Unknown("Unknown error"),
+    Unknown("Unknown error")
 }

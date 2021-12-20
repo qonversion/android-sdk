@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.billing
+package com.qonversion.android.sdk.internal.billing.dataFetcher
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.SkuDetails
@@ -6,25 +6,24 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
-import com.qonversion.android.sdk.dto.PurchaseHistory
+import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.old.billing.getDescription
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-internal class GoogleBillingDataFetcher(
+internal class GoogleBillingDataFetcherImpl(
     private val billingClient: BillingClient,
     logger: Logger
-) : BaseClass(logger) {
+) : GoogleBillingDataFetcher, BaseClass(logger) {
 
     @Throws(QonversionException::class)
-    suspend fun loadProducts(ids: Set<String?>): List<SkuDetails> {
+    override suspend fun loadProducts(ids: Set<String>): List<SkuDetails> {
         val skuDetails = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
 
-        val subsIds = skuDetails.map { it.sku }.toMutableList()
+        val subsIds = skuDetails.map { it.sku }.toSet()
         val skuInApp = ids - subsIds
 
         if (skuInApp.isNotEmpty()) {
@@ -37,7 +36,7 @@ internal class GoogleBillingDataFetcher(
     }
 
     @Throws(QonversionException::class)
-    private suspend fun querySkuDetails(
+    suspend fun querySkuDetails(
         @BillingClient.SkuType productType: String,
         skuList: Set<String?>
     ): List<SkuDetails> {
@@ -52,19 +51,19 @@ internal class GoogleBillingDataFetcher(
                     logSkuDetails(skuDetailsList, skuList)
                     continuation.resume(skuDetailsList)
                 } else {
-                    var errorMessage = "Failed to fetch products. "
+                    var errorMessage = "Failed to fetch products."
                     if (skuDetailsList == null) {
-                        errorMessage += "SkuDetails list for $skuList is null. "
+                        errorMessage += " SkuDetails list for $skuList is null."
                     }
 
-                    throw QonversionException(ErrorCode.BadResponse, "Some error")
+                    throw QonversionException(ErrorCode.SkuDetailsFetching, errorMessage)
                 }
             }
         }
     }
 
     @Throws(QonversionException::class)
-    suspend fun queryPurchases(): List<Purchase> {
+    override suspend fun queryPurchases(): List<Purchase> {
         logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
 
         val (subsBillingResult, subsPurchases) = fetchPurchases(BillingClient.SkuType.SUBS)
@@ -77,12 +76,12 @@ internal class GoogleBillingDataFetcher(
         if (dataFetchedSuccessfully) {
             return subsPurchases + inAppsPurchases
         } else {
-            throw QonversionException(ErrorCode.BadResponse, "Some error")
+            throw QonversionException(ErrorCode.PurchasesFetching)
         }
     }
 
     @Throws(QonversionException::class)
-    suspend fun queryAllPurchasesHistory(): List<PurchaseHistory> {
+    override suspend fun queryAllPurchasesHistory(): List<PurchaseHistory> {
         val (subsBillingResult, subsPurchaseHistory) = fetchPurchasesHistory(BillingClient.SkuType.SUBS)
 
         val (inAppsBillingResult, inAppsPurchaseHistory) = fetchPurchasesHistory(BillingClient.SkuType.INAPP)
@@ -95,11 +94,11 @@ internal class GoogleBillingDataFetcher(
             val inAppsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.INAPP, inAppsPurchaseHistory)
             return subsHistoryRecords + inAppsHistoryRecords
         } else {
-            throw QonversionException(ErrorCode.BadResponse, "Some error")
+            throw QonversionException(ErrorCode.PurchasesHistoryFetching)
         }
     }
 
-    private fun getHistoryFromRecords(
+    fun getHistoryFromRecords(
         @BillingClient.SkuType skuType: String,
         historyRecords: List<PurchaseHistoryRecord>?
     ): List<PurchaseHistory> {
@@ -108,29 +107,16 @@ internal class GoogleBillingDataFetcher(
         }
 
         val purchaseHistory = mutableListOf<PurchaseHistory>()
-        historyRecords
-            .takeUnless { it.isEmpty() }
-            ?.forEach { record ->
-                purchaseHistory.add(PurchaseHistory(skuType, record))
-                logger.debug("queryPurchaseHistoryAsync() -> purchase history " +
-                        "for $skuType is retrieved ${record.getDescription()}")
-            }
-            ?: logger.release("queryPurchaseHistoryAsync() -> purchase history " +
-                    "for $skuType is empty.")
+        historyRecords.forEach { record ->
+            purchaseHistory.add(PurchaseHistory(skuType, record))
+            logger.debug("queryPurchaseHistoryAsync() -> purchase history " +
+                    "for $skuType is retrieved ${record.skus}")
+        }
 
         return purchaseHistory
     }
 
-    private suspend fun fetchPurchases(@BillingClient.SkuType skuType: String): Pair<BillingResult, List<Purchase>> {
-        logger.debug("fetchPurchases() -> Querying purchases for type $skuType")
-        return suspendCoroutine { continuation ->
-            billingClient.queryPurchasesAsync(skuType) { billingResult, purchases ->
-                continuation.resume(Pair(billingResult, purchases))
-            }
-        }
-    }
-
-    private suspend fun fetchPurchasesHistory(
+    override suspend fun fetchPurchasesHistory(
         @BillingClient.SkuType skuType: String
     ): Pair<BillingResult, List<PurchaseHistoryRecord>?> {
         logger.debug("fetchPurchasesHistory() -> Querying purchase history for type $skuType")
@@ -141,15 +127,24 @@ internal class GoogleBillingDataFetcher(
         }
     }
 
-    private fun logSkuDetails(
+    fun logSkuDetails(
         skuDetailsList: List<SkuDetails>,
         skuList: Set<String?>
     ) {
-        skuDetailsList
-            .takeUnless { it.isEmpty() }
-            ?.forEach {
-                logger.debug("querySkuDetailsAsync() -> $it")
-            } ?: logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+        if (skuDetailsList.isNotEmpty()) {
+            skuDetailsList.forEach { logger.debug("querySkuDetailsAsync() -> $it") }
+        } else {
+            logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+        }
+    }
+
+    private suspend fun fetchPurchases(@BillingClient.SkuType skuType: String): Pair<BillingResult, List<Purchase>> {
+        logger.debug("fetchPurchases() -> Querying purchases for type $skuType")
+        return suspendCoroutine { continuation ->
+            billingClient.queryPurchasesAsync(skuType) { billingResult, purchases ->
+                continuation.resume(Pair(billingResult, purchases))
+            }
+        }
     }
 
     private fun buildSkuDetailsParams(

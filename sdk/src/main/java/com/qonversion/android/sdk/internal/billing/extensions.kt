@@ -2,9 +2,27 @@ package com.qonversion.android.sdk.internal.billing
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PurchaseHistoryRecord
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
+
+fun PurchaseHistoryRecord.getDescription() =
+    "ProductId: ${this.sku}; " +
+            "PurchaseTime: ${this.purchaseTime.convertLongToTime()}; " +
+            "PurchaseToken: ${this.purchaseToken}"
+
+val PurchaseHistoryRecord.sku: String?
+    get() = skus.firstOrNull()
+
+private fun Long.convertLongToTime(): String {
+    val date = Date(this)
+    val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
+    return format.format(date)
+}
 
 internal fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {
     return when (this) {
