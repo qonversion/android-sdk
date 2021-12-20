@@ -10,7 +10,7 @@ import com.android.billingclient.api.SkuDetails
 import com.android.billingclient.api.SkuDetailsParams
 import com.android.billingclient.api.SkuDetailsResponseListener
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
+import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.every
@@ -218,7 +218,7 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.OK
 
         val skuType = BillingClient.SkuType.SUBS
-        val ids = listOf(firstSubsId, secondSubsId)
+        val ids = setOf(firstSubsId, secondSubsId)
 
         // when
         val result = dataFetcherImpl.querySkuDetails(skuType, ids)
@@ -262,7 +262,7 @@ class GoogleBillingDataFetcherImplTest {
         } returns BillingClient.BillingResponseCode.ERROR
 
         val skuType = BillingClient.SkuType.SUBS
-        val ids = listOf(firstSubsId, secondSubsId)
+        val ids = setOf(firstSubsId, secondSubsId)
 
         // when
         coAssertThatQonversionExceptionThrown(ErrorCode.SkuDetailsFetching) {
@@ -685,7 +685,7 @@ class GoogleBillingDataFetcherImplTest {
     @Test
     fun `log sku details empty list`() {
         // given
-        val skuList = listOf(firstSubsId, firstInAppId)
+        val skuList = setOf(firstSubsId, firstInAppId)
 
         // when
         dataFetcherImpl.logSkuDetails(emptyList(), skuList)
@@ -699,7 +699,7 @@ class GoogleBillingDataFetcherImplTest {
     @Test
     fun `log sku details not empty list`() {
         // given
-        val skuList = listOf(firstSubsId, firstInAppId)
+        val skuList = setOf(firstSubsId, firstInAppId)
         val skuDetails = listOf(mockSubsSkuFirst, mockInAppSkuFirst)
 
         // when

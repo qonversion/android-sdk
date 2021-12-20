@@ -6,7 +6,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
-import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
+import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
