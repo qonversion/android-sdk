@@ -61,7 +61,7 @@ internal class GoogleBillingControllerImpl(
         }
     }
 
-    val billingClientStateListener = object : BillingClientStateListener {
+    var billingClientStateListener = object : BillingClientStateListener {
         override fun onBillingServiceDisconnected() {
             logger.debug("billingClientStateListener -> BillingClient disconnected ($billingClient).")
         }
@@ -187,13 +187,13 @@ internal class GoogleBillingControllerImpl(
     }
 
     @Synchronized
-    private fun connectToBillingAsync(): Deferred<BillingError?> {
+    fun connectToBillingAsync(): Deferred<BillingError?> {
         return connectionDeferred ?: CompletableDeferred<BillingError?>().also {
-            connectionDeferred = it
             billingClient?.let { client ->
+                connectionDeferred = it
                 client.startConnection(billingClientStateListener)
                 logger.debug("Trying to connect to BillingClient ($billingClient)")
-            }
+            } ?: throw QonversionException(ErrorCode.BillingConnection, "Billing client is not set.")
         }
     }
 
