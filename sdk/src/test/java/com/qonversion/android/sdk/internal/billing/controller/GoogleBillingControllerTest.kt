@@ -8,10 +8,11 @@ import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
 import com.qonversion.android.sdk.internal.billing.dto.BillingError
+import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.old.mockPrivateField
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -31,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 
 @ExperimentalCoroutinesApi
 internal class GoogleBillingControllerTest {
@@ -261,6 +261,120 @@ internal class GoogleBillingControllerTest {
 
             // then
             assertThat(error === billingError)
+        }
+    }
+
+    @Nested
+    inner class BillingClientStateListenerTest {
+        private val slotDebugLogMessage = slot<String>()
+        private val slotReleaseLogMessage = slot<String>()
+        private val mockBillingResult = mockk<BillingResult>()
+
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockBillingClient.startConnection(any())
+            } just runs
+            billingController.billingClient = mockBillingClient
+
+            clearMocks(mockLogger) // clear from messages written by billing client setter
+            every { mockLogger.debug(capture(slotDebugLogMessage)) } just runs
+            every { mockLogger.release(capture(slotReleaseLogMessage)) } just runs
+        }
+
+        @Test
+        fun `on disconnected`() {
+            // given
+
+            // when
+            billingController.billingClientStateListener.onBillingServiceDisconnected()
+
+            // then
+            verify { mockLogger.debug(any()) }
+            assertThat(slotDebugLogMessage.captured)
+                .startsWith("billingClientStateListener -> BillingClient disconnected")
+        }
+
+        @Test
+        fun `on connected with OK response`() {
+            // given
+            every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.OK
+            billingController.connectionDeferred = mockk(relaxed = true)
+
+            // when
+            billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
+
+            // then
+            verify { mockLogger.debug(any()) }
+            assertThat(slotDebugLogMessage.captured)
+                .startsWith("billingClientStateListener -> BillingClient successfully connected")
+            assertThat(billingController.connectionDeferred).isNull()
+        }
+
+        @Test
+        fun `on connection failed with billing unavailable error`() {
+            testOnConnectionFailedWithNonRetryableError(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
+        }
+
+        @Test
+        fun `on connection failed with feature not supported response`() {
+            testOnConnectionFailedWithNonRetryableError(BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED)
+        }
+
+        @Test
+        fun `on connection failed because another connection is in process`() {
+            // given
+            every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.DEVELOPER_ERROR
+
+            // when
+            billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
+
+            // then
+            verify(exactly = 0) {
+                mockLogger.debug(any())
+                mockLogger.release(any())
+            }
+        }
+
+        @Test
+        fun `on connection failed with temporary error`() {
+            // given
+            every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE
+            billingController.connectionDeferred = mockk(relaxed = true)
+
+            // when
+            billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
+
+            // then
+            verify { mockLogger.release(any()) }
+            assertThat(slotReleaseLogMessage.captured)
+                .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
+            assertThat(slotReleaseLogMessage.captured).contains("SERVICE_UNAVAILABLE")
+            assertThat(billingController.connectionDeferred).isNotNull
+        }
+
+        private fun testOnConnectionFailedWithNonRetryableError(
+            @BillingClient.BillingResponseCode responseCode: Int
+        ) {
+            // given
+            every { mockBillingResult.responseCode } returns responseCode
+            val deferred = mockk<CompletableDeferred<BillingError?>>(relaxed = true)
+            val slotBillingError = slot<BillingError>()
+            every { deferred.complete(capture(slotBillingError)) } returns true
+            billingController.connectionDeferred = deferred
+
+            // when
+            billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
+
+            // then
+            verify { mockLogger.release(any()) }
+            assertThat(slotReleaseLogMessage.captured)
+                .startsWith("billingClientStateListener -> BillingClient connection failed with error")
+            assertThat(slotReleaseLogMessage.captured).contains(responseCode.getDescription())
+
+            assertThat(billingController.connectionDeferred).isNull()
+            verify(exactly = 1) { deferred.complete(any()) }
+            assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(responseCode)
         }
     }
 
