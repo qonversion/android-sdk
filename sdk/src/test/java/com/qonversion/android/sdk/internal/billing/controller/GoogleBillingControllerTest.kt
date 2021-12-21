@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.internal.billing.controller
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
@@ -41,7 +42,7 @@ internal class GoogleBillingControllerTest {
     private val mockConsumer = mockk<GoogleBillingConsumer>()
     private val mockPurchaser = mockk<GoogleBillingPurchaser>()
     private val mockDataFetcher = mockk<GoogleBillingDataFetcher>()
-    private val mockPurchaseListener = mockk<PurchasesListener>()
+    private val mockPurchasesListener = mockk<PurchasesListener>()
     private val mockBillingClient = mockk<BillingClient>()
     private val mockLogger = mockk<Logger>(relaxed = true)
 
@@ -57,7 +58,7 @@ internal class GoogleBillingControllerTest {
             mockConsumer,
             mockPurchaser,
             mockDataFetcher,
-            mockPurchaseListener,
+            mockPurchasesListener,
             mockLogger
         )
     }
@@ -375,6 +376,96 @@ internal class GoogleBillingControllerTest {
             assertThat(billingController.connectionDeferred).isNull()
             verify(exactly = 1) { deferred.complete(any()) }
             assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(responseCode)
+        }
+    }
+
+    @Nested
+    inner class PurchasesUpdatedListenerTest {
+
+        private val mockBillingResult = mockk<BillingResult>()
+        private val mockPurchase1 = mockk<Purchase>(relaxed = true)
+        private val mockPurchase2 = mockk<Purchase>(relaxed = true)
+        private val purchase1Sku = "purchase 1 sku"
+        private val purchase2Sku = "purchase 2 sku"
+        private val slotBillingError = slot<BillingError>()
+        private val slotDebugLogMessage = slot<String>()
+        private val slotReleaseLogMessages = mutableListOf<String>()
+
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockPurchasesListener.onPurchasesFailed(any(), capture(slotBillingError))
+            } just runs
+            every { mockPurchasesListener.onPurchasesCompleted(any()) } just runs
+
+            every { mockLogger.debug(capture(slotDebugLogMessage)) } just runs
+            every { mockLogger.release(capture(slotReleaseLogMessages)) } just runs
+
+            every { mockPurchase1.skus } returns arrayListOf(purchase1Sku)
+            every { mockPurchase2.skus } returns arrayListOf(purchase2Sku)
+
+            billingController.purchasesUpdatedListener
+        }
+
+        @Test
+        fun `successful update`() {
+            // given
+            every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.OK
+            val purchases = listOf(mockPurchase1, mockPurchase2)
+
+            // when
+            billingController.purchasesUpdatedListener.onPurchasesUpdated(mockBillingResult, purchases)
+
+            // then
+            verify(exactly = 1) { mockPurchasesListener.onPurchasesCompleted(purchases) }
+            verify { mockLogger.debug(any()) }
+            assertThat(slotDebugLogMessage.captured).startsWith("onPurchasesUpdated() -> purchases updated.")
+        }
+
+        @Test
+        fun `successful update with null purchases`() {
+            // given
+            val responseCode = BillingClient.BillingResponseCode.OK
+            every { mockBillingResult.responseCode } returns responseCode
+            val purchases = null
+            val expectedErrorMessage = "No purchase was passed for successful billing result."
+
+            // when
+            billingController.purchasesUpdatedListener.onPurchasesUpdated(mockBillingResult, purchases)
+
+            // then
+            verify(exactly = 1) { mockPurchasesListener.onPurchasesFailed(emptyList(), any()) }
+            assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(responseCode)
+            assertThat(slotBillingError.captured.message).isEqualTo(expectedErrorMessage)
+
+            verify(exactly = 1) { mockLogger.release(any()) } // once for error and once for purchases
+            assertThat(slotReleaseLogMessages[0])
+                .startsWith("onPurchasesUpdated() -> failed to update purchases")
+                .contains(expectedErrorMessage)
+        }
+
+        @Test
+        fun `failed update`() {
+            // given
+            val errorCode = BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED
+            every { mockBillingResult.responseCode } returns errorCode
+            val purchases = listOf(mockPurchase1, mockPurchase2)
+
+            // when
+            billingController.purchasesUpdatedListener.onPurchasesUpdated(mockBillingResult, purchases)
+
+            // then
+            verify(exactly = 1) { mockPurchasesListener.onPurchasesFailed(purchases, any()) }
+            assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(errorCode)
+            assertThat(slotBillingError.captured.message).contains("ITEM_ALREADY_OWNED")
+
+            verify(exactly = 2) { mockLogger.release(any()) } // once for error and once for purchases
+            assertThat(slotReleaseLogMessages[0])
+                .startsWith("onPurchasesUpdated() -> failed to update purchases")
+                .contains("ITEM_ALREADY_OWNED")
+            assertThat(slotReleaseLogMessages[1])
+                .startsWith("Purchases:")
+                .contains(purchase1Sku, purchase2Sku)
         }
     }
 
