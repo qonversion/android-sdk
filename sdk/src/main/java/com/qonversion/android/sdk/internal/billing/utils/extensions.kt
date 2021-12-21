@@ -2,6 +2,11 @@ package com.qonversion.android.sdk.internal.billing.utils
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
+import com.qonversion.android.sdk.old.billing.sku
+
+internal fun Purchase.getDescription() =
+    "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"

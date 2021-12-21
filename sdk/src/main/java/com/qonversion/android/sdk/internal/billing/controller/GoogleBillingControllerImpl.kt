@@ -9,12 +9,12 @@ import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingData
 import com.qonversion.android.sdk.internal.billing.dto.BillingError
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
+import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.utils.sku
-import com.qonversion.android.sdk.old.billing.getDescription
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
@@ -146,12 +146,21 @@ internal class GoogleBillingControllerImpl(
     }
 
     override suspend fun loadProducts(productIds: Set<String>): List<SkuDetails> {
+        if (productIds.isEmpty()) {
+            return emptyList()
+        }
+
         val billingError = waitForReadyClient()
         if (billingError != null) {
             throw billingError.toQonversionException()
         }
 
         return dataFetcher.loadProducts(productIds)
+    }
+
+    override suspend fun getSkuDetailsFromPurchases(purchases: List<Purchase>): List<SkuDetails> {
+        val skuList = purchases.mapNotNull { it.sku }.toSet()
+        return loadProducts(skuList)
     }
 
     override suspend fun consume(purchaseToken: String) {
@@ -174,16 +183,6 @@ internal class GoogleBillingControllerImpl(
                 logger.release("Failed to acknowledge purchase with token $purchaseToken: $e")
             }
         }
-    }
-
-    override suspend fun getSkuDetailsFromPurchases(purchases: List<Purchase>): List<SkuDetails> {
-        val billingError = waitForReadyClient()
-        if (billingError != null) {
-            throw billingError.toQonversionException()
-        }
-
-        val skuList = purchases.mapNotNull { it.sku }.toSet()
-        return dataFetcher.loadProducts(skuList)
     }
 
     @Synchronized

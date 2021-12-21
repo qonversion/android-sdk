@@ -4,7 +4,10 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
@@ -12,8 +15,11 @@ import com.qonversion.android.sdk.internal.billing.dto.BillingError
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -33,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import java.lang.Exception
 
 @ExperimentalCoroutinesApi
 internal class GoogleBillingControllerTest {
@@ -50,10 +57,6 @@ internal class GoogleBillingControllerTest {
 
     @BeforeEach
     fun setUp() {
-        every {
-            mockBillingClient.isReady
-        } returns true
-
         billingController = GoogleBillingControllerImpl(
             mockConsumer,
             mockPurchaser,
@@ -466,6 +469,280 @@ internal class GoogleBillingControllerTest {
             assertThat(slotReleaseLogMessages[1])
                 .startsWith("Purchases:")
                 .contains(purchase1Sku, purchase2Sku)
+        }
+    }
+
+    @Nested
+    inner class QueryPurchasesHistoryTest {
+
+        @Test
+        fun `billing successfully connected`() = runTest {
+            // given
+            val mockPurchasesHistory = mockk<List<PurchaseHistory>>()
+            coEvery { mockDataFetcher.queryAllPurchasesHistory() } returns mockPurchasesHistory
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            val result = billingController.queryPurchasesHistory()
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
+            assertThat(result === mockPurchasesHistory)
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.BillingUnavailable) {
+                billingController.queryPurchasesHistory()
+            }
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.queryAllPurchasesHistory() }
+        }
+
+        @Test
+        fun `data fetcher throws error`() {
+            // given
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val exception = mockk<QonversionException>()
+            coEvery { mockDataFetcher.queryAllPurchasesHistory() } throws exception
+
+            // when
+            val e = try {
+                runTest {
+                    billingController.queryPurchasesHistory()
+                }
+                null
+            } catch (e: Exception) {
+                e
+            }
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
+            assertThat(e === exception)
+        }
+    }
+
+    @Nested
+    inner class QueryPurchasesTest {
+
+        @Test
+        fun `billing successfully connected`() = runTest {
+            // given
+            val mockPurchases = mockk<List<Purchase>>()
+            coEvery { mockDataFetcher.queryPurchases() } returns mockPurchases
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            val result = billingController.queryPurchases()
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
+            assertThat(result === mockPurchases)
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.BillingUnavailable) {
+                billingController.queryPurchases()
+            }
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.queryPurchases() }
+        }
+
+        @Test
+        fun `data fetcher throws error`() {
+            // given
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val exception = mockk<QonversionException>()
+            coEvery { mockDataFetcher.queryPurchases() } throws exception
+
+            // when
+            val e = try {
+                runTest {
+                    billingController.queryPurchases()
+                }
+                null
+            } catch (e: Exception) {
+                e
+            }
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
+            assertThat(e === exception)
+        }
+    }
+
+    @Nested
+    inner class LoadProductsTest {
+
+        @Test
+        fun `billing successfully connected`() = runTest {
+            // given
+            val mockSkuDetails = mockk<List<SkuDetails>>()
+            val ids = mockk<Set<String>>()
+            coEvery { mockDataFetcher.loadProducts(ids) } returns mockSkuDetails
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            val result = billingController.loadProducts(ids)
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.loadProducts(ids) }
+            assertThat(result === mockSkuDetails)
+        }
+
+        @Test
+        fun `empty input set`() = runTest {
+            // given
+            val ids = emptySet<String>()
+
+            // when
+            val result = billingController.loadProducts(ids)
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.loadProducts(any()) }
+            assertThat(result).isEmpty()
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.BillingUnavailable) {
+                billingController.loadProducts(mockk())
+            }
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.queryPurchases() }
+        }
+
+        @Test
+        fun `data fetcher throws error`() {
+            // given
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val exception = mockk<QonversionException>()
+            coEvery { mockDataFetcher.loadProducts(any()) } throws exception
+
+            // when
+            val e = try {
+                runTest {
+                    billingController.loadProducts(mockk())
+                }
+                null
+            } catch (e: Exception) {
+                e
+            }
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
+            assertThat(e === exception)
+        }
+    }
+
+    @Nested
+    inner class GetSkuDetailsFromPurchasesTest {
+
+        private val purchase1Sku = "purchase 1 sku"
+        private val purchase2Sku = "purchase 2 sku"
+        private val purchase1 = mockk<Purchase>()
+        private val purchase2 = mockk<Purchase>()
+
+        @BeforeEach
+        fun setUp() {
+            every { purchase1.skus } returns arrayListOf(purchase1Sku)
+            every { purchase2.skus } returns arrayListOf(purchase2Sku)
+        }
+
+        @Test
+        fun `several purchases`() = runTest {
+            // given
+            val mockSkuDetails = mockk<List<SkuDetails>>()
+            val slotIds = slot<Set<String>>()
+            coEvery { mockDataFetcher.loadProducts(capture(slotIds)) } answers { mockSkuDetails }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+            val purchases = listOf(purchase1, purchase2)
+
+            // when
+            val result = billingController.getSkuDetailsFromPurchases(purchases)
+
+            // then
+            coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
+            assertThat(slotIds.captured).isEqualTo(setOf(purchase1Sku, purchase2Sku))
+            assertThat(result === mockSkuDetails)
+        }
+
+        @Test
+        fun `no purchases`() = runTest {
+            // given
+            val purchases = emptyList<Purchase>()
+
+            // when
+            val result = billingController.getSkuDetailsFromPurchases(purchases)
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.loadProducts(any()) }
+            assertThat(result).isEmpty()
+        }
+
+        @Test
+        fun `all purchases without sku`() = runTest {
+            // given
+            val purchases = List(4) {
+                mockk<Purchase>().also {
+                    every { it.skus } returns arrayListOf(null)
+                }
+            }
+
+            // when
+            val result = billingController.getSkuDetailsFromPurchases(purchases)
+
+            // then
+            coVerify(exactly = 0) { mockDataFetcher.loadProducts(any()) }
+            assertThat(result).isEmpty()
         }
     }
 
