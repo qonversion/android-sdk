@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.billing.controller
 
+import android.app.Activity
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
@@ -743,6 +744,148 @@ internal class GoogleBillingControllerTest {
             // then
             coVerify(exactly = 0) { mockDataFetcher.loadProducts(any()) }
             assertThat(result).isEmpty()
+        }
+    }
+
+    @Nested
+    inner class ConsumeTest {
+
+        private val consumingToken = "test token"
+
+        @Test
+        fun `billing successfully connected`() {
+            // given
+            coEvery { mockConsumer.consume(consumingToken) } just runs
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            runTest {
+                billingController.consume(consumingToken)
+            }
+
+            // then
+            coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
+        }
+
+        @Test
+        fun `consumer throws exception`() {
+            // given
+            val exception = QonversionException(ErrorCode.Consuming)
+            coEvery { mockConsumer.consume(consumingToken) } throws exception
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val slotReleaseMessage = slot<String>()
+            every { mockLogger.release(capture(slotReleaseMessage)) } just runs
+
+            // when
+            assertDoesNotThrow {
+                runTest {
+                    billingController.consume(consumingToken)
+                }
+            }
+
+            // then
+            coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
+            verify(exactly = 1) { mockLogger.release(any()) }
+            assertThat(slotReleaseMessage.captured)
+                .startsWith("Failed to consume purchase")
+                .contains(consumingToken)
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            assertDoesNotThrow {
+                runTest {
+                    billingController.consume(consumingToken)
+                }
+            }
+
+            // then
+            coVerify(exactly = 0) { mockConsumer.consume(any()) }
+        }
+    }
+
+    @Nested
+    inner class AcknowledgeTest {
+
+        private val acknowledgingToken = "test token"
+
+        @Test
+        fun `billing successfully connected`() {
+            // given
+            coEvery { mockConsumer.acknowledge(acknowledgingToken) } just runs
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            runTest {
+                billingController.acknowledge(acknowledgingToken)
+            }
+
+            // then
+            coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
+        }
+
+        @Test
+        fun `consumer throws exception`() {
+            // given
+            val exception = QonversionException(ErrorCode.Consuming)
+            coEvery { mockConsumer.acknowledge(acknowledgingToken) } throws exception
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val slotReleaseMessage = slot<String>()
+            every { mockLogger.release(capture(slotReleaseMessage)) } just runs
+
+            // when
+            assertDoesNotThrow {
+                runTest {
+                    billingController.acknowledge(acknowledgingToken)
+                }
+            }
+
+            // then
+            coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
+            verify(exactly = 1) { mockLogger.release(any()) }
+            assertThat(slotReleaseMessage.captured)
+                .startsWith("Failed to acknowledge purchase")
+                .contains(acknowledgingToken)
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            assertDoesNotThrow {
+                runTest {
+                    billingController.acknowledge(acknowledgingToken)
+                }
+            }
+
+            // then
+            coVerify(exactly = 0) { mockConsumer.acknowledge(any()) }
         }
     }
 
