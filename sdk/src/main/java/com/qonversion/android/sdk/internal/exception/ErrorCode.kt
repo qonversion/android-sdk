@@ -14,7 +14,7 @@ enum class ErrorCode(val defaultMessage: String) {
     Purchasing("Failed to make purchase"),
     PurchasesFetching("Failed to retrieve purchase"),
     PurchasesHistoryFetching("Failed to retrieve purchases history"),
-    SkuDetailsFetching("Failure to retrieve SkuDetails"),
+    SkuDetailsFetching("Failed to retrieve SkuDetails"),
     PlayStore("There was an issue with the Play Store service"),
     FeatureNotSupported("The requested feature is not supported"),
     CanceledPurchase("User pressed back or canceled a dialog for purchase"),

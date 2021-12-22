@@ -33,8 +33,6 @@ android {
 
     testOptions {
         unitTests.all {
-            useJUnitPlatform()
-
             // All the usual Gradle options.
             testLogging {
                 events "passed", "skipped", "failed", "standardOut", "standardError"

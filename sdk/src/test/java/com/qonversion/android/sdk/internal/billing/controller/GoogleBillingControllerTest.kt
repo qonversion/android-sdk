@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.billing.controller
 
-import android.app.Activity
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
@@ -610,7 +609,7 @@ internal class GoogleBillingControllerTest {
         fun `billing successfully connected`() = runTest {
             // given
             val mockSkuDetails = mockk<List<SkuDetails>>()
-            val ids = mockk<Set<String>>()
+            val ids = setOf("1")
             coEvery { mockDataFetcher.loadProducts(ids) } returns mockSkuDetails
             mockConnection()
             every { mockBillingClient.isReady } returns true
@@ -649,7 +648,7 @@ internal class GoogleBillingControllerTest {
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.BillingUnavailable) {
-                billingController.loadProducts(mockk())
+                billingController.loadProducts(setOf("1"))
             }
 
             // then
@@ -669,7 +668,7 @@ internal class GoogleBillingControllerTest {
             // when
             val e = try {
                 runTest {
-                    billingController.loadProducts(mockk())
+                    billingController.loadProducts(setOf("1"))
                 }
                 null
             } catch (e: Exception) {
