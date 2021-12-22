@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
 import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
+import com.qonversion.android.sdk.internal.billing.utils.isOk
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -40,8 +41,7 @@ internal class GoogleBillingDataFetcherImpl(
 
         val (inAppsBillingResult, inAppsPurchases) = fetchPurchases(BillingClient.SkuType.INAPP)
 
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+        val dataFetchedSuccessfully = subsBillingResult.isOk && inAppsBillingResult.isOk
 
         if (dataFetchedSuccessfully) {
             return subsPurchases + inAppsPurchases
@@ -57,8 +57,7 @@ internal class GoogleBillingDataFetcherImpl(
 
         val (inAppsBillingResult, inAppsPurchaseHistory) = queryPurchasesHistory(BillingClient.SkuType.INAPP)
 
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+        val dataFetchedSuccessfully = subsBillingResult.isOk && inAppsBillingResult.isOk
 
         if (dataFetchedSuccessfully) {
             val subsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.SUBS, subsPurchaseHistory)
@@ -94,7 +93,7 @@ internal class GoogleBillingDataFetcherImpl(
 
         return suspendCoroutine { continuation ->
             billingClient.querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
+                if (billingResult.isOk && skuDetailsList != null) {
                     logSkuDetails(skuDetailsList, skuList)
                     continuation.resume(skuDetailsList)
                 } else {

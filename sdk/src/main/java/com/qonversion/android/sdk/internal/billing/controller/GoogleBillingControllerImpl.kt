@@ -41,12 +41,12 @@ internal class GoogleBillingControllerImpl(
     var connectionDeferred: CompletableDeferred<BillingError?>? = null
 
     val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+        if (billingResult.isOk && purchases != null) {
             logger.debug("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
             val errorMessage = if (
-                billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases == null
+                billingResult.isOk && purchases == null
             ) {
                 "No purchase was passed for successful billing result."
             } else {
