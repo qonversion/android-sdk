@@ -449,7 +449,7 @@ class GoogleBillingDataFetcherTest {
             // then
             assertThat(result.first === mockSubsBillingResult)
             assertThat(result.second === expectedResult)
-            verify(exactly = 1) { mockLogger.debug("fetchPurchasesHistory() -> Querying purchase history for type $skuType") }
+            verify(exactly = 1) { mockLogger.debug("queryPurchasesHistory() -> Querying purchase history for type $skuType") }
         }
     }
 
@@ -526,7 +526,7 @@ class GoogleBillingDataFetcherTest {
             // then
             verify(exactly = historyRecords.size) { mockLogger.debug(any()) }
             slotDebugLogMessages.forEach {
-                assertThat(it).startsWith("queryPurchaseHistoryAsync() -> purchase history")
+                assertThat(it).startsWith("queryAllPurchasesHistory() -> purchase history")
             }
             assertThat(slotDebugLogMessages[0]).contains(mockFirstHistoryRecord.getDescription())
             assertThat(slotDebugLogMessages[1]).contains(mockSecondHistoryRecord.getDescription())

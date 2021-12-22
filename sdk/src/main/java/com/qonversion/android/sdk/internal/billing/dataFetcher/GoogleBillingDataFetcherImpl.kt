@@ -74,7 +74,7 @@ internal class GoogleBillingDataFetcherImpl(
     override suspend fun queryPurchasesHistory(
         @BillingClient.SkuType skuType: String
     ): Pair<BillingResult, List<PurchaseHistoryRecord>?> {
-        logger.debug("fetchPurchasesHistory() -> Querying purchase history for type $skuType")
+        logger.debug("queryPurchasesHistory() -> Querying purchase history for type $skuType")
         return suspendCoroutine { continuation ->
             billingClient.queryPurchaseHistoryAsync(skuType) { billingResult, purchases ->
                 continuation.resume(Pair(billingResult, purchases))
@@ -118,7 +118,7 @@ internal class GoogleBillingDataFetcherImpl(
         }
 
         return historyRecords.map { record ->
-            logger.debug("queryPurchaseHistoryAsync() -> purchase history " +
+            logger.debug("queryAllPurchasesHistory() -> purchase history " +
                     "for $skuType is retrieved ${record.getDescription()}")
             PurchaseHistory(skuType, record)
         }
