@@ -11,6 +11,8 @@ import java.util.Locale
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
+internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
+
 internal fun Purchase.getDescription() =
     "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 

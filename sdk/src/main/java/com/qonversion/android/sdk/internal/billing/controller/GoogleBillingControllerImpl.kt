@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.internal.billing.dto.BillingError
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
+import com.qonversion.android.sdk.internal.billing.utils.isOk
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -130,18 +131,19 @@ internal class GoogleBillingControllerImpl(
         if (oldSkuDetails == null) {
             purchaser.purchase(activity, skuDetails)
         } else {
-            // todo replace with method, that queries history for given skuType
-            val purchaseHistoryRecord = dataFetcher
-                .queryAllPurchasesHistory()
-                .map { it.historyRecord }
-                .find { it.sku == oldSkuDetails.sku }
-
-            if (purchaseHistoryRecord != null) {
-                val updatePurchaseInfo = UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, prorationMode)
-                purchaser.purchase(activity, skuDetails, updatePurchaseInfo)
-            } else {
-                throw QonversionException(ErrorCode.Purchasing, "No existing purchase for sku: ${oldSkuDetails.sku}")
+            val (billingResult, purchasesHistory) = dataFetcher.queryPurchasesHistory(skuDetails.type)
+            if (!billingResult.isOk || purchasesHistory == null) {
+                val error = BillingError(
+                    billingResult.responseCode,
+                    "Failed to fetch history records for sku type ${skuDetails.type}. ${billingResult.getDescription()}"
+                )
+                throw error.toQonversionException()
             }
+
+            val purchaseHistoryRecord = purchasesHistory.find { it.sku == oldSkuDetails.sku }
+                ?: throw QonversionException(ErrorCode.Purchasing, "No existing purchase for sku: ${oldSkuDetails.sku}")
+            val updatePurchaseInfo = UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, prorationMode)
+            purchaser.purchase(activity, skuDetails, updatePurchaseInfo)
         }
     }
 

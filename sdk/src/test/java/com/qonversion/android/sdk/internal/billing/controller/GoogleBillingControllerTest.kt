@@ -1,9 +1,11 @@
 package com.qonversion.android.sdk.internal.billing.controller
 
+import android.app.Activity
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
@@ -12,6 +14,7 @@ import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
 import com.qonversion.android.sdk.internal.billing.dto.BillingError
+import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.exception.ErrorCode
@@ -885,6 +888,175 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 0) { mockConsumer.acknowledge(any()) }
+        }
+    }
+
+    @Nested
+    inner class PurchaseTest {
+
+        private val mockActivity = mockk<Activity>()
+        private val skuType = BillingClient.SkuType.SUBS
+        private val mockSkuDetails = mockk<SkuDetails>()
+        private val slotUpdatePurchaseInfo = slot<UpdatePurchaseInfo>()
+
+        @BeforeEach
+        fun setUp() {
+            coEvery {
+                mockPurchaser.purchase(mockActivity, mockSkuDetails, capture(slotUpdatePurchaseInfo))
+            } just runs
+
+            every { mockSkuDetails.sku } returns "1"
+            every { mockSkuDetails.type } returns skuType
+        }
+
+        @Test
+        fun `billing successfully connected`() {
+            // given
+            coEvery { mockPurchaser.purchase(mockActivity, mockSkuDetails) } just runs
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            // when
+            runTest {
+                billingController.purchase(mockActivity, mockSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 1) { mockPurchaser.purchase(mockActivity, mockSkuDetails) }
+        }
+
+        @Test
+        fun `billing connection failed with error`() {
+            // given
+            val billingResult = mockk<BillingResult>().apply {
+                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
+            }
+            mockConnection(billingResult)
+            every { mockBillingClient.isReady } returns false
+            billingController.billingClient = mockBillingClient
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.BillingUnavailable) {
+                billingController.purchase(mockActivity, mockSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 0) { mockPurchaser.purchase(any(), any(), any()) }
+        }
+
+        @Test
+        fun `purchase update success`() {
+            // given
+            val sku = "temp sku"
+            val mockOldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns sku
+            }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val testPurchaseToken = "test purchase token"
+            val mockPurchaseHistoryRecord = mockk<PurchaseHistoryRecord>().also {
+                every { it.purchaseToken } returns testPurchaseToken
+                every { it.skus } returns arrayListOf(sku)
+            }
+            val mockBillingResult = mockk<BillingResult>().also {
+                every { it.responseCode } returns BillingClient.BillingResponseCode.OK
+            }
+            coEvery {
+                mockDataFetcher.queryPurchasesHistory(skuType)
+            } returns Pair(mockBillingResult, listOf(mockPurchaseHistoryRecord))
+
+            // when
+            runTest {
+                billingController.purchase(mockActivity, mockSkuDetails, mockOldSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 1) { mockPurchaser.purchase(mockActivity, mockSkuDetails, any()) }
+            assertThat(slotUpdatePurchaseInfo.captured.purchaseToken).isEqualTo(testPurchaseToken)
+        }
+
+        @Test
+        fun `purchase update - failed to query history`() {
+            // given
+            val sku = "temp sku"
+            val mockOldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns sku
+            }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val mockBillingResult = mockk<BillingResult>().also {
+                every { it.responseCode } returns BillingClient.BillingResponseCode.ITEM_UNAVAILABLE
+            }
+            coEvery {
+                mockDataFetcher.queryPurchasesHistory(skuType)
+            } returns Pair(mockBillingResult, emptyList())
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.ProductUnavailable) {
+                billingController.purchase(mockActivity, mockSkuDetails, mockOldSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 0) { mockPurchaser.purchase(mockActivity, mockSkuDetails, any()) }
+        }
+
+        @Test
+        fun `purchase update - query history returned null`() {
+            // given
+            val sku = "temp sku"
+            val mockOldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns sku
+            }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val mockBillingResult = mockk<BillingResult>().also {
+                every { it.responseCode } returns BillingClient.BillingResponseCode.OK
+            }
+            coEvery {
+                mockDataFetcher.queryPurchasesHistory(skuType)
+            } returns Pair(mockBillingResult, null)
+
+            // when
+            coAssertThatQonversionExceptionThrown {
+                billingController.purchase(mockActivity, mockSkuDetails, mockOldSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 0) { mockPurchaser.purchase(mockActivity, mockSkuDetails, any()) }
+        }
+
+        @Test
+        fun `purchase update - history with sku not found`() {
+            // given
+            val sku = "temp sku"
+            val mockOldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns sku
+            }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val mockBillingResult = mockk<BillingResult>().also {
+                every { it.responseCode } returns BillingClient.BillingResponseCode.OK
+            }
+            coEvery {
+                mockDataFetcher.queryPurchasesHistory(skuType)
+            } returns Pair(mockBillingResult, emptyList())
+
+            // when
+            coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
+                billingController.purchase(mockActivity, mockSkuDetails, mockOldSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 0) { mockPurchaser.purchase(mockActivity, mockSkuDetails, any()) }
         }
     }
 
