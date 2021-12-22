@@ -10,5 +10,8 @@ internal enum class ErrorCode(val defaultMessage: String) {
     BadResponse("API response can not be handled"),
     Consuming("Failed to consume purchase in Google Billing"),
     Acknowledging("Failed to acknowledge purchase in Google Billing"),
-    Purchasing("Failed to make purchase")
+    Purchasing("Failed to make purchase"),
+    PurchasesFetching("Failed to retrieve purchase"),
+    PurchasesHistoryFetching("Failed to retrieve purchases history"),
+    SkuDetailsFetching("Failed to retrieve SkuDetails")
 }
