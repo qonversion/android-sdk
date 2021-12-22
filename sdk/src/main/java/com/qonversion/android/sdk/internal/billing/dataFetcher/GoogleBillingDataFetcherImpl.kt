@@ -117,14 +117,11 @@ internal class GoogleBillingDataFetcherImpl(
             return emptyList()
         }
 
-        val purchaseHistory = mutableListOf<PurchaseHistory>()
-        historyRecords.forEach { record ->
-            purchaseHistory.add(PurchaseHistory(skuType, record))
+        return historyRecords.map { record ->
             logger.debug("queryPurchaseHistoryAsync() -> purchase history " +
                     "for $skuType is retrieved ${record.getDescription()}")
+            PurchaseHistory(skuType, record)
         }
-
-        return purchaseHistory
     }
 
     fun logSkuDetails(
