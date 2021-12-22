@@ -1,7 +1,12 @@
 package com.qonversion.android.sdk.internal.billing.controller
 
 import android.app.Activity
-import com.android.billingclient.api.*
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
@@ -76,12 +81,17 @@ internal class GoogleBillingControllerImpl(
         override fun onBillingSetupFinished(billingResult: BillingResult) {
             when (billingResult.responseCode) {
                 BillingClient.BillingResponseCode.OK -> {
-                    logger.debug("billingClientStateListener -> BillingClient successfully connected ($billingClient).")
+                    logger.debug(
+                        "billingClientStateListener -> BillingClient successfully connected ($billingClient)."
+                    )
                     completeConnectionDeferred()
                 }
                 BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
                 BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                    logger.release("billingClientStateListener -> BillingClient connection failed with error: ${billingResult.getDescription()} ($billingClient).")
+                    logger.release(
+                        "billingClientStateListener -> BillingClient connection failed with error: " +
+                                "${billingResult.getDescription()} ($billingClient)."
+                    )
                     val error = BillingError(
                         billingResult.responseCode,
                         "Billing is not available on this device. ${billingResult.getDescription()}"
@@ -93,7 +103,10 @@ internal class GoogleBillingControllerImpl(
                 }
                 else -> {
                     // These errors might be fixed for the next attempt, so we don't do anything here
-                    logger.release("billingClientStateListener -> BillingClient connection failed with error: ${billingResult.getDescription()} ($billingClient).")
+                    logger.release(
+                        "billingClientStateListener -> BillingClient connection failed with error: " +
+                                "${billingResult.getDescription()} ($billingClient)."
+                    )
                 }
             }
         }
