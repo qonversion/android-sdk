@@ -7,6 +7,7 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
 import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
+import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -19,20 +20,66 @@ internal class GoogleBillingDataFetcherImpl(
     logger: Logger
 ) : GoogleBillingDataFetcher, BaseClass(logger) {
 
-    @Throws(QonversionException::class)
     override suspend fun loadProducts(ids: List<String>): List<SkuDetails> {
-        val skuDetails = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
+        val subs = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
 
-        val subsIds = skuDetails.map { it.sku }.toSet()
+        val subsIds = subs.map { it.sku }.toSet()
         val skuInApp = ids - subsIds
 
-        if (skuInApp.isNotEmpty()) {
+        return if (skuInApp.isNotEmpty()) {
             val inApps = querySkuDetails(BillingClient.SkuType.INAPP, skuInApp)
 
-            skuDetails.addAll(inApps)
-        }
+            subs + inApps
+        } else subs
+    }
 
-        return skuDetails.toList()
+    override suspend fun queryPurchases(): List<Purchase> {
+        logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
+
+        val (subsBillingResult, subsPurchases) = fetchPurchases(BillingClient.SkuType.SUBS)
+
+        val (inAppsBillingResult, inAppsPurchases) = fetchPurchases(BillingClient.SkuType.INAPP)
+
+        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
+                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+
+        if (dataFetchedSuccessfully) {
+            return subsPurchases + inAppsPurchases
+        } else {
+            val explanation = "Subs result: ${subsBillingResult.responseCode.getDescription()}. " +
+                    "Inapp result: ${inAppsBillingResult.responseCode.getDescription()}"
+            throw QonversionException(ErrorCode.PurchasesFetching, explanation)
+        }
+    }
+
+    override suspend fun queryAllPurchasesHistory(): List<PurchaseHistory> {
+        val (subsBillingResult, subsPurchaseHistory) = queryPurchasesHistory(BillingClient.SkuType.SUBS)
+
+        val (inAppsBillingResult, inAppsPurchaseHistory) = queryPurchasesHistory(BillingClient.SkuType.INAPP)
+
+        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
+                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+
+        if (dataFetchedSuccessfully) {
+            val subsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.SUBS, subsPurchaseHistory)
+            val inAppsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.INAPP, inAppsPurchaseHistory)
+            return subsHistoryRecords + inAppsHistoryRecords
+        } else {
+            val explanation = "Subs result: ${subsBillingResult.responseCode.getDescription()}. " +
+                    "Inapp result: ${inAppsBillingResult.responseCode.getDescription()}"
+            throw QonversionException(ErrorCode.PurchasesHistoryFetching, explanation)
+        }
+    }
+
+    override suspend fun queryPurchasesHistory(
+        @BillingClient.SkuType skuType: String
+    ): Pair<BillingResult, List<PurchaseHistoryRecord>?> {
+        logger.debug("fetchPurchasesHistory() -> Querying purchase history for type $skuType")
+        return suspendCoroutine { continuation ->
+            billingClient.queryPurchaseHistoryAsync(skuType) { billingResult, purchases ->
+                continuation.resume(Pair(billingResult, purchases))
+            }
+        }
     }
 
     @Throws(QonversionException::class)
@@ -62,42 +109,6 @@ internal class GoogleBillingDataFetcherImpl(
         }
     }
 
-    @Throws(QonversionException::class)
-    override suspend fun queryPurchases(): List<Purchase> {
-        logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
-
-        val (subsBillingResult, subsPurchases) = fetchPurchases(BillingClient.SkuType.SUBS)
-
-        val (inAppsBillingResult, inAppsPurchases) = fetchPurchases(BillingClient.SkuType.INAPP)
-
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
-
-        if (dataFetchedSuccessfully) {
-            return subsPurchases + inAppsPurchases
-        } else {
-            throw QonversionException(ErrorCode.PurchasesFetching)
-        }
-    }
-
-    @Throws(QonversionException::class)
-    override suspend fun queryAllPurchasesHistory(): List<PurchaseHistory> {
-        val (subsBillingResult, subsPurchaseHistory) = fetchPurchasesHistory(BillingClient.SkuType.SUBS)
-
-        val (inAppsBillingResult, inAppsPurchaseHistory) = fetchPurchasesHistory(BillingClient.SkuType.INAPP)
-
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
-
-        if (dataFetchedSuccessfully) {
-            val subsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.SUBS, subsPurchaseHistory)
-            val inAppsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.INAPP, inAppsPurchaseHistory)
-            return subsHistoryRecords + inAppsHistoryRecords
-        } else {
-            throw QonversionException(ErrorCode.PurchasesHistoryFetching)
-        }
-    }
-
     fun getHistoryFromRecords(
         @BillingClient.SkuType skuType: String,
         historyRecords: List<PurchaseHistoryRecord>?
@@ -110,21 +121,10 @@ internal class GoogleBillingDataFetcherImpl(
         historyRecords.forEach { record ->
             purchaseHistory.add(PurchaseHistory(skuType, record))
             logger.debug("queryPurchaseHistoryAsync() -> purchase history " +
-                    "for $skuType is retrieved ${record.skus}")
+                    "for $skuType is retrieved ${record.getDescription()}")
         }
 
         return purchaseHistory
-    }
-
-    override suspend fun fetchPurchasesHistory(
-        @BillingClient.SkuType skuType: String
-    ): Pair<BillingResult, List<PurchaseHistoryRecord>?> {
-        logger.debug("fetchPurchasesHistory() -> Querying purchase history for type $skuType")
-        return suspendCoroutine { continuation ->
-            billingClient.queryPurchaseHistoryAsync(skuType) { billingResult, purchases ->
-                continuation.resume(Pair(billingResult, purchases))
-            }
-        }
     }
 
     fun logSkuDetails(

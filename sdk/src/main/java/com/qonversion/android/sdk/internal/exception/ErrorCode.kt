@@ -13,5 +13,5 @@ internal enum class ErrorCode(val defaultMessage: String) {
     Purchasing("Failed to make purchase"),
     PurchasesFetching("Failed to retrieve purchase"),
     PurchasesHistoryFetching("Failed to retrieve purchases history"),
-    SkuDetailsFetching("Failure to retrieve SkuDetails")
+    SkuDetailsFetching("Failed to retrieve SkuDetails")
 }
