@@ -87,7 +87,7 @@ internal class GoogleBillingDataFetcherImpl(
         @BillingClient.SkuType productType: String,
         skuList: List<String?>
     ): List<SkuDetails> {
-        logger.debug("querySkuDetailsAsync() -> Querying skuDetails for type $productType, " +
+        logger.debug("querySkuDetails() -> Querying skuDetails for type $productType, " +
                 "identifiers: ${skuList.joinToString()}")
 
         val params = buildSkuDetailsParams(productType, skuList)
@@ -129,9 +129,9 @@ internal class GoogleBillingDataFetcherImpl(
         skuList: List<String?>
     ) {
         if (skuDetailsList.isNotEmpty()) {
-            skuDetailsList.forEach { logger.debug("querySkuDetailsAsync() -> $it") }
+            skuDetailsList.forEach { logger.debug("querySkuDetails() -> $it") }
         } else {
-            logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+            logger.release("querySkuDetails() -> SkuDetails list for $skuList is empty.")
         }
     }
 

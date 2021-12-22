@@ -166,7 +166,7 @@ class GoogleBillingDataFetcherTest {
 
             verify { mockLogger.debug(any()) }
             assertThat(slotDebugLogMessages[0])
-                .startsWith("querySkuDetailsAsync() -> Querying skuDetails")
+                .startsWith("querySkuDetails() -> Querying skuDetails")
                 .contains(skuType, subsIds.joinToString())
         }
 
@@ -549,7 +549,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) {
-                mockLogger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+                mockLogger.release("querySkuDetails() -> SkuDetails list for $skuList is empty.")
             }
         }
 
@@ -565,7 +565,7 @@ class GoogleBillingDataFetcherTest {
             // then
             skuDetails.forEach {
                 verify(exactly = 1) {
-                    mockLogger.debug("querySkuDetailsAsync() -> $it")
+                    mockLogger.debug("querySkuDetails() -> $it")
                 }
             }
         }
