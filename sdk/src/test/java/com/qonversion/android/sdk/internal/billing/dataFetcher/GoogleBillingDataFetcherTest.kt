@@ -63,7 +63,8 @@ class GoogleBillingDataFetcherTest {
         every { mockSubsSkuDetailsFirst.sku } returns firstSubsId
         every { mockSubsSkuDetailsSecond.sku } returns secondSubsId
 
-        dataFetcher = GoogleBillingDataFetcherImpl(mockBillingClient, mockLogger)
+        dataFetcher = GoogleBillingDataFetcherImpl(mockLogger)
+        dataFetcher.setup(mockBillingClient)
     }
 
     @Nested
@@ -186,7 +187,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) { mockBillingClient.querySkuDetailsAsync(any(), any()) }
-            assertThat(exception.message).isEqualTo("Failed to fetch products.")
+            assertThat(exception.message).contains("ERROR")
         }
 
         @Test
@@ -205,7 +206,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) { mockBillingClient.querySkuDetailsAsync(any(), any()) }
-            assertThat(exception.message).isEqualTo("Failed to fetch products. SkuDetails list for $ids is null.")
+            assertThat(exception.message).contains("SkuDetails list for $ids is null.")
         }
     }
 

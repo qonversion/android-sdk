@@ -17,9 +17,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 internal class GoogleBillingDataFetcherImpl(
-    private val billingClient: BillingClient,
     logger: Logger
 ) : GoogleBillingDataFetcher, BaseClass(logger) {
+
+    private lateinit var billingClient: BillingClient
+
+    override fun setup(billingClient: BillingClient) {
+        this.billingClient = billingClient
+    }
 
     override suspend fun loadProducts(ids: Set<String>): List<SkuDetails> {
         val subs = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
@@ -97,7 +102,7 @@ internal class GoogleBillingDataFetcherImpl(
                     logSkuDetails(skuDetailsList, skuList)
                     continuation.resume(skuDetailsList)
                 } else {
-                    var errorMessage = "Failed to fetch products."
+                    var errorMessage = billingResult.getDescription() + '.'
                     if (skuDetailsList == null) {
                         errorMessage += " SkuDetails list for $skuList is null."
                     }

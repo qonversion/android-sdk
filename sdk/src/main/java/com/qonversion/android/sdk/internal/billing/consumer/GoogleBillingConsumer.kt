@@ -1,6 +1,8 @@
 package com.qonversion.android.sdk.internal.billing.consumer
 
-internal interface GoogleBillingConsumer {
+import com.qonversion.android.sdk.internal.billing.GoogleBillingHelper
+
+internal interface GoogleBillingConsumer : GoogleBillingHelper {
 
     fun consume(purchaseToken: String)
 

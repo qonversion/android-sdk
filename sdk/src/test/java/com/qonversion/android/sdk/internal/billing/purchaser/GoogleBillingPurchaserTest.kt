@@ -32,7 +32,8 @@ internal class GoogleBillingPurchaserTest {
 
     @Before
     fun setUp() {
-        purchaser = GoogleBillingPurchaserImpl(billingClient, mockk())
+        purchaser = GoogleBillingPurchaserImpl(mockk())
+        purchaser.setup(billingClient)
 
         every { billingClient.launchBillingFlow(activity, any()) } returns billingResult
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.OK

@@ -13,10 +13,13 @@ import com.qonversion.android.sdk.internal.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class GoogleBillingPurchaserImpl(
-    private val billingClient: BillingClient,
-    logger: Logger
-) : BaseClass(logger), GoogleBillingPurchaser {
+internal class GoogleBillingPurchaserImpl(logger: Logger) : BaseClass(logger), GoogleBillingPurchaser {
+
+    private lateinit var billingClient: BillingClient
+
+    override fun setup(billingClient: BillingClient) {
+        this.billingClient = billingClient
+    }
 
     override suspend fun purchase(
         activity: Activity,

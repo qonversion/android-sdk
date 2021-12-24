@@ -39,7 +39,12 @@ internal class GoogleBillingControllerImpl(
         set(value) {
             field = value
             @Suppress("DeferredResultUnused")
-            connectToBillingAsync()
+            value?.let {
+                consumer.setup(value)
+                purchaser.setup(value)
+                dataFetcher.setup(value)
+                connectToBillingAsync()
+            }
         }
 
     @Volatile

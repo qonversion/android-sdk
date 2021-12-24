@@ -30,7 +30,8 @@ internal class GoogleBillingConsumerTest {
 
     @Before
     fun setUp() {
-        googleBillingConsumer = GoogleBillingConsumerImpl(billingClient, logger)
+        googleBillingConsumer = GoogleBillingConsumerImpl(logger)
+        googleBillingConsumer.setup(billingClient)
 
         every {
             logger.debug(any())

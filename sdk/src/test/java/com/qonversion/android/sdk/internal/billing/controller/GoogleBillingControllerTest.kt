@@ -67,6 +67,10 @@ internal class GoogleBillingControllerTest {
             mockPurchasesListener,
             mockLogger
         )
+
+        every { mockConsumer.setup(mockBillingClient) } just runs
+        every { mockDataFetcher.setup(mockBillingClient) } just runs
+        every { mockPurchaser.setup(mockBillingClient) } just runs
     }
 
     @Nested
