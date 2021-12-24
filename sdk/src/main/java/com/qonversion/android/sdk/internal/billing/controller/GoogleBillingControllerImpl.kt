@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.utils.currentFunctionName
 import com.qonversion.android.sdk.internal.utils.sku
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -118,19 +119,13 @@ internal class GoogleBillingControllerImpl(
     }
 
     override suspend fun queryPurchasesHistory(): List<PurchaseHistory> {
-        val billingError = waitForReadyClient()
-        if (billingError != null) {
-            throw billingError.toQonversionException()
-        }
+        waitForReadyClient()
 
         return dataFetcher.queryAllPurchasesHistory()
     }
 
     override suspend fun queryPurchases(): List<Purchase> {
-        val billingError = waitForReadyClient()
-        if (billingError != null) {
-            throw billingError.toQonversionException()
-        }
+        waitForReadyClient()
 
         return dataFetcher.queryPurchases()
     }
@@ -141,10 +136,7 @@ internal class GoogleBillingControllerImpl(
         oldSkuDetails: SkuDetails?,
         prorationMode: Int?
     ) {
-        val billingError = waitForReadyClient()
-        if (billingError != null) {
-            throw billingError.toQonversionException()
-        }
+        waitForReadyClient()
 
         if (oldSkuDetails == null) {
             purchaser.purchase(activity, skuDetails)
@@ -170,10 +162,7 @@ internal class GoogleBillingControllerImpl(
             return emptyList()
         }
 
-        val billingError = waitForReadyClient()
-        if (billingError != null) {
-            throw billingError.toQonversionException()
-        }
+        waitForReadyClient()
 
         return dataFetcher.loadProducts(productIds)
     }
@@ -184,24 +173,32 @@ internal class GoogleBillingControllerImpl(
     }
 
     override suspend fun consume(purchaseToken: String) {
-        val billingError = waitForReadyClient()
-        billingError ?: run {
-            try {
-                consumer.consume(purchaseToken)
-            } catch (e: QonversionException) {
-                logger.release("Failed to consume purchase with token $purchaseToken: $e")
-            }
+        try {
+            waitForReadyClient()
+        } catch (e: QonversionException) {
+            logger.release(e.toString())
+            return
+        }
+
+        try {
+            consumer.consume(purchaseToken)
+        } catch (e: QonversionException) {
+            logger.release("Failed to consume purchase with token $purchaseToken: $e")
         }
     }
 
     override suspend fun acknowledge(purchaseToken: String) {
-        val billingError = waitForReadyClient()
-        billingError ?: run {
-            try {
-                consumer.acknowledge(purchaseToken)
-            } catch (e: QonversionException) {
-                logger.release("Failed to acknowledge purchase with token $purchaseToken: $e")
-            }
+        try {
+            waitForReadyClient()
+        } catch (e: QonversionException) {
+            logger.release(e.toString())
+            return
+        }
+
+        try {
+            consumer.acknowledge(purchaseToken)
+        } catch (e: QonversionException) {
+            logger.release("Failed to acknowledge purchase with token $purchaseToken: $e")
         }
     }
 
@@ -222,11 +219,14 @@ internal class GoogleBillingControllerImpl(
         }
     }
 
-    suspend fun waitForReadyClient(): BillingError? {
+    suspend fun waitForReadyClient() {
         if (billingClient?.isReady == true) {
-            return null
+            return
         }
 
-        return connectToBillingAsync().await()
+        val billingError = connectToBillingAsync().await()
+        if (billingError != null) {
+            throw billingError.toQonversionException()
+        }
     }
 }

@@ -135,7 +135,6 @@ internal class GoogleBillingControllerTest {
 
     @Nested
     inner class ConnectToGoogleBillingTest {
-        private val mockBillingClientStateListener = mockk<BillingClientStateListener>()
 
         @BeforeEach
         fun setUp() {
@@ -202,35 +201,37 @@ internal class GoogleBillingControllerTest {
         }
 
         @Test
-        fun `client is already ready`() = runTest {
+        fun `client is already ready`() {
             // given
             every { mockBillingClient.isReady } returns true
 
-            // when
-            val error = withTimeout(waitingEpsilonMs) {
-                billingController.waitForReadyClient()
+            // when and then
+            assertDoesNotThrow {
+                runTest {
+                    withTimeout(waitingEpsilonMs) {
+                        billingController.waitForReadyClient()
+                    }
+                }
             }
-
-            // then
-            assertThat(error).isNull()
         }
 
         @Test
-        fun `client is not ready and connects immediately`() = runTest {
+        fun `client is not ready and connects immediately`() {
             // given
             every { mockBillingClient.isReady } returns false
             billingController.connectionDeferred = CompletableDeferred()
 
-            // when
-            val error = withTimeout(waitingEpsilonMs) {
-                launch {
-                    billingController.connectionDeferred?.complete(null)
+            // when and then
+            assertDoesNotThrow {
+                runTest {
+                    withTimeout(waitingEpsilonMs) {
+                        launch {
+                            billingController.connectionDeferred?.complete(null)
+                        }
+                        billingController.waitForReadyClient()
+                    }
                 }
-                billingController.waitForReadyClient()
             }
-
-            // then
-            assertThat(error).isNull()
         }
 
         @Test
@@ -256,22 +257,26 @@ internal class GoogleBillingControllerTest {
         }
 
         @Test
-        fun `client is not ready and connects with error`() = runTest {
+        fun `client is not ready and connects with error`() {
             // given
             every { mockBillingClient.isReady } returns false
             billingController.connectionDeferred = CompletableDeferred()
             val billingError = mockk<BillingError>()
+            val exception = QonversionException(ErrorCode.PlayStore)
+            every { billingError.toQonversionException() } returns exception
 
             // when
-            val error = withTimeout(waitingEpsilonMs) {
-                launch {
-                    billingController.connectionDeferred?.complete(billingError)
+            val e = coAssertThatQonversionExceptionThrown(ErrorCode.PlayStore) {
+                withTimeout(waitingEpsilonMs) {
+                    launch {
+                        billingController.connectionDeferred?.complete(billingError)
+                    }
+                    billingController.waitForReadyClient()
                 }
-                billingController.waitForReadyClient()
             }
 
             // then
-            assertThat(error === billingError)
+            assertThat(e === exception)
         }
     }
 
