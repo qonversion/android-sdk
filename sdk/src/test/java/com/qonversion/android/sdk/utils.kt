@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import java.lang.reflect.Modifier
 
 internal fun assertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: () -> Unit): QonversionException {
     val throwable = try {
@@ -28,4 +29,12 @@ internal fun coAssertThatQonversionExceptionThrown(code: ErrorCode? = null, call
             callable()
         }
     }
+}
+
+fun Any.mockPrivateField(fieldName: String, field: Any?) {
+    javaClass.declaredFields
+        .filter { it.modifiers.and(Modifier.PRIVATE) > 0 || it.modifiers.and(Modifier.PROTECTED) > 0 }
+        .firstOrNull { it.name == fieldName }
+        ?.also { it.isAccessible = true }
+        ?.set(this, field)
 }
