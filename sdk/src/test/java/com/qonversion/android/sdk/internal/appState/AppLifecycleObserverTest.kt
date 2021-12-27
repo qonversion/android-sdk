@@ -9,14 +9,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class AppLifecyclerObserverTest {
-    private lateinit var appLifecyclerObserver: AppLifecyclerObserver
+class AppLifecycleObserverTest {
+    private lateinit var appLifecycleObserver: AppLifecycleObserver
     private val mockActivity = mockk<Activity>()
     private val mockBundle = mockk<Bundle>()
 
     @BeforeEach
     fun setUp() {
-        appLifecyclerObserver = AppLifecyclerObserver()
+        appLifecycleObserver = AppLifecycleObserver()
     }
 
     @Nested
@@ -26,10 +26,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityResumed(mockActivity)
+            appLifecycleObserver.onActivityResumed(mockActivity)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Foreground)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Foreground)
         }
 
         @Test
@@ -37,10 +37,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityPaused(mockActivity)
+            appLifecycleObserver.onActivityPaused(mockActivity)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
 
         @Test
@@ -48,10 +48,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityCreated(mockActivity, mockBundle)
+            appLifecycleObserver.onActivityCreated(mockActivity, mockBundle)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
 
         @Test
@@ -59,10 +59,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityStarted(mockActivity)
+            appLifecycleObserver.onActivityStarted(mockActivity)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
 
         @Test
@@ -70,10 +70,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityStopped(mockActivity)
+            appLifecycleObserver.onActivityStopped(mockActivity)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
 
         @Test
@@ -81,10 +81,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivitySaveInstanceState(mockActivity, mockBundle)
+            appLifecycleObserver.onActivitySaveInstanceState(mockActivity, mockBundle)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
 
         @Test
@@ -92,10 +92,10 @@ class AppLifecyclerObserverTest {
             // given
 
             // when
-            appLifecyclerObserver.onActivityDestroyed(mockActivity)
+            appLifecycleObserver.onActivityDestroyed(mockActivity)
 
             // then
-            assertThat(appLifecyclerObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
         }
     }
 
@@ -106,10 +106,10 @@ class AppLifecyclerObserverTest {
         @Test
         fun `should return true when app state is in background`() {
             // given
-            appLifecyclerObserver.mockPrivateField(fieldAppState, AppState.Background)
+            appLifecycleObserver.mockPrivateField(fieldAppState, AppState.Background)
 
             // when
-            val result = appLifecyclerObserver.isBackground()
+            val result = appLifecycleObserver.isBackground()
 
             // then
             assertThat(result).isTrue
@@ -118,10 +118,10 @@ class AppLifecyclerObserverTest {
         @Test
         fun `should return false when app state is in foreground`() {
             // given
-            appLifecyclerObserver.mockPrivateField(fieldAppState, AppState.Foreground)
+            appLifecycleObserver.mockPrivateField(fieldAppState, AppState.Foreground)
 
             // when
-            val result = appLifecyclerObserver.isBackground()
+            val result = appLifecycleObserver.isBackground()
 
             // then
             assertThat(result).isFalse

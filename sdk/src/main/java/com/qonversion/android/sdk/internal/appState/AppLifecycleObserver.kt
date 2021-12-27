@@ -4,7 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 
-internal class AppLifecyclerObserver : Application.ActivityLifecycleCallbacks {
+internal class AppLifecycleObserver : Application.ActivityLifecycleCallbacks {
     var appState = AppState.Background
         private set
 
