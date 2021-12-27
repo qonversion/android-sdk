@@ -5,7 +5,7 @@ import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import io.mockk.mockk
@@ -13,8 +13,10 @@ import io.mockk.mockkStatic
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.slot
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -44,6 +46,9 @@ internal class GoogleBillingPurchaserTest {
         mockkStatic(TextUtils::class)
         val strSlot = slot<String>()
         every { TextUtils.isEmpty(capture(strSlot)) } answers { strSlot.captured.isEmpty() }
+
+        // Changing main dispatcher for test purposes
+        Dispatchers.setMain(Dispatchers.Unconfined)
     }
 
     @Test
@@ -67,10 +72,8 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
-            runTest {
-                purchaser.purchase(activity, skuDetails)
-            }
+        coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
+            purchaser.purchase(activity, skuDetails)
         }
 
         // then
@@ -121,10 +124,8 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
-            runTest {
-                purchaser.purchase(activity, skuDetails, updateInfo)
-            }
+        coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
+            purchaser.purchase(activity, skuDetails, updateInfo)
         }
 
         // then
