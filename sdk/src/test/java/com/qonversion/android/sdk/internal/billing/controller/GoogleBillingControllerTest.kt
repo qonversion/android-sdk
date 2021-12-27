@@ -341,6 +341,8 @@ internal class GoogleBillingControllerTest {
         fun `on connection failed because another connection is in process`() {
             // given
             every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.DEVELOPER_ERROR
+            val deferred = mockk<CompletableDeferred<BillingError?>>()
+            billingController.connectionDeferred = deferred
 
             // when
             billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
@@ -350,23 +352,39 @@ internal class GoogleBillingControllerTest {
                 mockLogger.debug(any())
                 mockLogger.release(any())
             }
+            assertThat(billingController.connectionDeferred === deferred)
         }
 
         @Test
         fun `on connection failed with temporary error`() {
-            // given
-            every { mockBillingResult.responseCode } returns BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE
-            billingController.connectionDeferred = mockk(relaxed = true)
+            val testCodes = listOf(
+                BillingClient.BillingResponseCode.SERVICE_TIMEOUT,
+                BillingClient.BillingResponseCode.SERVICE_DISCONNECTED,
+                BillingClient.BillingResponseCode.USER_CANCELED,
+                BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
+                BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
+                BillingClient.BillingResponseCode.ERROR,
+                BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED,
+                BillingClient.BillingResponseCode.ITEM_NOT_OWNED,
+            )
+            testCodes.forEachIndexed { index, responseCode ->
+                // given
+                every { mockBillingResult.responseCode } returns responseCode
+                val deferred = mockk<CompletableDeferred<BillingError?>>()
+                billingController.connectionDeferred = deferred
 
-            // when
-            billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
+                // when
+                billingController.billingClientStateListener.onBillingSetupFinished(
+                    mockBillingResult
+                )
 
-            // then
-            verify { mockLogger.release(any()) }
-            assertThat(slotReleaseLogMessage.captured)
-                .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
-            assertThat(slotReleaseLogMessage.captured).contains("SERVICE_UNAVAILABLE")
-            assertThat(billingController.connectionDeferred).isNotNull
+                // then
+                verify(exactly = index + 1) { mockLogger.release(any()) }
+                assertThat(slotReleaseLogMessage.captured)
+                    .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
+                assertThat(slotReleaseLogMessage.captured).contains(responseCode.getDescription())
+                assertThat(billingController.connectionDeferred === deferred)
+            }
         }
 
         private fun testOnConnectionFailedWithNonRetryableError(
@@ -418,8 +436,6 @@ internal class GoogleBillingControllerTest {
 
             every { mockPurchase1.skus } returns arrayListOf(purchase1Sku)
             every { mockPurchase2.skus } returns arrayListOf(purchase2Sku)
-
-            billingController.purchasesUpdatedListener
         }
 
         @Test
@@ -453,7 +469,7 @@ internal class GoogleBillingControllerTest {
             assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(responseCode)
             assertThat(slotBillingError.captured.message).isEqualTo(expectedErrorMessage)
 
-            verify(exactly = 1) { mockLogger.release(any()) } // once for error and once for purchases
+            verify(exactly = 1) { mockLogger.release(any()) }
             assertThat(slotReleaseLogMessages[0])
                 .startsWith("onPurchasesUpdated() -> failed to update purchases")
                 .contains(expectedErrorMessage)
