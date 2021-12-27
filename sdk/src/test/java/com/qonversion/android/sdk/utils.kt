@@ -5,7 +5,6 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import java.lang.reflect.Modifier
 
 internal fun assertThatQonversionExceptionThrown(code: ErrorCode? = null, callable: () -> Unit): QonversionException {
     val throwable = try {
