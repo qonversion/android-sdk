@@ -6,14 +6,17 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeResponseListener
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.exception.ErrorCode
-import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import java.lang.Exception
 
 internal class GoogleBillingConsumerTest {
 
@@ -27,7 +30,8 @@ internal class GoogleBillingConsumerTest {
 
     @Before
     fun setUp() {
-        googleBillingConsumer = GoogleBillingConsumerImpl(billingClient, logger)
+        googleBillingConsumer = GoogleBillingConsumerImpl(logger)
+        googleBillingConsumer.setup(billingClient)
 
         every {
             logger.debug(any())

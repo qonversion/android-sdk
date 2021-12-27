@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.billing.utils
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -10,12 +11,19 @@ import java.util.Locale
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
-fun PurchaseHistoryRecord.getDescription() =
+internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
+
+internal fun Purchase.getDescription() =
+    "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
+
+internal val Purchase.sku: String? get() = skus.firstOrNull()
+
+internal fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; " +
             "PurchaseTime: ${this.purchaseTime.convertLongToTime()}; " +
             "PurchaseToken: ${this.purchaseToken}"
 
-val PurchaseHistoryRecord.sku: String? get() = skus.firstOrNull()
+internal val PurchaseHistoryRecord.sku: String? get() = skus.firstOrNull()
 
 private fun Long.convertLongToTime(): String {
     val date = Date(this)

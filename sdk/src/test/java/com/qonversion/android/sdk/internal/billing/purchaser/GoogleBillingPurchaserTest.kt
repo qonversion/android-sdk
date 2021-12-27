@@ -5,7 +5,7 @@ import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import io.mockk.mockk
@@ -13,11 +13,16 @@ import io.mockk.mockkStatic
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.slot
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 
+@ExperimentalCoroutinesApi
 internal class GoogleBillingPurchaserTest {
 
     private lateinit var purchaser: GoogleBillingPurchaser
@@ -29,7 +34,8 @@ internal class GoogleBillingPurchaserTest {
 
     @Before
     fun setUp() {
-        purchaser = GoogleBillingPurchaserImpl(billingClient, mockk())
+        purchaser = GoogleBillingPurchaserImpl(mockk())
+        purchaser.setup(billingClient)
 
         every { billingClient.launchBillingFlow(activity, any()) } returns billingResult
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.OK
@@ -40,6 +46,9 @@ internal class GoogleBillingPurchaserTest {
         mockkStatic(TextUtils::class)
         val strSlot = slot<String>()
         every { TextUtils.isEmpty(capture(strSlot)) } answers { strSlot.captured.isEmpty() }
+
+        // Changing main dispatcher for test purposes
+        Dispatchers.setMain(Dispatchers.Unconfined)
     }
 
     @Test
@@ -48,7 +57,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails)
+            runTest {
+                purchaser.purchase(activity, skuDetails)
+            }
         }
 
         // then
@@ -61,7 +72,7 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
+        coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
             purchaser.purchase(activity, skuDetails)
         }
 
@@ -75,7 +86,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails, updateInfo)
+            runTest {
+                purchaser.purchase(activity, skuDetails, updateInfo)
+            }
         }
 
         // then
@@ -93,7 +106,9 @@ internal class GoogleBillingPurchaserTest {
 
         // when
         assertDoesNotThrow {
-            purchaser.purchase(activity, skuDetails, updateInfo)
+            runTest {
+                purchaser.purchase(activity, skuDetails, updateInfo)
+            }
         }
 
         // then
@@ -109,7 +124,7 @@ internal class GoogleBillingPurchaserTest {
         every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
 
         // when
-        assertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
+        coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
             purchaser.purchase(activity, skuDetails, updateInfo)
         }
 

@@ -10,10 +10,13 @@ import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
 
-internal class GoogleBillingConsumerImpl(
-    private val billingClient: BillingClient,
-    logger: Logger
-) : BaseClass(logger), GoogleBillingConsumer {
+internal class GoogleBillingConsumerImpl(logger: Logger) : BaseClass(logger), GoogleBillingConsumer {
+
+    private lateinit var billingClient: BillingClient
+
+    override fun setup(billingClient: BillingClient) {
+        this.billingClient = billingClient
+    }
 
     override fun consume(purchaseToken: String) {
         logger.debug("consume() -> Consuming purchase with token $purchaseToken")

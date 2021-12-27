@@ -150,7 +150,6 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging:$firebase_messaging_version"
 
     // JUnit
-    testImplementation 'junit:junit:4.13'
     testImplementation junit.api
     testRuntimeOnly junit.engine
 

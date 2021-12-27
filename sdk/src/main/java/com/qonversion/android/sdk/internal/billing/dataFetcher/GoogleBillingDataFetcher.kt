@@ -5,13 +5,14 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
+import com.qonversion.android.sdk.dto.PurchaseHistory
+import com.qonversion.android.sdk.internal.billing.GoogleBillingHelper
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
-interface GoogleBillingDataFetcher {
+internal interface GoogleBillingDataFetcher : GoogleBillingHelper {
 
     @Throws(QonversionException::class)
-    suspend fun loadProducts(ids: List<String>): List<SkuDetails>
+    suspend fun loadProducts(ids: Set<String>): List<SkuDetails>
 
     @Throws(QonversionException::class)
     suspend fun queryPurchases(): List<Purchase>

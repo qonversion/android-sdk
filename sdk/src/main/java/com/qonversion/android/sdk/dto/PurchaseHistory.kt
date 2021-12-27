@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.billing.dto
+package com.qonversion.android.sdk.dto
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchaseHistoryRecord

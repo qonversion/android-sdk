@@ -6,8 +6,9 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.SkuDetailsParams
-import com.qonversion.android.sdk.internal.billing.dto.PurchaseHistory
+import com.qonversion.android.sdk.dto.PurchaseHistory
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
+import com.qonversion.android.sdk.internal.billing.utils.isOk
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -16,11 +17,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 internal class GoogleBillingDataFetcherImpl(
-    private val billingClient: BillingClient,
     logger: Logger
 ) : GoogleBillingDataFetcher, BaseClass(logger) {
 
-    override suspend fun loadProducts(ids: List<String>): List<SkuDetails> {
+    private lateinit var billingClient: BillingClient
+
+    override fun setup(billingClient: BillingClient) {
+        this.billingClient = billingClient
+    }
+
+    override suspend fun loadProducts(ids: Set<String>): List<SkuDetails> {
         val subs = querySkuDetails(BillingClient.SkuType.SUBS, ids).toMutableList()
 
         val subsIds = subs.map { it.sku }.toSet()
@@ -40,8 +46,7 @@ internal class GoogleBillingDataFetcherImpl(
 
         val (inAppsBillingResult, inAppsPurchases) = fetchPurchases(BillingClient.SkuType.INAPP)
 
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+        val dataFetchedSuccessfully = subsBillingResult.isOk && inAppsBillingResult.isOk
 
         if (dataFetchedSuccessfully) {
             return subsPurchases + inAppsPurchases
@@ -57,8 +62,7 @@ internal class GoogleBillingDataFetcherImpl(
 
         val (inAppsBillingResult, inAppsPurchaseHistory) = queryPurchasesHistory(BillingClient.SkuType.INAPP)
 
-        val dataFetchedSuccessfully = subsBillingResult.responseCode == BillingClient.BillingResponseCode.OK &&
-                inAppsBillingResult.responseCode == BillingClient.BillingResponseCode.OK
+        val dataFetchedSuccessfully = subsBillingResult.isOk && inAppsBillingResult.isOk
 
         if (dataFetchedSuccessfully) {
             val subsHistoryRecords = getHistoryFromRecords(BillingClient.SkuType.SUBS, subsPurchaseHistory)
@@ -85,7 +89,7 @@ internal class GoogleBillingDataFetcherImpl(
     @Throws(QonversionException::class)
     suspend fun querySkuDetails(
         @BillingClient.SkuType productType: String,
-        skuList: List<String?>
+        skuList: Set<String?>
     ): List<SkuDetails> {
         logger.debug("querySkuDetails() -> Querying skuDetails for type $productType, " +
                 "identifiers: ${skuList.joinToString()}")
@@ -94,11 +98,11 @@ internal class GoogleBillingDataFetcherImpl(
 
         return suspendCoroutine { continuation ->
             billingClient.querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
+                if (billingResult.isOk && skuDetailsList != null) {
                     logSkuDetails(skuDetailsList, skuList)
                     continuation.resume(skuDetailsList)
                 } else {
-                    var errorMessage = "Failed to fetch products."
+                    var errorMessage = billingResult.getDescription() + '.'
                     if (skuDetailsList == null) {
                         errorMessage += " SkuDetails list for $skuList is null."
                     }
@@ -126,7 +130,7 @@ internal class GoogleBillingDataFetcherImpl(
 
     fun logSkuDetails(
         skuDetailsList: List<SkuDetails>,
-        skuList: List<String?>
+        skuList: Set<String?>
     ) {
         if (skuDetailsList.isNotEmpty()) {
             skuDetailsList.forEach { logger.debug("querySkuDetails() -> $it") }
@@ -146,11 +150,11 @@ internal class GoogleBillingDataFetcherImpl(
 
     private fun buildSkuDetailsParams(
         @BillingClient.SkuType productType: String,
-        skuList: List<String?>
+        skuList: Set<String?>
     ): SkuDetailsParams {
         return SkuDetailsParams.newBuilder()
             .setType(productType)
-            .setSkusList(skuList)
+            .setSkusList(skuList.toList())
             .build()
     }
 }

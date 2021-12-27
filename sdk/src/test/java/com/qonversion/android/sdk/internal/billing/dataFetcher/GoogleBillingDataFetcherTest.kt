@@ -63,7 +63,8 @@ class GoogleBillingDataFetcherTest {
         every { mockSubsSkuDetailsFirst.sku } returns firstSubsId
         every { mockSubsSkuDetailsSecond.sku } returns secondSubsId
 
-        dataFetcher = GoogleBillingDataFetcherImpl(mockBillingClient, mockLogger)
+        dataFetcher = GoogleBillingDataFetcherImpl(mockLogger)
+        dataFetcher.setup(mockBillingClient)
     }
 
     @Nested
@@ -83,7 +84,7 @@ class GoogleBillingDataFetcherTest {
             mockBillingResults()
 
             // when
-            val result = dataFetcher.loadProducts(productIds)
+            val result = dataFetcher.loadProducts(productIds.toSet())
 
             // then
             assertThat(result).isEqualTo(expectedProducts)
@@ -107,7 +108,7 @@ class GoogleBillingDataFetcherTest {
             mockBillingResults()
 
             // when
-            val result = dataFetcher.loadProducts(productIds)
+            val result = dataFetcher.loadProducts(productIds.toSet())
 
             // then
             assertThat(result).isEqualTo(expectedProducts)
@@ -131,7 +132,7 @@ class GoogleBillingDataFetcherTest {
             mockSubsBillingResult()
 
             // when
-            val result = dataFetcher.loadProducts(productIds)
+            val result = dataFetcher.loadProducts(productIds.toSet())
 
             // then
             assertThat(result).isEqualTo(expectedProducts)
@@ -155,7 +156,7 @@ class GoogleBillingDataFetcherTest {
             val skuType = BillingClient.SkuType.SUBS
 
             // when
-            val result = dataFetcher.querySkuDetails(skuType, subsIds)
+            val result = dataFetcher.querySkuDetails(skuType, subsIds.toSet())
 
             // then
             assertThat(result).isEqualTo(subsSkus)
@@ -181,12 +182,12 @@ class GoogleBillingDataFetcherTest {
 
             // when
             val exception = coAssertThatQonversionExceptionThrown(ErrorCode.SkuDetailsFetching) {
-                dataFetcher.querySkuDetails(skuType, ids)
+                dataFetcher.querySkuDetails(skuType, ids.toSet())
             }
 
             // then
             verify(exactly = 1) { mockBillingClient.querySkuDetailsAsync(any(), any()) }
-            assertThat(exception.message).isEqualTo("Failed to fetch products.")
+            assertThat(exception.message).contains("ERROR")
         }
 
         @Test
@@ -200,12 +201,12 @@ class GoogleBillingDataFetcherTest {
 
             // when
             val exception = coAssertThatQonversionExceptionThrown(ErrorCode.SkuDetailsFetching) {
-                dataFetcher.querySkuDetails(skuType, ids)
+                dataFetcher.querySkuDetails(skuType, ids.toSet())
             }
 
             // then
             verify(exactly = 1) { mockBillingClient.querySkuDetailsAsync(any(), any()) }
-            assertThat(exception.message).isEqualTo("Failed to fetch products. SkuDetails list for $ids is null.")
+            assertThat(exception.message).contains("SkuDetails list for $ids is null.")
         }
     }
 
@@ -545,7 +546,7 @@ class GoogleBillingDataFetcherTest {
             val skuList = listOf(firstSubsId, firstInAppId)
 
             // when
-            dataFetcher.logSkuDetails(emptyList(), skuList)
+            dataFetcher.logSkuDetails(emptyList(), skuList.toSet())
 
             // then
             verify(exactly = 1) {
@@ -560,7 +561,7 @@ class GoogleBillingDataFetcherTest {
             val skuDetails = listOf(mockSubsSkuDetailsFirst, mockInAppSkuDetailsFirst)
 
             // when
-            dataFetcher.logSkuDetails(skuDetails, skuList)
+            dataFetcher.logSkuDetails(skuDetails, skuList.toSet())
 
             // then
             skuDetails.forEach {
