@@ -523,10 +523,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -588,10 +585,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -667,10 +661,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -826,10 +817,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -897,10 +885,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -954,10 +939,7 @@ internal class GoogleBillingControllerTest {
         @Test
         fun `billing connection failed with error`() {
             // given
-            val billingResult = mockk<BillingResult>().apply {
-                every { responseCode } returns BillingClient.BillingResponseCode.BILLING_UNAVAILABLE
-            }
-            mockConnection(billingResult)
+            mockConnection(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
             every { mockBillingClient.isReady } returns false
             billingController.billingClient = mockBillingClient
 
@@ -1085,9 +1067,12 @@ internal class GoogleBillingControllerTest {
         }
     }
 
-    private fun mockConnection(result: BillingResult? = null, timeout: Long = 0L) {
-        val actualResult = result ?: mockk<BillingResult>().apply {
-            every { responseCode } returns BillingClient.BillingResponseCode.OK
+    private fun mockConnection(
+        @BillingClient.BillingResponseCode connectionResponseCode: Int? = null,
+        timeout: Long = 0L
+    ) {
+        val actualResult = mockk<BillingResult>().apply {
+            every { responseCode } returns (connectionResponseCode ?: BillingClient.BillingResponseCode.OK)
         }
         val slotListener = slot<BillingClientStateListener>()
         every {
