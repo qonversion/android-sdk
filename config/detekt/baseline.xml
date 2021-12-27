@@ -8,6 +8,7 @@
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
+    <ID>EmptyFunctionBlock:AppLifecycleObserverImpl.kt$AppLifecycleObserverImpl${}</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
@@ -16,6 +17,10 @@
     <ID>Filename:com.qonversion.android.sdk.old.requests.queue.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.storage.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.validator.util.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.appState.AppLifecycleObserverTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.logger.LoggerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.mappers.ApiErrorMapperTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
