@@ -38,6 +38,7 @@ class AppLifecycleObserverTest {
         @Test
         fun `on activity started`() {
             // given
+            appLifecycleObserver.appState = AppState.Background
 
             // when
             appLifecycleObserver.onActivityStarted(mockActivity)
@@ -73,6 +74,7 @@ class AppLifecycleObserverTest {
         @Test
         fun `on activity stopped`() {
             // given
+            appLifecycleObserver.appState = AppState.Foreground
 
             // when
             appLifecycleObserver.onActivityStopped(mockActivity)
@@ -134,7 +136,7 @@ class AppLifecycleObserverTest {
     }
 
     @Nested
-    inner class RegisterObserverTest {
+    inner class RegisterTest {
         private val mockApplication = mockk<Application>(relaxed = true)
 
         @Test
@@ -142,7 +144,7 @@ class AppLifecycleObserverTest {
             // given
 
             // when
-            appLifecycleObserver.registerObserver(mockApplication)
+            appLifecycleObserver.register(mockApplication)
 
             // then
             verify(exactly = 1) {

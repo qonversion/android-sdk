@@ -31,7 +31,7 @@ internal class AppLifecycleObserverImpl : AppLifecycleObserver,
         return appState == AppState.Background
     }
 
-    override fun registerObserver(context: Application) {
-        context.registerActivityLifecycleCallbacks(this)
+    override fun register(application: Application) {
+        application.registerActivityLifecycleCallbacks(this)
     }
 }

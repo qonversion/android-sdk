@@ -6,5 +6,5 @@ internal interface AppLifecycleObserver {
 
     fun isInBackground(): Boolean
 
-    fun registerObserver(context: Application)
+    fun register(application: Application)
 }
