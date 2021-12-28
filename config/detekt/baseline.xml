@@ -8,6 +8,7 @@
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
+    <ID>EmptyFunctionBlock:AppLifecycleObserverImpl.kt$AppLifecycleObserverImpl${}</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
