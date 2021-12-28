@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
+import com.qonversion.android.sdk.internal.serializers.json.JsonSerializer
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -24,7 +24,7 @@ internal class NetworkClientImplTest {
 
     private lateinit var networkClient: NetworkClientImpl
 
-    private var serializer: RequestSerializer = mockk()
+    private var serializer: JsonSerializer = mockk()
 
     @Before
     fun setUp() {

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.mappers
+package com.qonversion.android.sdk.internal.serializers.mappers
 
 import com.qonversion.android.sdk.dto.Entitlement
 

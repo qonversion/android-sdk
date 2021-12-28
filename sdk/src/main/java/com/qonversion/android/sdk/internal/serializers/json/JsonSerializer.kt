@@ -1,8 +1,8 @@
-package com.qonversion.android.sdk.internal.networkLayer.requestSerializer
+package com.qonversion.android.sdk.internal.serializers.json
 
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
-internal interface RequestSerializer {
+internal interface JsonSerializer {
 
     @Throws(QonversionException::class)
     fun serialize(data: Map<String, Any?>): String

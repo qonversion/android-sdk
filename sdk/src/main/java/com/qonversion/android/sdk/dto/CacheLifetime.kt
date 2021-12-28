@@ -10,18 +10,19 @@ package com.qonversion.android.sdk.dto
  * in the background). Cache lifetime for foreground requests is much less than
  * for background ones and is not configurable. Let's say we have user info
  * loaded and cached a day before yesterday. If the cache lifetime is set
- * to [THREE_DAYS] and you request user info when the app is in the background
- * then the cached value will be returned. But if you request it from
- * the foreground app or the cache lifetime is set to [ONE_DAY], then cached
- * data will be renewed and then returned.
+ * to [CacheLifetime.THREE_DAYS] and you request user info when the app is in
+ * the background then the cached value will be returned. But if you request it
+ * from the foreground app or the cache lifetime is set to [CacheLifetime.ONE_DAY],
+ * then cached data will be renewed and then returned.
  *
- * The default value is [THREE_DAYS].
+ * The default value is [CacheLifetime.THREE_DAYS].
  */
-enum class CacheLifetime {
-    ONE_DAY,
-    TWO_DAYS,
-    THREE_DAYS,
-    WEEK,
-    TWO_WEEKS,
-    MONTH
+private const val SEC_IN_DAY = 24L * 60 * 60
+enum class CacheLifetime(val seconds: Long) {
+    ONE_DAY(SEC_IN_DAY),
+    TWO_DAYS(2 * SEC_IN_DAY),
+    THREE_DAYS(3 * SEC_IN_DAY),
+    WEEK(7 * SEC_IN_DAY),
+    TWO_WEEKS(14 * SEC_IN_DAY),
+    MONTH(30 * SEC_IN_DAY)
 }

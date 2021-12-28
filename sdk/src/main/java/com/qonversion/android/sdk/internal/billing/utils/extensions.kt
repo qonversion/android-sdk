@@ -20,12 +20,12 @@ internal val Purchase.sku: String? get() = skus.firstOrNull()
 
 internal fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; " +
-            "PurchaseTime: ${this.purchaseTime.convertLongToTime()}; " +
+            "PurchaseTime: ${this.purchaseTime.toTime()}; " +
             "PurchaseToken: ${this.purchaseToken}"
 
 internal val PurchaseHistoryRecord.sku: String? get() = skus.firstOrNull()
 
-private fun Long.convertLongToTime(): String {
+private fun Long.toTime(): String {
     val date = Date(this)
     val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
     return format.format(date)
