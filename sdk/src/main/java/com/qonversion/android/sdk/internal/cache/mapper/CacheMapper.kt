@@ -1,13 +1,14 @@
-package com.qonversion.android.sdk.internal.serializers.mappers.cache
+package com.qonversion.android.sdk.internal.cache.mapper
 
+import com.qonversion.android.sdk.internal.cache.CachedObject
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlin.jvm.Throws
 
 internal interface CacheMapper<T : Any> {
 
     @Throws(QonversionException::class)
-    fun toJson(value: T): String
+    fun toString(cachedObject: CachedObject<T>): String
 
     @Throws(QonversionException::class)
-    fun fromJson(json: String): T?
+    fun fromString(value: String): CachedObject<T>
 }

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.serializers.json
+package com.qonversion.android.sdk.internal.common.serializers
 
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import org.junit.Before
@@ -28,7 +28,7 @@ class JsonSerializerTest {
 
     @Before
     fun setUp() {
-        jsonSerializer = JsonSerializerImpl()
+        jsonSerializer = JsonSerializer()
     }
 
     @Test

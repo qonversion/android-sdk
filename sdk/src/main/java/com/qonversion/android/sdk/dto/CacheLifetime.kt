@@ -1,5 +1,9 @@
 package com.qonversion.android.sdk.dto
 
+import com.qonversion.android.sdk.internal.utils.DAYS_IS_MONTH
+import com.qonversion.android.sdk.internal.utils.DAYS_IS_WEEK
+import com.qonversion.android.sdk.internal.utils.SEC_IN_DAY
+
 /**
  * The Qonversion SDK caches some information from the billing library or API.
  * This enum contains different available settings for cache lifetime.
@@ -17,12 +21,11 @@ package com.qonversion.android.sdk.dto
  *
  * The default value is [CacheLifetime.THREE_DAYS].
  */
-private const val SEC_IN_DAY = 24L * 60 * 60
 enum class CacheLifetime(val seconds: Long) {
     ONE_DAY(SEC_IN_DAY),
     TWO_DAYS(2 * SEC_IN_DAY),
     THREE_DAYS(3 * SEC_IN_DAY),
-    WEEK(7 * SEC_IN_DAY),
-    TWO_WEEKS(14 * SEC_IN_DAY),
-    MONTH(30 * SEC_IN_DAY)
+    WEEK(DAYS_IS_WEEK * SEC_IN_DAY),
+    TWO_WEEKS(2 * DAYS_IS_WEEK * SEC_IN_DAY),
+    MONTH(DAYS_IS_MONTH * SEC_IN_DAY)
 }

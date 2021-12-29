@@ -10,4 +10,10 @@ internal interface Cacher<T : Any> {
 
     @Throws(QonversionException::class)
     fun get(): T?
+
+    @Throws(QonversionException::class)
+    fun getActual(): T?
+
+    @Throws(QonversionException::class)
+    fun isActual(): Boolean
 }

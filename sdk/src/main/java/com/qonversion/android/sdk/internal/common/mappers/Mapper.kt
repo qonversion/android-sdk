@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.serializers.mappers
+package com.qonversion.android.sdk.internal.common.mappers
 
 internal interface Mapper<T : Any> {
     @Throws(IllegalStateException::class, NotImplementedError::class)

@@ -22,7 +22,7 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImplTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.serializers.json.JsonSerializerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.common.serializers.JsonSerializerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.ConsumerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt:1</ID>
@@ -168,7 +168,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.serializers.json.JsonSerializerTest.kt:25</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.common.serializers.JsonSerializerTest.kt:25</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QProductCenterManagerTest.kt:155</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.QUserPropertiesManagerTest.kt:169</ID>
@@ -230,7 +230,7 @@
     <ID>NewLineAtEndOfFile:InAppRequestTest.kt$com.qonversion.android.sdk.old.requests.InAppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:InitRequestTest.kt$com.qonversion.android.sdk.old.requests.InitRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:JsonSerializerTest.kt$com.qonversion.android.sdk.internal.serializers.json.JsonSerializerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:JsonSerializerTest.kt$com.qonversion.android.sdk.internal.common.serializers.JsonSerializerTest.kt</ID>
     <ID>NewLineAtEndOfFile:LaunchResultCacheWrapperTest.kt$com.qonversion.android.sdk.old.storage.LaunchResultCacheWrapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:NetworkClientImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.old.requests.OsRequestTest.kt</ID>

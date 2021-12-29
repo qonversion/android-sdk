@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.serializers.mappers
+package com.qonversion.android.sdk.internal.common.mappers
 
 import java.util.Date
 

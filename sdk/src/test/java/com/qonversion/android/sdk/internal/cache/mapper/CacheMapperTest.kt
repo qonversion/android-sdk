@@ -1,10 +1,10 @@
-package com.qonversion.android.sdk.internal.serializers.mappers.cache
+package com.qonversion.android.sdk.internal.cache.mapper
 
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.internal.serializers.json.JsonSerializer
-import com.qonversion.android.sdk.internal.serializers.mappers.Mapper
+import com.qonversion.android.sdk.internal.common.serializers.Serializer
+import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -17,7 +17,7 @@ import java.lang.IllegalStateException
 internal class CacheMapperTest {
 
     private lateinit var cacheMapper: CacheMapper<String>
-    private val mockJsonSerializer = mockk<JsonSerializer>()
+    private val mockJsonSerializer = mockk<Serializer>()
     private val mockMapper = mockk<Mapper<String>>()
 
     @BeforeEach

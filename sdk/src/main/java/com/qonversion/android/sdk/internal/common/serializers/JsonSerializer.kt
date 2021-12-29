@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.serializers.json
+package com.qonversion.android.sdk.internal.common.serializers
 
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -9,7 +9,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.NullPointerException
 
-internal class JsonSerializerImpl : JsonSerializer {
+internal class JsonSerializer : Serializer {
 
     override fun serialize(data: Map<String, Any?>): String {
         return try {
