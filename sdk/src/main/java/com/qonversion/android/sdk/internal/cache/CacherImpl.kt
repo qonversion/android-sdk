@@ -18,17 +18,16 @@ internal class CacherImpl<T : Any>(
     private val foregroundCacheLifetime: InternalCacheLifetime = InternalCacheLifetime.FIVE_MIN
 ) : Cacher<T> {
 
-    var shouldLoad = true
+    var shouldLoadFromStorage = true
     var cachedObject: CachedObject<T>? = null
         get() {
-            if (shouldLoad) {
+            if (shouldLoadFromStorage) {
                 field = load()
-                shouldLoad = false
             }
             return field
         }
         set(value) {
-            shouldLoad = false
+            shouldLoadFromStorage = false
             field = value
         }
 
