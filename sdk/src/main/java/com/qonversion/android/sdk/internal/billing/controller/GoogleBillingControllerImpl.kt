@@ -52,7 +52,7 @@ internal class GoogleBillingControllerImpl(
 
     val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
         if (billingResult.isOk && purchases != null) {
-            logger.debug("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
+            logger.info("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
             val errorMessage = if (
@@ -67,9 +67,9 @@ internal class GoogleBillingControllerImpl(
                 BillingError(billingResult.responseCode, errorMessage)
             )
 
-            logger.release("onPurchasesUpdated() -> failed to update purchases $errorMessage")
+            logger.error("onPurchasesUpdated() -> failed to update purchases $errorMessage")
             if (!purchases.isNullOrEmpty()) {
-                logger.release(
+                logger.info(
                     "Purchases: " + purchases.joinToString(
                         ", ",
                         transform = { it.getDescription() })
@@ -80,20 +80,20 @@ internal class GoogleBillingControllerImpl(
 
     var billingClientStateListener = object : BillingClientStateListener {
         override fun onBillingServiceDisconnected() {
-            logger.debug("billingClientStateListener -> BillingClient disconnected ($billingClient).")
+            logger.info("billingClientStateListener -> BillingClient disconnected ($billingClient).")
         }
 
         override fun onBillingSetupFinished(billingResult: BillingResult) {
             when (billingResult.responseCode) {
                 BillingClient.BillingResponseCode.OK -> {
-                    logger.debug(
+                    logger.info(
                         "billingClientStateListener -> BillingClient successfully connected ($billingClient)."
                     )
                     completeConnectionDeferred()
                 }
                 BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
                 BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                    logger.release(
+                    logger.error(
                         "billingClientStateListener -> BillingClient connection failed with error: " +
                                 "${billingResult.getDescription()} ($billingClient)."
                     )
@@ -108,7 +108,7 @@ internal class GoogleBillingControllerImpl(
                 }
                 else -> {
                     // These errors might be fixed for the next attempt, so we don't do anything here
-                    logger.release(
+                    logger.error(
                         "billingClientStateListener -> BillingClient connection failed with error: " +
                                 "${billingResult.getDescription()} ($billingClient)."
                     )
@@ -175,14 +175,14 @@ internal class GoogleBillingControllerImpl(
         try {
             waitForReadyClient()
         } catch (e: QonversionException) {
-            logger.release(e.toString())
+            logger.error(e.toString())
             return
         }
 
         try {
             consumer.consume(purchaseToken)
         } catch (e: QonversionException) {
-            logger.release("Failed to consume purchase with token $purchaseToken: $e")
+            logger.error("Failed to consume purchase with token $purchaseToken: $e")
         }
     }
 
@@ -190,14 +190,14 @@ internal class GoogleBillingControllerImpl(
         try {
             waitForReadyClient()
         } catch (e: QonversionException) {
-            logger.release(e.toString())
+            logger.error(e.toString())
             return
         }
 
         try {
             consumer.acknowledge(purchaseToken)
         } catch (e: QonversionException) {
-            logger.release("Failed to acknowledge purchase with token $purchaseToken: $e")
+            logger.error("Failed to acknowledge purchase with token $purchaseToken: $e")
         }
     }
 
@@ -213,7 +213,7 @@ internal class GoogleBillingControllerImpl(
             billingClient?.let { client ->
                 connectionDeferred = it
                 client.startConnection(billingClientStateListener)
-                logger.debug("Trying to connect to BillingClient ($billingClient)")
+                logger.verbose("Trying to connect to BillingClient ($billingClient)")
             } ?: throw QonversionException(ErrorCode.BillingConnection, "Billing client is not set.")
         }
     }

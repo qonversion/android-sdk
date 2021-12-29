@@ -40,7 +40,7 @@ internal class GoogleBillingDataFetcherImpl(
     }
 
     override suspend fun queryPurchases(): List<Purchase> {
-        logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
+        logger.verbose("queryPurchases() -> Querying purchases from cache for subs and inapp")
 
         val (subsBillingResult, subsPurchases) = fetchPurchases(BillingClient.SkuType.SUBS)
 
@@ -78,7 +78,7 @@ internal class GoogleBillingDataFetcherImpl(
     override suspend fun queryPurchasesHistory(
         @BillingClient.SkuType skuType: String
     ): Pair<BillingResult, List<PurchaseHistoryRecord>?> {
-        logger.debug("queryPurchasesHistory() -> Querying purchase history for type $skuType")
+        logger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType")
         return suspendCoroutine { continuation ->
             billingClient.queryPurchaseHistoryAsync(skuType) { billingResult, purchases ->
                 continuation.resume(Pair(billingResult, purchases))
@@ -91,7 +91,7 @@ internal class GoogleBillingDataFetcherImpl(
         @BillingClient.SkuType productType: String,
         skuList: Set<String?>
     ): List<SkuDetails> {
-        logger.debug("querySkuDetails() -> Querying skuDetails for type $productType, " +
+        logger.verbose("querySkuDetails() -> Querying skuDetails for type $productType, " +
                 "identifiers: ${skuList.joinToString()}")
 
         val params = buildSkuDetailsParams(productType, skuList)
@@ -122,7 +122,7 @@ internal class GoogleBillingDataFetcherImpl(
         }
 
         return historyRecords.map { record ->
-            logger.debug("queryAllPurchasesHistory() -> purchase history " +
+            logger.info("queryAllPurchasesHistory() -> purchase history " +
                     "for $skuType is retrieved ${record.getDescription()}")
             PurchaseHistory(skuType, record)
         }
@@ -133,14 +133,14 @@ internal class GoogleBillingDataFetcherImpl(
         skuList: Set<String?>
     ) {
         if (skuDetailsList.isNotEmpty()) {
-            skuDetailsList.forEach { logger.debug("querySkuDetails() -> $it") }
+            skuDetailsList.forEach { logger.info("querySkuDetails() -> $it") }
         } else {
-            logger.release("querySkuDetails() -> SkuDetails list for $skuList is empty.")
+            logger.info("querySkuDetails() -> SkuDetails list for $skuList is empty.")
         }
     }
 
     private suspend fun fetchPurchases(@BillingClient.SkuType skuType: String): Pair<BillingResult, List<Purchase>> {
-        logger.debug("fetchPurchases() -> Querying purchases for type $skuType")
+        logger.verbose("fetchPurchases() -> Querying purchases for type $skuType")
         return suspendCoroutine { continuation ->
             billingClient.queryPurchasesAsync(skuType) { billingResult, purchases ->
                 continuation.resume(Pair(billingResult, purchases))

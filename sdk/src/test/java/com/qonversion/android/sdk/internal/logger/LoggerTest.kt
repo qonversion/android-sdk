@@ -5,94 +5,301 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
-import org.junit.Before
-import org.junit.Test
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 internal class LoggerTest {
 
-    private lateinit var releaseLogger: Logger
-    private lateinit var debugLogger: Logger
-    private val logTag = "custom tag"
-    private val logMessage = "test message"
+    private lateinit var logger: Logger
+
+    private val mockLoggerConfig = mockk<LoggerConfig>()
+
     private val capturedTag = slot<String>()
     private val capturedMessage = slot<String>()
 
-    @Before
+    private val logMessage = "test message"
+    private val tag = "Qonversion"
+
+    @BeforeEach
     fun setUp() {
-        releaseLogger = ConsoleLogger(false)
-        debugLogger = ConsoleLogger(true)
-
         mockkStatic(Log::class)
-        every {
-            Log.println(Log.DEBUG, capture(capturedTag), capture(capturedMessage))
-        } returns 0
     }
 
-    @Test
-    fun `test simple release log`() {
+    @Nested
+    inner class VerboseTest {
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockLoggerConfig.logLevel
+            } returns LogLevel.Verbose
+
+            logger = ConsoleLogger(mockLoggerConfig)
+
+            every {
+                Log.println(Log.VERBOSE, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+        }
+
+        @Test
+        fun `should log verbose`() {
+            // given
+
+            // when
+            logger.verbose(logMessage)
+
+            // then
+            assertThat(capturedMessage.captured).contains(logMessage)
+            assertThat(capturedTag.captured).isEqualTo(tag)
+        }
+
+        @Test
+        fun `should log info`() {
+            testLogInfoSuccess()
+        }
+
+        @Test
+        fun `should log warn`() {
+            testLogWarnSuccess()
+        }
+
+        @Test
+        fun `should log error`() {
+            testLogErrorSuccess()
+        }
+    }
+
+    @Nested
+    inner class InfoTest {
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockLoggerConfig.logLevel
+            } returns LogLevel.Info
+
+            logger = ConsoleLogger(mockLoggerConfig)
+
+            every {
+                Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+        }
+
+        @Test
+        fun `should not log verbose`() {
+            testLogVerboseFailure()
+        }
+
+        @Test
+        fun `should log info`() {
+            testLogInfoSuccess()
+        }
+
+        @Test
+        fun `should log warn`() {
+            testLogWarnSuccess()
+        }
+
+        @Test
+        fun `should log error`() {
+            testLogErrorSuccess()
+        }
+    }
+
+    @Nested
+    inner class WarnTest {
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockLoggerConfig.logLevel
+            } returns LogLevel.Warning
+
+            logger = ConsoleLogger(mockLoggerConfig)
+            
+            every {
+                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+            every {
+                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+        }
+
+        @Test
+        fun `should not log verbose`() {
+            testLogVerboseFailure()
+        }
+
+        @Test
+        fun `should log info`() {
+            testLogInfoFailure()
+        }
+
+        @Test
+        fun `should log warn`() {
+            testLogWarnSuccess()
+        }
+
+        @Test
+        fun `should log error`() {
+            testLogErrorSuccess()
+        }
+    }
+
+    @Nested
+    inner class ErrorTest {
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockLoggerConfig.logLevel
+            } returns LogLevel.Error
+
+            logger = ConsoleLogger(mockLoggerConfig)
+            
+            every {
+                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+            } returns 0
+        }
+
+        @Test
+        fun `should not log verbose`() {
+            testLogVerboseFailure()
+        }
+
+        @Test
+        fun `should log info`() {
+            testLogInfoFailure()
+        }
+
+        @Test
+        fun `should log warn`() {
+            testLogWarnFailure()
+        }
+
+        @Test
+        fun `should log error`() {
+            testLogErrorSuccess()
+        }
+    }
+
+
+    @Nested
+    inner class DisabledTest {
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockLoggerConfig.logLevel
+            } returns LogLevel.Disabled
+
+            logger = ConsoleLogger(mockLoggerConfig)
+        }
+
+        @Test
+        fun `should not log verbose`() {
+            testLogVerboseFailure()
+        }
+
+        @Test
+        fun `should log info`() {
+            testLogInfoFailure()
+        }
+
+        @Test
+        fun `should log warn`() {
+            testLogWarnFailure()
+        }
+
+        @Test
+        fun `should log error`() {
+            testLogErrorFailure()
+        }
+    }
+    
+    private fun testLogInfoSuccess() {
         // given
 
         // when
-        releaseLogger.release(logMessage)
+        logger.info(logMessage)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
+        assertThat(capturedTag.captured).isEqualTo(tag)
     }
 
-    @Test
-    fun `test simple release log while debugging`() {
+    private fun testLogWarnSuccess() {
         // given
 
         // when
-        debugLogger.release(logMessage)
+        logger.warn(logMessage)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
+        assertThat(capturedTag.captured).isEqualTo(tag)
     }
 
-    @Test
-    fun `test simple debug log`() {
+    private fun testLogErrorSuccess() {
         // given
 
         // when
-        releaseLogger.debug(logMessage)
-
-        // then
-        verify(exactly = 0) { Log.println(Log.DEBUG, any(), any()) }
-    }
-
-    @Test
-    fun `test simple debug log while debugging`() {
-        // given
-
-        // when
-        debugLogger.debug(logMessage)
+        logger.error(logMessage)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
+        assertThat(capturedTag.captured).isEqualTo(tag)
     }
 
-    @Test
-    fun `test simple debug log with tag`() {
+    private fun testLogVerboseFailure() {
         // given
 
         // when
-        releaseLogger.debug(logTag, logMessage)
+        logger.verbose(logMessage)
 
         // then
-        verify(exactly = 0) { Log.println(Log.DEBUG, any(), any()) }
+        verify(exactly = 0) { Log.println(any(), any(), any()) }
     }
 
-    @Test
-    fun `test simple debug log with tag while debugging`() {
+    private fun testLogInfoFailure() {
         // given
 
         // when
-        debugLogger.debug(logTag, logMessage)
+        logger.info(logMessage)
 
         // then
-        assertThat(capturedTag.captured).isEqualTo(logTag)
-        assertThat(capturedMessage.captured).contains(logMessage)
+        verify(exactly = 0) { Log.println(any(), any(), any()) }
+    }
+
+    private fun testLogWarnFailure() {
+        // given
+
+        // when
+        logger.warn(logMessage)
+
+        // then
+        verify(exactly = 0) { Log.println(any(), any(), any()) }
+    }
+
+    private fun testLogErrorFailure() {
+        // given
+
+        // when
+        logger.error(logMessage)
+
+        // then
+        verify(exactly = 0) { Log.println(any(), any(), any()) }
     }
 }

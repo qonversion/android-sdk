@@ -2,9 +2,11 @@ package com.qonversion.android.sdk.internal.logger
 
 internal interface Logger {
 
-    fun release(message: String)
+    fun verbose(message: String)
 
-    fun debug(message: String)
+    fun info(message: String)
 
-    fun debug(tag: String, message: String)
+    fun warn(message: String)
+
+    fun error(message: String)
 }
