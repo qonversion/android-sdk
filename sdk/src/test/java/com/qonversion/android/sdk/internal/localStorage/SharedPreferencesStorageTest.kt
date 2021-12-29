@@ -2,28 +2,25 @@ package com.qonversion.android.sdk.internal.localStorage
 
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.common.localStorage.SharedPreferencesStorage
-import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import io.mockk.verifyOrder
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SharedPreferencesStorageTest {
-    private val mockPrefs: SharedPreferences = mockk(relaxed = true)
-    private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockPrefs: SharedPreferences = mockk()
+    private val mockEditor: SharedPreferences.Editor = mockk()
 
     private lateinit var prefsStorage: SharedPreferencesStorage
 
     @BeforeEach
     fun setUp() {
-        clearAllMocks()
-
         mockSharedPreferences()
 
         prefsStorage = SharedPreferencesStorage(mockPrefs)
@@ -33,6 +30,7 @@ class SharedPreferencesStorageTest {
     inner class Int {
         @Test
         fun `should save Int preference with key`() {
+            // given
             val key = "key"
             val value = 57
 
@@ -40,9 +38,12 @@ class SharedPreferencesStorageTest {
                 mockEditor.putInt(key, value)
             } returns mockEditor
 
+            // when
             prefsStorage.putInt(key, value)
 
+            // then
             verifyOrder {
+                mockPrefs.edit()
                 mockEditor.putInt(key, value)
                 mockEditor.apply()
             }
@@ -50,19 +51,22 @@ class SharedPreferencesStorageTest {
 
         @Test
         fun `should load Int preference with key when it exists`() {
+            // given
             val key = "key"
-            val value = 57
+            val expectedValue = 57
 
             every {
                 mockPrefs.getInt(key, any())
-            } returns value
+            } returns expectedValue
 
-            val expectedValue = prefsStorage.getInt(key, 0)
+            // when
+            val result = prefsStorage.getInt(key, 0)
 
+            // then
             verify(exactly = 1) {
                 mockPrefs.getInt(key, 0)
             }
-            Assertions.assertThat(value).isEqualTo(expectedValue)
+            assertThat(result).isEqualTo(expectedValue)
         }
     }
 
@@ -70,6 +74,7 @@ class SharedPreferencesStorageTest {
     inner class Long {
         @Test
         fun `should save Long preference with key`() {
+            // given
             val key = "key"
             val value = 57L
 
@@ -77,9 +82,12 @@ class SharedPreferencesStorageTest {
                 mockEditor.putLong(key, value)
             } returns mockEditor
 
+            // when
             prefsStorage.putLong(key, value)
 
+            // then
             verifyOrder {
+                mockPrefs.edit()
                 mockEditor.putLong(key, value)
                 mockEditor.apply()
             }
@@ -87,19 +95,22 @@ class SharedPreferencesStorageTest {
 
         @Test
         fun `should load Long preference with key when it exists`() {
+            // given
             val key = "key"
-            val value = 57L
+            val expectedValue = 57L
 
             every {
                 mockPrefs.getLong(key, any())
-            } returns value
+            } returns expectedValue
 
-            val expectedValue = prefsStorage.getLong(key, 0)
+            // when
+            val result = prefsStorage.getLong(key, 0)
 
+            // then
             verify(exactly = 1) {
                 mockPrefs.getLong(key, 0)
             }
-            Assertions.assertThat(value).isEqualTo(expectedValue)
+            assertThat(result).isEqualTo(expectedValue)
         }
     }
 
@@ -107,6 +118,7 @@ class SharedPreferencesStorageTest {
     inner class Float {
         @Test
         fun `should save Float preference with key`() {
+            // given
             val key = "key"
             val value = 57F
 
@@ -114,9 +126,12 @@ class SharedPreferencesStorageTest {
                 mockEditor.putFloat(key, value)
             } returns mockEditor
 
+            // when
             prefsStorage.putFloat(key, value)
 
+            // then
             verifyOrder {
+                mockPrefs.edit()
                 mockEditor.putFloat(key, value)
                 mockEditor.apply()
             }
@@ -124,19 +139,22 @@ class SharedPreferencesStorageTest {
 
         @Test
         fun `should load Float preference with key when it exists`() {
+            // given
             val key = "key"
-            val value = 57F
+            val expectedValue = 57F
 
             every {
                 mockPrefs.getFloat(key, any())
-            } returns value
+            } returns expectedValue
 
-            val expectedValue = prefsStorage.getFloat(key, 0F)
+            // when
+            val result = prefsStorage.getFloat(key, 0F)
 
+            // then
             verify(exactly = 1) {
                 mockPrefs.getFloat(key, 0F)
             }
-            Assertions.assertThat(value).isEqualTo(expectedValue)
+            assertThat(result).isEqualTo(expectedValue)
         }
     }
 
@@ -144,6 +162,7 @@ class SharedPreferencesStorageTest {
     inner class String {
         @Test
         fun `should save String preference with key`() {
+            // given
             val key = "key"
             val value = "57"
 
@@ -151,9 +170,12 @@ class SharedPreferencesStorageTest {
                 mockEditor.putString(key, value)
             } returns mockEditor
 
+            // when
             prefsStorage.putString(key, value)
 
+            // then
             verifyOrder {
+                mockPrefs.edit()
                 mockEditor.putString(key, value)
                 mockEditor.apply()
             }
@@ -161,25 +183,51 @@ class SharedPreferencesStorageTest {
 
         @Test
         fun `should load String preference with key when it exists`() {
+            // given
             val key = "key"
-            val value = "57"
+            val expectedValue = "57"
 
             every {
                 mockPrefs.getString(key, any())
-            } returns value
+            } returns expectedValue
 
-            val expectedValue = prefsStorage.getString(key, "")
+            // when
+            val result = prefsStorage.getString(key, "")
 
+            // then
             verify(exactly = 1) {
                 mockPrefs.getString(key, "")
             }
-            Assertions.assertThat(value).isEqualTo(expectedValue)
+            assertThat(result).isEqualTo(expectedValue)
+        }
+    }
+
+    @Nested
+    inner class RemoveObject {
+        @Test
+        fun `should remove preferences with key`() {
+            // given
+            val key = "key"
+
+            // when
+            prefsStorage.remove(key)
+
+            // then
+            verifyOrder {
+                mockPrefs.edit()
+                mockEditor.remove(key)
+                mockEditor.apply()
+            }
         }
     }
 
     private fun mockSharedPreferences() {
         every {
             mockPrefs.edit()
+        } returns mockEditor
+
+        every {
+            mockEditor.remove(any())
         } returns mockEditor
 
         every {
