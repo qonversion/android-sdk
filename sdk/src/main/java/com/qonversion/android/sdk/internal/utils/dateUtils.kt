@@ -3,8 +3,8 @@ package com.qonversion.android.sdk.internal.utils
 import java.text.SimpleDateFormat
 import java.util.*
 
-internal const val DAYS_IS_MONTH = 30L
-internal const val DAYS_IS_WEEK = 7L
+internal const val DAYS_IN_MONTH = 30L
+internal const val DAYS_IN_WEEK = 7L
 internal const val MIN_IN_HOUR = 60L
 internal const val SEC_IN_MIN = 60L
 internal const val HOURS_IN_DAY = 24L

@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.internal.utils.DAYS_IS_MONTH
-import com.qonversion.android.sdk.internal.utils.DAYS_IS_WEEK
+import com.qonversion.android.sdk.internal.utils.DAYS_IN_MONTH
+import com.qonversion.android.sdk.internal.utils.DAYS_IN_WEEK
 import com.qonversion.android.sdk.internal.utils.SEC_IN_DAY
 
 /**
@@ -25,7 +25,7 @@ enum class CacheLifetime(val seconds: Long) {
     ONE_DAY(SEC_IN_DAY),
     TWO_DAYS(2 * SEC_IN_DAY),
     THREE_DAYS(3 * SEC_IN_DAY),
-    WEEK(DAYS_IS_WEEK * SEC_IN_DAY),
-    TWO_WEEKS(2 * DAYS_IS_WEEK * SEC_IN_DAY),
-    MONTH(DAYS_IS_MONTH * SEC_IN_DAY)
+    WEEK(DAYS_IN_WEEK * SEC_IN_DAY),
+    TWO_WEEKS(2 * DAYS_IN_WEEK * SEC_IN_DAY),
+    MONTH(DAYS_IN_MONTH * SEC_IN_DAY)
 }
