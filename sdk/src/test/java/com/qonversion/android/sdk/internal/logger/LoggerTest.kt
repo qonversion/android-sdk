@@ -21,11 +21,15 @@ internal class LoggerTest {
     private val capturedMessage = slot<String>()
 
     private val logMessage = "test message"
-    private val tag = "Qonversion"
+    private val tag = "TestTag"
 
     @BeforeEach
     fun setUp() {
         mockkStatic(Log::class)
+
+        every {
+            mockLoggerConfig.logTag
+        } returns tag
     }
 
     @Nested
@@ -146,7 +150,7 @@ internal class LoggerTest {
         }
 
         @Test
-        fun `should log info`() {
+        fun `should not log info`() {
             testLogInfoFailure()
         }
 
@@ -182,12 +186,12 @@ internal class LoggerTest {
         }
 
         @Test
-        fun `should log info`() {
+        fun `should not log info`() {
             testLogInfoFailure()
         }
 
         @Test
-        fun `should log warn`() {
+        fun `should not log warn`() {
             testLogWarnFailure()
         }
 
@@ -215,17 +219,17 @@ internal class LoggerTest {
         }
 
         @Test
-        fun `should log info`() {
+        fun `should not log info`() {
             testLogInfoFailure()
         }
 
         @Test
-        fun `should log warn`() {
+        fun `should not log warn`() {
             testLogWarnFailure()
         }
 
         @Test
-        fun `should log error`() {
+        fun `should not log error`() {
             testLogErrorFailure()
         }
     }

@@ -80,7 +80,7 @@ internal class GoogleBillingControllerImpl(
 
     var billingClientStateListener = object : BillingClientStateListener {
         override fun onBillingServiceDisconnected() {
-            logger.info("billingClientStateListener -> BillingClient disconnected ($billingClient).")
+            logger.warn("billingClientStateListener -> BillingClient disconnected ($billingClient).")
         }
 
         override fun onBillingSetupFinished(billingResult: BillingResult) {

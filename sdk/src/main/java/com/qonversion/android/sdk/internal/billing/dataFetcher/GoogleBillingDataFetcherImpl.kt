@@ -135,7 +135,7 @@ internal class GoogleBillingDataFetcherImpl(
         if (skuDetailsList.isNotEmpty()) {
             skuDetailsList.forEach { logger.info("querySkuDetails() -> $it") }
         } else {
-            logger.info("querySkuDetails() -> SkuDetails list for $skuList is empty.")
+            logger.warn("querySkuDetails() -> SkuDetails list for $skuList is empty.")
         }
     }
 

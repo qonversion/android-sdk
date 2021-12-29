@@ -285,6 +285,8 @@ internal class GoogleBillingControllerTest {
     inner class BillingClientStateListenerTest {
         private val slotInfoLogMessage = slot<String>()
         private val slotErrorLogMessage = slot<String>()
+        private val slotWarnLogMessage = slot<String>()
+
         private val mockBillingResult = mockk<BillingResult>()
 
         @BeforeEach
@@ -297,6 +299,7 @@ internal class GoogleBillingControllerTest {
             clearMocks(mockLogger) // clear from messages written by billing client setter
             every { mockLogger.info(capture(slotInfoLogMessage)) } just runs
             every { mockLogger.error(capture(slotErrorLogMessage)) } just runs
+            every { mockLogger.warn(capture(slotWarnLogMessage)) } just runs
         }
 
         @Test
@@ -307,8 +310,8 @@ internal class GoogleBillingControllerTest {
             billingController.billingClientStateListener.onBillingServiceDisconnected()
 
             // then
-            verify { mockLogger.info(any()) }
-            assertThat(slotInfoLogMessage.captured)
+            verify { mockLogger.warn(any()) }
+            assertThat(slotWarnLogMessage.captured)
                 .startsWith("billingClientStateListener -> BillingClient disconnected")
         }
 

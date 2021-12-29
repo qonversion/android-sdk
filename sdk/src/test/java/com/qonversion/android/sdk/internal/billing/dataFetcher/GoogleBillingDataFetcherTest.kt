@@ -48,6 +48,7 @@ class GoogleBillingDataFetcherTest {
     private val secondSubsId = "superSubsId2"
     private val slotVerboseLogMessage = slot<String>()
     private val slotInfoLogMessages = mutableListOf<String>()
+    private val slotWarnLogMessage = slot<String>()
 
     @BeforeEach
     fun setUp() {
@@ -57,6 +58,10 @@ class GoogleBillingDataFetcherTest {
 
         every {
             mockLogger.info(capture(slotInfoLogMessages))
+        } just runs
+
+        every {
+            mockLogger.warn(capture(slotWarnLogMessage))
         } just runs
 
         every { mockInAppSkuDetailsFirst.sku } returns firstInAppId
@@ -551,7 +556,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) {
-                mockLogger.info("querySkuDetails() -> SkuDetails list for $skuList is empty.")
+                mockLogger.warn("querySkuDetails() -> SkuDetails list for $skuList is empty.")
             }
         }
 
