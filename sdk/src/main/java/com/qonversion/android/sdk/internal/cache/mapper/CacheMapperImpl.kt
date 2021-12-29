@@ -43,15 +43,17 @@ internal class CacheMapperImpl<T : Any>(
 
         try {
             val timestamp = map[KEY_TIMESTAMP] as Long
-            val nestedObjectMap = map[KEY_OBJECT] as Map<*, *>
-            val nestedObject = try {
-                mapper.fromMap(nestedObjectMap) as T
-            } catch (cause: IllegalStateException) {
-                throw QonversionException(
-                    ErrorCode.Deserialization,
-                    "Mapper had thrown exception",
-                    cause = cause
-                )
+            val nestedObjectMap = map[KEY_OBJECT] as Map<*, *>?
+            val nestedObject = nestedObjectMap?.let {
+                try {
+                    mapper.fromMap(nestedObjectMap)
+                } catch (cause: IllegalStateException) {
+                    throw QonversionException(
+                        ErrorCode.Deserialization,
+                        "Mapper had thrown exception",
+                        cause = cause
+                    )
+                }
             }
 
             return CachedObject(Date(timestamp), nestedObject)
