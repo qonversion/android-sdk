@@ -12,40 +12,32 @@ import java.util.Calendar
 internal class CacherImpl<T : Any>(
     private val cacheMapper: CacheMapper<T>,
     private val storage: LocalStorage,
-    private val storageKey: String,
     private val appLifecycleObserver: AppLifecycleObserver,
     private val backgroundCacheLifetime: CacheLifetime = CacheLifetime.THREE_DAYS,
     private val foregroundCacheLifetime: InternalCacheLifetime = InternalCacheLifetime.FIVE_MIN
 ) : Cacher<T> {
 
-    var shouldLoadFromStorage = true
-    var cachedObject: CachedObject<T>? = null
-        get() {
-            if (shouldLoadFromStorage) {
-                field = load()
-            }
-            return field
-        }
-        set(value) {
-            shouldLoadFromStorage = false
-            field = value
-        }
+    var cachedObjects = CacheHolder { key -> load(key) }
 
-    override fun store(value: T) {
-        cachedObject = CachedObject(Calendar.getInstance().time, value).also {
+    override fun store(key: String, value: T) {
+        cachedObjects[key] = CachedObject(Calendar.getInstance().time, value).also {
             val mappedObject = cacheMapper.toString(it)
-            storage.putString(storageKey, mappedObject)
+            storage.putString(key, mappedObject)
         }
     }
 
-    override fun get() = cachedObject?.value
+    override fun get(key: String) = cachedObjects[key]?.value
 
-    override fun getActual() = if (isActual()) cachedObject?.value else null
+    override fun getActual(key: String) = cachedObjects[key]?.takeIf { isActual(it) }?.value
 
-    override fun isActual(): Boolean {
-        val nonNullCachedObject = cachedObject ?: return false
+    override fun reset(key: String) {
+        TODO("Not yet implemented")
+    }
+
+    @Throws(QonversionException::class)
+    fun isActual(cachedObject: CachedObject<T>): Boolean {
         val currentTime = Calendar.getInstance().time
-        val cachedTime = nonNullCachedObject.date
+        val cachedTime = cachedObject.date
         val ageSec = (currentTime.time - cachedTime.time).msToSec()
         val lifetimeSec = if (appLifecycleObserver.isInBackground()) {
             backgroundCacheLifetime.seconds
@@ -56,8 +48,8 @@ internal class CacherImpl<T : Any>(
     }
 
     @Throws(QonversionException::class)
-    fun load(): CachedObject<T>? {
-        val storedValue = storage.getString(storageKey)
+    fun load(key: String): CachedObject<T>? {
+        val storedValue = storage.getString(key)
         return storedValue?.let { cacheMapper.fromString(storedValue) }
     }
 }

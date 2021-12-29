@@ -6,14 +6,14 @@ import kotlin.jvm.Throws
 internal interface Cacher<T : Any> {
 
     @Throws(QonversionException::class)
-    fun store(value: T)
+    fun store(key: String, value: T)
 
     @Throws(QonversionException::class)
-    fun get(): T?
+    fun get(key: String): T?
 
     @Throws(QonversionException::class)
-    fun getActual(): T?
+    fun getActual(key: String): T?
 
     @Throws(QonversionException::class)
-    fun isActual(): Boolean
+    fun reset(key: String)
 }
