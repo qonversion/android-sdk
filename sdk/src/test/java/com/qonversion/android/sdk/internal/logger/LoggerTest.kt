@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
+import com.qonversion.android.sdk.dto.LogLevel
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.slot
@@ -30,6 +31,19 @@ internal class LoggerTest {
         every {
             mockLoggerConfig.logTag
         } returns tag
+
+        every {
+            Log.println(Log.VERBOSE, capture(capturedTag), capture(capturedMessage))
+        } returns 0
+        every {
+            Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
+        } returns 0
+        every {
+            Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
+        } returns 0
+        every {
+            Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+        } returns 0
     }
 
     @Nested
@@ -41,31 +55,11 @@ internal class LoggerTest {
             } returns LogLevel.Verbose
 
             logger = ConsoleLogger(mockLoggerConfig)
-
-            every {
-                Log.println(Log.VERBOSE, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
-            } returns 0
         }
 
         @Test
         fun `should log verbose`() {
-            // given
-
-            // when
-            logger.verbose(logMessage)
-
-            // then
-            assertThat(capturedMessage.captured).contains(logMessage)
-            assertThat(capturedTag.captured).isEqualTo(tag)
+            testLogVerboseSuccess()
         }
 
         @Test
@@ -93,16 +87,6 @@ internal class LoggerTest {
             } returns LogLevel.Info
 
             logger = ConsoleLogger(mockLoggerConfig)
-
-            every {
-                Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
-            } returns 0
         }
 
         @Test
@@ -135,13 +119,6 @@ internal class LoggerTest {
             } returns LogLevel.Warning
 
             logger = ConsoleLogger(mockLoggerConfig)
-            
-            every {
-                Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
-            } returns 0
-            every {
-                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
-            } returns 0
         }
 
         @Test
@@ -174,10 +151,6 @@ internal class LoggerTest {
             } returns LogLevel.Error
 
             logger = ConsoleLogger(mockLoggerConfig)
-            
-            every {
-                Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
-            } returns 0
         }
 
         @Test
@@ -200,7 +173,6 @@ internal class LoggerTest {
             testLogErrorSuccess()
         }
     }
-
 
     @Nested
     inner class DisabledTest {
@@ -233,7 +205,18 @@ internal class LoggerTest {
             testLogErrorFailure()
         }
     }
-    
+
+    private fun testLogVerboseSuccess() {
+        // given
+
+        // when
+        logger.verbose(logMessage)
+
+        // then
+        assertThat(capturedMessage.captured).contains(logMessage)
+        assertThat(capturedTag.captured).isEqualTo(tag)
+    }
+
     private fun testLogInfoSuccess() {
         // given
 
