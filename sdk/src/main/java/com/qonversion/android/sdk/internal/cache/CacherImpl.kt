@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.cache
 
-import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -13,8 +12,7 @@ internal class CacherImpl<T : Any>(
     private val cacheMapper: CacheMapper<T>,
     private val storage: LocalStorage,
     private val appLifecycleObserver: AppLifecycleObserver,
-    private val backgroundCacheLifetime: CacheLifetime = CacheLifetime.THREE_DAYS,
-    private val foregroundCacheLifetime: InternalCacheLifetime = InternalCacheLifetime.FIVE_MIN
+    private val cacheLifetimeConfig: CacheLifetimeConfig,
 ) : Cacher<T> {
 
     var cachedObjects = CacheHolder { key -> load(key) }
@@ -26,9 +24,9 @@ internal class CacherImpl<T : Any>(
         cachedObjects[key] = cachedObject
     }
 
-    override fun get(key: String) = cachedObjects[key]?.value
+    override fun get(key: String): T? = cachedObjects[key]?.value
 
-    override fun getActual(key: String) = cachedObjects[key]?.takeIf { isActual(it) }?.value
+    override fun getActual(key: String): T? = cachedObjects[key]?.takeIf { isActual(it) }?.value
 
     override fun reset(key: String) {
         storage.remove(key)
@@ -41,9 +39,9 @@ internal class CacherImpl<T : Any>(
         val cachedTime = cachedObject.date
         val ageSec = (currentTime.time - cachedTime.time).msToSec()
         val lifetimeSec = if (appLifecycleObserver.isInBackground()) {
-            backgroundCacheLifetime.seconds
+            cacheLifetimeConfig.backgroundCacheLifetime.seconds
         } else {
-            foregroundCacheLifetime.seconds
+            cacheLifetimeConfig.foregroundCacheLifetime.seconds
         }
         return ageSec <= lifetimeSec
     }

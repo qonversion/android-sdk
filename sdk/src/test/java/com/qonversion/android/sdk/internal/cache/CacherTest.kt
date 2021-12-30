@@ -29,7 +29,7 @@ internal class CacherTest {
     private val mockCacheMapper = mockk<CacheMapper<CacheObjectType>>()
     private val mockLocalStorage = mockk<LocalStorage>()
     private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
-    private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
+    private val mockBackgroundCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockForegroundCacheLifetime = mockk<InternalCacheLifetime>()
 
     private val testCachingKey: String = "test caching key"
@@ -41,8 +41,10 @@ internal class CacherTest {
             mockCacheMapper,
             mockLocalStorage,
             mockAppLifecycleObserver,
-            mockBackgroundCacheLifetime,
-            mockForegroundCacheLifetime
+            CacheLifetimeConfig(
+                mockBackgroundCacheLifetime,
+                mockForegroundCacheLifetime
+            )
         )
     }
 
