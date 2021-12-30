@@ -12,6 +12,7 @@ import io.mockk.called
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
@@ -64,7 +65,9 @@ internal class CacherTest {
         @Test
         fun `store successful`() {
             // given
-            val currentTime = Calendar.getInstance().time
+            val mockDate = mockk<Date>()
+            mockkStatic(Calendar::class)
+            every { Calendar.getInstance().time } returns mockDate
 
             // when
             cacher.store(testCachingKey, testCachingValue)
@@ -75,7 +78,7 @@ internal class CacherTest {
                 mockLocalStorage.putString(testCachingKey, mappedObject)
             }
             assertThat(slotCachedObject.captured.value).isSameAs(testCachingValue)
-            assertThat(slotCachedObject.captured.date.time - currentTime.time).isLessThanOrEqualTo(timeEpsilonMs)
+            assertThat(slotCachedObject.captured.date).isSameAs(mockDate)
             assertThat(cacher.cachedObjects[testCachingKey]).isSameAs(slotCachedObject.captured)
         }
 
