@@ -19,7 +19,7 @@ internal class GoogleBillingConsumerImpl(logger: Logger) : BaseClass(logger), Go
     }
 
     override fun consume(purchaseToken: String) {
-        logger.debug("consume() -> Consuming purchase with token $purchaseToken")
+        logger.verbose("consume() -> Consuming purchase with token $purchaseToken")
 
         val params = ConsumeParams.newBuilder()
             .setPurchaseToken(purchaseToken)
@@ -36,7 +36,7 @@ internal class GoogleBillingConsumerImpl(logger: Logger) : BaseClass(logger), Go
     }
 
     override fun acknowledge(purchaseToken: String) {
-        logger.debug("acknowledge() -> Acknowledging purchase with token $purchaseToken")
+        logger.verbose("acknowledge() -> Acknowledging purchase with token $purchaseToken")
 
         val params = AcknowledgePurchaseParams.newBuilder()
             .setPurchaseToken(purchaseToken)

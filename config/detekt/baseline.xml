@@ -97,6 +97,9 @@
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$30</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$365</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$7</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Error$30</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Info$10</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Warning$20</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>

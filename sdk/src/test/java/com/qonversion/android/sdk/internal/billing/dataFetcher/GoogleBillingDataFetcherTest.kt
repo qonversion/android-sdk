@@ -19,6 +19,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.called
 import java.lang.IllegalStateException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -45,17 +46,22 @@ class GoogleBillingDataFetcherTest {
     private val secondInAppId = "superInAppId2"
     private val firstSubsId = "superSubsId"
     private val secondSubsId = "superSubsId2"
-    private val slotDebugLogMessages = mutableListOf<String>()
-    private val slotReleaseLogMessage = slot<String>()
+    private val slotVerboseLogMessage = slot<String>()
+    private val slotInfoLogMessages = mutableListOf<String>()
+    private val slotWarnLogMessage = slot<String>()
 
     @BeforeEach
     fun setUp() {
         every {
-            mockLogger.debug(capture(slotDebugLogMessages))
+            mockLogger.verbose(capture(slotVerboseLogMessage))
         } just runs
 
         every {
-            mockLogger.release(capture(slotReleaseLogMessage))
+            mockLogger.info(capture(slotInfoLogMessages))
+        } just runs
+
+        every {
+            mockLogger.warn(capture(slotWarnLogMessage))
         } just runs
 
         every { mockInAppSkuDetailsFirst.sku } returns firstInAppId
@@ -165,8 +171,8 @@ class GoogleBillingDataFetcherTest {
             assertThat(slotSkuDetailsParams.last().skuType).isEqualTo(skuType)
             assertThat(slotSkuDetailsParams.last().skusList).isEqualTo(subsIds)
 
-            verify { mockLogger.debug(any()) }
-            assertThat(slotDebugLogMessages[0])
+            verify { mockLogger.verbose(any()) }
+            assertThat(slotVerboseLogMessage.captured)
                 .startsWith("querySkuDetails() -> Querying skuDetails")
                 .contains(skuType, subsIds.joinToString())
         }
@@ -229,9 +235,9 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) {
-                mockLogger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
-                mockLogger.debug("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.SUBS}")
-                mockLogger.debug("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.INAPP}")
+                mockLogger.verbose("queryPurchases() -> Querying purchases from cache for subs and inapp")
+                mockLogger.verbose("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.SUBS}")
+                mockLogger.verbose("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.INAPP}")
                 mockBillingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS, any())
                 mockBillingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP, any())
             }
@@ -279,9 +285,9 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) {
-                mockLogger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
-                mockLogger.debug("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.SUBS}")
-                mockLogger.debug("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.INAPP}")
+                mockLogger.verbose("queryPurchases() -> Querying purchases from cache for subs and inapp")
+                mockLogger.verbose("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.SUBS}")
+                mockLogger.verbose("fetchPurchases() -> Querying purchases for type ${BillingClient.SkuType.INAPP}")
                 mockBillingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS, any())
                 mockBillingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP, any())
             }
@@ -450,7 +456,7 @@ class GoogleBillingDataFetcherTest {
             // then
             assertThat(result.first === mockSubsBillingResult)
             assertThat(result.second === expectedResult)
-            verify(exactly = 1) { mockLogger.debug("queryPurchasesHistory() -> Querying purchase history for type $skuType") }
+            verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }
         }
     }
 
@@ -466,7 +472,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             assertThat(result).isEmpty()
-            verify(exactly = 0) { mockLogger.debug(any()) }
+            verify{ mockLogger wasNot called }
         }
 
         @Test
@@ -478,7 +484,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             assertThat(result).isEmpty()
-            verify(exactly = 0) { mockLogger.debug(any()) }
+            verify{ mockLogger wasNot called }
         }
 
         @Test
@@ -490,7 +496,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             assertThat(result).isEmpty()
-            verify(exactly = 0) { mockLogger.debug(any()) }
+            verify{ mockLogger wasNot called }
         }
 
         @Test
@@ -502,7 +508,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             assertThat(result).isEmpty()
-            verify(exactly = 0) { mockLogger.debug(any()) }
+            verify{ mockLogger wasNot called }
         }
 
         @Test
@@ -525,12 +531,12 @@ class GoogleBillingDataFetcherTest {
             val result = dataFetcher.getHistoryFromRecords(skuType, historyRecords)
 
             // then
-            verify(exactly = historyRecords.size) { mockLogger.debug(any()) }
-            slotDebugLogMessages.forEach {
+            verify(exactly = historyRecords.size) { mockLogger.info(any()) }
+            slotInfoLogMessages.forEach {
                 assertThat(it).startsWith("queryAllPurchasesHistory() -> purchase history")
             }
-            assertThat(slotDebugLogMessages[0]).contains(mockFirstHistoryRecord.getDescription())
-            assertThat(slotDebugLogMessages[1]).contains(mockSecondHistoryRecord.getDescription())
+            assertThat(slotInfoLogMessages[0]).contains(mockFirstHistoryRecord.getDescription())
+            assertThat(slotInfoLogMessages[1]).contains(mockSecondHistoryRecord.getDescription())
 
             assertThat(result.map { it.historyRecord }).isEqualTo(historyRecords)
             result.forEach { assertThat(it.type).isEqualTo(skuType) }
@@ -550,7 +556,7 @@ class GoogleBillingDataFetcherTest {
 
             // then
             verify(exactly = 1) {
-                mockLogger.release("querySkuDetails() -> SkuDetails list for $skuList is empty.")
+                mockLogger.warn("querySkuDetails() -> SkuDetails list for $skuList is empty.")
             }
         }
 
@@ -566,7 +572,7 @@ class GoogleBillingDataFetcherTest {
             // then
             skuDetails.forEach {
                 verify(exactly = 1) {
-                    mockLogger.debug("querySkuDetails() -> $it")
+                    mockLogger.info("querySkuDetails() -> $it")
                 }
             }
         }

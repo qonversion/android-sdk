@@ -34,7 +34,7 @@ internal class GoogleBillingConsumerTest {
         googleBillingConsumer.setup(billingClient)
 
         every {
-            logger.debug(any())
+            logger.verbose(any())
         } just runs
         every {
             billingClient.consumeAsync(any(), capture(consumeCallback))

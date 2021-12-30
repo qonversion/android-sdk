@@ -1,26 +1,34 @@
 package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
+import com.qonversion.android.sdk.dto.LogLevel
 
-private const val TAG = "Qonversion"
+internal class ConsoleLogger(config: LoggerConfig) : Logger {
+    private val logLevel = config.logLevel.level
+    private val tag = config.logTag
 
-internal class ConsoleLogger(private val isDebug: Boolean) : Logger {
-    override fun release(message: String) {
-        log(TAG, message)
-    }
-
-    override fun debug(message: String) {
-        debug(TAG, message)
-    }
-
-    override fun debug(tag: String, message: String) {
-        if (isDebug) {
-            log(tag, message)
+    override fun verbose(message: String) {
+        if (logLevel == LogLevel.Verbose.level) {
+            Log.println(Log.VERBOSE, tag, format(message))
         }
     }
 
-    private fun log(tag: String, message: String) {
-        Log.println(Log.DEBUG, tag, format(message))
+    override fun info(message: String) {
+        if (logLevel <= LogLevel.Info.level) {
+            Log.println(Log.INFO, tag, format(message))
+        }
+    }
+
+    override fun warn(message: String) {
+        if (logLevel <= LogLevel.Warning.level) {
+            Log.println(Log.WARN, tag, format(message))
+        }
+    }
+
+    override fun error(message: String) {
+        if (logLevel <= LogLevel.Error.level) {
+            Log.println(Log.ERROR, tag, format(message))
+        }
     }
 
     private fun format(message: String): String {
