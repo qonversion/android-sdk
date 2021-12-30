@@ -21,7 +21,7 @@ internal class CacherImpl<T : Any>(
 
     override fun store(key: String, value: T) {
         val cachedObject = CachedObject(Calendar.getInstance().time, value)
-        val mappedObject = cacheMapper.toString(cachedObject)
+        val mappedObject = cacheMapper.toSerializedString(cachedObject)
         storage.putString(key, mappedObject)
         cachedObjects[key] = cachedObject
     }
@@ -51,6 +51,6 @@ internal class CacherImpl<T : Any>(
     @Throws(QonversionException::class)
     fun load(key: String): CachedObject<T>? {
         val storedValue = storage.getString(key)
-        return storedValue?.let { cacheMapper.fromString(storedValue) }
+        return storedValue?.let { cacheMapper.fromSerializedString(storedValue) }
     }
 }

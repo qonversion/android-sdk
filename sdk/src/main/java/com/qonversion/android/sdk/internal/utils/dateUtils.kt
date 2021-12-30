@@ -1,7 +1,8 @@
 package com.qonversion.android.sdk.internal.utils
 
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 internal const val DAYS_IN_MONTH = 30L
 internal const val DAYS_IN_WEEK = 7L

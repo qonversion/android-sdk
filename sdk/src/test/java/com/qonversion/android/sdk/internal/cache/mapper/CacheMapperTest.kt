@@ -32,7 +32,7 @@ internal class CacheMapperTest {
     }
 
     @Nested
-    inner class ToStringTest {
+    inner class ToSerializedStringTest {
 
         private val nestedObject: NestedObjectType = ""
 
@@ -55,7 +55,7 @@ internal class CacheMapperTest {
             )
 
             // when
-            val result = cacheMapper.toString(cachedObject)
+            val result = cacheMapper.toSerializedString(cachedObject)
 
             // then
             assertThat(result).isEqualTo(expectedResult)
@@ -82,7 +82,7 @@ internal class CacheMapperTest {
             )
 
             // when
-            val result = cacheMapper.toString(cachedObject)
+            val result = cacheMapper.toSerializedString(cachedObject)
 
             // then
             assertThat(result).isEqualTo(expectedResult)
@@ -101,7 +101,7 @@ internal class CacheMapperTest {
 
             // when
             assertThatQonversionExceptionThrown(ErrorCode.Serialization) {
-                cacheMapper.toString(cachedObject)
+                cacheMapper.toSerializedString(cachedObject)
             }
 
             // then
@@ -129,7 +129,7 @@ internal class CacheMapperTest {
 
             // when
             val e = assertThatQonversionExceptionThrown {
-                cacheMapper.toString(cachedObject)
+                cacheMapper.toSerializedString(cachedObject)
             }
 
             // then
@@ -143,7 +143,7 @@ internal class CacheMapperTest {
     }
 
     @Nested
-    inner class FromStringTest {
+    inner class FromSerializedStringTest {
 
         private val deserializingValue = "deserializing value"
         private val nestedObject: NestedObjectType = "nested object"
@@ -159,7 +159,7 @@ internal class CacheMapperTest {
             every { mockMapper.fromMap(nestedObjectMap) } returns nestedObject
 
             // when
-            val result = cacheMapper.fromString(deserializingValue)
+            val result = cacheMapper.fromSerializedString(deserializingValue)
 
             // then
             assertThat(result.value === nestedObject)
@@ -182,7 +182,7 @@ internal class CacheMapperTest {
                 every { mockSerializer.deserialize(deserializingValue) } returns deserializedMap
 
                 // when
-                val result = cacheMapper.fromString(deserializingValue)
+                val result = cacheMapper.fromSerializedString(deserializingValue)
 
                 // then
                 assertThat(result.value).isNull()
@@ -200,7 +200,7 @@ internal class CacheMapperTest {
 
             // when
             val e = assertThatQonversionExceptionThrown {
-                cacheMapper.fromString(deserializingValue)
+                cacheMapper.fromSerializedString(deserializingValue)
             }
 
             // then
@@ -216,7 +216,7 @@ internal class CacheMapperTest {
 
             // when
             assertThatQonversionExceptionThrown(ErrorCode.Deserialization) {
-                cacheMapper.fromString(deserializingValue)
+                cacheMapper.fromSerializedString(deserializingValue)
             }
 
             // then
@@ -235,7 +235,7 @@ internal class CacheMapperTest {
 
             // when
             val e = assertThatQonversionExceptionThrown(ErrorCode.Deserialization) {
-                cacheMapper.fromString(deserializingValue)
+                cacheMapper.fromSerializedString(deserializingValue)
             }
 
             // then
@@ -252,7 +252,7 @@ internal class CacheMapperTest {
 
             // when
             val e = assertThatQonversionExceptionThrown(ErrorCode.Deserialization) {
-                cacheMapper.fromString(deserializingValue)
+                cacheMapper.fromSerializedString(deserializingValue)
             }
 
             // then
@@ -273,7 +273,7 @@ internal class CacheMapperTest {
 
             // when
             val e = assertThatQonversionExceptionThrown(ErrorCode.Deserialization) {
-                cacheMapper.fromString(deserializingValue)
+                cacheMapper.fromSerializedString(deserializingValue)
             }
 
             // then

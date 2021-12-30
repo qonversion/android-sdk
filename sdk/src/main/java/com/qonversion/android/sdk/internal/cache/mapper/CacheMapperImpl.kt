@@ -6,8 +6,7 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import java.lang.ClassCastException
-import java.lang.Exception
-import java.util.*
+import java.util.Date
 
 private const val KEY_TIMESTAMP = "timestamp"
 private const val KEY_OBJECT = "object"
@@ -17,7 +16,7 @@ internal class CacheMapperImpl<T : Any>(
     private val mapper: Mapper<T>
 ) : CacheMapper<T> {
 
-    override fun toString(cachedObject: CachedObject<T>): String {
+    override fun toSerializedString(cachedObject: CachedObject<T>): String {
         val nestedObjectMap = try {
             cachedObject.value?.let {
                 mapper.toMap(it)
@@ -34,7 +33,7 @@ internal class CacheMapperImpl<T : Any>(
         return serializer.serialize(map)
     }
 
-    override fun fromString(value: String): CachedObject<T> {
+    override fun fromSerializedString(value: String): CachedObject<T> {
         val map = try {
             serializer.deserialize(value) as Map<*, *>
         } catch (cause: ClassCastException) {

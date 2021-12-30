@@ -55,7 +55,7 @@ internal class CacherTest {
 
         @BeforeEach
         fun setUp() {
-            every { mockCacheMapper.toString(capture(slotCachedObject)) } returns mappedObject
+            every { mockCacheMapper.toSerializedString(capture(slotCachedObject)) } returns mappedObject
             every { mockLocalStorage.putString(any(), mappedObject) } just runs
         }
 
@@ -69,7 +69,7 @@ internal class CacherTest {
 
             // then
             verify(exactly = 1) {
-                mockCacheMapper.toString(any())
+                mockCacheMapper.toSerializedString(any())
                 mockLocalStorage.putString(testCachingKey, mappedObject)
             }
             assertThat(slotCachedObject.captured.value).isSameAs(testCachingValue)
@@ -81,7 +81,7 @@ internal class CacherTest {
         fun `mapper throws exception`() {
             // given
             val exception = QonversionException(ErrorCode.Serialization)
-            every { mockCacheMapper.toString(any()) } throws exception
+            every { mockCacheMapper.toSerializedString(any()) } throws exception
 
             // when
             val e = assertThatQonversionExceptionThrown {
@@ -90,7 +90,7 @@ internal class CacherTest {
 
             // then
             assertThat(e).isSameAs(exception)
-            verify(exactly = 1) { mockCacheMapper.toString(any()) }
+            verify(exactly = 1) { mockCacheMapper.toSerializedString(any()) }
             verify(exactly = 0) { mockLocalStorage.putString(testCachingKey, mappedObject) }
             assertThat(cacher.cachedObjects.containsKey(testCachingKey)).isFalse
         }
@@ -106,7 +106,7 @@ internal class CacherTest {
         fun `load successful`() {
             // given
             every { mockLocalStorage.getString(testCachingKey) } returns testStoredValue
-            every { mockCacheMapper.fromString(testStoredValue) } returns mockCachedObject
+            every { mockCacheMapper.fromSerializedString(testStoredValue) } returns mockCachedObject
 
             // when
             val result = cacher.load(testCachingKey)
@@ -115,7 +115,7 @@ internal class CacherTest {
             assertThat(result).isSameAs(mockCachedObject)
             verify(exactly = 1) {
                 mockLocalStorage.getString(testCachingKey)
-                mockCacheMapper.fromString(testStoredValue)
+                mockCacheMapper.fromSerializedString(testStoredValue)
             }
         }
 
@@ -130,7 +130,7 @@ internal class CacherTest {
             // then
             assertThat(result).isNull()
             verify(exactly = 1) { mockLocalStorage.getString(testCachingKey) }
-            verify(exactly = 0) { mockCacheMapper.fromString(any()) }
+            verify(exactly = 0) { mockCacheMapper.fromSerializedString(any()) }
         }
     }
 

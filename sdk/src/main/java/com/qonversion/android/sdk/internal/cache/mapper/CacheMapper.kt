@@ -7,8 +7,8 @@ import kotlin.jvm.Throws
 internal interface CacheMapper<T : Any> {
 
     @Throws(QonversionException::class)
-    fun toString(cachedObject: CachedObject<T>): String
+    fun toSerializedString(cachedObject: CachedObject<T>): String
 
     @Throws(QonversionException::class)
-    fun fromString(value: String): CachedObject<T>
+    fun fromSerializedString(value: String): CachedObject<T>
 }

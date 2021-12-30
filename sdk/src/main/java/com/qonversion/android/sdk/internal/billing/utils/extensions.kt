@@ -5,9 +5,6 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.internal.utils.toTimeString
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
