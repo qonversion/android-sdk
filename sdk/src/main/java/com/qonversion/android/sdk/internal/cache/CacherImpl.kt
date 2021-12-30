@@ -15,7 +15,7 @@ internal class CacherImpl<T : Any>(
     private val cacheLifetimeConfig: CacheLifetimeConfig,
 ) : Cacher<T> {
 
-    var cachedObjects = CacheHolder { key -> load(key) }
+    var cachedObjects: CacheHolder<CachedObject<T>?> = CacheHolder { key -> load(key) }
 
     override fun store(key: String, value: T) {
         val cachedObject = CachedObject(Calendar.getInstance().time, value)
