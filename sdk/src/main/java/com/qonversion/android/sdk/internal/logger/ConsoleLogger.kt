@@ -9,38 +9,25 @@ internal class ConsoleLogger(config: LoggerConfig) : Logger {
 
     override fun verbose(message: String) {
         if (logLevel == LogLevel.Verbose.level) {
-            log(LogLevel.Verbose, message)
+            Log.println(Log.VERBOSE, tag, format(message))
         }
     }
 
     override fun info(message: String) {
         if (logLevel <= LogLevel.Info.level) {
-            log(LogLevel.Info, message)
+            Log.println(Log.INFO, tag, format(message))
         }
     }
 
     override fun warn(message: String) {
         if (logLevel <= LogLevel.Warning.level) {
-            log(LogLevel.Warning, message)
+            Log.println(Log.WARN, tag, format(message))
         }
     }
 
     override fun error(message: String) {
         if (logLevel <= LogLevel.Error.level) {
-            log(LogLevel.Error, message)
-        }
-    }
-
-    private fun log(level: LogLevel, message: String) {
-        val androidLogLevel = when (level) {
-            LogLevel.Verbose -> Log.VERBOSE
-            LogLevel.Info -> Log.INFO
-            LogLevel.Warning -> Log.WARN
-            LogLevel.Error -> Log.ERROR
-            else -> null
-        }
-        if (androidLogLevel != null) {
-            Log.println(androidLogLevel, tag, format(message))
+            Log.println(Log.ERROR, tag, format(message))
         }
     }
 
