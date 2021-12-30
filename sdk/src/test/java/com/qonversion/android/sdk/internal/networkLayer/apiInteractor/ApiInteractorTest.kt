@@ -97,7 +97,7 @@ internal class ApiInteractorTest {
         // then
         assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(1)
-        assertThat(retryConfig.delay >= retryPolicy.minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(retryPolicy.minDelay)
     }
 
     @Test
@@ -112,7 +112,7 @@ internal class ApiInteractorTest {
         // then
         assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(attemptIndex + 1)
-        assertThat(retryConfig.delay >= retryPolicy.minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(retryPolicy.minDelay)
     }
 
     @Test
@@ -126,7 +126,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isTrue
-        assertThat(retryConfig.delay >= minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(minDelay)
     }
 
     @Test
@@ -154,7 +154,7 @@ internal class ApiInteractorTest {
         // then
         assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(1)
-        assertThat(retryConfig.delay >= retryPolicy.minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(retryPolicy.minDelay)
     }
 
     @Test
@@ -169,7 +169,7 @@ internal class ApiInteractorTest {
         // then
         assertThat(retryConfig.shouldRetry).isTrue
         assertThat(retryConfig.attemptIndex).isEqualTo(attemptIndex + 1)
-        assertThat(retryConfig.delay >= retryPolicy.minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(retryPolicy.minDelay)
     }
 
     @Test
@@ -197,7 +197,7 @@ internal class ApiInteractorTest {
 
         // then
         assertThat(retryConfig.shouldRetry).isTrue
-        assertThat(retryConfig.delay >= minDelay)
+        assertThat(retryConfig.delay).isGreaterThanOrEqualTo(minDelay)
     }
 
     @Test

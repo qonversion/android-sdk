@@ -20,10 +20,10 @@ internal class CacherImpl<T : Any>(
     var cachedObjects = CacheHolder { key -> load(key) }
 
     override fun store(key: String, value: T) {
-        cachedObjects[key] = CachedObject(Calendar.getInstance().time, value).also {
-            val mappedObject = cacheMapper.toString(it)
-            storage.putString(key, mappedObject)
-        }
+        val cachedObject = CachedObject(Calendar.getInstance().time, value)
+        val mappedObject = cacheMapper.toString(cachedObject)
+        storage.putString(key, mappedObject)
+        cachedObjects[key] = cachedObject
     }
 
     override fun get(key: String) = cachedObjects[key]?.value
@@ -31,7 +31,8 @@ internal class CacherImpl<T : Any>(
     override fun getActual(key: String) = cachedObjects[key]?.takeIf { isActual(it) }?.value
 
     override fun reset(key: String) {
-        TODO("Not yet implemented")
+        storage.remove(key)
+        cachedObjects.remove(key)
     }
 
     @Throws(QonversionException::class)

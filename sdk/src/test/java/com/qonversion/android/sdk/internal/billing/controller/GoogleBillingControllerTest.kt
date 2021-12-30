@@ -172,7 +172,7 @@ internal class GoogleBillingControllerTest {
             verify(exactly = 1) {
                 mockBillingClient.startConnection(billingController.billingClientStateListener)
             }
-            assertThat(currentDeferred === connectionDeferred)
+            assertThat(currentDeferred).isSameAs(connectionDeferred)
         }
 
         @Test
@@ -276,7 +276,7 @@ internal class GoogleBillingControllerTest {
             }
 
             // then
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -352,7 +352,7 @@ internal class GoogleBillingControllerTest {
                 mockLogger.debug(any())
                 mockLogger.release(any())
             }
-            assertThat(billingController.connectionDeferred === deferred)
+            assertThat(billingController.connectionDeferred).isSameAs(deferred)
         }
 
         @Test
@@ -383,7 +383,7 @@ internal class GoogleBillingControllerTest {
                 assertThat(slotReleaseLogMessage.captured)
                     .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
                 assertThat(slotReleaseLogMessage.captured).contains(responseCode.getDescription())
-                assertThat(billingController.connectionDeferred === deferred)
+                assertThat(billingController.connectionDeferred).isSameAs(deferred)
             }
         }
 
@@ -517,7 +517,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
-            assertThat(result === mockPurchasesHistory)
+            assertThat(result).isSameAs(mockPurchasesHistory)
         }
 
         @Test
@@ -558,7 +558,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -579,7 +579,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
-            assertThat(result === mockPurchases)
+            assertThat(result).isSameAs(mockPurchases)
         }
 
         @Test
@@ -620,7 +620,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -642,7 +642,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(ids) }
-            assertThat(result === mockSkuDetails)
+            assertThat(result).isSameAs(mockSkuDetails)
         }
 
         @Test
@@ -696,7 +696,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -731,7 +731,7 @@ internal class GoogleBillingControllerTest {
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
             assertThat(slotIds.captured).isEqualTo(setOf(purchase1Sku, purchase2Sku))
-            assertThat(result === mockSkuDetails)
+            assertThat(result).isSameAs(mockSkuDetails)
         }
 
         @Test
