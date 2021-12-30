@@ -29,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.called
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.TimeoutCancellationException
@@ -282,8 +283,10 @@ internal class GoogleBillingControllerTest {
 
     @Nested
     inner class BillingClientStateListenerTest {
-        private val slotDebugLogMessage = slot<String>()
-        private val slotReleaseLogMessage = slot<String>()
+        private val slotInfoLogMessage = slot<String>()
+        private val slotErrorLogMessage = slot<String>()
+        private val slotWarnLogMessage = slot<String>()
+
         private val mockBillingResult = mockk<BillingResult>()
 
         @BeforeEach
@@ -294,8 +297,9 @@ internal class GoogleBillingControllerTest {
             billingController.billingClient = mockBillingClient
 
             clearMocks(mockLogger) // clear from messages written by billing client setter
-            every { mockLogger.debug(capture(slotDebugLogMessage)) } just runs
-            every { mockLogger.release(capture(slotReleaseLogMessage)) } just runs
+            every { mockLogger.info(capture(slotInfoLogMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorLogMessage)) } just runs
+            every { mockLogger.warn(capture(slotWarnLogMessage)) } just runs
         }
 
         @Test
@@ -306,8 +310,8 @@ internal class GoogleBillingControllerTest {
             billingController.billingClientStateListener.onBillingServiceDisconnected()
 
             // then
-            verify { mockLogger.debug(any()) }
-            assertThat(slotDebugLogMessage.captured)
+            verify { mockLogger.warn(any()) }
+            assertThat(slotWarnLogMessage.captured)
                 .startsWith("billingClientStateListener -> BillingClient disconnected")
         }
 
@@ -321,8 +325,8 @@ internal class GoogleBillingControllerTest {
             billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
 
             // then
-            verify { mockLogger.debug(any()) }
-            assertThat(slotDebugLogMessage.captured)
+            verify { mockLogger.info(any()) }
+            assertThat(slotInfoLogMessage.captured)
                 .startsWith("billingClientStateListener -> BillingClient successfully connected")
             assertThat(billingController.connectionDeferred).isNull()
         }
@@ -348,9 +352,8 @@ internal class GoogleBillingControllerTest {
             billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
 
             // then
-            verify(exactly = 0) {
-                mockLogger.debug(any())
-                mockLogger.release(any())
+            verify {
+                mockLogger wasNot called
             }
             assertThat(billingController.connectionDeferred).isSameAs(deferred)
         }
@@ -379,10 +382,10 @@ internal class GoogleBillingControllerTest {
                 )
 
                 // then
-                verify(exactly = index + 1) { mockLogger.release(any()) }
-                assertThat(slotReleaseLogMessage.captured)
+                verify(exactly = index + 1) { mockLogger.error(any()) }
+                assertThat(slotErrorLogMessage.captured)
                     .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
-                assertThat(slotReleaseLogMessage.captured).contains(responseCode.getDescription())
+                assertThat(slotErrorLogMessage.captured).contains(responseCode.getDescription())
                 assertThat(billingController.connectionDeferred).isSameAs(deferred)
             }
         }
@@ -401,10 +404,10 @@ internal class GoogleBillingControllerTest {
             billingController.billingClientStateListener.onBillingSetupFinished(mockBillingResult)
 
             // then
-            verify { mockLogger.release(any()) }
-            assertThat(slotReleaseLogMessage.captured)
+            verify { mockLogger.error(any()) }
+            assertThat(slotErrorLogMessage.captured)
                 .startsWith("billingClientStateListener -> BillingClient connection failed with error")
-            assertThat(slotReleaseLogMessage.captured).contains(responseCode.getDescription())
+            assertThat(slotErrorLogMessage.captured).contains(responseCode.getDescription())
 
             assertThat(billingController.connectionDeferred).isNull()
             verify(exactly = 1) { deferred.complete(any()) }
@@ -421,8 +424,8 @@ internal class GoogleBillingControllerTest {
         private val purchase1Sku = "purchase 1 sku"
         private val purchase2Sku = "purchase 2 sku"
         private val slotBillingError = slot<BillingError>()
-        private val slotDebugLogMessage = slot<String>()
-        private val slotReleaseLogMessages = mutableListOf<String>()
+        private val slotInfoLogMessage = slot<String>()
+        private val slotErrorLogMessages = slot<String>()
 
         @BeforeEach
         fun setUp() {
@@ -431,8 +434,8 @@ internal class GoogleBillingControllerTest {
             } just runs
             every { mockPurchasesListener.onPurchasesCompleted(any()) } just runs
 
-            every { mockLogger.debug(capture(slotDebugLogMessage)) } just runs
-            every { mockLogger.release(capture(slotReleaseLogMessages)) } just runs
+            every { mockLogger.info(capture(slotInfoLogMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorLogMessages)) } just runs
 
             every { mockPurchase1.skus } returns arrayListOf(purchase1Sku)
             every { mockPurchase2.skus } returns arrayListOf(purchase2Sku)
@@ -449,8 +452,8 @@ internal class GoogleBillingControllerTest {
 
             // then
             verify(exactly = 1) { mockPurchasesListener.onPurchasesCompleted(purchases) }
-            verify { mockLogger.debug(any()) }
-            assertThat(slotDebugLogMessage.captured).startsWith("onPurchasesUpdated() -> purchases updated.")
+            verify { mockLogger.info(any()) }
+            assertThat(slotInfoLogMessage.captured).startsWith("onPurchasesUpdated() -> purchases updated.")
         }
 
         @Test
@@ -469,8 +472,8 @@ internal class GoogleBillingControllerTest {
             assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(responseCode)
             assertThat(slotBillingError.captured.message).isEqualTo(expectedErrorMessage)
 
-            verify(exactly = 1) { mockLogger.release(any()) }
-            assertThat(slotReleaseLogMessages[0])
+            verify(exactly = 1) { mockLogger.error(any()) }
+            assertThat(slotErrorLogMessages.captured)
                 .startsWith("onPurchasesUpdated() -> failed to update purchases")
                 .contains(expectedErrorMessage)
         }
@@ -490,11 +493,12 @@ internal class GoogleBillingControllerTest {
             assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(errorCode)
             assertThat(slotBillingError.captured.message).contains("ITEM_ALREADY_OWNED")
 
-            verify(exactly = 2) { mockLogger.release(any()) } // once for error and once for purchases
-            assertThat(slotReleaseLogMessages[0])
+            verify(exactly = 1) { mockLogger.error(any()) } // once for error
+            verify(exactly = 1) { mockLogger.info(any()) } // and once for purchases
+            assertThat(slotErrorLogMessages.captured)
                 .startsWith("onPurchasesUpdated() -> failed to update purchases")
                 .contains("ITEM_ALREADY_OWNED")
-            assertThat(slotReleaseLogMessages[1])
+            assertThat(slotInfoLogMessage.captured)
                 .startsWith("Purchases:")
                 .contains(purchase1Sku, purchase2Sku)
         }
@@ -796,8 +800,8 @@ internal class GoogleBillingControllerTest {
             every { mockBillingClient.isReady } returns true
             billingController.billingClient = mockBillingClient
 
-            val slotReleaseMessage = slot<String>()
-            every { mockLogger.release(capture(slotReleaseMessage)) } just runs
+            val slotErrorMessage = slot<String>()
+            every { mockLogger.error(capture(slotErrorMessage)) } just runs
 
             // when
             assertDoesNotThrow {
@@ -808,8 +812,8 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
-            verify(exactly = 1) { mockLogger.release(any()) }
-            assertThat(slotReleaseMessage.captured)
+            verify(exactly = 1) { mockLogger.error(any()) }
+            assertThat(slotErrorMessage.captured)
                 .startsWith("Failed to consume purchase")
                 .contains(consumingToken)
         }
@@ -864,8 +868,8 @@ internal class GoogleBillingControllerTest {
             every { mockBillingClient.isReady } returns true
             billingController.billingClient = mockBillingClient
 
-            val slotReleaseMessage = slot<String>()
-            every { mockLogger.release(capture(slotReleaseMessage)) } just runs
+            val slotErrorMessage = slot<String>()
+            every { mockLogger.error(capture(slotErrorMessage)) } just runs
 
             // when
             assertDoesNotThrow {
@@ -876,8 +880,8 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
-            verify(exactly = 1) { mockLogger.release(any()) }
-            assertThat(slotReleaseMessage.captured)
+            verify(exactly = 1) { mockLogger.error(any()) }
+            assertThat(slotErrorMessage.captured)
                 .startsWith("Failed to acknowledge purchase")
                 .contains(acknowledgingToken)
         }
