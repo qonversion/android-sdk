@@ -1,26 +1,30 @@
 package com.qonversion.android.sdk.internal.cache
 
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.utils.MS_IN_SEC
 import io.mockk.called
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.*
+import org.junit.jupiter.api.assertDoesNotThrow
+import java.util.Calendar
+import java.util.Date
 
 private typealias CacheObjectType = String
 
@@ -32,6 +36,7 @@ internal class CacherTest {
     private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
     private val mockBackgroundCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockForegroundCacheLifetime = mockk<InternalCacheLifetime>()
+    private val mockLogger = mockk<Logger>()
 
     private val testCachingKey: String = "test caching key"
     private val testCachingValue: CacheObjectType = "test caching value"
@@ -45,7 +50,8 @@ internal class CacherTest {
             CacheLifetimeConfig(
                 mockBackgroundCacheLifetime,
                 mockForegroundCacheLifetime
-            )
+            ),
+            mockLogger
         )
     }
 
@@ -54,7 +60,6 @@ internal class CacherTest {
 
         private val slotCachedObject = slot<CachedObject<CacheObjectType>>()
         private val mappedObject = "mapped object"
-        private val timeEpsilonMs = 100L
 
         @BeforeEach
         fun setUp() {
@@ -80,6 +85,10 @@ internal class CacherTest {
             assertThat(slotCachedObject.captured.value).isSameAs(testCachingValue)
             assertThat(slotCachedObject.captured.date).isSameAs(mockDate)
             assertThat(cacher.cachedObjects[testCachingKey]).isSameAs(slotCachedObject.captured)
+
+            clearMocks(Calendar.getInstance().time)
+
+            unmockkStatic(Calendar::class)
         }
 
         @Test
@@ -136,6 +145,28 @@ internal class CacherTest {
             assertThat(result).isNull()
             verify(exactly = 1) { mockLocalStorage.getString(testCachingKey) }
             verify(exactly = 0) { mockCacheMapper.fromSerializedString(any()) }
+        }
+
+        @Test
+        fun `mapper throws exception`() {
+            // given
+            val exception = QonversionException(ErrorCode.Deserialization)
+            every { mockLogger.error(any(), exception) } just runs
+
+            every { mockLocalStorage.getString(testCachingKey) } returns testStoredValue
+            every { mockCacheMapper.fromSerializedString(testStoredValue) } throws exception
+
+            // when
+            val result = assertDoesNotThrow {
+                cacher.load(testCachingKey)
+            }
+
+            // then
+            assertThat(result).isNull()
+            verify(exactly = 1) {
+                mockLocalStorage.getString(testCachingKey)
+                mockCacheMapper.fromSerializedString(testStoredValue)
+            }
         }
     }
 

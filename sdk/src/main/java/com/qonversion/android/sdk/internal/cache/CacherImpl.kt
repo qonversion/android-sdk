@@ -4,7 +4,9 @@ import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
+import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.utils.msToSec
+import com.qonversion.android.sdk.internal.logger.Logger
 import kotlin.jvm.Throws
 import java.util.Calendar
 
@@ -13,7 +15,8 @@ internal class CacherImpl<T : Any>(
     private val storage: LocalStorage,
     private val appLifecycleObserver: AppLifecycleObserver,
     private val cacheLifetimeConfig: CacheLifetimeConfig,
-) : Cacher<T> {
+    logger: Logger
+) : Cacher<T>, BaseClass(logger) {
 
     var cachedObjects: CacheHolder<CachedObject<T>?> = CacheHolder { key -> load(key) }
 
@@ -33,7 +36,6 @@ internal class CacherImpl<T : Any>(
         cachedObjects.remove(key)
     }
 
-    @Throws(QonversionException::class)
     fun isActual(cachedObject: CachedObject<T>): Boolean {
         val currentTime = Calendar.getInstance().time
         val cachedTime = cachedObject.date
@@ -49,6 +51,13 @@ internal class CacherImpl<T : Any>(
     @Throws(QonversionException::class)
     fun load(key: String): CachedObject<T>? {
         val storedValue = storage.getString(key)
-        return storedValue?.let { cacheMapper.fromSerializedString(storedValue) }
+        return storedValue?.let {
+            try {
+                cacheMapper.fromSerializedString(storedValue)
+            } catch (exception: QonversionException) {
+                logger.error("Failed to deserialized stored value $storedValue.", exception)
+                null
+            }
+        }
     }
 }

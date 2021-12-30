@@ -13,10 +13,12 @@ import io.mockk.mockkStatic
 import io.mockk.every
 import io.mockk.verify
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -49,6 +51,11 @@ internal class GoogleBillingPurchaserTest {
 
         // Changing main dispatcher for test purposes
         Dispatchers.setMain(Dispatchers.Unconfined)
+    }
+
+    @After
+    fun afterAll() {
+        unmockkStatic(TextUtils::class)
     }
 
     @Test

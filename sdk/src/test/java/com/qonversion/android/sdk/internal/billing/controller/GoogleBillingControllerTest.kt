@@ -801,7 +801,7 @@ internal class GoogleBillingControllerTest {
             billingController.billingClient = mockBillingClient
 
             val slotErrorMessage = slot<String>()
-            every { mockLogger.error(capture(slotErrorMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorMessage), exception) } just runs
 
             // when
             assertDoesNotThrow {
@@ -812,9 +812,9 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
-            verify(exactly = 1) { mockLogger.error(any()) }
+            verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .startsWith("Failed to consume purchase")
+                .contains("Failed to consume purchase")
                 .contains(consumingToken)
         }
 
@@ -869,7 +869,7 @@ internal class GoogleBillingControllerTest {
             billingController.billingClient = mockBillingClient
 
             val slotErrorMessage = slot<String>()
-            every { mockLogger.error(capture(slotErrorMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorMessage), exception) } just runs
 
             // when
             assertDoesNotThrow {
@@ -880,9 +880,9 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
-            verify(exactly = 1) { mockLogger.error(any()) }
+            verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .startsWith("Failed to acknowledge purchase")
+                .contains("Failed to acknowledge purchase")
                 .contains(acknowledgingToken)
         }
 

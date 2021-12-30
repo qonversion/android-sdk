@@ -8,5 +8,5 @@ internal interface Logger {
 
     fun warn(message: String)
 
-    fun error(message: String)
+    fun error(message: String, throwable: Throwable? = null)
 }
