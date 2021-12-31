@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -239,16 +240,16 @@ internal class CacherTest {
     @Nested
     inner class GetActualTest {
 
+        @BeforeEach
+        fun setUp() {
+            cacher = spyk(cacher)
+        }
+
         @Test
         fun `get existing actual value`() {
             // given
-            val cacheLifetimeSec = 10000L
-            val cacheAgeSec = cacheLifetimeSec - 100L
-            every { mockBackgroundCacheLifetime.seconds } returns cacheLifetimeSec
-            every { mockAppLifecycleObserver.isInBackground() } returns true
-
-            val cachedObjectTimeMs = Calendar.getInstance().timeInMillis - cacheAgeSec * MS_IN_SEC
-            val cachedObject = CachedObject(Date(cachedObjectTimeMs), testCachingValue)
+            val cachedObject = CachedObject(mockk(), testCachingValue)
+            every { cacher.isActual(cachedObject) } returns true
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
@@ -262,13 +263,8 @@ internal class CacherTest {
         @Test
         fun `get existing non actual value`() {
             // given
-            val cacheLifetimeSec = 10000L
-            val cacheAgeSec = cacheLifetimeSec + 100L
-            every { mockBackgroundCacheLifetime.seconds } returns cacheLifetimeSec
-            every { mockAppLifecycleObserver.isInBackground() } returns true
-
-            val cachedObjectTimeMs = Calendar.getInstance().timeInMillis - cacheAgeSec * MS_IN_SEC
-            val cachedObject = CachedObject(Date(cachedObjectTimeMs), testCachingValue)
+            val cachedObject = CachedObject(mockk(), testCachingValue)
+            every { cacher.isActual(cachedObject) } returns false
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
