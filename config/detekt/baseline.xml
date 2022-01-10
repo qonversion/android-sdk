@@ -17,18 +17,6 @@
     <ID>Filename:com.qonversion.android.sdk.old.requests.queue.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.storage.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.old.validator.util.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.appState.AppLifecycleObserverTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.cache.CacheHolderTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapperTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.common.serializers.JsonSerializerTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.localStorage.SharedPreferencesStorageTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImplTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.ConsumerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.old.QHandledPurchasesCacheTest.kt:1</ID>
@@ -230,27 +218,17 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.storage.util.kt:122</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.utils.kt:25</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
-    <ID>NewLineAtEndOfFile:ApiErrorMapperTest.kt$com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.old.api.ApiHelperTest.kt</ID>
-    <ID>NewLineAtEndOfFile:ApiInteractorTest.kt$com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt</ID>
-    <ID>NewLineAtEndOfFile:AppLifecycleObserverTest.kt$com.qonversion.android.sdk.internal.appState.AppLifecycleObserverTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.old.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.old.requests.AttributionRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.old.automations.AutomationsEventMapperTest.kt</ID>
-    <ID>NewLineAtEndOfFile:CacheHolderTest.kt$com.qonversion.android.sdk.internal.cache.CacheHolderTest.kt</ID>
     <ID>NewLineAtEndOfFile:ConsumerTest.kt$com.qonversion.android.sdk.old.ConsumerTest.kt</ID>
     <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.old.requests.EnvironmentRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:ExponentialDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculatorTest.kt</ID>
-    <ID>NewLineAtEndOfFile:GoogleBillingConsumerTest.kt$com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerTest.kt</ID>
-    <ID>NewLineAtEndOfFile:GoogleBillingPurchaserTest.kt$com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt</ID>
     <ID>NewLineAtEndOfFile:GooglePurchaseConverterTest.kt$com.qonversion.android.sdk.old.converter.GooglePurchaseConverterTest.kt</ID>
-    <ID>NewLineAtEndOfFile:HeaderBuilderImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:InAppRequestTest.kt$com.qonversion.android.sdk.old.requests.InAppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:InitRequestTest.kt$com.qonversion.android.sdk.old.requests.InitRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:JsonSerializerTest.kt$com.qonversion.android.sdk.internal.common.serializers.JsonSerializerTest.kt</ID>
     <ID>NewLineAtEndOfFile:LaunchResultCacheWrapperTest.kt$com.qonversion.android.sdk.old.storage.LaunchResultCacheWrapperTest.kt</ID>
-    <ID>NewLineAtEndOfFile:NetworkClientImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClientImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.old.requests.OsRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PropertiesRequestTest.kt$com.qonversion.android.sdk.old.requests.PropertiesRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.old.requests.ProviderDataRequestTest.kt</ID>
@@ -262,10 +240,8 @@
     <ID>NewLineAtEndOfFile:QUserInfoServiceTest.kt$com.qonversion.android.sdk.old.services.QUserInfoServiceTest.kt</ID>
     <ID>NewLineAtEndOfFile:QUserPropertiesManagerTest.kt$com.qonversion.android.sdk.old.QUserPropertiesManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:QonversionBillingServiceTest.kt$com.qonversion.android.sdk.old.billing.QonversionBillingServiceTest.kt</ID>
-    <ID>NewLineAtEndOfFile:RequestConfiguratorImplTest.kt$com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:RequestQueueTest.kt$com.qonversion.android.sdk.old.requests.queue.RequestQueueTest.kt</ID>
     <ID>NewLineAtEndOfFile:ScreenPresenterTest.kt$com.qonversion.android.sdk.old.automations.mvp.ScreenPresenterTest.kt</ID>
-    <ID>NewLineAtEndOfFile:SharedPreferencesStorageTest.kt$com.qonversion.android.sdk.internal.localStorage.SharedPreferencesStorageTest.kt</ID>
     <ID>NewLineAtEndOfFile:SkuDetailsTokenExtractorTest.kt$com.qonversion.android.sdk.old.converter.SkuDetailsTokenExtractorTest.kt</ID>
     <ID>NewLineAtEndOfFile:TokenExtractorTest.kt$com.qonversion.android.sdk.old.storage.TokenExtractorTest.kt</ID>
     <ID>NewLineAtEndOfFile:TokenStorageTest.kt$com.qonversion.android.sdk.old.storage.TokenStorageTest.kt</ID>
