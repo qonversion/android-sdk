@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.networkLayer.requestSerializer
+package com.qonversion.android.sdk.internal.common.serializers
 
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import org.junit.Before

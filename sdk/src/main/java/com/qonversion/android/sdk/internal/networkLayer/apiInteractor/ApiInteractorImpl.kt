@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.networkLayer.apiInteractor
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.internal.mappers.ErrorResponseMapper
+import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request

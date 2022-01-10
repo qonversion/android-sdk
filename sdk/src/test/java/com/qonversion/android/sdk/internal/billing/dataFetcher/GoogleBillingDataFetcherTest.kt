@@ -454,8 +454,8 @@ class GoogleBillingDataFetcherTest {
             val result = dataFetcher.queryPurchasesHistory(skuType)
 
             // then
-            assertThat(result.first === mockSubsBillingResult)
-            assertThat(result.second === expectedResult)
+            assertThat(result.first).isSameAs(mockSubsBillingResult)
+            assertThat(result.second).isSameAs(expectedResult)
             verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }
         }
     }

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.mappers
+package com.qonversion.android.sdk.internal.common.mappers.error
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before

@@ -1,6 +1,7 @@
-package com.qonversion.android.sdk.internal.mappers
+package com.qonversion.android.sdk.internal.common.mappers.error
 
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
+import com.qonversion.android.sdk.internal.common.mappers.getString
 
 internal class ApiErrorMapper : ErrorResponseMapper {
 

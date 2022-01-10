@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.mappers
+package com.qonversion.android.sdk.internal.common.mappers
 
 import com.qonversion.android.sdk.dto.Entitlement
 import com.qonversion.android.sdk.dto.User

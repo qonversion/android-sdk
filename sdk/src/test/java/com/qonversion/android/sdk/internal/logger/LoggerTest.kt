@@ -7,7 +7,10 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
 import io.mockk.mockk
+import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -20,6 +23,7 @@ internal class LoggerTest {
 
     private val capturedTag = slot<String>()
     private val capturedMessage = slot<String>()
+    private val capturedThrowable = slot<Throwable>()
 
     private val logMessage = "test message"
     private val tag = "TestTag"
@@ -33,17 +37,22 @@ internal class LoggerTest {
         } returns tag
 
         every {
-            Log.println(Log.VERBOSE, capture(capturedTag), capture(capturedMessage))
+            Log.v(capture(capturedTag), capture(capturedMessage))
         } returns 0
         every {
-            Log.println(Log.INFO, capture(capturedTag), capture(capturedMessage))
+            Log.i(capture(capturedTag), capture(capturedMessage))
         } returns 0
         every {
-            Log.println(Log.WARN, capture(capturedTag), capture(capturedMessage))
+            Log.w(capture(capturedTag), capture(capturedMessage))
         } returns 0
         every {
-            Log.println(Log.ERROR, capture(capturedTag), capture(capturedMessage))
+            Log.e(capture(capturedTag), capture(capturedMessage), capture(capturedThrowable))
         } returns 0
+    }
+
+    @AfterEach
+    fun afterAll() {
+        unmockkStatic(Log::class)
     }
 
     @Nested
@@ -241,13 +250,15 @@ internal class LoggerTest {
 
     private fun testLogErrorSuccess() {
         // given
+        val throwable = mockk<Throwable>()
 
         // when
-        logger.error(logMessage)
+        logger.error(logMessage, throwable)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
         assertThat(capturedTag.captured).isEqualTo(tag)
+        assertThat(capturedThrowable.captured).isSameAs(throwable)
     }
 
     private fun testLogVerboseFailure() {
@@ -257,7 +268,7 @@ internal class LoggerTest {
         logger.verbose(logMessage)
 
         // then
-        verify(exactly = 0) { Log.println(any(), any(), any()) }
+        verify(exactly = 0) { Log.v(any(), any()) }
     }
 
     private fun testLogInfoFailure() {
@@ -267,7 +278,7 @@ internal class LoggerTest {
         logger.info(logMessage)
 
         // then
-        verify(exactly = 0) { Log.println(any(), any(), any()) }
+        verify(exactly = 0) { Log.i(any(), any()) }
     }
 
     private fun testLogWarnFailure() {
@@ -277,7 +288,10 @@ internal class LoggerTest {
         logger.warn(logMessage)
 
         // then
-        verify(exactly = 0) { Log.println(any(), any(), any()) }
+        verify(exactly = 0) {
+            Log.w(any(), any<String>())
+            Log.w(any(), any<Throwable>())
+        }
     }
 
     private fun testLogErrorFailure() {
@@ -287,6 +301,6 @@ internal class LoggerTest {
         logger.error(logMessage)
 
         // then
-        verify(exactly = 0) { Log.println(any(), any(), any()) }
+        verify(exactly = 0) { Log.e(any(), any(), any()) }
     }
 }

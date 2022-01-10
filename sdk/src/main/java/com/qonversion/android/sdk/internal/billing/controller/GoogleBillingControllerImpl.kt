@@ -175,14 +175,14 @@ internal class GoogleBillingControllerImpl(
         try {
             waitForReadyClient()
         } catch (e: QonversionException) {
-            logger.error(e.toString())
+            logger.error("Failed to connect to Billing.", e)
             return
         }
 
         try {
             consumer.consume(purchaseToken)
         } catch (e: QonversionException) {
-            logger.error("Failed to consume purchase with token $purchaseToken: $e")
+            logger.error("Failed to consume the purchase with token $purchaseToken.", e)
         }
     }
 
@@ -190,14 +190,14 @@ internal class GoogleBillingControllerImpl(
         try {
             waitForReadyClient()
         } catch (e: QonversionException) {
-            logger.error(e.toString())
+            logger.error("Failed to connect to Billing.", e)
             return
         }
 
         try {
             consumer.acknowledge(purchaseToken)
         } catch (e: QonversionException) {
-            logger.error("Failed to acknowledge purchase with token $purchaseToken: $e")
+            logger.error("Failed to acknowledge the purchase with token $purchaseToken.", e)
         }
     }
 

@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
-import com.qonversion.android.sdk.internal.networkLayer.requestSerializer.RequestSerializer
+import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorCode
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,7 @@ import java.net.URL
 private const val NETWORK_ENCODING = "utf-8"
 
 internal class NetworkClientImpl(
-    private val serializer: RequestSerializer
+    private val serializer: Serializer
 ) : NetworkClient {
     override suspend fun execute(request: Request): RawResponse {
         return withContext(Dispatchers.IO) {

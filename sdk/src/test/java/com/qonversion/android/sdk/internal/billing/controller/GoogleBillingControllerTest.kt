@@ -173,7 +173,7 @@ internal class GoogleBillingControllerTest {
             verify(exactly = 1) {
                 mockBillingClient.startConnection(billingController.billingClientStateListener)
             }
-            assertThat(currentDeferred === connectionDeferred)
+            assertThat(currentDeferred).isSameAs(connectionDeferred)
         }
 
         @Test
@@ -277,7 +277,7 @@ internal class GoogleBillingControllerTest {
             }
 
             // then
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -355,7 +355,7 @@ internal class GoogleBillingControllerTest {
             verify {
                 mockLogger wasNot called
             }
-            assertThat(billingController.connectionDeferred === deferred)
+            assertThat(billingController.connectionDeferred).isSameAs(deferred)
         }
 
         @Test
@@ -386,7 +386,7 @@ internal class GoogleBillingControllerTest {
                 assertThat(slotErrorLogMessage.captured)
                     .startsWith("billingClientStateListener -> BillingClient connection failed with error: ")
                 assertThat(slotErrorLogMessage.captured).contains(responseCode.getDescription())
-                assertThat(billingController.connectionDeferred === deferred)
+                assertThat(billingController.connectionDeferred).isSameAs(deferred)
             }
         }
 
@@ -493,7 +493,7 @@ internal class GoogleBillingControllerTest {
             assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(errorCode)
             assertThat(slotBillingError.captured.message).contains("ITEM_ALREADY_OWNED")
 
-            verify(exactly = 1) { mockLogger.error(any()) } // once for error 
+            verify(exactly = 1) { mockLogger.error(any()) } // once for error
             verify(exactly = 1) { mockLogger.info(any()) } // and once for purchases
             assertThat(slotErrorLogMessages.captured)
                 .startsWith("onPurchasesUpdated() -> failed to update purchases")
@@ -521,7 +521,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
-            assertThat(result === mockPurchasesHistory)
+            assertThat(result).isSameAs(mockPurchasesHistory)
         }
 
         @Test
@@ -562,7 +562,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryAllPurchasesHistory() }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -583,7 +583,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
-            assertThat(result === mockPurchases)
+            assertThat(result).isSameAs(mockPurchases)
         }
 
         @Test
@@ -624,7 +624,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.queryPurchases() }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -646,7 +646,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(ids) }
-            assertThat(result === mockSkuDetails)
+            assertThat(result).isSameAs(mockSkuDetails)
         }
 
         @Test
@@ -700,7 +700,7 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
-            assertThat(e === exception)
+            assertThat(e).isSameAs(exception)
         }
     }
 
@@ -735,7 +735,7 @@ internal class GoogleBillingControllerTest {
             // then
             coVerify(exactly = 1) { mockDataFetcher.loadProducts(any()) }
             assertThat(slotIds.captured).isEqualTo(setOf(purchase1Sku, purchase2Sku))
-            assertThat(result === mockSkuDetails)
+            assertThat(result).isSameAs(mockSkuDetails)
         }
 
         @Test
@@ -801,7 +801,7 @@ internal class GoogleBillingControllerTest {
             billingController.billingClient = mockBillingClient
 
             val slotErrorMessage = slot<String>()
-            every { mockLogger.error(capture(slotErrorMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorMessage), exception) } just runs
 
             // when
             assertDoesNotThrow {
@@ -812,9 +812,9 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
-            verify(exactly = 1) { mockLogger.error(any()) }
+            verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .startsWith("Failed to consume purchase")
+                .contains("Failed to consume the purchase")
                 .contains(consumingToken)
         }
 
@@ -869,7 +869,7 @@ internal class GoogleBillingControllerTest {
             billingController.billingClient = mockBillingClient
 
             val slotErrorMessage = slot<String>()
-            every { mockLogger.error(capture(slotErrorMessage)) } just runs
+            every { mockLogger.error(capture(slotErrorMessage), exception) } just runs
 
             // when
             assertDoesNotThrow {
@@ -880,9 +880,9 @@ internal class GoogleBillingControllerTest {
 
             // then
             coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
-            verify(exactly = 1) { mockLogger.error(any()) }
+            verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .startsWith("Failed to acknowledge purchase")
+                .contains("Failed to acknowledge the purchase")
                 .contains(acknowledgingToken)
         }
 

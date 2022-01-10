@@ -39,7 +39,7 @@ internal class ExponentialDelayCalculatorTest {
             val delay = delayCalculator.countDelay(minDelay, retriesCount)
 
             // then
-            assertThat(delay > minDelay)
+            assertThat(delay).isGreaterThan(minDelay)
         }
     }
 
@@ -54,9 +54,9 @@ internal class ExponentialDelayCalculatorTest {
         val delay3 = delayCalculator.countDelay(minDelay, 2)
 
         // then
-        assertThat(delay1 >= minDelay)
-        assertThat(delay2 > delay1)
-        assertThat(delay3 > (delay2 - delay1))
+        assertThat(delay1).isGreaterThanOrEqualTo(minDelay)
+        assertThat(delay2).isGreaterThan(delay1)
+        assertThat(delay3).isGreaterThan(delay2 - delay1)
     }
 
     @Test

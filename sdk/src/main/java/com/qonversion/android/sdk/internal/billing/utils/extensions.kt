@@ -4,9 +4,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.qonversion.android.sdk.internal.utils.toTimeString
 
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
@@ -20,16 +18,10 @@ internal val Purchase.sku: String? get() = skus.firstOrNull()
 
 internal fun PurchaseHistoryRecord.getDescription() =
     "ProductId: ${this.sku}; " +
-            "PurchaseTime: ${this.purchaseTime.convertLongToTime()}; " +
+            "PurchaseTime: ${this.purchaseTime.toTimeString()}; " +
             "PurchaseToken: ${this.purchaseToken}"
 
 internal val PurchaseHistoryRecord.sku: String? get() = skus.firstOrNull()
-
-private fun Long.convertLongToTime(): String {
-    val date = Date(this)
-    val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
-    return format.format(date)
-}
 
 internal fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {
     return when (this) {

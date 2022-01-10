@@ -9,25 +9,25 @@ internal class ConsoleLogger(config: LoggerConfig) : Logger {
 
     override fun verbose(message: String) {
         if (logLevel == LogLevel.Verbose.level) {
-            Log.println(Log.VERBOSE, tag, format(message))
+            Log.v(tag, format(message))
         }
     }
 
     override fun info(message: String) {
         if (logLevel <= LogLevel.Info.level) {
-            Log.println(Log.INFO, tag, format(message))
+            Log.i(tag, format(message))
         }
     }
 
     override fun warn(message: String) {
         if (logLevel <= LogLevel.Warning.level) {
-            Log.println(Log.WARN, tag, format(message))
+            Log.w(tag, format(message))
         }
     }
 
-    override fun error(message: String) {
+    override fun error(message: String, throwable: Throwable?) {
         if (logLevel <= LogLevel.Error.level) {
-            Log.println(Log.ERROR, tag, format(message))
+            Log.e(tag, format(message), throwable)
         }
     }
 
