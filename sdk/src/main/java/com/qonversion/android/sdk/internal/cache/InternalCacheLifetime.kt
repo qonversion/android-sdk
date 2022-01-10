@@ -13,7 +13,7 @@ internal enum class InternalCacheLifetime(val seconds: Long) {
     TWO_WEEKS(CacheLifetime.TWO_WEEKS.seconds),
     MONTH(CacheLifetime.MONTH.seconds);
 
-    fun from(cacheLifetime: CacheLifetime): InternalCacheLifetime = when(cacheLifetime) {
+    fun from(cacheLifetime: CacheLifetime): InternalCacheLifetime = when (cacheLifetime) {
         CacheLifetime.ONE_DAY -> ONE_DAY
         CacheLifetime.TWO_DAYS -> TWO_DAYS
         CacheLifetime.THREE_DAYS -> THREE_DAYS

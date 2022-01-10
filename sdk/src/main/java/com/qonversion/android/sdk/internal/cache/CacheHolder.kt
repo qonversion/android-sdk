@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.cache
 
 internal typealias Initializer<T> = (key: String) -> T
 
-internal class CacheHolder<T: CachedObject<*>?>(
+internal class CacheHolder<T : CachedObject<*>?>(
     private val initForKey: Initializer<T>
 ) : LinkedHashMap<String, T>() {
 
