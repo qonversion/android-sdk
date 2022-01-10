@@ -277,7 +277,7 @@ internal class CacheMapperTest {
             }
 
             // then
-            assertThat(e.message).isEqualTo("Mapper had thrown exception")
+            assertThat(e.message).isEqualTo("Mapper had thrown the exception")
             verify(exactly = 1) {
                 mockSerializer.deserialize(deserializingValue)
                 mockMapper.fromMap(nestedObjectMap)

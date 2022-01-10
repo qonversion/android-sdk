@@ -22,7 +22,7 @@ internal class CacheMapperImpl<T : Any>(
                 mapper.toMap(it)
             }
         } catch (cause: IllegalStateException) {
-            throw QonversionException(ErrorCode.Serialization, "Mapper had thrown exception", cause = cause)
+            throw QonversionException(ErrorCode.Serialization, "Mapper had thrown the exception", cause = cause)
         }
 
         val map = mapOf(
@@ -49,7 +49,7 @@ internal class CacheMapperImpl<T : Any>(
                 } catch (cause: IllegalStateException) {
                     throw QonversionException(
                         ErrorCode.Deserialization,
-                        "Mapper had thrown exception",
+                        "Mapper had thrown the exception",
                         cause = cause
                     )
                 }

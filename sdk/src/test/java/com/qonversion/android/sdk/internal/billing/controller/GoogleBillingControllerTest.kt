@@ -814,7 +814,7 @@ internal class GoogleBillingControllerTest {
             coVerify(exactly = 1) { mockConsumer.consume(consumingToken) }
             verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .contains("Failed to consume purchase")
+                .contains("Failed to consume the purchase")
                 .contains(consumingToken)
         }
 
@@ -882,7 +882,7 @@ internal class GoogleBillingControllerTest {
             coVerify(exactly = 1) { mockConsumer.acknowledge(acknowledgingToken) }
             verify(exactly = 1) { mockLogger.error(any(), exception) }
             assertThat(slotErrorMessage.captured)
-                .contains("Failed to acknowledge purchase")
+                .contains("Failed to acknowledge the purchase")
                 .contains(acknowledgingToken)
         }
 
