@@ -1,4 +1,3 @@
 package com.qonversion.android.sdk.internal
 
-internal class QonversionInternal {
-}
+internal class QonversionInternal
