@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.old
 
 data class QonversionConfig(
     val key: String,
-    val sdkVersion: String,
     val isDebugMode: Boolean
 ) {
     @Volatile

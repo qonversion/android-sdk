@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.old
 import android.content.SharedPreferences
 import android.os.Handler
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.BuildConfig
 import com.qonversion.android.sdk.old.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.old.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.old.Constants.PUSH_TOKEN_KEY
@@ -56,7 +57,7 @@ class QonversionRepository internal constructor(
 
     private val key = config.key
     private val isDebugMode = config.isDebugMode
-    private val sdkVersion = config.sdkVersion
+    private val sdkVersion = BuildConfig.VERSION_NAME
     private val uid get() = config.uid
 
     // Public functions
