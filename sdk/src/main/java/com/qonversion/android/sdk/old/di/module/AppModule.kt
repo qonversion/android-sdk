@@ -29,7 +29,7 @@ class AppModule(
     @ApplicationScope
     @Provides
     fun provideConfig(): QonversionConfig {
-        return QonversionConfig(projectKey, isDebugMode)
+        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode)
     }
 
     @ApplicationScope
@@ -65,5 +65,9 @@ class AppModule(
         sharedPreferencesCache: SharedPreferencesCache
     ): LaunchResultCacheWrapper {
         return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
+    }
+
+    companion object {
+        private const val SDK_VERSION = "3.2.1"
     }
 }

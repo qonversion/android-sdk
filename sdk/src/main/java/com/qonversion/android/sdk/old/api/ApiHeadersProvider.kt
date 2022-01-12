@@ -1,20 +1,23 @@
 package com.qonversion.android.sdk.old.api
 
 import android.os.Build
-import com.qonversion.android.sdk.BuildConfig
 import com.qonversion.android.sdk.old.Constants.PREFS_PREFIX
 import com.qonversion.android.sdk.old.QonversionConfig
 import com.qonversion.android.sdk.old.storage.SharedPreferencesCache
 import okhttp3.Headers
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 class ApiHeadersProvider @Inject constructor(
     private val config: QonversionConfig,
     private val sharedPreferencesCache: SharedPreferencesCache
 ) {
-    private val projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
+    private val projectKey: String
     private fun getLocale() = Locale.getDefault().language
+
+    init {
+        projectKey = if (config.isDebugMode) "$DEBUG_MODE_KEY${config.key}" else config.key
+    }
 
     fun getHeaders(): Headers {
         val headerBuilder = Headers.Builder()
@@ -40,7 +43,7 @@ class ApiHeadersProvider @Inject constructor(
         sharedPreferencesCache.getString(PREFS_SOURCE_KEY, null) ?: ANDROID_PLATFORM
 
     private fun getSourceVersion() =
-        sharedPreferencesCache.getString(PREFS_SOURCE_VERSION_KEY, null) ?: BuildConfig.VERSION_NAME
+        sharedPreferencesCache.getString(PREFS_SOURCE_VERSION_KEY, null) ?: config.sdkVersion
 
     companion object {
         const val ANDROID_PLATFORM = "android"
