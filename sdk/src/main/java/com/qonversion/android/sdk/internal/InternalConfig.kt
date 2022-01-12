@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
 import com.qonversion.android.sdk.internal.logger.LoggerConfig
@@ -8,8 +9,10 @@ internal object InternalConfig {
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = ""
-    var debugMode: Boolean = false
-    var requestsShouldBeDenied: Boolean = false
+    var requestsShouldBeDenied = false
     var loggerConfig = LoggerConfig()
-    var cacheLifetimeConfig: CacheLifetimeConfig = CacheLifetimeConfig()
+    var cacheLifetimeConfig = CacheLifetimeConfig()
+    var environment = Environment.PRODUCTION
+
+    val isSandbox get() = environment === Environment.SANDBOX
 }

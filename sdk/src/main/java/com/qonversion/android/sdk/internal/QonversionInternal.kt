@@ -1,3 +1,11 @@
 package com.qonversion.android.sdk.internal
 
-internal class QonversionInternal
+import com.qonversion.android.sdk.QonversionConfig
+
+internal class QonversionInternal(config: QonversionConfig) {
+
+    init {
+        InternalConfig.projectKey = config.projectKey
+        InternalConfig.environment = config.environment
+    }
+}
