@@ -12,14 +12,14 @@ class Qonversion private constructor(private val qonversionInternal: QonversionI
 
         val sharedInstance get() = backingInstance ?: throw QonversionException(ErrorCode.NotInitialized)
 
-        fun configure(config: QonversionConfig): Qonversion {
+        fun initialize(config: QonversionConfig): Qonversion {
             val qonversionInternal = QonversionInternal(config)
             val instance = Qonversion(qonversionInternal)
-            if (backingInstance == null) {
-                backingInstance = instance
-            }
+            backingInstance = instance
 
             return instance
         }
     }
+
+    fun finish() {}
 }

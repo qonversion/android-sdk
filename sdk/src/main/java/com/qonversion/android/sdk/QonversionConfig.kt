@@ -16,6 +16,8 @@ data class QonversionConfig internal constructor(
     class Builder(
         private val context: Context,
         private val projectKey: String,
+        private val mode: String,
+        private val store: String,
     ) {
         internal var environment = Environment.PRODUCTION
 
