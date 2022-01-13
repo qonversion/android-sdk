@@ -1,0 +1,55 @@
+{
+  "fixes": [
+      "/home/runner/work/android-sdk/android-sdk>/::"
+  ],
+  "codecov": {
+    "disable_default_path_fixes": true
+  }
+}
+
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Execute unit tests
+      - name: Unit Test with Android Emulator Runner
+        uses: ReactiveCircus/android-emulator-runner@v2.14.3
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
+
+      # run: ./gradlew testDebugUnitTest
+
+      - name: generate report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report
+          path: sdk/build/reports/coverage/debug
+
+
+      - name: Download Test Reports Folder
+        uses: actions/download-artifact@v2
+        with:
+          name: report
+          path: sdk/build/reports/coverage/debug
+
+      - name: Upload Test Report
+        run:  bash <(curl -s https://codecov.io/bash) -f "app/build/reports/coverage/debug/report.xml"
