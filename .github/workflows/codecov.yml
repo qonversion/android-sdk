@@ -7,7 +7,7 @@
   }
 }
 
-name: CI
+name: CodeCoverage
 
 on:
   push:
