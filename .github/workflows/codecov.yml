@@ -11,7 +11,8 @@ name: CI
 
 on:
   push:
-    branches: [ feature/sdk_v3.0/code_coverage ]
+    branches:
+      - feature/sdk_v3.0/code_coverage
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
