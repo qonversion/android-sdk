@@ -13,9 +13,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ feature/sdk_v3.0/code_coverage ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
