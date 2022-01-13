@@ -26,15 +26,15 @@ jobs:
       - name: generate report
         uses: actions/upload-artifact@v2
         with:
-          name: report
-          path: sdk/build/reports/coverage/debug
+          name: debugCoverage
+          path: sdk/build/reports/jacoco/debugCoverage
 
 
       - name: Download Test Reports Folder
         uses: actions/download-artifact@v2
         with:
-          name: report
-          path: sdk/build/reports/coverage/debug
+          name: debugCoverage
+          path: sdk/build/reports/jacoco/debugCoverage
 
       - name: Upload Test Report
         run:  bash <(curl -s https://codecov.io/bash) -f "app/build/reports/coverage/debug/report.xml"
