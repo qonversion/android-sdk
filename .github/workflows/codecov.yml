@@ -19,7 +19,7 @@ jobs:
 
       # Execute unit tests
       - name: Unit Test with Codecov
-        run: bash <(./gradlew debugCoverage)>
+        run: ./gradlew debugCoverage
 
       # run: ./gradlew testDebugUnitTest
 
