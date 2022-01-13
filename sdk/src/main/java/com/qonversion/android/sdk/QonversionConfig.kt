@@ -3,9 +3,9 @@ package com.qonversion.android.sdk
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
-data class QonversionConfig(val projectKey: String) {
+class QonversionConfig private constructor(val projectKey: String) {
 
-    class Builder(
+    data class Builder(
         private val projectKey: String,
     ) {
         fun build(): QonversionConfig {
