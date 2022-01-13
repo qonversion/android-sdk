@@ -45,7 +45,6 @@ project.afterEvaluate {
         def jClasses = "${project.buildDir}/intermediates/javac/debug/classes"
         def kClasses = "${project.buildDir}/tmp/kotlin-classes/debug"
         def javaClasses = fileTree(dir: jClasses, excludes: excludes)
-
         def kotlinClasses = fileTree(dir: kClasses, excludes: excludes)
 
         classDirectories.from = files([javaClasses, kotlinClasses])
