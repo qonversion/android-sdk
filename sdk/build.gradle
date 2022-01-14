@@ -7,6 +7,9 @@ apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 jacoco {
     toolVersion '0.8.7'
 }
+jacocoAndroidUnitTestReport {
+    excludes += ['**/old/*']
+}
 
 android {
     compileSdkVersion 29
