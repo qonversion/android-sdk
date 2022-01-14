@@ -13,7 +13,7 @@ data class QonversionConfig internal constructor(
     val environment: Environment
 ) {
 
-    class Builder(
+    data class Builder(
         private val context: Context,
         private val projectKey: String,
         private val mode: String,

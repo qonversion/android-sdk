@@ -23,7 +23,7 @@ enum class ErrorCode(val defaultMessage: String) {
     ProductAlreadyOwned("Failed to purchase since item is already owned"),
     ProductNotOwned("Failed to consume purchase since item is not owned"),
     Unknown("Unknown error"),
-    NotInitialized("Qonversion was not initialized. You should call \"configure\" " +
-            "before accessing shared instance on Qonversion."),
+    NotInitialized("Qonversion has not been initialized. You should call " +
+            "the initialize method before accessing the shared instance of Qonversion."),
     ConfigPreparation("Failed to prepare configuration for SDK initialization")
 }
