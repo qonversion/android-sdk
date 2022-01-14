@@ -3,7 +3,7 @@ name: CodeCoverage
 on:
   push:
     branches:
-      - feature/sdk_v3.0/code_coverage
+      - feature/sdk_v3.0/root
 
 jobs:
   build:
