@@ -4,8 +4,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.math.max
 import kotlin.random.Random
@@ -20,7 +20,7 @@ internal class ExponentialDelayCalculatorTest {
         1000L to 0
     )
 
-    @Before
+    @BeforeEach
     fun setUp() {
         delayCalculator = ExponentialDelayCalculator(random)
 

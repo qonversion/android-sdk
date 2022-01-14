@@ -9,9 +9,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Before
-import org.junit.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.io.IOException
 import java.io.ByteArrayInputStream
@@ -26,7 +26,7 @@ internal class NetworkClientImplTest {
 
     private var serializer: Serializer = mockk()
 
-    @Before
+    @BeforeEach
     fun setUp() {
         networkClient = NetworkClientImpl(serializer)
     }

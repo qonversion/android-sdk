@@ -18,9 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 
@@ -34,7 +34,7 @@ internal class GoogleBillingPurchaserTest {
     private val billingResult = mockk<BillingResult>()
     private val updateInfo = mockk<UpdatePurchaseInfo>()
 
-    @Before
+    @BeforeEach
     fun setUp() {
         purchaser = GoogleBillingPurchaserImpl(mockk())
         purchaser.setup(billingClient)
@@ -53,7 +53,7 @@ internal class GoogleBillingPurchaserTest {
         Dispatchers.setMain(Dispatchers.Unconfined)
     }
 
-    @After
+    @AfterEach
     fun afterAll() {
         unmockkStatic(TextUtils::class)
     }

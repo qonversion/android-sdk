@@ -10,9 +10,9 @@ import com.qonversion.android.sdk.internal.networkLayer.ApiHeader
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
-import java.util.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.util.Locale
 
 internal class HeaderBuilderTest {
 
@@ -39,7 +39,7 @@ internal class HeaderBuilderTest {
         ApiHeader.UserID.key to testUid
     )
 
-    @Before
+    @BeforeEach
     fun setUp() {
         headerBuilder = HeaderBuilderImpl(localStorage, locale, config)
         every {
