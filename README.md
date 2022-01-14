@@ -19,6 +19,7 @@ Qonversion is the data platform to power in-app subscription revenue growth.
 
 [![Release](https://img.shields.io/github/release/qonversion/android-sdk.svg?style=flat)](https://github.com/qonversion/android-sdk/releases)
 [![MIT License](http://img.shields.io/cocoapods/l/Qonversion.svg?style=flat)](https://qonversion.io)
+[![codecov.io](https://codecov.io/github/qonversion/android-sdk/branch/feature%2Fsdk_v3.0%2Fcode_coverage/graph/badge.svg)](https://codecov.io/github/qonversion/android-sdk)
 
 
 ## How It Works: Product Center
