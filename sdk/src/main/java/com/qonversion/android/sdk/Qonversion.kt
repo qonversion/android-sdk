@@ -14,7 +14,8 @@ class Qonversion private constructor(private val qonversionInternal: QonversionI
             get() = backingInstance ?: throw QonversionException(ErrorCode.NotInitialized)
 
         fun initialize(config: QonversionConfig): Qonversion {
-            TODO()
+            val internal = QonversionInternal()
+            return Qonversion(internal).also { backingInstance = it }
         }
     }
 }
