@@ -2,6 +2,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.dicedmelon.gradle.jacoco-android'
+
+jacoco {
+    toolVersion '0.8.7'
+}
 
 android {
     compileSdkVersion 29
@@ -185,4 +190,3 @@ dependencies {
 
 }
 apply from: "../scripts/maven-release.gradle"
-apply from: "../scripts/jacoco.gradle"

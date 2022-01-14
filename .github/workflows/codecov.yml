@@ -13,19 +13,19 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Unit Test with Codecov
-        run: ./gradlew debugCoverage
+        run: ./gradlew jacocoTestReport
 
       - name: Generate report
         uses: actions/upload-artifact@v2
         with:
-          name: debugCoverage
-          path: sdk/build/reports/jacoco/debugCoverage
+          name: jacoco
+          path: sdk/build/reports/jacoco
 
       - name: Download Test Reports Folder
         uses: actions/download-artifact@v2
         with:
-          name: debugCoverage
-          path: sdk/build/reports/jacoco/debugCoverage
+          name: jacoco
+          path: sdk/build/reports/jacoco
 
       - name: Upload Test Report
-        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/reports/jacoco/debugCoverage/debugCoverage.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/reports/jacoco/jacoco.xml"
