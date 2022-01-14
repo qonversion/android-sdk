@@ -77,12 +77,12 @@ internal class QonversionConfigTest {
         @Test
         fun `building sandbox config for release`() {
             // given
-            val prodEnvironment = Environment.SANDBOX
+            val sandboxEnvironment = Environment.SANDBOX
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
-                environment = prodEnvironment
+                environment = sandboxEnvironment
             }
             every { mockContext.isDebuggable } returns false
-            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, prodEnvironment)
+            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, sandboxEnvironment)
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
 

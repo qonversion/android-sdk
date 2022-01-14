@@ -11,7 +11,7 @@ internal object InternalConfig : EnvironmentProvider {
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = BuildConfig.VERSION_NAME
-    var launchMode: LaunchMode = LaunchMode.COMPLETE_MODE
+    var launchMode: LaunchMode = LaunchMode.INFRASTRUCTURE_MODE
     var requestsShouldBeDenied = false
     var loggerConfig = LoggerConfig()
     var cacheLifetimeConfig = CacheLifetimeConfig()
