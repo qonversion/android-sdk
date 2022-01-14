@@ -19,13 +19,13 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: jacoco
-          path: sdk/build/reports/jacoco
+          path: sdk/build/jacoco
 
       - name: Download Test Reports Folder
         uses: actions/download-artifact@v2
         with:
           name: jacoco
-          path: sdk/build/reports/jacoco
+          path: sdk/build/jacoco
 
       - name: Upload Test Report
-        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/reports/jacoco/jacoco.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/jacoco/jacoco.xml"
