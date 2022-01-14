@@ -3,6 +3,8 @@ package com.qonversion.android.sdk
 import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.dto.Environment
+import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.utils.isDebuggable
 import io.mockk.every
@@ -22,6 +24,8 @@ internal class QonversionConfigTest {
 
     private val mockContext = mockk<Context>()
     private val projectKey = "some project key"
+    private val mockLaunchMode = mockk<LaunchMode>()
+    private val mockStore = mockk<Store>()
 
     @BeforeEach
     fun setUp() {
@@ -34,7 +38,7 @@ internal class QonversionConfigTest {
         @Test
         fun `setting environment type`() {
             // given
-            val builder = QonversionConfig.Builder(mockContext, projectKey)
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
             val mockEnvironment = mockk<Environment>()
 
             // when
@@ -57,10 +61,10 @@ internal class QonversionConfigTest {
         fun `successful build`() {
             // given
             val mockEnvironment = mockk<Environment>()
-            val builder = QonversionConfig.Builder(mockContext, projectKey).apply {
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
                 environment = mockEnvironment
             }
-            val expResult = QonversionConfig(mockContext, projectKey, mockEnvironment)
+            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, mockEnvironment)
 
             // when
             val result = builder.build()
@@ -74,11 +78,11 @@ internal class QonversionConfigTest {
         fun `building sandbox config for release`() {
             // given
             val prodEnvironment = Environment.SANDBOX
-            val builder = QonversionConfig.Builder(mockContext, projectKey).apply {
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
                 environment = prodEnvironment
             }
             every { mockContext.isDebuggable } returns false
-            val expResult = QonversionConfig(mockContext, projectKey, prodEnvironment)
+            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, prodEnvironment)
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
 
@@ -96,11 +100,11 @@ internal class QonversionConfigTest {
         fun `building production config for debug`() {
             // given
             val prodEnvironment = Environment.PRODUCTION
-            val builder = QonversionConfig.Builder(mockContext, projectKey).apply {
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
                 environment = prodEnvironment
             }
             every { mockContext.isDebuggable } returns true
-            val expResult = QonversionConfig(mockContext, projectKey, prodEnvironment)
+            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, prodEnvironment)
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
 
@@ -118,7 +122,7 @@ internal class QonversionConfigTest {
         fun `building with blank project key`() {
             listOf("", "   ").forEach { projectKey ->
                 // given
-                val builder = QonversionConfig.Builder(mockContext, projectKey)
+                val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
 
                 // when and then
                 assertThatQonversionExceptionThrown(ErrorCode.ConfigPreparation) {

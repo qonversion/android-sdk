@@ -1,10 +1,11 @@
 package com.qonversion.android.sdk
 
+import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
-class Qonversion private constructor(private val qonversionInternal: QonversionInternal) {
+interface Qonversion {
 
     companion object {
 
@@ -14,13 +15,13 @@ class Qonversion private constructor(private val qonversionInternal: QonversionI
             get() = backingInstance ?: throw QonversionException(ErrorCode.NotInitialized)
 
         fun initialize(config: QonversionConfig): Qonversion {
-            val qonversionInternal = QonversionInternal(config)
-            val instance = Qonversion(qonversionInternal)
-            backingInstance = instance
-
-            return instance
+            return QonversionInternal(config).also {
+                backingInstance = it
+            }
         }
     }
 
-    fun finish() {}
+    fun setEnvironment(environment: Environment)
+
+    fun finish()
 }
