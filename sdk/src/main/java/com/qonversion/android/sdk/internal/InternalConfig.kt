@@ -11,11 +11,11 @@ internal object InternalConfig : EnvironmentProvider {
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = BuildConfig.VERSION_NAME
-    var launchMode: LaunchMode = LaunchMode.INFRASTRUCTURE_MODE
+    var launchMode: LaunchMode = LaunchMode.InfrastructureMode
     var requestsShouldBeDenied = false
     var loggerConfig = LoggerConfig()
     var cacheLifetimeConfig = CacheLifetimeConfig()
-    override var environment = Environment.PRODUCTION
+    override var environment = Environment.Production
 
-    override val isSandbox get() = environment === Environment.SANDBOX
+    override val isSandbox get() = environment === Environment.Sandbox
 }
