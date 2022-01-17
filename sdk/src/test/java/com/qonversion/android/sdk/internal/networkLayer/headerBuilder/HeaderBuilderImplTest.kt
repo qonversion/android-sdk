@@ -49,7 +49,7 @@ internal class HeaderBuilderTest {
             localStorage.getString(StorageConstants.VersionKey.key, any())
         } returns testVersionKey
         every { locale.language } returns testLanguage
-        every { config.debugMode } returns false
+        every { config.isSandbox } returns false
         every { config.uid } returns testUid
         every { config.sdkVersion } returns testSdkVersion
         every { config.projectKey } returns testProjectKey
@@ -91,7 +91,7 @@ internal class HeaderBuilderTest {
     fun `debug mode`() {
         // given
         every {
-            config.debugMode
+            config.isSandbox
         } returns true
 
         val expectedResult = defaultExpectedHeaders +

@@ -9,7 +9,6 @@ import io.mockk.verify
 import io.mockk.mockk
 import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -51,7 +50,7 @@ internal class LoggerTest {
     }
 
     @AfterEach
-    fun afterAll() {
+    fun after() {
         unmockkStatic(Log::class)
     }
 

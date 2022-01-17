@@ -22,5 +22,8 @@ enum class ErrorCode(val defaultMessage: String) {
     ProductUnavailable("Requested product is not available for purchase or its SKU was not found"),
     ProductAlreadyOwned("Failed to purchase since item is already owned"),
     ProductNotOwned("Failed to consume purchase since item is not owned"),
-    Unknown("Unknown error")
+    Unknown("Unknown error"),
+    NotInitialized("Qonversion has not been initialized. You should call " +
+            "the initialize method before accessing the shared instance of Qonversion."),
+    ConfigPreparation("Failed to prepare configuration for SDK initialization")
 }
