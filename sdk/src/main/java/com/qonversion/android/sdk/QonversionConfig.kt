@@ -18,7 +18,7 @@ data class QonversionConfig internal constructor(
     val environment: Environment
 ) {
 
-    class Builder(
+    class Builder @JvmOverloads constructor(
         private val application: Application,
         private val projectKey: String,
         private val launchMode: LaunchMode,

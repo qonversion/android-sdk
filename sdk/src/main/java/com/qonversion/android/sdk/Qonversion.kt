@@ -11,9 +11,11 @@ interface Qonversion {
 
         private var backingInstance: Qonversion? = null
 
+        @JvmStatic
         val sharedInstance: Qonversion
             get() = backingInstance ?: throw QonversionException(ErrorCode.NotInitialized)
 
+        @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
             return QonversionInternal(config).also {
                 backingInstance = it
