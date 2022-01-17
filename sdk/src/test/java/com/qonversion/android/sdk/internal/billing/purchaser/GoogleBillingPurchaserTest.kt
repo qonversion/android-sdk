@@ -54,7 +54,7 @@ internal class GoogleBillingPurchaserTest {
     }
 
     @After
-    fun afterAll() {
+    fun after() {
         unmockkStatic(TextUtils::class)
     }
 
