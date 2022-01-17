@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode

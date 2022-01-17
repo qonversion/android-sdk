@@ -86,12 +86,12 @@
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20303</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20399</ID>
     <ID>MagicNumber:ApiInteractorImpl.kt$418</ID>
-    <ID>MagicNumber:CacheLifetime.kt$CacheLifetime.THREE_DAYS$3</ID>
+    <ID>MagicNumber:CacheLifetime.kt$CacheLifetime.ThreeDays$3</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$30</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$365</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$7</ID>
-    <ID>MagicNumber:InternalCacheLifetime.kt$InternalCacheLifetime.FIVE_MIN$5</ID>
+    <ID>MagicNumber:InternalCacheLifetime.kt$InternalCacheLifetime.FiveMin$5</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Error$30</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Info$10</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Warning$20</ID>
@@ -256,6 +256,7 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.validator.RequestValidatorTest.kt:17</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.validator.TokenValidatorTest.kt:20</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:22</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.QAttributionManagerTest.kt:135</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.automations.QAutomationsManagerTest.kt:359</ID>
@@ -266,7 +267,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.validator.RequestValidatorTest.kt:3</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:372</ID>
     <ID>NoSemicolons:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:314</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.logger.LoggerTest.kt:12</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.IncrementalDelayCalculatorTest.kt:3</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.old.QIdentityManagerTest.kt:3</ID>
@@ -375,8 +375,6 @@
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON), Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:QProductCenterManagerTest.kt$QProductCenterManagerTest$private val skuTypeSubs = BillingClient.SkuType.SUBS</ID>
-    <ID>UnusedPrivateMember:Qonversion.kt$Qonversion$private val qonversionInternal: QonversionInternal</ID>
-    <ID>UnusedPrivateMember:Qonversion.kt$Qonversion.Companion$config: QonversionConfig</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility&gt;): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility&gt;</ID>
