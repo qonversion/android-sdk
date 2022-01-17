@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.cache
 
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.internal.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
@@ -44,14 +45,19 @@ internal class CacherTest {
 
     @BeforeEach
     fun setUp() {
+        val mockCacheLifetimeConfigProvider = mockk<CacheLifetimeConfigProvider>()
+        every {
+            mockCacheLifetimeConfigProvider.cacheLifetimeConfig
+        } returns CacheLifetimeConfig(
+            mockBackgroundCacheLifetime,
+            mockForegroundCacheLifetime
+        )
+
         cacher = CacherImpl(
             mockCacheMapper,
             mockLocalStorage,
             mockAppLifecycleObserver,
-            CacheLifetimeConfig(
-                mockBackgroundCacheLifetime,
-                mockForegroundCacheLifetime
-            ),
+            mockCacheLifetimeConfigProvider,
             mockLogger
         )
     }

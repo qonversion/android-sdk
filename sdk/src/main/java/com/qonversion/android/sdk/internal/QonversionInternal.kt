@@ -2,11 +2,11 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionConfig
+import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.logger.LoggerConfig
 
 internal class QonversionInternal(config: QonversionConfig) : Qonversion {
@@ -34,6 +34,15 @@ internal class QonversionInternal(config: QonversionConfig) : Qonversion {
     override fun setLogTag(logTag: String) {
         val oldConfig = InternalConfig.loggerConfig
         InternalConfig.loggerConfig = LoggerConfig(oldConfig.logLevel, logTag)
+    }
+
+    override fun setBackgroundCacheLifetime(backgroundCacheLifetime: CacheLifetime) {
+        val internalCacheLifetime = InternalCacheLifetime.from(backgroundCacheLifetime)
+        val oldConfig = InternalConfig.cacheLifetimeConfig
+        InternalConfig.cacheLifetimeConfig = CacheLifetimeConfig(
+            internalCacheLifetime,
+            oldConfig.foregroundCacheLifetime
+        )
     }
 
     override fun finish() {

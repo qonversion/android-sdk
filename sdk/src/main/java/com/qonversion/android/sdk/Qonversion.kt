@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk
 
+import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.QonversionInternal
@@ -27,6 +28,8 @@ interface Qonversion {
     fun setLogLevel(logLevel: LogLevel)
 
     fun setLogTag(logTag: String)
+
+    fun setBackgroundCacheLifetime(backgroundCacheLifetime: CacheLifetime)
 
     fun finish()
 }
