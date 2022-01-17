@@ -33,7 +33,7 @@ internal class QonversionConfigTest {
     }
 
     @Nested
-    inner class BuilderMethodsTest {
+    inner class SettersTest {
 
         @Test
         fun `setting environment type`() {
