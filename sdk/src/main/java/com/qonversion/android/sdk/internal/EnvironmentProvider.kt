@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.dto.Environment
 
-interface EnvironmentProvider {
+internal interface EnvironmentProvider {
 
     val environment: Environment
 

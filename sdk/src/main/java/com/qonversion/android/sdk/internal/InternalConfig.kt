@@ -7,14 +7,15 @@ import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
 import com.qonversion.android.sdk.internal.logger.LoggerConfig
 
-internal object InternalConfig : EnvironmentProvider {
+internal object InternalConfig : EnvironmentProvider, LoggerConfigProvider {
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = BuildConfig.VERSION_NAME
     var launchMode: LaunchMode = LaunchMode.COMPLETE_MODE
     var requestsShouldBeDenied = false
-    var loggerConfig = LoggerConfig()
+    override var loggerConfig = LoggerConfig()
     var cacheLifetimeConfig = CacheLifetimeConfig()
+    var shouldConsumePurchases = true
     override var environment = Environment.PRODUCTION
 
     override val isSandbox get() = environment === Environment.SANDBOX

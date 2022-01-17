@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.dto.Environment
+import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -22,6 +23,10 @@ interface Qonversion {
     }
 
     fun setEnvironment(environment: Environment)
+
+    fun setLogLevel(logLevel: LogLevel)
+
+    fun setLogTag(logTag: String)
 
     fun finish()
 }

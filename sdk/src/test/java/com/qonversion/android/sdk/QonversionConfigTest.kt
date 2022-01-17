@@ -2,8 +2,10 @@ package com.qonversion.android.sdk
 
 import android.content.Context
 import android.util.Log
+import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.utils.isDebuggable
@@ -26,6 +28,11 @@ internal class QonversionConfigTest {
     private val projectKey = "some project key"
     private val mockLaunchMode = mockk<LaunchMode>()
     private val mockStore = mockk<Store>()
+    private val mockEnvironment = mockk<Environment>()
+    private val mockLogLevel = mockk<LogLevel>()
+    private val mockLogTag = "some tag"
+    private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
+    private val mockShouldConsumePurchases = true
 
     @BeforeEach
     fun setUp() {
@@ -39,13 +46,61 @@ internal class QonversionConfigTest {
         fun `setting environment type`() {
             // given
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
-            val mockEnvironment = mockk<Environment>()
 
             // when
             builder.setEnvironment(mockEnvironment)
 
             // then
             assertThat(builder.environment).isSameAs(mockEnvironment)
+        }
+
+        @Test
+        fun `setting log level`() {
+            // given
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
+
+            // when
+            builder.setLogLevel(mockLogLevel)
+
+            // then
+            assertThat(builder.logLevel).isSameAs(mockLogLevel)
+        }
+
+        @Test
+        fun `setting log tag`() {
+            // given
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
+
+            // when
+            builder.setLogTag(mockLogTag)
+
+            // then
+            assertThat(builder.logTag).isSameAs(mockLogTag)
+        }
+
+        @Test
+        fun `setting should consume purchases`() {
+            // given
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
+            builder.shouldConsumePurchases = true
+
+            // when
+            builder.setShouldConsumePurchases(false)
+
+            // then
+            assertThat(builder.shouldConsumePurchases).isEqualTo(false)
+        }
+
+        @Test
+        fun `setting background cache lifetime`() {
+            // given
+            val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
+
+            // when
+            builder.setBackgroundCacheLifetime(mockBackgroundCacheLifetime)
+
+            // then
+            assertThat(builder.backgroundCacheLifetime).isSameAs(mockBackgroundCacheLifetime)
         }
     }
 
@@ -60,11 +115,23 @@ internal class QonversionConfigTest {
         @Test
         fun `successful build`() {
             // given
-            val mockEnvironment = mockk<Environment>()
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
                 environment = mockEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
             }
-            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, mockEnvironment)
+            val expResult = QonversionConfig(
+                mockContext,
+                projectKey,
+                mockLaunchMode,
+                mockStore,
+                mockEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
 
             // when
             val result = builder.build()
@@ -77,12 +144,25 @@ internal class QonversionConfigTest {
         @Test
         fun `building sandbox config for release`() {
             // given
-            val prodEnvironment = Environment.SANDBOX
+            val sandboxEnvironment = Environment.SANDBOX
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
-                environment = prodEnvironment
+                environment = sandboxEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
             }
             every { mockContext.isDebuggable } returns false
-            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, prodEnvironment)
+            val expResult = QonversionConfig(
+                mockContext,
+                projectKey,
+                mockLaunchMode,
+                mockStore,
+                sandboxEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
 
@@ -102,9 +182,22 @@ internal class QonversionConfigTest {
             val prodEnvironment = Environment.PRODUCTION
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore).apply {
                 environment = prodEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
             }
             every { mockContext.isDebuggable } returns true
-            val expResult = QonversionConfig(mockContext, projectKey, mockLaunchMode, mockStore, prodEnvironment)
+            val expResult = QonversionConfig(
+                mockContext,
+                projectKey,
+                mockLaunchMode,
+                mockStore,
+                prodEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
 

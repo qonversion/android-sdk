@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
+import com.qonversion.android.sdk.internal.LoggerConfigProvider
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.slot
@@ -18,6 +19,7 @@ internal class LoggerTest {
 
     private lateinit var logger: Logger
 
+    private val mockLoggerConfigProvider = mockk<LoggerConfigProvider>()
     private val mockLoggerConfig = mockk<LoggerConfig>()
 
     private val capturedTag = slot<String>()
@@ -31,6 +33,9 @@ internal class LoggerTest {
     fun setUp() {
         mockkStatic(Log::class)
 
+        every {
+            mockLoggerConfigProvider.loggerConfig
+        } returns mockLoggerConfig
         every {
             mockLoggerConfig.logTag
         } returns tag
@@ -62,7 +67,7 @@ internal class LoggerTest {
                 mockLoggerConfig.logLevel
             } returns LogLevel.Verbose
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -94,7 +99,7 @@ internal class LoggerTest {
                 mockLoggerConfig.logLevel
             } returns LogLevel.Info
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -126,7 +131,7 @@ internal class LoggerTest {
                 mockLoggerConfig.logLevel
             } returns LogLevel.Warning
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -158,7 +163,7 @@ internal class LoggerTest {
                 mockLoggerConfig.logLevel
             } returns LogLevel.Error
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -190,7 +195,7 @@ internal class LoggerTest {
                 mockLoggerConfig.logLevel
             } returns LogLevel.Disabled
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
