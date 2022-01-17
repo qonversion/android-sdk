@@ -15,12 +15,12 @@ internal object InternalConfig :
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = BuildConfig.VERSION_NAME
-    var launchMode: LaunchMode = LaunchMode.COMPLETE_MODE
+    var launchMode: LaunchMode = LaunchMode.InfrastructureMode
     var requestsShouldBeDenied = false
     override var loggerConfig = LoggerConfig()
     override var cacheLifetimeConfig = CacheLifetimeConfig()
     var shouldConsumePurchases = true
-    override var environment = Environment.PRODUCTION
+    override var environment = Environment.Production
 
-    override val isSandbox get() = environment === Environment.SANDBOX
+    override val isSandbox get() = environment === Environment.Sandbox
 }

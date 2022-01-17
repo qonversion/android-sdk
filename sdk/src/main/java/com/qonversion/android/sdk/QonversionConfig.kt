@@ -1,20 +1,20 @@
 package com.qonversion.android.sdk
 
-import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
+import android.app.Application
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.utils.isDebuggable
 
 private const val DEFAULT_LOG_TAG = "Qonversion"
 
-data class QonversionConfig internal constructor(
-    val context: Context,
+class QonversionConfig internal constructor(
+    val application: Application,
     val projectKey: String,
     val launchMode: LaunchMode,
     val store: Store,
@@ -25,16 +25,16 @@ data class QonversionConfig internal constructor(
     val shouldConsumePurchases: Boolean
 ) {
 
-    data class Builder(
-        private val context: Context,
+    class Builder @JvmOverloads constructor(
+        private val application: Application,
         private val projectKey: String,
         private val launchMode: LaunchMode,
-        private val store: Store = Store.GOOGLE_PLAY
+        private val store: Store = Store.GooglePlay
     ) {
-        internal var environment = Environment.PRODUCTION
+        internal var environment = Environment.Production
         internal var logLevel = LogLevel.Info
         internal var logTag = DEFAULT_LOG_TAG
-        internal var backgroundCacheLifetime = CacheLifetime.THREE_DAYS
+        internal var backgroundCacheLifetime = CacheLifetime.ThreeDays
         internal var shouldConsumePurchases = true
 
         fun setEnvironment(environment: Environment): Builder = apply {
@@ -61,13 +61,13 @@ data class QonversionConfig internal constructor(
             if (projectKey.isBlank()) {
                 throw QonversionException(ErrorCode.ConfigPreparation, "Project key is empty")
             }
-            if (environment === Environment.PRODUCTION && context.isDebuggable) {
+            if (environment === Environment.Production && application.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Production for debug build.")
-            } else if (environment === Environment.SANDBOX && !context.isDebuggable) {
+            } else if (environment === Environment.Sandbox && !application.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
             return QonversionConfig(
-                context,
+                application,
                 projectKey,
                 launchMode,
                 store,
