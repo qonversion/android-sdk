@@ -14,12 +14,12 @@ internal enum class InternalCacheLifetime(val seconds: Long) {
 
     companion object {
         fun from(cacheLifetime: CacheLifetime): InternalCacheLifetime = when (cacheLifetime) {
-        CacheLifetime.OneDay -> OneDay
-        CacheLifetime.TwoDays -> TwoDays
-        CacheLifetime.ThreeDays -> ThreeDays
-        CacheLifetime.Week -> Week
-        CacheLifetime.TwoWeeks -> TwoWeeks
-        CacheLifetime.Month -> Month
+            CacheLifetime.OneDay -> OneDay
+            CacheLifetime.TwoDays -> TwoDays
+            CacheLifetime.ThreeDays -> ThreeDays
+            CacheLifetime.Week -> Week
+            CacheLifetime.TwoWeeks -> TwoWeeks
+            CacheLifetime.Month -> Month
         }
     }
 }
