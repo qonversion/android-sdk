@@ -10,7 +10,8 @@ import com.qonversion.android.sdk.internal.logger.LoggerConfig
 internal object InternalConfig :
     EnvironmentProvider,
     LoggerConfigProvider,
-    CacheLifetimeConfigProvider {
+    CacheLifetimeConfigProvider
+{
     var uid: String = ""
     var projectKey: String = ""
     var sdkVersion: String = BuildConfig.VERSION_NAME
