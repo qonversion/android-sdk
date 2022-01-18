@@ -11,13 +11,20 @@ import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 @ExperimentalCoroutinesApi
 internal class ApiInteractorTest {
@@ -41,7 +48,7 @@ internal class ApiInteractorTest {
     private val rawErrorResponse = RawResponse(errorCode, errorPayload)
     private val parsedErrorResponse = Response.Error(errorCode, "Test error")
 
-    @Before
+    @BeforeEach
     fun setUp() {
         interactor = ApiInteractorImpl(networkClient, delayCalculator, config, errorMapper)
 

@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.internal.common.mappers.error
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class ApiErrorMapperTest {
 
@@ -13,7 +13,7 @@ internal class ApiErrorMapperTest {
     private val testApiCode = "test code"
     private val testHttpCode = 400
 
-    @Before
+    @BeforeEach
     fun setUp() {
         errorMapper = ApiErrorMapper()
     }

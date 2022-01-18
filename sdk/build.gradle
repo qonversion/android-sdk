@@ -2,6 +2,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.dicedmelon.gradle.jacoco-android'
+
+jacoco {
+    toolVersion '0.8.7'
+}
+jacocoAndroidUnitTestReport {
+    excludes += ['**/old/*']
+}
 
 android {
     compileSdkVersion 29
@@ -37,6 +45,11 @@ android {
 
     testOptions {
         unitTests.all {
+            useJUnitPlatform()
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
             // All the usual Gradle options.
             testLogging {
                 events "passed", "skipped", "failed", "standardOut", "standardError"
@@ -56,8 +69,6 @@ tasks.withType(Test) {
 }
 
 ext {
-
-
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
 

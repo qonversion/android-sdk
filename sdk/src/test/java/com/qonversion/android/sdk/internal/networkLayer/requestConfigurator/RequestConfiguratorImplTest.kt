@@ -5,8 +5,8 @@ import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuil
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class RequestConfiguratorImplTest {
 
@@ -17,7 +17,7 @@ internal class RequestConfiguratorImplTest {
     private val testUserId = "testId"
     private val testCommonHeaders = mapOf("someKey" to "someVal")
 
-    @Before
+    @BeforeEach
     fun setUp() {
         requestConfigurator = RequestConfiguratorImpl(headerBuilder, testBaseUrl)
         every {

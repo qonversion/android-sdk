@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.internal.common.serializers
 
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 
@@ -26,7 +26,7 @@ class JsonSerializerTest {
         """{}""" to emptyMap<Any?, Any?>() // empty json
     )
 
-    @Before
+    @BeforeEach
     fun setUp() {
         jsonSerializer = JsonSerializer()
     }

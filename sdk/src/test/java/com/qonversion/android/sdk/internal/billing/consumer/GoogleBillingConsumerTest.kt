@@ -14,9 +14,9 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.BeforeEach
 
 internal class GoogleBillingConsumerTest {
 
@@ -28,7 +28,7 @@ internal class GoogleBillingConsumerTest {
     private val acknowledgeCallback = slot<AcknowledgePurchaseResponseListener>()
     private val billingResult = mockk<BillingResult>()
 
-    @Before
+    @BeforeEach
     fun setUp() {
         googleBillingConsumer = GoogleBillingConsumerImpl(logger)
         googleBillingConsumer.setup(billingClient)
