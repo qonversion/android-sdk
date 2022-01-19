@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal
+package com.qonversion.android.sdk.internal.provider
 
 import com.qonversion.android.sdk.internal.logger.LoggerConfig
 

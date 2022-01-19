@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
-import com.qonversion.android.sdk.internal.LoggerConfigProvider
+import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 
 internal class ConsoleLogger(private val configProvider: LoggerConfigProvider) : Logger {
     private val logLevel get() = configProvider.loggerConfig.logLevel.level

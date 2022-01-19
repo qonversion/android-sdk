@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.cache
 
-import com.qonversion.android.sdk.internal.CacheLifetimeConfigProvider
+import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.QonversionException

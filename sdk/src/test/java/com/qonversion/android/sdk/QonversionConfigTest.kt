@@ -113,7 +113,7 @@ internal class QonversionConfigTest {
         }
 
         @Test
-        fun `successful build`() {
+        fun `successful build with default store parameter`() {
             // given
             val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
                 environment = mockEnvironment
@@ -127,6 +127,38 @@ internal class QonversionConfigTest {
                 projectKey,
                 mockLaunchMode,
                 mockStore,
+                mockEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
+
+            // when
+            val result = builder.build()
+
+            // then
+            verify(exactly = 0) { Log.w(any(), any<String>()) }
+            assertThat(result).isEqualToComparingFieldByField(expResult)
+        }
+
+        @Test
+        fun `successful build without default store parameter`() {
+            // given
+            val googlePlayStore = Store.GooglePlay
+            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode).apply {
+                environment = mockEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
+                shouldConsumePurchases = mockShouldConsumePurchases
+            }
+
+            val expResult = QonversionConfig(
+                mockApplication,
+                projectKey,
+                mockLaunchMode,
+                googlePlayStore,
                 mockEnvironment,
                 mockLogLevel,
                 mockLogTag,
@@ -212,6 +244,70 @@ internal class QonversionConfigTest {
             verify(exactly = 1) { Log.w(any(), any<String>()) }
             assertThat(slotWarningMessage.captured)
                 .isEqualTo("Environment level is set to Production for debug build.")
+        }
+
+        @Test
+        fun `building sandbox config for debug`() {
+            // given
+            val sandboxEnvironment = Environment.Sandbox
+            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
+                environment = sandboxEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
+                shouldConsumePurchases = mockShouldConsumePurchases
+            }
+            every { mockApplication.isDebuggable } returns true
+            val expResult = QonversionConfig(
+                mockApplication,
+                projectKey,
+                mockLaunchMode,
+                mockStore,
+                sandboxEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
+
+            // when
+            val result = builder.build()
+
+            // then
+            assertThat(result).isEqualToComparingFieldByField(expResult)
+            verify(exactly = 0) { Log.w(any(), any<String>()) }
+        }
+
+        @Test
+        fun `building production config for release`() {
+            // given
+            val prodEnvironment = Environment.Production
+            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
+                environment = prodEnvironment
+                logLevel = mockLogLevel
+                logTag = mockLogTag
+                backgroundCacheLifetime = mockBackgroundCacheLifetime
+                shouldConsumePurchases = mockShouldConsumePurchases
+            }
+            every { mockApplication.isDebuggable } returns false
+            val expResult = QonversionConfig(
+                mockApplication,
+                projectKey,
+                mockLaunchMode,
+                mockStore,
+                prodEnvironment,
+                mockLogLevel,
+                mockLogTag,
+                mockBackgroundCacheLifetime,
+                mockShouldConsumePurchases
+            )
+
+            // when
+            val result = builder.build()
+
+            // then
+            assertThat(result).isEqualToComparingFieldByField(expResult)
+            verify(exactly = 0) { Log.w(any(), any<String>()) }
         }
 
         @Test

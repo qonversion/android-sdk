@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
-import com.qonversion.android.sdk.internal.LoggerConfigProvider
+import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.slot
