@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 
 internal class QonversionInternalTest {
     private lateinit var qonversionInternal: QonversionInternal
-    private lateinit var mockConfig: QonversionConfig
+    private lateinit var qonversionConfig: QonversionConfig
 
     private val mockApplication = mockk<Application>()
     private val mockStore = mockk<Store>()
@@ -48,7 +48,7 @@ internal class QonversionInternalTest {
             InternalCacheLifetime.from(mockBackgroundCacheLifetime)
         } returns mockBackgroundInternalCacheLifetime
 
-        mockConfig = QonversionConfig(
+        qonversionConfig = QonversionConfig(
             mockApplication,
             mockPrimaryConfig,
             mockStoreConfig,
@@ -70,13 +70,13 @@ internal class QonversionInternalTest {
             )
 
             // when
-            qonversionInternal = QonversionInternal(mockConfig)
+            qonversionInternal = QonversionInternal(qonversionConfig)
 
             // then
-            assertThat(InternalConfig.primaryConfig).isSameAs(mockConfig.primaryConfig)
-            assertThat(InternalConfig.storeConfig).isSameAs(mockConfig.storeConfig)
-            assertThat(InternalConfig.networkConfig).isSameAs(mockConfig.networkConfig)
-            assertThat(InternalConfig.loggerConfig).isSameAs(mockConfig.loggerConfig)
+            assertThat(InternalConfig.primaryConfig).isSameAs(qonversionConfig.primaryConfig)
+            assertThat(InternalConfig.storeConfig).isSameAs(qonversionConfig.storeConfig)
+            assertThat(InternalConfig.networkConfig).isSameAs(qonversionConfig.networkConfig)
+            assertThat(InternalConfig.loggerConfig).isSameAs(qonversionConfig.loggerConfig)
             assertThat(InternalConfig.cacheLifetimeConfig).isEqualToComparingFieldByField(
                 expectedCacheLifetimeConfig
             )
@@ -88,7 +88,7 @@ internal class QonversionInternalTest {
 
         @BeforeEach
         fun setUp() {
-            qonversionInternal = QonversionInternal(mockConfig)
+            qonversionInternal = QonversionInternal(qonversionConfig)
         }
 
         @Test
