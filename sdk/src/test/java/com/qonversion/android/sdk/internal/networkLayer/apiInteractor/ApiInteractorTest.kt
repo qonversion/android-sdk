@@ -57,8 +57,8 @@ internal class ApiInteractorTest {
             delayCalculator.countDelay(capture(minDelaySlot), any())
         } answers { minDelaySlot.captured + 1 }
         every {
-            config.requestsShouldBeDenied
-        } returns false
+            config.canSendRequests
+        } returns true
         coEvery {
             networkClient.execute(request)
         } returns rawSuccessResponse
@@ -282,8 +282,8 @@ internal class ApiInteractorTest {
     fun `execute request with deny option on`() {
         // given
         every {
-            config.requestsShouldBeDenied
-        } returns true
+            config.canSendRequests
+        } returns false
 
         // when and then
         coAssertThatQonversionExceptionThrown(ErrorCode.RequestDenied) {
@@ -318,7 +318,7 @@ internal class ApiInteractorTest {
     fun `network client throws retryable exception`() {
         // given
         val exceptedException = QonversionException(ErrorCode.NetworkRequestExecution)
-        val retryCount = 2;
+        val retryCount = 2
         coEvery {
             networkClient.execute(request)
         }.throws(exceptedException)
@@ -482,7 +482,7 @@ internal class ApiInteractorTest {
         } returns parsedErrorResponse
         val setValue = slot<Boolean>()
         every {
-            config.requestsShouldBeDenied = capture(setValue)
+            config.canSendRequests = capture(setValue)
         } just runs
 
         // when
@@ -493,7 +493,7 @@ internal class ApiInteractorTest {
         coVerify(exactly = 1) {
             networkClient.execute(any())
         }
-        assertThat(setValue.captured).isTrue()
+        assertThat(setValue.captured).isFalse()
     }
 
     private fun assertThatIsSuccessResponse(response: Response) {
