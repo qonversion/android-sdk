@@ -25,7 +25,8 @@ internal class HeaderBuilderImpl(
     override fun buildCommonHeaders(): Map<String, String> {
         val locale = locale.language
         val projectKey =
-            if (config.isSandbox) "$DEBUG_MODE_PREFIX${config.primaryConfig.projectKey}" else config.primaryConfig.projectKey
+            if (config.isSandbox) "$DEBUG_MODE_PREFIX${config.primaryConfig.projectKey}"
+            else config.primaryConfig.projectKey
         val bearer = "Bearer $projectKey"
 
         return mapOf(
