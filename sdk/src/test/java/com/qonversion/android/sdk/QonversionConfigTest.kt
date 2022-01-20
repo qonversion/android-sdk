@@ -2,12 +2,16 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.util.Log
+import com.qonversion.android.sdk.config.NetworkConfig
+import com.qonversion.android.sdk.config.PrimaryConfig
+import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import com.qonversion.android.sdk.internal.utils.isDebuggable
 import io.mockk.every
 import io.mockk.mockk
@@ -21,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-
 internal class QonversionConfigTest {
 
     private val mockApplication = mockk<Application>()
@@ -33,6 +36,10 @@ internal class QonversionConfigTest {
     private val mockLogTag = "some tag"
     private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
     private val mockShouldConsumePurchases = true
+    private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment)
+    private val mockNetworkConfig = NetworkConfig()
+    private val mockStoreConfig = StoreConfig(mockStore, mockShouldConsumePurchases)
+    private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
 
     @BeforeEach
     fun setUp() {
@@ -45,7 +52,8 @@ internal class QonversionConfigTest {
         @Test
         fun `setting environment type`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
 
             // when
             builder.setEnvironment(mockEnvironment)
@@ -57,7 +65,8 @@ internal class QonversionConfigTest {
         @Test
         fun `setting log level`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
 
             // when
             builder.setLogLevel(mockLogLevel)
@@ -69,7 +78,8 @@ internal class QonversionConfigTest {
         @Test
         fun `setting log tag`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
 
             // when
             builder.setLogTag(mockLogTag)
@@ -81,7 +91,8 @@ internal class QonversionConfigTest {
         @Test
         fun `setting should consume purchases`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
             builder.shouldConsumePurchases = true
 
             // when
@@ -94,13 +105,14 @@ internal class QonversionConfigTest {
         @Test
         fun `setting background cache lifetime`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
 
             // when
-            builder.setBackgroundCacheLifetime(mockBackgroundCacheLifetime)
+            builder.setCacheLifetime(mockBackgroundCacheLifetime)
 
             // then
-            assertThat(builder.backgroundCacheLifetime).isSameAs(mockBackgroundCacheLifetime)
+            assertThat(builder.cacheLifetime).isSameAs(mockBackgroundCacheLifetime)
         }
     }
 
@@ -113,25 +125,24 @@ internal class QonversionConfigTest {
         }
 
         @Test
-        fun `successful build with default store parameter`() {
+        fun `successful build with full list of arguments`() {
             // given
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
-                environment = mockEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                    .apply {
+                        environment = mockEnvironment
+                        logLevel = mockLogLevel
+                        logTag = mockLogTag
+                        cacheLifetime = mockBackgroundCacheLifetime
+                        shouldConsumePurchases = mockShouldConsumePurchases
+                    }
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                mockStore,
-                mockEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime
             )
 
             // when
@@ -143,27 +154,31 @@ internal class QonversionConfigTest {
         }
 
         @Test
-        fun `successful build without default store parameter`() {
+        fun `successful build without full list of arguments`() {
             // given
-            val googlePlayStore = Store.GooglePlay
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode).apply {
-                environment = mockEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val defaultStore = Store.GooglePlay
+            val defaultLogLevel = LogLevel.Info
+            val defaultLogTag = "Qonversion"
+            val defaultBackgroundCacheLifetime = CacheLifetime.ThreeDays
+            val defaultShouldConsumePurchases = true
+            val defaultEnvironment = Environment.Production
+            val defaultCanSendRequests = true
 
+            val mockApplication = mockk<Application>(relaxed = true)
+
+            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode)
+
+            val expPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, defaultEnvironment)
+            val expStoreConfig = StoreConfig(defaultStore, defaultShouldConsumePurchases)
+            val expLoggerConfig = LoggerConfig(defaultLogLevel, defaultLogTag)
+            val expNetworkConfig = NetworkConfig(defaultCanSendRequests)
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                googlePlayStore,
-                mockEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                expPrimaryConfig,
+                expStoreConfig,
+                expLoggerConfig,
+                expNetworkConfig,
+                defaultBackgroundCacheLifetime
             )
 
             // when
@@ -178,24 +193,25 @@ internal class QonversionConfigTest {
         fun `building sandbox config for release`() {
             // given
             val sandboxEnvironment = Environment.Sandbox
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
-                environment = sandboxEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                    .apply {
+                        environment = sandboxEnvironment
+                        logLevel = mockLogLevel
+                        logTag = mockLogTag
+                        cacheLifetime = mockBackgroundCacheLifetime
+                        shouldConsumePurchases = mockShouldConsumePurchases
+                    }
             every { mockApplication.isDebuggable } returns false
+            val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
+
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                mockStore,
-                sandboxEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime
             )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
@@ -214,24 +230,25 @@ internal class QonversionConfigTest {
         fun `building production config for debug`() {
             // given
             val prodEnvironment = Environment.Production
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
-                environment = prodEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                    .apply {
+                        environment = prodEnvironment
+                        logLevel = mockLogLevel
+                        logTag = mockLogTag
+                        cacheLifetime = mockBackgroundCacheLifetime
+                        shouldConsumePurchases = mockShouldConsumePurchases
+                    }
             every { mockApplication.isDebuggable } returns true
+            val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)
+
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                mockStore,
-                prodEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime
             )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
@@ -250,24 +267,25 @@ internal class QonversionConfigTest {
         fun `building sandbox config for debug`() {
             // given
             val sandboxEnvironment = Environment.Sandbox
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
-                environment = sandboxEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                    .apply {
+                        environment = sandboxEnvironment
+                        logLevel = mockLogLevel
+                        logTag = mockLogTag
+                        cacheLifetime = mockBackgroundCacheLifetime
+                        shouldConsumePurchases = mockShouldConsumePurchases
+                    }
             every { mockApplication.isDebuggable } returns true
+            val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
+
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                mockStore,
-                sandboxEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime
             )
 
             // when
@@ -282,24 +300,25 @@ internal class QonversionConfigTest {
         fun `building production config for release`() {
             // given
             val prodEnvironment = Environment.Production
-            val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore).apply {
-                environment = prodEnvironment
-                logLevel = mockLogLevel
-                logTag = mockLogTag
-                backgroundCacheLifetime = mockBackgroundCacheLifetime
-                shouldConsumePurchases = mockShouldConsumePurchases
-            }
+            val builder =
+                QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                    .apply {
+                        environment = prodEnvironment
+                        logLevel = mockLogLevel
+                        logTag = mockLogTag
+                        cacheLifetime = mockBackgroundCacheLifetime
+                        shouldConsumePurchases = mockShouldConsumePurchases
+                    }
             every { mockApplication.isDebuggable } returns false
+            val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)
+
             val expResult = QonversionConfig(
                 mockApplication,
-                projectKey,
-                mockLaunchMode,
-                mockStore,
-                prodEnvironment,
-                mockLogLevel,
-                mockLogTag,
-                mockBackgroundCacheLifetime,
-                mockShouldConsumePurchases
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime
             )
 
             // when
@@ -314,7 +333,8 @@ internal class QonversionConfigTest {
         fun `building with blank project key`() {
             listOf("", "   ").forEach { projectKey ->
                 // given
-                val builder = QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
+                val builder =
+                    QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
 
                 // when and then
                 assertThatQonversionExceptionThrown(ErrorCode.ConfigPreparation) {
