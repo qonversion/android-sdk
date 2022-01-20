@@ -1,8 +1,17 @@
 package com.qonversion.android.sdk.internal
 
+import com.qonversion.android.sdk.config.NetworkConfig
+import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.dto.Environment
+import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
+import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.logger.LoggerConfig
+import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
+import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
+import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
+import com.qonversion.android.sdk.internal.provider.LoggerConfigsProvider
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -10,15 +19,20 @@ import org.junit.jupiter.api.Test
 
 internal class InternalConfigTest {
     @Nested
-    inner class EnvironmentProvider {
+    inner class EnvironmentProviderTest {
+        private val mockProjectKey = "projectKey"
+        private val mockLaunchMode = mockk<LaunchMode>()
+        private val mockEnvironment = mockk<Environment>()
+
         @Test
         fun `get environment`() {
             // given
-            val mockEnvironment = Environment.Sandbox
-            InternalConfig.environment = mockEnvironment
+            val environmentProvider: EnvironmentProvider = InternalConfig
+            val mockPrimaryConfig = PrimaryConfig(mockProjectKey, mockLaunchMode, mockEnvironment)
+            InternalConfig.primaryConfig = mockPrimaryConfig
 
             // when
-            val environment = InternalConfig.environment
+            val environment = environmentProvider.environment
 
             // then
             assertThat(environment).isSameAs(mockEnvironment)
@@ -27,59 +41,126 @@ internal class InternalConfigTest {
         @Test
         fun `is sandbox when sandbox env`() {
             // given
+            val environmentProvider: EnvironmentProvider = InternalConfig
             val mockEnvironment = Environment.Sandbox
-            InternalConfig.environment = mockEnvironment
+            InternalConfig.primaryConfig =
+                PrimaryConfig(mockProjectKey, mockLaunchMode, mockEnvironment)
 
             // when
-            val isSandbox = InternalConfig.isSandbox
+            val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isTrue()
+            assertThat(isSandbox).isTrue
         }
 
         @Test
-        fun `is sandbox when prod env`() {
+        fun `is not sandbox when prod env`() {
             // given
+            val environmentProvider: EnvironmentProvider = InternalConfig
             val mockEnvironment = Environment.Production
-            InternalConfig.environment = mockEnvironment
+            InternalConfig.primaryConfig =
+                PrimaryConfig(mockProjectKey, mockLaunchMode, mockEnvironment)
 
             // when
-            val isSandbox = InternalConfig.isSandbox
+            val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isFalse()
+            assertThat(isSandbox).isFalse
         }
     }
 
     @Nested
-    inner class LoggerConfigProvider {
+    inner class LoggerConfigsProviderTest {
+        private val mockLogLevel = mockk<LogLevel>()
+        private val mockLogTag = "logTag"
+        private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
+
         @Test
-        fun `get logger config`() {
+        fun `get log level`() {
             // given
-            val mockLoggerConfig = mockk<LoggerConfig>()
+            val loggerConfigProvider: LoggerConfigsProvider = InternalConfig
             InternalConfig.loggerConfig = mockLoggerConfig
 
             // when
-            val loggerConfig = InternalConfig.loggerConfig
+            val logLevel = loggerConfigProvider.logLevel
 
             // then
-            assertThat(loggerConfig).isSameAs(mockLoggerConfig)
+            assertThat(logLevel).isSameAs(mockLogLevel)
+        }
+
+        @Test
+        fun `get log tag`() {
+            // given
+            val loggerConfigProvider: LoggerConfigsProvider = InternalConfig
+            InternalConfig.loggerConfig = mockLoggerConfig
+
+            // when
+            val logTag = loggerConfigProvider.logTag
+
+            // then
+            assertThat(logTag).isSameAs(mockLogTag)
         }
     }
 
     @Nested
-    inner class CacheLifetimeConfigProvider {
+    inner class CacheLifetimeConfigProviderTest {
+        private val mockCacheLifetimeLoggerConfig = mockk<CacheLifetimeConfig>()
+
+        @Test
+        fun `get default cache lifetime config`() {
+            // given
+            val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
+
+            // when
+            val cacheLifetimeConfig = cacheLifetimeConfigProvider.cacheLifetimeConfig
+
+            // then
+            assertThat(cacheLifetimeConfig.backgroundCacheLifetime).isSameAs(InternalCacheLifetime.ThreeDays)
+            assertThat(cacheLifetimeConfig.foregroundCacheLifetime).isSameAs(InternalCacheLifetime.FiveMin)
+        }
+
         @Test
         fun `get cache lifetime config`() {
             // given
-            val mockCacheLifetimeLoggerConfig = mockk<CacheLifetimeConfig>()
+            val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
             InternalConfig.cacheLifetimeConfig = mockCacheLifetimeLoggerConfig
 
             // when
-            val cacheLifetimeConfig = InternalConfig.cacheLifetimeConfig
+            val cacheLifetimeConfig = cacheLifetimeConfigProvider.cacheLifetimeConfig
 
             // then
             assertThat(cacheLifetimeConfig).isSameAs(mockCacheLifetimeLoggerConfig)
+        }
+    }
+
+    @Nested
+    inner class NetworkConfigHolderTest {
+        private val mockCanSendRequests = true
+
+        @Test
+        fun `get canSendRequests`() {
+            // given
+            val networkConfigHolder: NetworkConfigHolder = InternalConfig
+            InternalConfig.networkConfig = NetworkConfig(mockCanSendRequests)
+
+            // when
+            val canSendRequests = networkConfigHolder.canSendRequests
+
+            // then
+            assertThat(canSendRequests).isSameAs(mockCanSendRequests)
+        }
+
+        @Test
+        fun `set canSendRequests`() {
+            // given
+            val networkConfigHolder: NetworkConfigHolder = InternalConfig
+            InternalConfig.networkConfig = NetworkConfig()
+
+            // when
+            networkConfigHolder.canSendRequests = mockCanSendRequests
+
+            // then
+            assertThat(InternalConfig.networkConfig.canSendRequests).isSameAs(mockCanSendRequests)
         }
     }
 }
