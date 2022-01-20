@@ -49,7 +49,7 @@ internal class ApiInteractorImpl(
         attemptIndex: Int
     ): Response {
         return withContext(Dispatchers.IO) {
-            if (config.requestsShouldBeDenied) {
+            if (!config.canSendRequests) {
                 throw QonversionException(ErrorCode.RequestDenied)
             }
 
@@ -73,7 +73,7 @@ internal class ApiInteractorImpl(
                 Response.Success(response.code, data)
             } else {
                 if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
-                    config.requestsShouldBeDenied = true
+                    config.canSendRequests = false
                     return@withContext getErrorResponse(response, executionException)
                 }
 

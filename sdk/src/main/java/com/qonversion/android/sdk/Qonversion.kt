@@ -31,7 +31,7 @@ interface Qonversion {
 
     fun setLogTag(logTag: String)
 
-    fun setBackgroundCacheLifetime(backgroundCacheLifetime: CacheLifetime)
+    fun setCacheLifetime(cacheLifetime: CacheLifetime)
 
     fun finish()
 }

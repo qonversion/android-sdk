@@ -2,11 +2,11 @@ package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
-import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
+import com.qonversion.android.sdk.internal.provider.LoggerProvider
 
-internal class ConsoleLogger(private val configProvider: LoggerConfigProvider) : Logger {
-    private val logLevel get() = configProvider.loggerConfig.logLevel.level
-    private val tag get() = configProvider.loggerConfig.logTag
+internal class ConsoleLogger(private val loggerProvider: LoggerProvider) : Logger {
+    private val logLevel get() = loggerProvider.logLevel.level
+    private val tag get() = loggerProvider.logTag
 
     override fun verbose(message: String) {
         if (logLevel == LogLevel.Verbose.level) {

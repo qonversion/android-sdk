@@ -7,42 +7,36 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.logger.LoggerConfig
 
 internal class QonversionInternal(config: QonversionConfig) : Qonversion {
 
     init {
-        InternalConfig.projectKey = config.projectKey
-        InternalConfig.launchMode = config.launchMode
-        InternalConfig.environment = config.environment
+        InternalConfig.primaryConfig = config.primaryConfig
+        InternalConfig.storeConfig = config.storeConfig
+        InternalConfig.networkConfig = config.networkConfig
 
-        val backgroundCacheLifetime = InternalCacheLifetime.from(config.backgroundCacheLifetime)
-        InternalConfig.cacheLifetimeConfig = CacheLifetimeConfig(backgroundCacheLifetime)
-        InternalConfig.loggerConfig = LoggerConfig(config.logLevel, config.logTag)
-        InternalConfig.shouldConsumePurchases = config.shouldConsumePurchases
+        val internalBackgroundCacheLifetime = InternalCacheLifetime.from(config.cacheLifetime)
+        InternalConfig.cacheLifetimeConfig = CacheLifetimeConfig(internalBackgroundCacheLifetime)
+
+        InternalConfig.loggerConfig = config.loggerConfig
     }
 
     override fun setEnvironment(environment: Environment) {
-        InternalConfig.environment = environment
+        InternalConfig.primaryConfig = InternalConfig.primaryConfig.copy(environment = environment)
     }
 
     override fun setLogLevel(logLevel: LogLevel) {
-        val oldConfig = InternalConfig.loggerConfig
-        InternalConfig.loggerConfig = LoggerConfig(logLevel, oldConfig.logTag)
+        InternalConfig.loggerConfig = InternalConfig.loggerConfig.copy(logLevel = logLevel)
     }
 
     override fun setLogTag(logTag: String) {
-        val oldConfig = InternalConfig.loggerConfig
-        InternalConfig.loggerConfig = LoggerConfig(oldConfig.logLevel, logTag)
+        InternalConfig.loggerConfig = InternalConfig.loggerConfig.copy(logTag = logTag)
     }
 
-    override fun setBackgroundCacheLifetime(backgroundCacheLifetime: CacheLifetime) {
-        val internalCacheLifetime = InternalCacheLifetime.from(backgroundCacheLifetime)
-        val oldConfig = InternalConfig.cacheLifetimeConfig
-        InternalConfig.cacheLifetimeConfig = CacheLifetimeConfig(
-            internalCacheLifetime,
-            oldConfig.foregroundCacheLifetime
-        )
+    override fun setCacheLifetime(cacheLifetime: CacheLifetime) {
+        val internalCacheLifetime = InternalCacheLifetime.from(cacheLifetime)
+        InternalConfig.cacheLifetimeConfig =
+            InternalConfig.cacheLifetimeConfig.copy(backgroundCacheLifetime = internalCacheLifetime)
     }
 
     override fun finish() {
