@@ -14,10 +14,10 @@ interface Qonversion {
         private var backingInstance: Qonversion? = null
 
         /**
-         * Use this variable to get the current initialized instance of Qonversion SDK.
-         * Please, use this variable strict after call Qonversion.initialize().
-         * Otherwise, this variable throws an exception.
-         * @return the current initialized instance of Qonversion SDK.
+         * Use this variable to get a current initialized instance of the Qonversion SDK.
+         * Please, use the variable only after calling Qonversion.initialize().
+         * Otherwise, trying to access the variable will cause an exception.
+         * @return Current initialized instance of the Qonversion SDK.
          * @throws QonversionException with [ErrorCode.NotInitialized]
          */
         @JvmStatic
@@ -25,13 +25,12 @@ interface Qonversion {
             get() = backingInstance ?: throw QonversionException(ErrorCode.NotInitialized)
 
         /**
-         * This function is an entry point to use Qonversion SDK.
-         * Call to initialize Qonversion SDK with required and additional configs.
-         * This function is the best way to set all additional configs you need to use Qonversion SDK.
-         * You still have an option to set a part of additional configs later
-         * via calling separated setters.
-         * @param config - a config you should get using [QonversionConfig.Builder.build]
-         * @return the initialized instance of Qonversion SDK.
+         * An entry point to use Qonversion SDK. Call to initialize Qonversion SDK with required and extra configs.
+         * The function is the best way to set additional configs you need to use Qonversion SDK.
+         * You still have an option to set a part of additional configs later via calling separated setters.
+         * @param config - a config that contains key SDK settings.
+         * Call [QonversionConfig.Builder.build] to configure and create a QonversionConfig instance.
+         * @return Initialized instance of the Qonversion SDK.
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
