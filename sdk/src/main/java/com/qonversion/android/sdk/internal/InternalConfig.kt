@@ -11,11 +11,11 @@ import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
-import com.qonversion.android.sdk.internal.provider.LoggerProvider
+import com.qonversion.android.sdk.internal.provider.LoggerConfigsProvider
 
 internal object InternalConfig :
     EnvironmentProvider,
-    LoggerProvider,
+    LoggerConfigsProvider,
     CacheLifetimeConfigProvider,
     NetworkConfigHolder {
     var uid: String = ""
