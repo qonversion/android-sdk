@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.cache
 
+import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -14,7 +15,7 @@ internal class CacherImpl<T : Any>(
     private val cacheMapper: CacheMapper<T>,
     private val storage: LocalStorage,
     private val appLifecycleObserver: AppLifecycleObserver,
-    private val cacheLifetimeConfig: CacheLifetimeConfig,
+    private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider,
     logger: Logger
 ) : Cacher<T>, BaseClass(logger) {
 
@@ -41,9 +42,9 @@ internal class CacherImpl<T : Any>(
         val cachedTime = cachedObject.date
         val ageSec = (currentTime.time - cachedTime.time).msToSec()
         val lifetimeSec = if (appLifecycleObserver.isInBackground()) {
-            cacheLifetimeConfig.backgroundCacheLifetime.seconds
+            cacheLifetimeConfigProvider.cacheLifetimeConfig.backgroundCacheLifetime.seconds
         } else {
-            cacheLifetimeConfig.foregroundCacheLifetime.seconds
+            cacheLifetimeConfigProvider.cacheLifetimeConfig.foregroundCacheLifetime.seconds
         }
         return ageSec <= lifetimeSec
     }

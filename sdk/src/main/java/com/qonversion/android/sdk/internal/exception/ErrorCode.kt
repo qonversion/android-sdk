@@ -1,5 +1,8 @@
 package com.qonversion.android.sdk.internal.exception
 
+/**
+ * This enum contains all available values of ErrorCode that QonversionException may contain.
+ */
 enum class ErrorCode(val defaultMessage: String) {
     BadNetworkRequest("Network request is incorrect and thus cannot be executed"),
     NetworkRequestExecution("Failed to execute network request"),

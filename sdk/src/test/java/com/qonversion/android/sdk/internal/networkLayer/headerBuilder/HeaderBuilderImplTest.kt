@@ -51,8 +51,8 @@ internal class HeaderBuilderTest {
         every { locale.language } returns testLanguage
         every { config.isSandbox } returns false
         every { config.uid } returns testUid
-        every { config.sdkVersion } returns testSdkVersion
-        every { config.projectKey } returns testProjectKey
+        every { config.primaryConfig.sdkVersion } returns testSdkVersion
+        every { config.primaryConfig.projectKey } returns testProjectKey
     }
 
     @Test

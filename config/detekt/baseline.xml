@@ -63,6 +63,7 @@
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongMethod:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.Purchase$@Test fun `purchase with oldSkuDetails billing flow params is correct`()</ID>
+    <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( val application: Application, val projectKey: String, val launchMode: LaunchMode, val store: Store, val environment: Environment, val logLevel: LogLevel, val logTag: String, val backgroundCacheLifetime: CacheLifetime, val shouldConsumePurchases: Boolean )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -256,7 +257,7 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.validator.RequestValidatorTest.kt:17</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.old.validator.TokenValidatorTest.kt:20</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:22</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:24</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.QAttributionManagerTest.kt:135</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.old.automations.QAutomationsManagerTest.kt:359</ID>

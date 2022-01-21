@@ -18,12 +18,15 @@ internal class HeaderBuilderImpl(
         localStorage.getString(StorageConstants.SourceKey.key, PLATFORM) ?: PLATFORM
     }
     private val sourceVersion by lazy {
-        localStorage.getString(StorageConstants.VersionKey.key, config.sdkVersion) ?: config.sdkVersion
+        localStorage.getString(StorageConstants.VersionKey.key, config.primaryConfig.sdkVersion)
+            ?: config.primaryConfig.sdkVersion
     }
 
     override fun buildCommonHeaders(): Map<String, String> {
         val locale = locale.language
-        val projectKey = if (config.isSandbox) "$DEBUG_MODE_PREFIX${config.projectKey}" else config.projectKey
+        val projectKey =
+            if (config.isSandbox) "$DEBUG_MODE_PREFIX${config.primaryConfig.projectKey}"
+            else config.primaryConfig.projectKey
         val bearer = "Bearer $projectKey"
 
         return mapOf(
@@ -33,6 +36,7 @@ internal class HeaderBuilderImpl(
             ApiHeader.SourceVersion.key to sourceVersion,
             ApiHeader.Platform.key to PLATFORM,
             ApiHeader.PlatformVersion.key to Build.VERSION.RELEASE,
-            ApiHeader.UserID.key to config.uid)
+            ApiHeader.UserID.key to config.uid
+        )
     }
 }

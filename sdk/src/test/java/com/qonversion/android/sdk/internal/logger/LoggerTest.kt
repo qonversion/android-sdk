@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.logger
 
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
+import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.slot
@@ -18,7 +19,7 @@ internal class LoggerTest {
 
     private lateinit var logger: Logger
 
-    private val mockLoggerConfig = mockk<LoggerConfig>()
+    private val mockLoggerConfigProvider = mockk<LoggerConfigProvider>()
 
     private val capturedTag = slot<String>()
     private val capturedMessage = slot<String>()
@@ -32,7 +33,7 @@ internal class LoggerTest {
         mockkStatic(Log::class)
 
         every {
-            mockLoggerConfig.logTag
+            mockLoggerConfigProvider.logTag
         } returns tag
 
         every {
@@ -59,10 +60,10 @@ internal class LoggerTest {
         @BeforeEach
         fun setUp() {
             every {
-                mockLoggerConfig.logLevel
+                mockLoggerConfigProvider.logLevel
             } returns LogLevel.Verbose
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -91,10 +92,10 @@ internal class LoggerTest {
         @BeforeEach
         fun setUp() {
             every {
-                mockLoggerConfig.logLevel
+                mockLoggerConfigProvider.logLevel
             } returns LogLevel.Info
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -123,10 +124,10 @@ internal class LoggerTest {
         @BeforeEach
         fun setUp() {
             every {
-                mockLoggerConfig.logLevel
+                mockLoggerConfigProvider.logLevel
             } returns LogLevel.Warning
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -155,10 +156,10 @@ internal class LoggerTest {
         @BeforeEach
         fun setUp() {
             every {
-                mockLoggerConfig.logLevel
+                mockLoggerConfigProvider.logLevel
             } returns LogLevel.Error
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
@@ -187,10 +188,10 @@ internal class LoggerTest {
         @BeforeEach
         fun setUp() {
             every {
-                mockLoggerConfig.logLevel
+                mockLoggerConfigProvider.logLevel
             } returns LogLevel.Disabled
 
-            logger = ConsoleLogger(mockLoggerConfig)
+            logger = ConsoleLogger(mockLoggerConfigProvider)
         }
 
         @Test
