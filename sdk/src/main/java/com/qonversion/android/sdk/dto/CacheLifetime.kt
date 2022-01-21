@@ -9,7 +9,7 @@ import com.qonversion.android.sdk.internal.utils.SEC_IN_DAY
  * The Qonversion SDK caches some information from the billing library or API.
  * This enum contains different available settings for cache lifetime.
  * Provide it to the configuration object via [Qonversion.initialize] while initializing the SDK
- * or via [Qonversion.setBackgroundCacheLifetime] after initializing the SDK.
+ * or via [Qonversion.setCacheLifetime] after initializing the SDK.
  * The provided value is used for background requests (when the app is
  * in the background) or for case when user internet connection is not stable.
  * Cache lifetime for foreground requests is much less than

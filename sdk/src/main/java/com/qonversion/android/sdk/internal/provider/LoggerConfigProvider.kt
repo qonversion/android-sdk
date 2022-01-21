@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.provider
 
 import com.qonversion.android.sdk.dto.LogLevel
 
-internal interface LoggerConfigsProvider {
+internal interface LoggerConfigProvider {
 
     val logLevel: LogLevel
 

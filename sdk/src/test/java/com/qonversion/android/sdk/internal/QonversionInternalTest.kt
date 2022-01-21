@@ -97,10 +97,10 @@ internal class QonversionInternalTest {
             val environments = Environment.values()
 
             // when
-            environments.forEach { item ->
-                qonversionInternal.setEnvironment(item)
+            environments.forEach { environment ->
+                qonversionInternal.setEnvironment(environment)
                 // then
-                assertThat(InternalConfig.primaryConfig.environment).isSameAs(item)
+                assertThat(InternalConfig.primaryConfig.environment).isSameAs(environment)
                 assertThat(InternalConfig.primaryConfig.projectKey).isSameAs(mockPrimaryConfig.projectKey)
                 assertThat(InternalConfig.primaryConfig.launchMode).isSameAs(mockPrimaryConfig.launchMode)
                 assertThat(InternalConfig.primaryConfig.sdkVersion).isSameAs(mockPrimaryConfig.sdkVersion)
@@ -113,12 +113,12 @@ internal class QonversionInternalTest {
             val logLevels = LogLevel.values()
 
 
-            logLevels.forEach { item ->
+            logLevels.forEach { logLevel ->
                 // when
-                qonversionInternal.setLogLevel(item)
+                qonversionInternal.setLogLevel(logLevel)
                 // then
                 assertThat(InternalConfig.loggerConfig.logTag).isSameAs(mockLogTag)
-                assertThat(InternalConfig.loggerConfig.logLevel).isSameAs(item)
+                assertThat(InternalConfig.loggerConfig.logLevel).isSameAs(logLevel)
             }
         }
 
@@ -147,22 +147,22 @@ internal class QonversionInternalTest {
 
             val cacheLifetimeConfigs = CacheLifetime.values()
 
-            cacheLifetimeConfigs.forEach { item ->
-                val itemInternalCacheLifetime = mockk<InternalCacheLifetime>()
+            cacheLifetimeConfigs.forEach { cacheLifetime ->
+                val internalCacheLifetime = mockk<InternalCacheLifetime>()
 
                 every {
-                    InternalCacheLifetime.from(item)
-                } returns itemInternalCacheLifetime
+                    InternalCacheLifetime.from(cacheLifetime)
+                } returns internalCacheLifetime
 
                 // when
-                qonversionInternal.setCacheLifetime(item)
+                qonversionInternal.setCacheLifetime(cacheLifetime)
 
                 // then
                 assertThat(InternalConfig.cacheLifetimeConfig.foregroundCacheLifetime).isSameAs(
                     mockForegroundInternalCacheLifetime
                 )
                 assertThat(InternalConfig.cacheLifetimeConfig.backgroundCacheLifetime).isSameAs(
-                    itemInternalCacheLifetime
+                    internalCacheLifetime
                 )
             }
         }

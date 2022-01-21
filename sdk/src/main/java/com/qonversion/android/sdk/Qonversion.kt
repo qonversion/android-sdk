@@ -69,7 +69,7 @@ interface Qonversion {
      * You can use it, for example, if your App could be used without an internet connection.
      * Set the cache lifetime as long as possible,
      * so you will not affect UX for users using your App offline.
-     * @param cacheLifetime: - a preferred cache life time.
+     * @param cacheLifetime - a preferred cache life time.
      */
     fun setCacheLifetime(cacheLifetime: CacheLifetime)
 

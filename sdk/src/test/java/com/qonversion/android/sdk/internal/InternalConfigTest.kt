@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
-import com.qonversion.android.sdk.internal.provider.LoggerConfigsProvider
+import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -70,7 +70,7 @@ internal class InternalConfigTest {
     }
 
     @Nested
-    inner class LoggerConfigsProviderTest {
+    inner class LoggerConfigProviderTest {
         private val mockLogLevel = mockk<LogLevel>()
         private val mockLogTag = "logTag"
         private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
@@ -78,7 +78,7 @@ internal class InternalConfigTest {
         @Test
         fun `get log level`() {
             // given
-            val loggerConfigProvider: LoggerConfigsProvider = InternalConfig
+            val loggerConfigProvider: LoggerConfigProvider = InternalConfig
             InternalConfig.loggerConfig = mockLoggerConfig
 
             // when
@@ -91,7 +91,7 @@ internal class InternalConfigTest {
         @Test
         fun `get log tag`() {
             // given
-            val loggerConfigProvider: LoggerConfigsProvider = InternalConfig
+            val loggerConfigProvider: LoggerConfigProvider = InternalConfig
             InternalConfig.loggerConfig = mockLoggerConfig
 
             // when
@@ -110,13 +110,16 @@ internal class InternalConfigTest {
         fun `get default cache lifetime config`() {
             // given
             val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
+            val expectedInternalCacheLifetimeConfig =
+                CacheLifetimeConfig(InternalCacheLifetime.ThreeDays, InternalCacheLifetime.FiveMin)
 
             // when
             val cacheLifetimeConfig = cacheLifetimeConfigProvider.cacheLifetimeConfig
 
             // then
-            assertThat(cacheLifetimeConfig.backgroundCacheLifetime).isSameAs(InternalCacheLifetime.ThreeDays)
-            assertThat(cacheLifetimeConfig.foregroundCacheLifetime).isSameAs(InternalCacheLifetime.FiveMin)
+            assertThat(cacheLifetimeConfig).isEqualToComparingFieldByField(
+                expectedInternalCacheLifetimeConfig
+            )
         }
 
         @Test
