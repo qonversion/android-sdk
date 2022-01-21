@@ -43,22 +43,24 @@ interface Qonversion {
     /**
      * Call to set an [Environment].
      * You may call this function to set an environment separately from [Qonversion.initialize]
-     * Call this function only in case you are sure you need to set an environment after [Qonversion.initialize].
+     * Call this function only in case you are sure you need to set an environment after the SDK initialization.
      * Otherwise, set an environment via [Qonversion.initialize].
      * @param environment - an environment.
      */
     fun setEnvironment(environment: Environment)
 
     /**
-     * Use this function to change the level of logs that Qonversion SDK will print.
+     * Use this function to change the level of the logs that the SDK prints.
+     * You may set log level both after Qonversion SDK initializing with [Qonversion.setLogLevel] and while Qonversion initializing with [Qonversion.initialize]
      * See [LogLevel] for details.
      * @param logLevel - a preferred log level.
      */
     fun setLogLevel(logLevel: LogLevel)
 
     /**
-     * Use this function to set the log tag that Qonversion SDK will print with every log message.
-     * You can use it, for example, to filter Qonversion SDK logs and your App own logs together.
+     * Use this function to set the log tag that the Qonversion SDK will print with every log message.
+     * For example, you can use it to filter the Qonversion SDK logs and your app own logs together.
+     * You may set log tag both after Qonversion SDK initializing with [Qonversion.setLogTag] and while Qonversion initializing with [Qonversion.initialize]
      * @param logTag - a preferred log tag.
      */
     fun setLogTag(logTag: String)
@@ -66,17 +68,18 @@ interface Qonversion {
     /**
      * Use this function to set the cache lifetime.
      * Qonversion SDK uses this value in case when user's internet connection is not stable.
-     * You can use it, for example, if your App could be used without an internet connection.
+     * For example, you can use it if your app can be used without the internet connection.
      * Set the cache lifetime as long as possible,
-     * so you will not affect UX for users using your App offline.
+     * so you will not affect user experience while using your app offline.
+     * You may set cache lifetime both after Qonversion SDK initializing with [Qonversion.setCacheLifetime] and while Qonversion initializing with [Qonversion.initialize]
      * @param cacheLifetime - a preferred cache life time.
      */
     fun setCacheLifetime(cacheLifetime: CacheLifetime)
 
     /**
-     * Call this function when you are done with the current instance of Qonversion SDK.
+     * Call this function when you are done with the current instance of the Qonversion SDK.
      * Please, make sure you have a reason to finish the current instance and initialize the new one.
-     * Initializing a new (not the first) instance of QonversionSDK is not necessary
+     * Initializing a new (not the first) instance of the Qonversion SDK is not necessary
      * for the most part of use cases.
      */
     fun finish()
