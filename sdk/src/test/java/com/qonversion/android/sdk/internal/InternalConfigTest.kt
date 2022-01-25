@@ -107,22 +107,6 @@ internal class InternalConfigTest {
         private val mockCacheLifetimeLoggerConfig = mockk<CacheLifetimeConfig>()
 
         @Test
-        fun `get default cache lifetime config`() {
-            // given
-            val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
-            val expectedInternalCacheLifetimeConfig =
-                CacheLifetimeConfig(InternalCacheLifetime.ThreeDays, InternalCacheLifetime.FiveMin)
-
-            // when
-            val cacheLifetimeConfig = cacheLifetimeConfigProvider.cacheLifetimeConfig
-
-            // then
-            assertThat(cacheLifetimeConfig).isEqualToComparingFieldByField(
-                expectedInternalCacheLifetimeConfig
-            )
-        }
-
-        @Test
         fun `get cache lifetime config`() {
             // given
             val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
