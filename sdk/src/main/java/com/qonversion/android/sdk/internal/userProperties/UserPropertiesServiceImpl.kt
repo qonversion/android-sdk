@@ -1,0 +1,40 @@
+package com.qonversion.android.sdk.internal.userProperties
+
+import com.qonversion.android.sdk.internal.common.BaseClass
+import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
+import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
+import com.qonversion.android.sdk.internal.networkLayer.dto.Response
+import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
+
+internal class UserPropertiesServiceImpl(
+    private val requestConfigurator: RequestConfigurator,
+    private val apiInteractor: ApiInteractor,
+    private val mapper: UserPropertiesMapper,
+    logger: Logger
+) : UserPropertiesService, BaseClass(logger) {
+    override suspend fun sendProperties(properties: Map<String, String>): List<String> {
+        val request = requestConfigurator.configureUserPropertiesRequest(properties)
+        val response = apiInteractor.execute(request)
+
+        return if (response !is Response.Success) {
+            logger.error("propertiesRequest ended with an error. Response code: ${response.code}")
+            emptyList()
+        } else {
+            mapProcessedProperties(response)
+        }
+    }
+
+    @Throws(QonversionException::class)
+    fun mapProcessedProperties(response: Response.Success): List<String> {
+        val data = try {
+            response.data as Map<*, *>
+        } catch (cause: ClassCastException) {
+            throw QonversionException(ErrorCode.Mapping, cause = cause)
+        }
+
+        return mapper.fromMap(data)
+    }
+}

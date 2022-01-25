@@ -7,4 +7,6 @@ internal interface RequestConfigurator {
     fun configureUserRequest(id: String): Request
 
     fun configureCreateUserRequest(id: String): Request
+
+    fun configureUserPropertiesRequest(properties: Map<String, String>): Request
 }
