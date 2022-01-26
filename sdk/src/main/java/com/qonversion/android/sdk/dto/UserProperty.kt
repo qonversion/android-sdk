@@ -4,6 +4,8 @@ package com.qonversion.android.sdk.dto
  * This enum class represents all defined user property values
  * that can be assigned to the user. Provide these keys along with values
  * to [Qonversion.setUserProperty] method.
+ * See [the documentation](https://documentation.qonversion.io/v3.0/docs/user-properties) for more information
+ * todo update documentation link if it changes
  */
 enum class UserProperty(val code: String) {
     Email("_q_email"),
