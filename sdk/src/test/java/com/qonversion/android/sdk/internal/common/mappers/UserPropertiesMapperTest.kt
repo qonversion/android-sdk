@@ -52,10 +52,10 @@ internal class UserPropertiesMapperTest {
     fun `get null processed properties`() {
         // given
         val expectedProperties = emptyList<String>()
-
         val data = defaultDataMap + mapOf(
             "processed" to null
         )
+
         // when
         val properties = mapper.fromMap(data)
 
