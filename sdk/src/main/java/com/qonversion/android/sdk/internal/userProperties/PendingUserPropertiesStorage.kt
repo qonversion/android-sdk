@@ -2,11 +2,13 @@ package com.qonversion.android.sdk.internal.userProperties
 
 internal interface PendingUserPropertiesStorage {
 
-    fun getProperties(): Map<String, String>
+    val properties: Map<String, String>
 
-    fun save(key: String, value: String)
+    fun set(key: String, value: String)
+
+    fun set(properties: Map<String, String>)
 
     fun delete(key: String)
 
-    fun update(key: String, newValue: String)
+    fun delete(keys: List<String>)
 }
