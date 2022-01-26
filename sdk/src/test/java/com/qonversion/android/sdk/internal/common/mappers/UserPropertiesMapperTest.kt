@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class UserPropertiesMapperTest {
-    lateinit var mapper: UserPropertiesMapper
+    private lateinit var mapper: UserPropertiesMapper
     private val defaultDataMap = mapOf(
         "result" to "ok",
         "error" to "",

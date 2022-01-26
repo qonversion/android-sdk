@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class UserPropertiesServiceImplTest {
-    lateinit var service: UserPropertiesServiceImpl
+    private lateinit var service: UserPropertiesServiceImpl
 
     private val mockRequestConfigurator = mockk<RequestConfigurator>()
     private val mockApiInteractor = mockk<ApiInteractor>()
