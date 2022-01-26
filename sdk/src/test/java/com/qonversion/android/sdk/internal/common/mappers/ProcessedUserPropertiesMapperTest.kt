@@ -5,8 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 
 import org.junit.jupiter.api.Test
 
-internal class UserPropertiesMapperTest {
-    private lateinit var mapper: UserPropertiesMapper
+internal class ProcessedUserPropertiesMapperTest {
+    private lateinit var mapper: ProcessedUserPropertiesMapper
     private val defaultDataMap = mapOf(
         "result" to "ok",
         "error" to "",
@@ -15,7 +15,7 @@ internal class UserPropertiesMapperTest {
 
     @BeforeEach
     fun setUp() {
-        mapper = UserPropertiesMapper()
+        mapper = ProcessedUserPropertiesMapper()
     }
 
     @Test

@@ -1,9 +1,9 @@
 package com.qonversion.android.sdk.internal.userProperties
 
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.internal.common.mappers.ProcessedUserPropertiesMapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
-import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
@@ -22,22 +22,14 @@ internal class UserPropertiesServiceImplTest {
 
     private val mockRequestConfigurator = mockk<RequestConfigurator>()
     private val mockApiInteractor = mockk<ApiInteractor>()
-    private val mockMapper = mockk<UserPropertiesMapper>()
-    private val mockLogger = mockk<Logger>()
-
-    private val slotErrorLogMessage = slot<String>()
+    private val mockMapper = mockk<ProcessedUserPropertiesMapper>()
 
     @BeforeEach
     fun setUp() {
-        every {
-            mockLogger.error(capture(slotErrorLogMessage))
-        } just runs
-
         service = UserPropertiesServiceImpl(
             mockRequestConfigurator,
             mockApiInteractor,
-            mockMapper,
-            mockLogger
+            mockMapper
         )
     }
 
@@ -50,12 +42,7 @@ internal class UserPropertiesServiceImplTest {
             val spykService = spyk(service)
 
             val expectedProperties = listOf("_q_email", "_q_adjust_adid")
-            val responseData = mapOf(
-                "result" to "ok",
-                "error" to "",
-                "errors" to listOf<String>(),
-                "processed" to expectedProperties
-            )
+            val mockResponseData = mockk<Any>()
 
             val propertiesMap = mapOf(
                 "key1" to "value1",
@@ -66,7 +53,7 @@ internal class UserPropertiesServiceImplTest {
                 mockRequestConfigurator.configureUserPropertiesRequest(propertiesMap)
             } returns mockRequest
 
-            val mockSuccessResponse = Response.Success(200, responseData)
+            val mockSuccessResponse = Response.Success(200, mockResponseData)
 
             coEvery {
                 mockApiInteractor.execute(mockRequest)
@@ -93,8 +80,6 @@ internal class UserPropertiesServiceImplTest {
             // given
             val spykService = spyk(service)
 
-            val expectedProperties = emptyList<String>()
-
             val propertiesMap = mapOf(
                 "key1" to "value1",
                 "key2" to "value2"
@@ -112,16 +97,14 @@ internal class UserPropertiesServiceImplTest {
             } returns mockErrorResponse
 
             // when
-            val result = spykService.sendProperties(propertiesMap)
+            coAssertThatQonversionExceptionThrown(ErrorCode.BackendError) {
+                spykService.sendProperties(propertiesMap)
+            }
 
             // then
-            assertThat(result).isEqualTo(expectedProperties)
-            assertThat(slotErrorLogMessage.captured).isEqualTo("propertiesRequest ended with an error. Response code: $errorCode")
-
             coVerifyOrder {
                 mockRequestConfigurator.configureUserPropertiesRequest(propertiesMap)
                 mockApiInteractor.execute(mockRequest)
-                mockLogger.error(any())
             }
             verify(exactly = 0) {
                 spykService.mapProcessedProperties(any())
@@ -135,16 +118,11 @@ internal class UserPropertiesServiceImplTest {
         fun `map processed properties success`() {
             // given
             val expectedProperties = listOf("_q_email", "_q_adjust_adid")
-            val responseData = mapOf(
-                "result" to "ok",
-                "error" to "",
-                "errors" to listOf<String>(),
-                "processed" to expectedProperties
-            )
+            val mockResponseData = mockk<Map<*, *>>()
 
-            val mockSuccessResponse = Response.Success(200, responseData)
+            val mockSuccessResponse = Response.Success(200, mockResponseData)
             every {
-                mockMapper.fromMap(responseData)
+                mockMapper.fromMap(mockResponseData)
             } returns expectedProperties
 
             // when
@@ -153,7 +131,7 @@ internal class UserPropertiesServiceImplTest {
             // then
             assertThat(result).isEqualTo(expectedProperties)
             verify(exactly = 1) {
-                mockMapper.fromMap(responseData)
+                mockMapper.fromMap(mockResponseData)
             }
         }
 
