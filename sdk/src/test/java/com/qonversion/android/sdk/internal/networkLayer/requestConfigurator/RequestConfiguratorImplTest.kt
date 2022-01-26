@@ -4,12 +4,12 @@ import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.internal.InternalConfig
-import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -91,5 +91,7 @@ internal class RequestConfiguratorImplTest {
         assertThat(request.headers).containsExactlyEntriesOf(testCommonHeaders)
         assertThat(request.body).containsExactlyEntriesOf(expectedBody)
         assertThat(request.url).isEqualTo(expectedUrl)
+
+        unmockkObject(InternalConfig)
     }
 }
