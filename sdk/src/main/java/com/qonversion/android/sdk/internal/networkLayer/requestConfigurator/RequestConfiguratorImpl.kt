@@ -24,6 +24,7 @@ internal class RequestConfiguratorImpl(
 
     override fun configureUserPropertiesRequest(properties: Map<String, String>): Request {
         val headers = headerBuilder.buildCommonHeaders()
+        // TODO delete access_token and q_uid from the body after migrating API to v2
         val body = mapOf(
             "access_token" to InternalConfig.primaryConfig.projectKey,
             "q_uid" to InternalConfig.uid,
