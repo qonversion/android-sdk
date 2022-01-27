@@ -5,7 +5,10 @@ import com.qonversion.android.sdk.dto.UserProperty
 /**
  * This builder class can be used to generate a map of user properties
  * which can be then provided to [Qonversion.setUserProperties].
+ *
  * It consumes both Qonversion defined and custom properties.
+ *
+ * Setting any property twice will override the previous value.
  */
 class UserPropertiesBuilder {
 
@@ -22,8 +25,8 @@ class UserPropertiesBuilder {
 
     /**
      * Set custom user id. It can be an identifier used on your backend
-     * to tie the current Qonversion user with your one.
-     * @param customUserId user id
+     * to link the current Qonversion user with your one.
+     * @param customUserId unique user id
      * @return builder instance for chain calls
      */
     fun setCustomUserId(customUserId: String): UserPropertiesBuilder = apply {
@@ -77,7 +80,9 @@ class UserPropertiesBuilder {
     }
 
     /**
-     * Set user property with custom key different from defined ones.
+     * Set a user property with a custom key different from defined ones.
+     *
+     * Can be called multiple times for different keys.
      * @param key nonempty key for user property consisting of letters A-Za-z, numbers, and symbols _.:-
      * @param value nonempty value for the given property
      */
@@ -86,7 +91,7 @@ class UserPropertiesBuilder {
     }
 
     /**
-     * Build final properties map with all the properties provided to builder before.
+     * Build final properties map with all the properties provided to the builder before.
      * @return properties map to provide to [Qonversion.setUserProperties] method.
      */
     fun build(): Map<String, String> = properties
