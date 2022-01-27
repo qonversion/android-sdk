@@ -3,6 +3,7 @@ package com.qonversion.android.sdk
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
+import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -83,4 +84,37 @@ interface Qonversion {
      * for the most part of use cases.
      */
     fun finish()
+
+    /**
+     * Add property value for the current user to use it then for segmentation or analytics
+     * as well as to provide it to third-party platforms.
+     * This method consumes only defined user properties. In order to pass custom property
+     * consider using [setCustomUserProperty] method.
+     * You can either pass multiple properties at once using [setUserProperties] method.
+     * @param property defined user attribute
+     * @param value nonempty value for the given property
+     */
+    fun setUserProperty(property: UserProperty, value: String)
+
+    /**
+     * Add property value for the current user to use it then for segmentation or analytics
+     * as well as to provide it to third-party platforms.
+     * This method consumes custom user properties. In order to pass defined property
+     * consider using [setUserProperty] method.
+     * You can either pass multiple properties at once using [setUserProperties] method.
+     * @param key nonempty key for user property consisting of letters A-Za-z, numbers, and symbols _.:-
+     * @param value nonempty value for the given property
+     */
+    fun setCustomUserProperty(key: String, value: String)
+
+    /**
+     * Add property value for the current user to use it then for segmentation or analytics
+     * as well as to provide it to third-party platforms.
+     * This method consumes both defined and custom user properties. For defined properties
+     * use [UserProperty.code] as the key. In order to pass single property
+     * consider using [setCustomUserProperty] method for the custom keys and [setUserProperties]
+     * for defined ones.
+     * @param userProperties map of nonempty key-value pairs of user properties
+     */
+    fun setUserProperties(userProperties: Map<String, String>)
 }
