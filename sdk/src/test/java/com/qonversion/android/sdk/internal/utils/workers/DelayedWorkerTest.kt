@@ -16,7 +16,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import java.lang.IllegalStateException
 
 internal class DelayedWorkerTest {
@@ -72,6 +71,27 @@ internal class DelayedWorkerTest {
             verify(exactly = 1) { worker.isInProgress() }
             verify { coroutineScope wasNot called }
         }
+
+        @Test
+        fun `check that job is exactly the launched one`() = runTest {
+            // given
+            worker = spyk(DelayedWorkerImpl(this))
+            var isActionCalled = false
+            val delay = 5000L
+            every { worker.isInProgress() } returns false
+
+            // when
+            worker.doDelayed(delay) {
+                isActionCalled = true
+            }
+
+            // then
+            verify(exactly = 1) { worker.isInProgress() }
+            assertThat(worker.job).isNotNull
+            worker.job?.cancel()
+            advanceTimeBy(delay + 1)
+            assertThat(isActionCalled).isFalse
+        }
     }
 
     @ExperimentalCoroutinesApi
@@ -118,17 +138,6 @@ internal class DelayedWorkerTest {
             // then
             verify(exactly = 1) { job.cancel() }
         }
-
-        @Test
-        fun `cancelling null job`() {
-            // given
-            worker.job = null
-
-            // when and then
-            assertDoesNotThrow {
-                worker.cancel()
-            }
-        }
     }
 
     @Nested
@@ -162,7 +171,7 @@ internal class DelayedWorkerTest {
         }
 
         @Test
-        fun `job is is progress`() {
+        fun `job is in progress`() {
             // given
             val job = mockk<Job>()
             every { job.isActive } returns true
