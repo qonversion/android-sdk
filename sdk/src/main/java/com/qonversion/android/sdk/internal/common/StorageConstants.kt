@@ -9,5 +9,6 @@ internal enum class StorageConstants(val key: String) {
     VersionKey("$PREFS_PREFIX.sourceVersion"),
     UserId("${Constants.PREFS_PREFIX}.storedUserID"),
     OriginalUserId("${Constants.PREFS_PREFIX}.originalUserID"),
-    Token("token_key") // Deprecated location of user id - was used in old sdk versions.
+    Token("token_key"), // Deprecated location of user id - was used in old sdk versions.
+    UserProperties("$PREFS_PREFIX.userProperties")
 }

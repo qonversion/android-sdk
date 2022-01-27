@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.userProperties
 
-internal interface PendingUserPropertiesStorage {
+internal interface UserPropertiesStorage {
 
     val properties: Map<String, String>
 
