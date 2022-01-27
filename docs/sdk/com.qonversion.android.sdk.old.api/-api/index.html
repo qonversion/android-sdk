@@ -1,0 +1,209 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Api</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../../styles/style.css" rel="Stylesheet"><link href="../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../styles/main.css" rel="Stylesheet"><link href="../../../styles/prism.css" rel="Stylesheet"><link href="../../../styles/logo-styles.css" rel="Stylesheet"><script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script><script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>  </head>
+  <body>
+    <div class="navigation-wrapper" id="navigation-wrapper">
+      <div id="leftToggler"><span class="icon-toggler"></span></div>
+      <div class="library-name"><a href="../../../index.html">sdk</a></div>
+      <div>3.2.1</div>
+      <div class="pull-right d-flex"><button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+      </div>
+    </div>
+    <div id="container">
+      <div id="leftColumn">
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div class="main-content" id="content" pageIds="sdk::com.qonversion.android.sdk.old.api/Api///PointingToDeclaration//165651098">
+          <div class="breadcrumbs"><a href="../../../index.html">sdk</a>/<a href="../index.html">com.qonversion.android.sdk.old.api</a>/<a href="index.html">Api</a></div>
+          <div class="cover ">
+            <h1 class="cover"><span><span>Api</span></span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">Api</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Functions">Functions</button></div>
+            <div class="tabs-section-body">
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="1222866318%2FFunctions%2F165651098" anchor-label="actionPoints" id="1222866318%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="action-points.html"><span>action</span><wbr></wbr><span><span>Points</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1222866318%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/GET///PointingToDeclaration/"><span class="token annotation">GET</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v2/users/{id}/action-points&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="action-points.html"><span class="token function">actionPoints</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Path///PointingToDeclaration/"><span class="token annotation">Path</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;id&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span> </span>userId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/QueryMap///PointingToDeclaration/"><span class="token annotation">QueryMap</span></span> </span>params<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-data/index.html">Data</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-action-points/index.html">ActionPoints</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1537609514%2FFunctions%2F165651098" anchor-label="attribution" id="-1537609514%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="attribution.html"><span><span>attribution</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1537609514%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;attribution&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="attribution.html"><span class="token function">attribution</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-attribution-request/index.html">AttributionRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-response/index.html">Response</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-726270990%2FFunctions%2F165651098" anchor-label="eligibility" id="-726270990%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="eligibility.html"><span><span>eligibility</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-726270990%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v1/products/get&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="eligibility.html"><span class="token function">eligibility</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-eligibility-request/index.html">EligibilityRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto.eligibility/-eligibility-result/index.html">EligibilityResult</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="695579493%2FFunctions%2F165651098" anchor-label="events" id="695579493%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="events.html"><span><span>events</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="695579493%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v2/events&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="events.html"><span class="token function">events</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-event-request/index.html">EventRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/java/lang/Void.html">Void</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-2037556924%2FFunctions%2F165651098" anchor-label="identify" id="-2037556924%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="identify.html"><span><span>identify</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2037556924%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v2/identities&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="identify.html"><span class="token function">identify</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-identity-request/index.html">IdentityRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-data/index.html">Data</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto.identity/-identity-result/index.html">IdentityResult</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="1240039186%2FFunctions%2F165651098" anchor-label="init" id="1240039186%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="init.html"><span><span>init</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1240039186%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v1/user/init&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="init.html"><span class="token function">init</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-init-request/index.html">InitRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-q-launch-result/index.html">QLaunchResult</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="742188402%2FFunctions%2F165651098" anchor-label="properties" id="742188402%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="properties.html"><span><span>properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="742188402%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v1/properties&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="properties.html"><span class="token function">properties</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-properties-request/index.html">PropertiesRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-response/index.html">Response</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="479326770%2FFunctions%2F165651098" anchor-label="purchase" id="479326770%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="purchase.html"><span><span>purchase</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="479326770%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v1/user/purchase&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="purchase.html"><span class="token function">purchase</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-purchase-request/index.html">PurchaseRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-q-launch-result/index.html">QLaunchResult</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1093046540%2FFunctions%2F165651098" anchor-label="restore" id="-1093046540%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="restore.html"><span><span>restore</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1093046540%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v1/user/restore&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="restore.html"><span class="token function">restore</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-restore-request/index.html">RestoreRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-base-response/index.html">BaseResponse</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-q-launch-result/index.html">QLaunchResult</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="876473425%2FFunctions%2F165651098" anchor-label="screens" id="876473425%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="screens.html"><span><span>screens</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="876473425%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/GET///PointingToDeclaration/"><span class="token annotation">GET</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;v2/screens/{id}&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="screens.html"><span class="token function">screens</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Path///PointingToDeclaration/"><span class="token annotation">Path</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;id&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span> </span>screenId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto/-data/index.html">Data</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../com.qonversion.android.sdk.old.dto.automations/-screen/index.html">Screen</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="433904921%2FFunctions%2F165651098" anchor-label="views" id="433904921%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="views.html"><span><span>views</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="433904921%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/POST///PointingToDeclaration/"><span class="token annotation">POST</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;/v2/screens/{id}/views&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="views.html"><span class="token function">views</span></a><span class="token punctuation">(</span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Path///PointingToDeclaration/"><span class="token annotation">Path</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;id&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span> </span>screenId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span><span class="token annotation">@</span><span data-unresolved-link="retrofit2.http/Body///PointingToDeclaration/"><span class="token annotation">Body</span></span> </span>request<span class="token operator">: </span><a href="../../com.qonversion.android.sdk.old.dto.request/-views-request/index.html">ViewsRequest</a><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="retrofit2/Call///PointingToDeclaration/">Call</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/java/lang/Void.html">Void</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+
