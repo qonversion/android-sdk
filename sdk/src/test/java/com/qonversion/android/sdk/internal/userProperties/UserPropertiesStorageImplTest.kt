@@ -228,7 +228,7 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `delete existent property`() {
+        fun `delete existing property`() {
             // given
             val key = "keyToDelete"
 
