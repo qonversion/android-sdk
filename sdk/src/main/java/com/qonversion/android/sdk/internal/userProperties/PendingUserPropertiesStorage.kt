@@ -4,11 +4,11 @@ internal interface PendingUserPropertiesStorage {
 
     val properties: Map<String, String>
 
-    fun set(key: String, value: String)
+    fun add(key: String, value: String)
 
-    fun set(properties: Map<String, String>)
+    fun add(properties: Map<String, String>)
 
-    fun delete(key: String)
+    fun delete(key: String, value: String)
 
-    fun delete(keys: List<String>)
+    fun delete(properties: Map<String, String>)
 }
