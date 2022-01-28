@@ -409,6 +409,8 @@ internal class UserPropertiesStorageImplTest {
             // when
             val result = userPropertiesStorage.getPropertiesFromStorage()
             assertThat(result).isEmpty()
+
+            // then
             assertThat(slotErrorLogMessage.captured)
                 .startsWith(errorString)
             verify(exactly = 1) {
