@@ -3,11 +3,15 @@ package com.qonversion.android.sdk.internal.exception
 import java.lang.StringBuilder
 
 /**
- * Qonversion exception that SDK may throw inside a throwable functions
- * Check error code and details to get more information about concrete exception you handle
+ * Qonversion exception that SDK may throw inside a throwable functions.
+ *
+ * Check error code and details to get more information about concrete exception you handle.
+ *
  * @property code an instance of ErrorCode
- * @property details a detailed description of the exception
- * @property cause a reason of the exception
+ * @constructor Creates a Qonversion exception to throw.
+ * @param code an instance of ErrorCode
+ * @param details a detailed description of the exception
+ * @param cause a reason of the exception
  */
 class QonversionException(
     val code: ErrorCode,

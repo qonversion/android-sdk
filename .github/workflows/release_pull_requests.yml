@@ -23,6 +23,10 @@ jobs:
           run: |
             fastlane bump version:${{ steps.tagName.outputs.tag }}
 
+        - name: Generate autodoc
+          run: |
+            fastlane generate_autodoc
+
         - name: Create pull request
           uses: peter-evans/create-pull-request@v3
           with:

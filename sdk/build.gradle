@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.dicedmelon.gradle.jacoco-android'
+apply plugin: 'org.jetbrains.dokka'
 
 jacoco {
     toolVersion '0.8.7'
@@ -189,4 +190,10 @@ dependencies {
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 
 }
+
+dokkaHtml {
+    outputDirectory.set(file("../docs"))
+    suppressInheritedMembers.set(true)
+}
+
 apply from: "../scripts/maven-release.gradle"
