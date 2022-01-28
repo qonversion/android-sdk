@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.userProperties
 
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
-import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
+import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -16,7 +16,7 @@ internal class UserPropertiesStorageImplTest {
     private lateinit var userPropertiesStorage: UserPropertiesStorageImpl
 
     private val mockLocalStorage = mockk<LocalStorage>()
-    private val mockMapper = mockk<UserPropertiesMapper>()
+    private val mockMapper = mockk<MapDataMapper>()
     private val propertiesKeyInMemory = "com.qonversion.keys.userProperties"
     private val propertiesStr = "properties"
     private val mockLogger = mockk<Logger>()
@@ -68,6 +68,10 @@ internal class UserPropertiesStorageImplTest {
         @BeforeEach
         fun setUp() {
             spykStorage = spyk(userPropertiesStorage)
+
+            every {
+                spykStorage.putPropertiesToStorage()
+            } just runs
         }
 
         @Test
@@ -78,10 +82,6 @@ internal class UserPropertiesStorageImplTest {
             val key = "key"
             val value = "value"
             val expectedProperties = mapOf(key to value)
-
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             mockGetPropertiesFromStorage(existingProperties)
 
@@ -103,9 +103,6 @@ internal class UserPropertiesStorageImplTest {
             val value = "value"
             val newProperties = mapOf(key to value)
             val existingProperties = mutableMapOf("oldKey" to "oldValue")
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             mockGetPropertiesFromStorage(existingProperties)
 
@@ -119,6 +116,27 @@ internal class UserPropertiesStorageImplTest {
             val updatedProperties = spykStorage.properties
             assertThat(updatedProperties).isEqualTo(newProperties + existingProperties)
         }
+
+        @Test
+        fun `update property`() {
+            // given
+            val key = "key"
+            val newValue = "newValue"
+            val expectedProperties = mapOf(key to newValue)
+            val existingProperties = mutableMapOf(key to "oldValue")
+
+            mockGetPropertiesFromStorage(existingProperties)
+
+            // when
+            spykStorage.set(key, newValue)
+
+            // then
+            verify(exactly = 1) {
+                spykStorage.putPropertiesToStorage()
+            }
+            val updatedProperties = spykStorage.properties
+            assertThat(updatedProperties).isEqualTo(expectedProperties)
+        }
     }
 
     @Nested
@@ -128,6 +146,10 @@ internal class UserPropertiesStorageImplTest {
         @BeforeEach
         fun setUp() {
             spykStorage = spyk(userPropertiesStorage)
+
+            every {
+                spykStorage.putPropertiesToStorage()
+            } just runs
         }
 
         @Test
@@ -138,7 +160,7 @@ internal class UserPropertiesStorageImplTest {
             mockGetPropertiesFromStorage(existingProperties)
 
             // when
-            spykStorage.set(mapOf())
+            spykStorage.set(emptyMap())
 
             // then
             verify(exactly = 0) {
@@ -153,9 +175,6 @@ internal class UserPropertiesStorageImplTest {
             // given
             val properties = mapOf("key1" to "value1", "key2" to "value2")
             val existingProperties = mutableMapOf<String, String>()
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             mockGetPropertiesFromStorage(existingProperties)
 
@@ -171,13 +190,10 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `set property when properties val is not empty`() {
+        fun `set properties when properties val is not empty`() {
             // given
             val properties = mapOf("key1" to "value1", "key2" to "value2")
             val existingProperties = mutableMapOf("oldKey" to "oldValue")
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             mockGetPropertiesFromStorage(existingProperties)
 
@@ -191,6 +207,28 @@ internal class UserPropertiesStorageImplTest {
             val updatedProperties = spykStorage.properties
             assertThat(updatedProperties).isEqualTo(properties + existingProperties)
         }
+
+        @Test
+        fun `update properties`() {
+            // given
+            val newProperties = mapOf("key1" to "newValue1", "key2" to "newValue1")
+            val existingProperties =
+                mapOf("key1" to "oldValue1", "key2" to "oldValue2", "key3" to "value3")
+            val expectedProperties =
+                mapOf("key1" to "newValue1", "key2" to "newValue1", "key3" to "value3")
+
+            mockGetPropertiesFromStorage(existingProperties)
+
+            // when
+            spykStorage.set(newProperties)
+
+            // then
+            verify(exactly = 1) {
+                spykStorage.putPropertiesToStorage()
+            }
+            val updatedProperties = spykStorage.properties
+            assertThat(updatedProperties).isEqualTo(expectedProperties)
+        }
     }
 
     @Nested
@@ -200,6 +238,10 @@ internal class UserPropertiesStorageImplTest {
         @BeforeEach
         fun setUp() {
             spykStorage = spyk(userPropertiesStorage)
+
+            every {
+                spykStorage.putPropertiesToStorage()
+            } just runs
         }
 
         @Test
@@ -208,9 +250,6 @@ internal class UserPropertiesStorageImplTest {
             val key = "keyToDelete"
 
             val existingProperties = mutableMapOf("key" to "value")
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             every {
                 spykStorage.properties
@@ -233,9 +272,6 @@ internal class UserPropertiesStorageImplTest {
             val key = "keyToDelete"
 
             val existingProperties = mutableMapOf("keyToDelete" to "value")
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             every {
                 spykStorage.properties
@@ -260,6 +296,10 @@ internal class UserPropertiesStorageImplTest {
         @BeforeEach
         fun setUp() {
             spykStorage = spyk(userPropertiesStorage)
+
+            every {
+                spykStorage.putPropertiesToStorage()
+            } just runs
         }
 
         @Test
@@ -268,9 +308,6 @@ internal class UserPropertiesStorageImplTest {
             val keys = listOf("keyToDelete1", "keyToDelete2")
 
             val existingProperties = mutableMapOf("key" to "value")
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
 
             every {
                 spykStorage.properties
@@ -291,17 +328,16 @@ internal class UserPropertiesStorageImplTest {
         fun `delete existent properties`() {
             // given
             val keys = listOf("keyToDelete1", "keyToDelete2")
-
-            val existingProperties =
-                mutableMapOf("keyToDelete1" to "value1", "keyToDelete2" to "value2")
-
-            every {
-                spykStorage.putPropertiesToStorage()
-            } just runs
+            val expectedProperties = mapOf("key3" to "value3")
+            val existingProperties = expectedProperties + (
+                    mapOf(
+                        "keyToDelete1" to "value1",
+                        "keyToDelete2" to "value2"
+                    ))
 
             every {
                 spykStorage.properties
-            } returns existingProperties
+            } returns existingProperties.toMutableMap()
 
             // when
             spykStorage.delete(keys)
@@ -311,7 +347,7 @@ internal class UserPropertiesStorageImplTest {
                 spykStorage.putPropertiesToStorage()
             }
             val updatedProperties = spykStorage.properties
-            assertThat(updatedProperties).isEmpty()
+            assertThat(updatedProperties).isEqualTo(expectedProperties)
         }
     }
 
@@ -335,6 +371,10 @@ internal class UserPropertiesStorageImplTest {
 
             //then
             assertThat(result).isEqualTo(result)
+            verifySequence {
+                mockLocalStorage.getString(propertiesKeyInMemory)
+                mockMapper.toMap(jsonString)
+            }
         }
 
         @Test
@@ -367,7 +407,8 @@ internal class UserPropertiesStorageImplTest {
             } throws exception
 
             // when
-            userPropertiesStorage.getPropertiesFromStorage()
+            val result = userPropertiesStorage.getPropertiesFromStorage()
+            assertThat(result).isEmpty()
             assertThat(slotErrorLogMessage.captured)
                 .startsWith(errorString)
             verify(exactly = 1) {

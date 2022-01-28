@@ -3,13 +3,13 @@ package com.qonversion.android.sdk.internal.userProperties
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
-import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
+import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.logger.Logger
 import java.lang.IllegalStateException
 
 internal class UserPropertiesStorageImpl(
     private val localStorage: LocalStorage,
-    private val mapper: UserPropertiesMapper,
+    private val mapper: MapDataMapper,
     logger: Logger
 ) : BaseClass(logger), UserPropertiesStorage {
 

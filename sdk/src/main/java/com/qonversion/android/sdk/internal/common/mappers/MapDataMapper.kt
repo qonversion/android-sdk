@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.internal.networkLayer.utils.toMap
 import org.json.JSONException
 import org.json.JSONObject
 
-internal class UserPropertiesMapper : Mapper<String> {
+internal class MapDataMapper : Mapper<String> {
     override fun fromMap(data: Map<*, *>): String {
         try {
             val propertiesJsonObj = JSONObject(data)

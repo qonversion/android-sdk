@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
 
 internal class UserPropertiesMapperTest {
-    private lateinit var mapper: UserPropertiesMapper
+    private lateinit var mapper: MapDataMapper
 
     @BeforeEach
     fun setUp() {
-        mapper = UserPropertiesMapper()
+        mapper = MapDataMapper()
     }
 
     @Nested
@@ -54,7 +54,7 @@ internal class UserPropertiesMapperTest {
     inner class ToMap {
 
         @Test
-        fun `to map success`() {
+        fun `to map success with strings`() {
             // given
             val jsonString = "{\"key1\":\"value1\",\"key2\":\"value2\"}"
             val expectedResult = mapOf("key1" to "value1", "key2" to "value2")
@@ -65,6 +65,20 @@ internal class UserPropertiesMapperTest {
             // then
             assertThat(result).isEqualTo(expectedResult)
         }
+
+        @Test
+        fun `to map success with numbers`() {
+            // given
+            val jsonString = "{\"key1\":1,\"key2\":2}"
+            val expectedResult = mapOf("key1" to "1", "key2" to "2")
+
+            // when
+            val result = mapper.toMap(jsonString)
+
+            // then
+            assertThat(result).isEqualTo(expectedResult)
+        }
+
 
         @Test
         fun `to map when exception occurred`() {
