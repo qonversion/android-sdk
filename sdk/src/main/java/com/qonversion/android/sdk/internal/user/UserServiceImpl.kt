@@ -70,23 +70,31 @@ internal class UserServiceImpl(
         val request = requestConfigurator.configureUserRequest(id)
         val response = apiInteractor.execute(request)
 
-        if (response !is Response.Success) {
-            if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
-                return createUser(id)
+        return when (response) {
+            is Response.Success -> mapUser(response)
+            is Response.Error -> {
+                if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
+                    return createUser(id)
+                }
+                throw QonversionException(
+                    ErrorCode.BackendError,
+                    "Response code ${response.code}, message: ${(response).message}"
+                )
             }
-            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
         }
-        return mapUser(response)
     }
 
     override suspend fun createUser(id: String): User {
         val request = requestConfigurator.configureCreateUserRequest(id)
         val response = apiInteractor.execute(request)
 
-        if (response !is Response.Success) {
-            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
+        return when (response) {
+            is Response.Success -> mapUser(response)
+            is Response.Error -> throw QonversionException(
+                ErrorCode.BackendError,
+                "Response code ${response.code}, message: ${(response).message}"
+            )
         }
-        return mapUser(response)
     }
 
     @Throws(QonversionException::class)

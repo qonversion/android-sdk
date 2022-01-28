@@ -11,6 +11,7 @@ enum class ErrorCode(val defaultMessage: String) {
     RequestDenied("Request denied"),
     Mapping("Failed to map response"),
     BadResponse("API response can not be handled"),
+    BackendError("Qonversion API returned an error"),
     BillingConnection("Failed to connect to BillingClient"),
     Consuming("Failed to consume purchase in Google Billing"),
     Acknowledging("Failed to acknowledge purchase in Google Billing"),
