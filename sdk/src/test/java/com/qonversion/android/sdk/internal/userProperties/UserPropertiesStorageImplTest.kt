@@ -397,7 +397,7 @@ internal class UserPropertiesStorageImplTest {
             // when
             userPropertiesStorage.putPropertiesToStorage()
 
-            //then
+            // then
             verify(exactly = 1) {
                 mockLocalStorage.putString(propertiesKeyInMemory, jsonString)
             }
