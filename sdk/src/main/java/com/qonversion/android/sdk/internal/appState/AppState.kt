@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.appState
 
-enum class AppState {
+internal enum class AppState {
     Foreground,
     Background
 }
