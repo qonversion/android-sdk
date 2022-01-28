@@ -10,7 +10,7 @@ internal class UserPropertiesMapper : Mapper<String> {
             val propertiesJsonObj = JSONObject(data)
             return propertiesJsonObj.toString()
         } catch (e: NullPointerException) {
-            throw IllegalStateException("Couldn't create JSONObject from map")
+            throw IllegalStateException("Couldn't create JSONObject from map", e)
         }
     }
 
@@ -20,7 +20,7 @@ internal class UserPropertiesMapper : Mapper<String> {
             val propertiesMap = propertiesJsonObj.toMap()
             return propertiesMap.mapValues { it.value.toString() }
         } catch (e: JSONException) {
-            throw IllegalStateException("Couldn't create JSONObject from string")
+            throw IllegalStateException("Couldn't create JSONObject from string", e)
         }
     }
 }
