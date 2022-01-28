@@ -34,33 +34,24 @@ internal class ProcessedUserPropertiesMapperTest {
     }
 
     @Test
-    fun `get empty processed properties`() {
+    fun `get empty and null processed properties`() {
         // given
-        val expectedProperties = listOf<String>()
-        val data = defaultDataMap + mapOf(
-            "processed" to expectedProperties
+        val emptyProperties = listOf<String>()
+        val listProperties = listOf(
+            emptyProperties, null
         )
 
-        // when
-        val properties = mapper.fromMap(data)
+        listProperties.forEach { properties ->
+            val data = defaultDataMap + mapOf(
+                "processed" to properties
+            )
 
-        // then
-        assertThat(properties).isEqualTo(expectedProperties)
-    }
+            // when
+            val result = mapper.fromMap(data)
 
-    @Test
-    fun `get null processed properties`() {
-        // given
-        val expectedProperties = emptyList<String>()
-        val data = defaultDataMap + mapOf(
-            "processed" to null
-        )
-
-        // when
-        val properties = mapper.fromMap(data)
-
-        // then
-        assertThat(properties).isEqualTo(expectedProperties)
+            // then
+            assertThat(result).isEqualTo(emptyProperties)
+        }
     }
 
     @Test

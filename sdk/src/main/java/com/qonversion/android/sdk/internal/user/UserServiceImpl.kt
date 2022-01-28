@@ -74,7 +74,10 @@ internal class UserServiceImpl(
             if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
                 return createUser(id)
             }
-            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
+            throw QonversionException(
+                ErrorCode.BackendError,
+                "Response code ${response.code}, message: ${(response as Response.Error).message}"
+            )
         }
         return mapUser(response)
     }
@@ -84,7 +87,10 @@ internal class UserServiceImpl(
         val response = apiInteractor.execute(request)
 
         if (response !is Response.Success) {
-            throw QonversionException(ErrorCode.BadResponse, "Response code: ${response.code}")
+            throw QonversionException(
+                ErrorCode.BackendError,
+                "Response code ${response.code}, message: ${(response as Response.Error).message}"
+            )
         }
         return mapUser(response)
     }

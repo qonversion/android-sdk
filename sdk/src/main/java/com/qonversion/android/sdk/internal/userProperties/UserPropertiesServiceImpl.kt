@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.userProperties
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.common.mappers.ProcessedUserPropertiesMapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -17,13 +18,17 @@ internal class UserPropertiesServiceImpl(
         val response = apiInteractor.execute(request)
 
         return if (response !is Response.Success) {
-            throw QonversionException(ErrorCode.BackendError, "Response code: ${response.code}")
+            throw QonversionException(
+                ErrorCode.BackendError,
+                "Response code ${response.code}, message: ${(response as Response.Error).message}"
+            )
         } else {
             mapProcessedProperties(response)
         }
     }
 
     @Throws(QonversionException::class)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun mapProcessedProperties(response: Response.Success): List<String> {
         val data = try {
             response.data as Map<*, *>
