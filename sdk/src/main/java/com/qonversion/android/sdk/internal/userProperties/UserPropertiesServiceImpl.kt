@@ -17,13 +17,12 @@ internal class UserPropertiesServiceImpl(
         val request = requestConfigurator.configureUserPropertiesRequest(properties)
         val response = apiInteractor.execute(request)
 
-        return if (response !is Response.Success) {
-            throw QonversionException(
+        return when (response) {
+            is Response.Success -> mapProcessedProperties(response)
+            is Response.Error -> throw QonversionException(
                 ErrorCode.BackendError,
-                "Response code ${response.code}, message: ${(response as Response.Error).message}"
+                "Response code ${response.code}, message: ${response.message}"
             )
-        } else {
-            mapProcessedProperties(response)
         }
     }
 
