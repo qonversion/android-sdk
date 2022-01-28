@@ -59,6 +59,25 @@ internal class UserPropertiesStorageImplTest {
             verifyGetPropertiesFromStorage()
             assertThat(result).isEqualTo(expectedProperties)
         }
+
+        private fun mockGetPropertiesFromStorage(properties: Map<String, String>) {
+            // Due to https://github.com/mockk/mockk/issues/468
+            // There is no chance to spyk code block inside 'by lazy'
+            every {
+                mockLocalStorage.getString(propertiesKeyInMemory)
+            } returns propertiesStr
+
+            every {
+                mockMapper.toMap(propertiesStr)
+            } returns properties
+        }
+
+        private fun verifyGetPropertiesFromStorage() {
+            verifySequence {
+                mockLocalStorage.getString(propertiesKeyInMemory)
+                mockMapper.toMap(propertiesStr)
+            }
+        }
     }
 
     @Nested
@@ -83,7 +102,9 @@ internal class UserPropertiesStorageImplTest {
             val value = "value"
             val expectedProperties = mapOf(key to value)
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(key, value)
@@ -104,7 +125,9 @@ internal class UserPropertiesStorageImplTest {
             val newProperties = mapOf(key to value)
             val existingProperties = mutableMapOf("oldKey" to "oldValue")
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(key, value)
@@ -125,7 +148,9 @@ internal class UserPropertiesStorageImplTest {
             val expectedProperties = mapOf(key to newValue)
             val existingProperties = mutableMapOf(key to "oldValue")
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(key, newValue)
@@ -157,7 +182,9 @@ internal class UserPropertiesStorageImplTest {
             // given
             val existingProperties = mutableMapOf<String, String>()
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(emptyMap())
@@ -176,7 +203,9 @@ internal class UserPropertiesStorageImplTest {
             val properties = mapOf("key1" to "value1", "key2" to "value2")
             val existingProperties = mutableMapOf<String, String>()
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(properties)
@@ -195,7 +224,9 @@ internal class UserPropertiesStorageImplTest {
             val properties = mapOf("key1" to "value1", "key2" to "value2")
             val existingProperties = mutableMapOf("oldKey" to "oldValue")
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties
 
             // when
             spykStorage.set(properties)
@@ -217,7 +248,9 @@ internal class UserPropertiesStorageImplTest {
             val expectedProperties =
                 mapOf("key1" to "newValue1", "key2" to "newValue1", "key3" to "value3")
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties.toMutableMap()
 
             // when
             spykStorage.set(newProperties)
@@ -421,13 +454,22 @@ internal class UserPropertiesStorageImplTest {
 
     @Nested
     inner class PutPropertiesToStorage {
+        private lateinit var spykStorage: UserPropertiesStorageImpl
+
+        @BeforeEach
+        fun setUp() {
+            spykStorage = spyk(userPropertiesStorage)
+        }
+
         @Test
         fun `put properties from filled storage`() {
             // given
             val jsonString = "jsonString"
             val existingProperties = mapOf("key1" to "value1", "key2" to "value2")
 
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties.toMutableMap()
 
             every {
                 mockMapper.fromMap(existingProperties)
@@ -438,10 +480,11 @@ internal class UserPropertiesStorageImplTest {
             } just runs
 
             // when
-            userPropertiesStorage.putPropertiesToStorage()
+            spykStorage.putPropertiesToStorage()
 
             // then
-            verify(exactly = 1) {
+            verifySequence {
+                mockMapper.fromMap(existingProperties)
                 mockLocalStorage.putString(propertiesKeyInMemory, jsonString)
             }
         }
@@ -451,7 +494,9 @@ internal class UserPropertiesStorageImplTest {
             // given
             val errorString = "Couldn't save properties to storage"
             val existingProperties = mapOf("key1" to "value1", "key2" to "value2")
-            mockGetPropertiesFromStorage(existingProperties)
+            every {
+                spykStorage.properties
+            } returns existingProperties.toMutableMap()
 
             val exception = IllegalStateException("Couldn't create JSONObject from map")
             every {
@@ -459,36 +504,20 @@ internal class UserPropertiesStorageImplTest {
             } throws exception
 
             // when
-            userPropertiesStorage.putPropertiesToStorage()
+            spykStorage.putPropertiesToStorage()
 
             // then
+            verify(exactly = 1) {
+                mockMapper.fromMap(existingProperties)
+            }
             verify(exactly = 0) {
-                mockLocalStorage.putString(any(), any())
+                mockLocalStorage wasNot called
             }
             assertThat(slotErrorLogMessage.captured)
                 .startsWith(errorString)
             verify(exactly = 1) {
                 mockLogger.error(errorString, exception)
             }
-        }
-    }
-
-    private fun mockGetPropertiesFromStorage(properties: Map<String, String>) {
-        // Due to https://github.com/mockk/mockk/issues/468
-        // There is no chance to spyk code block inside 'by lazy'
-        every {
-            mockLocalStorage.getString(propertiesKeyInMemory)
-        } returns propertiesStr
-
-        every {
-            mockMapper.toMap(propertiesStr)
-        } returns properties
-    }
-
-    private fun verifyGetPropertiesFromStorage() {
-        verifySequence {
-            mockLocalStorage.getString(propertiesKeyInMemory)
-            mockMapper.toMap(propertiesStr)
         }
     }
 }

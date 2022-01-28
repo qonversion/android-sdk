@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.userProperties
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
@@ -41,6 +42,7 @@ internal class UserPropertiesStorageImpl(
         putPropertiesToStorage()
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun getPropertiesFromStorage(): Map<String, String> {
         val propertiesJsonString =
             localStorage.getString(StorageConstants.UserProperties.key)
@@ -55,6 +57,7 @@ internal class UserPropertiesStorageImpl(
         } else emptyMap()
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun putPropertiesToStorage() {
         try {
             val propertiesJsonString = mapper.fromMap(properties)
