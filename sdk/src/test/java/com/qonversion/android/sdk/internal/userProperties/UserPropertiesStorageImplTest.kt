@@ -368,6 +368,8 @@ internal class UserPropertiesStorageImplTest {
 
             // when
             userPropertiesStorage.getPropertiesFromStorage()
+            
+            // then
             assertThat(slotErrorLogMessage.captured)
                 .startsWith(errorString)
             verify(exactly = 1) {
