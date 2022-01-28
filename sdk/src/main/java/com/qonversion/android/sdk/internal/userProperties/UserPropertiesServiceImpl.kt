@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.userProperties
 
 import androidx.annotation.VisibleForTesting
-import com.qonversion.android.sdk.internal.common.mappers.ProcessedUserPropertiesMapper
+import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesResponseMapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.Requ
 internal class UserPropertiesServiceImpl(
     private val requestConfigurator: RequestConfigurator,
     private val apiInteractor: ApiInteractor,
-    private val mapper: ProcessedUserPropertiesMapper
+    private val mapper: UserPropertiesResponseMapper
 ) : UserPropertiesService {
     override suspend fun sendProperties(properties: Map<String, String>): List<String> {
         val request = requestConfigurator.configureUserPropertiesRequest(properties)

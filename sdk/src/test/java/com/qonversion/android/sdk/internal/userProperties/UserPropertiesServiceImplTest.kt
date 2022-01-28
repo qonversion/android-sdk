@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.userProperties
 
 import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.internal.common.mappers.ProcessedUserPropertiesMapper
+import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesResponseMapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
@@ -22,7 +22,7 @@ internal class UserPropertiesServiceImplTest {
 
     private val mockRequestConfigurator = mockk<RequestConfigurator>()
     private val mockApiInteractor = mockk<ApiInteractor>()
-    private val mockMapper = mockk<ProcessedUserPropertiesMapper>()
+    private val mockMapper = mockk<UserPropertiesResponseMapper>()
 
     @BeforeEach
     fun setUp() {
