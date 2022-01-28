@@ -5,9 +5,7 @@ import kotlin.jvm.Throws
 
 internal interface UserPropertiesController {
 
-    @Throws(QonversionException::class)
     fun setProperty(key: String, value: String)
 
-    @Throws(QonversionException::class)
     fun setProperties(properties: Map<String, String>)
 }
