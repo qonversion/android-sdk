@@ -418,7 +418,7 @@ internal class UserPropertiesStorageImplTest {
             // when
             userPropertiesStorage.putPropertiesToStorage()
 
-            //then
+            // then
             verify(exactly = 0) {
                 mockLocalStorage.putString(any(), any())
             }
