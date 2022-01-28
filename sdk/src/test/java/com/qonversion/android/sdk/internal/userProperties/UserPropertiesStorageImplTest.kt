@@ -101,7 +101,7 @@ internal class UserPropertiesStorageImplTest {
             // given
             val key = "key"
             val value = "value"
-            val expectedProperties = mapOf(key to value)
+            val newProperties = mapOf(key to value)
             val existingProperties = mutableMapOf("oldKey" to "oldValue")
             every {
                 spykStorage.putPropertiesToStorage()
@@ -117,7 +117,7 @@ internal class UserPropertiesStorageImplTest {
                 spykStorage.putPropertiesToStorage()
             }
             val updatedProperties = spykStorage.properties
-            assertThat(updatedProperties).isEqualTo(expectedProperties + existingProperties)
+            assertThat(updatedProperties).isEqualTo(newProperties + existingProperties)
         }
     }
 
