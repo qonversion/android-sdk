@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.common.localStorage
 
-interface LocalStorage {
+internal interface LocalStorage {
 
     fun putInt(key: String, value: Int)
 

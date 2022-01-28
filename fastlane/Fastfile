@@ -41,4 +41,8 @@ lane :bump do |options|
 	update_gradle(new_version)
   end
 
+lane :generate_autodoc do
+    gradle(task: "dokkaHtml")
+  end
+
 end
