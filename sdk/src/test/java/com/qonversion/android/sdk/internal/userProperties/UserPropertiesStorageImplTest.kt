@@ -278,7 +278,7 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `delete non-existent property`() {
+        fun `delete non-existing property`() {
             // given
             val key = "keyToDelete"
             val value = "randomValue"
@@ -330,7 +330,9 @@ internal class UserPropertiesStorageImplTest {
             val key = "keyToDelete"
             val value = "value"
 
-            val existingProperties = mutableMapOf(key to value)
+
+            val expectedProperties = mapOf("someOtherKey" to "someOtherValue")
+            val existingProperties = (mapOf(key to value) + expectedProperties).toMutableMap()
 
             every {
                 spykStorage.properties
@@ -344,7 +346,7 @@ internal class UserPropertiesStorageImplTest {
                 spykStorage.putPropertiesToStorage()
             }
             val updatedProperties = spykStorage.properties
-            assertThat(updatedProperties).isEmpty()
+            assertThat(updatedProperties).isEqualTo(expectedProperties)
         }
     }
 
@@ -362,7 +364,7 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `delete non-existent properties`() {
+        fun `delete non-existing properties`() {
             // given
             val properties = mapOf("keyToDelete1" to "value1", "keyToDelete2" to "value2")
 
@@ -384,7 +386,7 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `delete existent properties`() {
+        fun `delete existing properties`() {
             // given
             val key1 = "keyToDelete1"
             val key2 = "keyToDelete2"
@@ -414,7 +416,7 @@ internal class UserPropertiesStorageImplTest {
         }
 
         @Test
-        fun `delete properties with existent key but another value`() {
+        fun `delete properties with existing key but another value`() {
             // given
             val key1 = "keyToDelete1"
             val key2 = "keyToDelete2"

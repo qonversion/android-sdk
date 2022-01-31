@@ -31,7 +31,7 @@ internal class UserPropertiesStorageImpl(
     }
 
     override fun delete(key: String, value: String) {
-        val localStoredValue = this.properties[key]
+        val localStoredValue = properties[key]
         if (localStoredValue == value) {
             properties.remove(key)
             putPropertiesToStorage()
