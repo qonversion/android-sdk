@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
 
-internal class UserPropertiesMapperTest {
+internal class MapDataMapperTest {
     private lateinit var mapper: MapDataMapper
 
     @BeforeEach
