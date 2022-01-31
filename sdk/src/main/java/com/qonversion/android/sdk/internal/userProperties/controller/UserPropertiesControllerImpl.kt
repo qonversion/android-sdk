@@ -65,14 +65,14 @@ internal class UserPropertiesControllerImpl(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun isValidUserProperty(key: String, value: String): Boolean {
         var isValid = true
-        if (isValidKey(key)) {
+        if (!isValidKey(key)) {
             isValid = false
             logger.error(
                 """Invalid key "$key" for user property. 
                     |The key should be nonempty and may consist of letters A-Za-z, 
                     |numbers, and symbols _.:-.""".trimMargin())
         }
-        if (isValidValue(value)) {
+        if (!isValidValue(value)) {
             isValid = false
             logger.error("""The empty value provided for user property "$key".""")
         }
@@ -82,7 +82,7 @@ internal class UserPropertiesControllerImpl(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun isValidKey(key: String): Boolean {
-        val regex = """(?=.*[a-zA-Z])^[-a-zA-Z0-9_.:]+\$""".toRegex()
+        val regex = """(?=.*[a-zA-Z])^[-a-zA-Z0-9_.:]+$""".toRegex()
         return key.isNotBlank() && regex.matches(key)
     }
 
