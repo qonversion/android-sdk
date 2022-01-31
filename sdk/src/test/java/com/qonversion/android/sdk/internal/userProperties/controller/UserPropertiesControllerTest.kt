@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.userProperties.controller
 
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.userProperties.PendingUserPropertiesStorage
+import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 import io.mockk.every
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 
 internal class UserPropertiesControllerTest {
 
-    private val mockStorage = mockk<PendingUserPropertiesStorage>()
+    private val mockStorage = mockk<UserPropertiesStorage>()
     private val mockService = mockk<UserPropertiesService>()
     private val mockDelayedWorker = mockk<DelayedWorker>()
     private val mockLogger = mockk<Logger>()

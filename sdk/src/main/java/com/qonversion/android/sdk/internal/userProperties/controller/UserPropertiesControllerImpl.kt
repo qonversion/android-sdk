@@ -4,14 +4,14 @@ import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.userProperties.PendingUserPropertiesStorage
+import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 
 private const val SENDING_DELAY_MS = 5000L
 
 internal class UserPropertiesControllerImpl(
-    private val storage: PendingUserPropertiesStorage,
+    private val storage: UserPropertiesStorage,
     private val service: UserPropertiesService,
     private val worker: DelayedWorker,
     private val sendingDelayMs: Long = SENDING_DELAY_MS,
