@@ -108,12 +108,14 @@ interface Qonversion {
     fun setCustomUserProperty(key: String, value: String)
 
     /**
-     * Add property value for the current user to use it then for segmentation or analytics
+     * Add a property value for the current user to use it then for segmentation or analytics
      * as well as to provide it to third-party platforms.
-     * This method consumes both defined and custom user properties. For defined properties
-     * use [UserProperty.code] as the key. In order to pass single property
-     * consider using [setCustomUserProperty] method for the custom keys and [setUserProperties]
-     * for defined ones.
+     * This method consumes both defined and custom user properties. Consider using
+     * [UserPropertiesBuilder] to prepare a properties map. You are also able to create it
+     * on your own using a custom key for a custom property or [UserProperty.code] as the key for
+     * a Qonversion defined property .
+     * In order to pass a single property consider using [setCustomUserProperty] method for
+     * a custom key and [setUserProperty] for a defined one.
      * @param userProperties map of nonempty key-value pairs of user properties
      */
     fun setUserProperties(userProperties: Map<String, String>)
