@@ -45,7 +45,7 @@ internal class UserPropertiesControllerImpl(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     suspend fun sendUserProperties() {
         try {
-            val propertiesToSend = storage.properties
+            val propertiesToSend = storage.properties.toMap()
             val processedProperties = service.sendProperties(propertiesToSend)
             // We delete all sent properties even if they were not successfully handled
             // to prevent spamming api with unacceptable properties.
