@@ -107,7 +107,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(key, value)
+            spykStorage.add(key, value)
 
             // then
             verify(exactly = 1) {
@@ -130,7 +130,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(key, value)
+            spykStorage.add(key, value)
 
             // then
             verify(exactly = 1) {
@@ -153,7 +153,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(key, newValue)
+            spykStorage.add(key, newValue)
 
             // then
             verify(exactly = 1) {
@@ -187,7 +187,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(emptyMap())
+            spykStorage.add(emptyMap())
 
             // then
             verify(exactly = 0) {
@@ -208,7 +208,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(properties)
+            spykStorage.add(properties)
 
             // then
             verify(exactly = 1) {
@@ -229,7 +229,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.set(properties)
+            spykStorage.add(properties)
 
             // then
             verify(exactly = 1) {
@@ -253,7 +253,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties.toMutableMap()
 
             // when
-            spykStorage.set(newProperties)
+            spykStorage.add(newProperties)
 
             // then
             verify(exactly = 1) {
@@ -281,6 +281,7 @@ internal class UserPropertiesStorageImplTest {
         fun `delete non-existent property`() {
             // given
             val key = "keyToDelete"
+            val value = "randomValue"
 
             val existingProperties = mutableMapOf("key" to "value")
 
@@ -289,10 +290,34 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.delete(key)
+            spykStorage.delete(key, value)
 
             // then
-            verify(exactly = 1) {
+            verify(exactly = 0) {
+                spykStorage.putPropertiesToStorage()
+            }
+            val updatedProperties = spykStorage.properties
+            assertThat(updatedProperties).isEqualTo(existingProperties)
+        }
+
+        @Test
+        fun `delete existing property key but another value`() {
+            // given
+            val key = "keyToDelete"
+            val value = "value"
+            val anotherValue = "anotherValue"
+
+            val existingProperties = mutableMapOf(key to value)
+
+            every {
+                spykStorage.properties
+            } returns existingProperties
+
+            // when
+            spykStorage.delete(key, anotherValue)
+
+            // then
+            verify(exactly = 0) {
                 spykStorage.putPropertiesToStorage()
             }
             val updatedProperties = spykStorage.properties
@@ -303,15 +328,16 @@ internal class UserPropertiesStorageImplTest {
         fun `delete existing property`() {
             // given
             val key = "keyToDelete"
+            val value = "value"
 
-            val existingProperties = mutableMapOf("keyToDelete" to "value")
+            val existingProperties = mutableMapOf(key to value)
 
             every {
                 spykStorage.properties
             } returns existingProperties
 
             // when
-            spykStorage.delete(key)
+            spykStorage.delete(key, value)
 
             // then
             verify(exactly = 1) {
@@ -338,7 +364,7 @@ internal class UserPropertiesStorageImplTest {
         @Test
         fun `delete non-existent properties`() {
             // given
-            val keys = listOf("keyToDelete1", "keyToDelete2")
+            val properties = mapOf("keyToDelete1" to "value1", "keyToDelete2" to "value2")
 
             val existingProperties = mutableMapOf("key" to "value")
 
@@ -347,7 +373,7 @@ internal class UserPropertiesStorageImplTest {
             } returns existingProperties
 
             // when
-            spykStorage.delete(keys)
+            spykStorage.delete(properties)
 
             // then
             verify(exactly = 1) {
@@ -360,20 +386,55 @@ internal class UserPropertiesStorageImplTest {
         @Test
         fun `delete existent properties`() {
             // given
-            val keys = listOf("keyToDelete1", "keyToDelete2")
+            val key1 = "keyToDelete1"
+            val key2 = "keyToDelete2"
+            val value1 = "value1"
+            val value2 = "value2"
+            val properties = mapOf(
+                key1 to value1,
+                key2 to value2
+            )
+
             val expectedProperties = mapOf("key3" to "value3")
-            val existingProperties = expectedProperties + (
-                    mapOf(
-                        "keyToDelete1" to "value1",
-                        "keyToDelete2" to "value2"
-                    ))
+            val existingProperties = expectedProperties + properties
 
             every {
                 spykStorage.properties
             } returns existingProperties.toMutableMap()
 
             // when
-            spykStorage.delete(keys)
+            spykStorage.delete(properties)
+
+            // then
+            verify(exactly = 1) {
+                spykStorage.putPropertiesToStorage()
+            }
+            val updatedProperties = spykStorage.properties
+            assertThat(updatedProperties).isEqualTo(expectedProperties)
+        }
+
+        @Test
+        fun `delete properties with existent key but another value`() {
+            // given
+            val key1 = "keyToDelete1"
+            val key2 = "keyToDelete2"
+            val value1 = "value1"
+            val value2 = "value2"
+            val anotherValue = "anotherValue"
+            val properties = mapOf(
+                key1 to value1,
+                key2 to value2
+            )
+
+            val expectedProperties = mapOf("key3" to "value3", key1 to anotherValue)
+            val existingProperties = expectedProperties + mapOf(key2 to value2)
+
+            every {
+                spykStorage.properties
+            } returns existingProperties.toMutableMap()
+
+            // when
+            spykStorage.delete(properties)
 
             // then
             verify(exactly = 1) {
