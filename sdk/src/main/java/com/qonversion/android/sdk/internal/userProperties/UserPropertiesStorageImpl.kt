@@ -26,8 +26,8 @@ internal class UserPropertiesStorageImpl(
 
     @Synchronized
     override fun add(properties: Map<String, String>) {
-        this.properties.putAll(properties)
         if (properties.isNotEmpty()) {
+            this.properties.putAll(properties)
             putPropertiesToStorage()
         }
     }
