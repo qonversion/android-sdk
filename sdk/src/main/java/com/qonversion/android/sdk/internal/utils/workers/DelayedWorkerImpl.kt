@@ -10,6 +10,9 @@ internal class DelayedWorkerImpl(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : DelayedWorker {
 
+    @set:Synchronized
+    @get:Synchronized
+    @Volatile
     internal var job: Job? = null
 
     override fun doDelayed(delayMs: Long, ignoreExistingJob: Boolean, action: suspend () -> Unit) {
