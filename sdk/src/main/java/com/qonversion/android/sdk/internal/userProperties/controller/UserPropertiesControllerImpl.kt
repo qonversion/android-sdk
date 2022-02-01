@@ -34,9 +34,9 @@ internal class UserPropertiesControllerImpl(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun sendUserPropertiesIfNeeded() {
+    fun sendUserPropertiesIfNeeded(ignoreExistingJob: Boolean = false) {
         if (storage.properties.isNotEmpty()) {
-            worker.doDelayed(sendingDelayMs) {
+            worker.doDelayed(sendingDelayMs, ignoreExistingJob) {
                 sendUserProperties()
             }
         }
@@ -46,17 +46,21 @@ internal class UserPropertiesControllerImpl(
     suspend fun sendUserProperties() {
         try {
             val propertiesToSend = storage.properties.toMap()
+            if (propertiesToSend.isEmpty()) {
+                return
+            }
             val processedProperties = service.sendProperties(propertiesToSend)
             // We delete all sent properties even if they were not successfully handled
             // to prevent spamming api with unacceptable properties.
             storage.delete(propertiesToSend)
-            sendUserPropertiesIfNeeded()
 
             propertiesToSend.keys.filter {
                 !processedProperties.contains(it)
             }.takeIf { it.isNotEmpty() }?.let {
                 logger.warn("Some user properties were not processed: ${it.joinToString(", ")}.")
             }
+
+            sendUserPropertiesIfNeeded(ignoreExistingJob = true)
         } catch (e: QonversionException) {
             logger.error("Failed to send user properties to api", e)
         }
