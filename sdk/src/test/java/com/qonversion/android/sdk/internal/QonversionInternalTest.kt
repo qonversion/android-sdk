@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.app.Application
 import com.qonversion.android.sdk.QonversionConfig
+import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
@@ -12,7 +13,6 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject

@@ -2,6 +2,7 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.util.Log
+import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
@@ -11,7 +12,6 @@ import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.exception.ErrorCode
-import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import com.qonversion.android.sdk.internal.utils.isDebuggable
 import io.mockk.every
 import io.mockk.mockk
