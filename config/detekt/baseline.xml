@@ -74,7 +74,7 @@
     <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$43</ID>
     <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$44</ID>
     <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$45</ID>
-    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$46</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$462323</ID>
     <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$47</ID>
     <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$6</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
@@ -124,6 +124,7 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt:82</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:333</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.InternalConfigTest.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>
