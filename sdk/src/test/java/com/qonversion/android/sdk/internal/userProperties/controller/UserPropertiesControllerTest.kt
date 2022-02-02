@@ -479,6 +479,8 @@ internal class UserPropertiesControllerTest {
 
             // then
             assertThat(result).isTrue
+
+            verify { mockLogger wasNot called }
         }
 
         @Test
@@ -533,7 +535,7 @@ internal class UserPropertiesControllerTest {
             assertThat(slotLoggerErrorMessage.captured).isEqualTo(expErrorMessage)
 
             verify(exactly = 0) {
-                mockLogger.error(expInfoMessage)
+                mockLogger.info(expInfoMessage)
                 mockSentPropertiesStorage.properties
             }
         }
@@ -552,6 +554,8 @@ internal class UserPropertiesControllerTest {
 
             // then
             assertThat(result).isTrue
+
+            verify { mockLogger wasNot called }
         }
 
         @Test
@@ -568,6 +572,8 @@ internal class UserPropertiesControllerTest {
 
             // then
             assertThat(result).isTrue
+
+            verify { mockLogger wasNot called }
         }
 
         @Test
