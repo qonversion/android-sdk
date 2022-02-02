@@ -1,3 +1,6 @@
+# This is not usual github action workflow
+# This file configures Codecov used for coverage reports.
+
 coverage:
   status:
     project:
@@ -6,5 +9,5 @@ coverage:
         threshold: 0%
         base: auto
 #       todo replace with main branch
-        branches: [feature/sdk_v3.0/codecov_checks]
+        branches: [feature/sdk_v3.0/root]
         if_ci_failed: error

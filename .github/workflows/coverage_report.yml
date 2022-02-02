@@ -1,10 +1,6 @@
-name: Code coverage badge
+name: Code coverage report
 
-on:
-  push:
-    branches:
-#      todo rename to main before release (here and in readme file for badge)
-      - feature/sdk_v3.0/codecov_checks
+on: push
 
 jobs:
   build:
