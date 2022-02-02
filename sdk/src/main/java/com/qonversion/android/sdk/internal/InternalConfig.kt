@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
@@ -7,7 +8,6 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
-import com.qonversion.android.sdk.internal.logger.LoggerConfig
 import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider

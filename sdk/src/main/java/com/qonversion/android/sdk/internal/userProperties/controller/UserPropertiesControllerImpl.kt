@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 
 private const val SENDING_DELAY_MS = 5000L
+private const val KEY_REGEX = """(?=.*[a-zA-Z])^[-a-zA-Z0-9_.:]+$"""
 
 internal class UserPropertiesControllerImpl(
     private val storage: UserPropertiesStorage,
@@ -86,7 +87,7 @@ internal class UserPropertiesControllerImpl(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun isValidKey(key: String): Boolean {
-        val regex = """(?=.*[a-zA-Z])^[-a-zA-Z0-9_.:]+$""".toRegex()
+        val regex = KEY_REGEX.toRegex()
         return key.isNotBlank() && regex.matches(key)
     }
 
