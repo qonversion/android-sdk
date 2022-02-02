@@ -29,23 +29,27 @@ import org.junit.jupiter.api.Test
 
 internal class UserPropertiesControllerTest {
 
-    private val mockStorage = mockk<UserPropertiesStorage>()
+    private val mockSentPropertiesStorage = mockk<UserPropertiesStorage>()
+    private val mockPendingPropertiesStorage = mockk<UserPropertiesStorage>()
     private val mockService = mockk<UserPropertiesService>()
     private val mockDelayedWorker = mockk<DelayedWorker>()
     private val mockLogger = mockk<Logger>()
     private val slotLoggerWarningMessage = slot<String>()
     private val slotLoggerErrorMessage = slot<String>()
+    private val slotLoggerInfoMessage = slot<String>()
     private lateinit var controller: UserPropertiesControllerImpl
     private lateinit var spykController: UserPropertiesControllerImpl
 
     @BeforeEach
     fun setUp() {
+        every { mockLogger.info(capture(slotLoggerInfoMessage)) } just runs
         every { mockLogger.warn(capture(slotLoggerWarningMessage)) } just runs
         every { mockLogger.error(capture(slotLoggerErrorMessage)) } just runs
         every { mockLogger.error(capture(slotLoggerErrorMessage), any()) } just runs
 
         controller = UserPropertiesControllerImpl(
-            mockStorage,
+            mockPendingPropertiesStorage,
+            mockSentPropertiesStorage,
             mockService,
             mockDelayedWorker,
             logger = mockLogger
@@ -66,19 +70,19 @@ internal class UserPropertiesControllerTest {
             // given
             val key = "test_key"
             val value = "test value"
-            every { spykController.isValidUserProperty(key, value) } returns true
+            every { spykController.shouldSendProperty(key, value) } returns true
 
             val slotKey = slot<String>()
             val slotValue = slot<String>()
-            every { mockStorage.add(capture(slotKey), capture(slotValue)) } just runs
+            every { mockPendingPropertiesStorage.add(capture(slotKey), capture(slotValue)) } just runs
 
             // when
             spykController.setProperty(key, value)
 
             // then
             verifyOrder {
-                spykController.isValidUserProperty(key, value)
-                mockStorage.add(key, value)
+                spykController.shouldSendProperty(key, value)
+                mockPendingPropertiesStorage.add(key, value)
                 spykController.sendUserPropertiesIfNeeded()
             }
             assertThat(slotKey.captured).isEqualTo(key)
@@ -90,36 +94,36 @@ internal class UserPropertiesControllerTest {
             // given
             val key = "test key"
             val value = "test value"
-            every { spykController.isValidUserProperty(key, value) } returns false
+            every { spykController.shouldSendProperty(key, value) } returns false
 
             // when
             spykController.setProperty(key, value)
 
             // then
             verifyOrder {
-                spykController.isValidUserProperty(key, value)
+                spykController.shouldSendProperty(key, value)
                 spykController.sendUserPropertiesIfNeeded()
             }
-            verify { mockStorage wasNot called }
+            verify { mockPendingPropertiesStorage wasNot called }
         }
 
         @Test
         fun `multiple valid properties`() {
             // given
             val properties = mapOf("one" to "three", "to be or not" to "be")
-            every { spykController.isValidUserProperty(any(), any()) } returns true
+            every { spykController.shouldSendProperty(any(), any()) } returns true
 
             val slotProperties = slot<Map<String, String>>()
-            every { mockStorage.add(capture(slotProperties)) } just runs
+            every { mockPendingPropertiesStorage.add(capture(slotProperties)) } just runs
 
             // when
             spykController.setProperties(properties)
 
             // then
             verifyOrder {
-                spykController.isValidUserProperty("one", "three")
-                spykController.isValidUserProperty("to be or not", "be")
-                mockStorage.add(properties)
+                spykController.shouldSendProperty("one", "three")
+                spykController.shouldSendProperty("to be or not", "be")
+                mockPendingPropertiesStorage.add(properties)
                 spykController.sendUserPropertiesIfNeeded()
             }
             assertThat(slotProperties.captured).isEqualTo(properties)
@@ -129,19 +133,19 @@ internal class UserPropertiesControllerTest {
         fun `multiple invalid properties`() {
             // given
             val properties = mapOf("one" to "three", "to be or not" to "be")
-            every { spykController.isValidUserProperty(any(), any()) } returns false
+            every { spykController.shouldSendProperty(any(), any()) } returns false
 
             val slotProperties = slot<Map<String, String>>()
-            every { mockStorage.add(capture(slotProperties)) } just runs
+            every { mockPendingPropertiesStorage.add(capture(slotProperties)) } just runs
 
             // when
             spykController.setProperties(properties)
 
             // then
             verifyOrder {
-                spykController.isValidUserProperty("one", "three")
-                spykController.isValidUserProperty("to be or not", "be")
-                mockStorage.add(emptyMap())
+                spykController.shouldSendProperty("one", "three")
+                spykController.shouldSendProperty("to be or not", "be")
+                mockPendingPropertiesStorage.add(emptyMap())
                 spykController.sendUserPropertiesIfNeeded()
             }
             assertThat(slotProperties.captured).isEmpty()
@@ -153,20 +157,20 @@ internal class UserPropertiesControllerTest {
             val validProperties = mapOf("one" to "three")
             val invalidProperties = mapOf("to be or not" to "be")
             val properties = validProperties + invalidProperties
-            every { spykController.isValidUserProperty("one", "three") } returns true
-            every { spykController.isValidUserProperty("to be or not", "be") } returns false
+            every { spykController.shouldSendProperty("one", "three") } returns true
+            every { spykController.shouldSendProperty("to be or not", "be") } returns false
 
             val slotProperties = slot<Map<String, String>>()
-            every { mockStorage.add(capture(slotProperties)) } just runs
+            every { mockPendingPropertiesStorage.add(capture(slotProperties)) } just runs
 
             // when
             spykController.setProperties(properties)
 
             // then
             verifyOrder {
-                spykController.isValidUserProperty("one", "three")
-                spykController.isValidUserProperty("to be or not", "be")
-                mockStorage.add(validProperties)
+                spykController.shouldSendProperty("one", "three")
+                spykController.shouldSendProperty("to be or not", "be")
+                mockPendingPropertiesStorage.add(validProperties)
                 spykController.sendUserPropertiesIfNeeded()
             }
             assertThat(slotProperties.captured).isEqualTo(validProperties)
@@ -185,7 +189,7 @@ internal class UserPropertiesControllerTest {
         fun `non-empty properties`() {
             // given
             val properties = mapOf("one" to "three")
-            every { mockStorage.properties } returns properties
+            every { mockPendingPropertiesStorage.properties } returns properties
             every {
                 mockDelayedWorker.doDelayed(any(), any(), captureLambda())
             } answers {
@@ -197,7 +201,7 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockDelayedWorker.doDelayed(5000, false, any())
                 spykController.sendUserProperties()
             }
@@ -207,13 +211,13 @@ internal class UserPropertiesControllerTest {
         fun `empty properties`() {
             // given
             val properties = emptyMap<String, String>()
-            every { mockStorage.properties } returns properties
+            every { mockPendingPropertiesStorage.properties } returns properties
 
             // when
             spykController.sendUserPropertiesIfNeeded()
 
             // then
-            verify(exactly = 1) { mockStorage.properties }
+            verify(exactly = 1) { mockPendingPropertiesStorage.properties }
             coVerify(exactly = 0) {
                 mockDelayedWorker.doDelayed(any(), any(), any())
                 spykController.sendUserProperties()
@@ -224,7 +228,7 @@ internal class UserPropertiesControllerTest {
         fun `ignoring existing job`() {
             // given
             val properties = mapOf("one" to "three")
-            every { mockStorage.properties } returns properties
+            every { mockPendingPropertiesStorage.properties } returns properties
             every {
                 mockDelayedWorker.doDelayed(any(), any(), captureLambda())
             } answers {
@@ -236,7 +240,7 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockDelayedWorker.doDelayed(5000, true, any())
                 spykController.sendUserProperties()
             }
@@ -248,7 +252,8 @@ internal class UserPropertiesControllerTest {
             val customDelay = 1000L
             val spykController = spyk(
                 UserPropertiesControllerImpl(
-                    mockStorage,
+                    mockPendingPropertiesStorage,
+                    mockSentPropertiesStorage,
                     mockService,
                     mockDelayedWorker,
                     sendingDelayMs = customDelay,
@@ -258,7 +263,7 @@ internal class UserPropertiesControllerTest {
             coEvery { spykController.sendUserProperties() } just runs
 
             val properties = mapOf("one" to "three")
-            every { mockStorage.properties } returns properties
+            every { mockPendingPropertiesStorage.properties } returns properties
             every {
                 mockDelayedWorker.doDelayed(any(), any(), captureLambda())
             } answers {
@@ -270,7 +275,7 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockDelayedWorker.doDelayed(customDelay, false, any())
                 spykController.sendUserProperties()
             }
@@ -292,8 +297,9 @@ internal class UserPropertiesControllerTest {
         fun `successfully send properties`() = runTest {
             // given
             val properties = mapOf("one" to "three")
-            every { mockStorage.properties }.returns(properties)
-            every { mockStorage.delete(properties) } just runs
+            every { mockPendingPropertiesStorage.properties }.returns(properties)
+            every { mockPendingPropertiesStorage.delete(properties) } just runs
+            every { mockSentPropertiesStorage.add(properties) } just runs
 
             val processedProperties = properties.keys.toList()
             coEvery {
@@ -305,9 +311,10 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockService.sendProperties(properties)
-                mockStorage.delete(properties)
+                mockPendingPropertiesStorage.delete(properties)
+                mockSentPropertiesStorage.add(properties)
                 spykController.sendUserPropertiesIfNeeded(true)
             }
             verify { mockLogger wasNot called }
@@ -317,7 +324,7 @@ internal class UserPropertiesControllerTest {
         fun `send empty properties`() = runTest {
             // given
             val properties = emptyMap<String, String>()
-            every { mockStorage.properties }.returns(properties)
+            every { mockPendingPropertiesStorage.properties }.returns(properties)
 
             // when
             spykController.sendUserProperties()
@@ -325,7 +332,7 @@ internal class UserPropertiesControllerTest {
             // then
             verify { mockService wasNot called }
             verify(exactly = 0) {
-                mockStorage.delete(any())
+                mockPendingPropertiesStorage.delete(any())
                 spykController.sendUserPropertiesIfNeeded(any())
             }
             verify { mockLogger wasNot called }
@@ -335,7 +342,7 @@ internal class UserPropertiesControllerTest {
         fun `failed to send properties`() = runTest {
             // given
             val properties = mapOf("one" to "three")
-            every { mockStorage.properties }.returns(properties)
+            every { mockPendingPropertiesStorage.properties }.returns(properties)
 
             val exception = QonversionException(ErrorCode.BackendError)
             coEvery {
@@ -347,12 +354,12 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockService.sendProperties(properties)
                 mockLogger.error(any(), exception)
             }
             verify(exactly = 0) {
-                mockStorage.delete(any())
+                mockPendingPropertiesStorage.delete(any())
                 spykController.sendUserPropertiesIfNeeded(any())
             }
             assertThat(slotLoggerErrorMessage.captured)
@@ -367,22 +374,26 @@ internal class UserPropertiesControllerTest {
                 "to be or not" to "be",
                 "s" to "rm"
             )
-            every { mockStorage.properties }.returns(properties)
-            every { mockStorage.delete(properties) } just runs
-
-            val processedProperties = listOf("to be or not")
+            val processedPropertiesKeys = listOf("to be or not")
             coEvery {
                 mockService.sendProperties(properties)
-            } returns processedProperties
+            } returns processedPropertiesKeys
+
+            val processedProperties = properties.filter { processedPropertiesKeys.contains(it.key) }
+
+            every { mockPendingPropertiesStorage.properties }.returns(properties)
+            every { mockPendingPropertiesStorage.delete(properties) } just runs
+            every { mockSentPropertiesStorage.add(processedProperties) } just runs
 
             // when
             spykController.sendUserProperties()
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockService.sendProperties(properties)
-                mockStorage.delete(properties)
+                mockPendingPropertiesStorage.delete(properties)
+                mockSentPropertiesStorage.add(processedProperties)
                 mockLogger.warn(any())
                 spykController.sendUserPropertiesIfNeeded(true)
             }
@@ -395,8 +406,9 @@ internal class UserPropertiesControllerTest {
             // given
             val properties = mutableMapOf("one" to "three")
             val expectedProperties = properties.toMap()
-            every { mockStorage.properties }.returns(properties)
-            every { mockStorage.delete(expectedProperties) } just runs
+            every { mockPendingPropertiesStorage.properties }.returns(properties)
+            every { mockPendingPropertiesStorage.delete(expectedProperties) } just runs
+            every { mockSentPropertiesStorage.add(expectedProperties) } just runs
 
             val processedProperties = properties.keys.toList()
             coEvery {
@@ -411,9 +423,10 @@ internal class UserPropertiesControllerTest {
 
             // then
             coVerifyOrder {
-                mockStorage.properties
+                mockPendingPropertiesStorage.properties
                 mockService.sendProperties(expectedProperties)
-                mockStorage.delete(expectedProperties)
+                mockPendingPropertiesStorage.delete(expectedProperties)
+                mockSentPropertiesStorage.add(expectedProperties)
                 spykController.sendUserPropertiesIfNeeded(true)
             }
             verify { mockLogger wasNot called }
@@ -459,9 +472,99 @@ internal class UserPropertiesControllerTest {
             // given
             val key = "test_key"
             val value = "test value"
+            every { mockSentPropertiesStorage.properties}.returns(emptyMap())
 
             // when
-            val result = controller.isValidUserProperty(key, value)
+            val result = controller.shouldSendProperty(key, value)
+
+            // then
+            assertThat(result).isTrue
+        }
+
+        @Test
+        fun `already sent user property`() {
+            // given
+            val key = "test_key"
+            val value = "test value"
+            val sentProperties = mapOf(key to value)
+
+            every { mockSentPropertiesStorage.properties}.returns(sentProperties)
+
+            val expInfoMessage =
+                """The same property with key: "$key" and value: "$value" 
+                |was already sent for the current user. 
+                |To avoid any confusion, it will not be sent again.""".trimMargin()
+
+            // when
+            val result = controller.shouldSendProperty(key, value)
+
+            // then
+            assertThat(result).isFalse
+            assertThat(slotLoggerInfoMessage.captured).isEqualTo(expInfoMessage)
+            verify(exactly = 1) {
+                mockLogger.info(expInfoMessage)
+            }
+        }
+
+        @Test
+        fun `already sent invalid user property`() {
+            // given
+            val key = "  "
+            val value = "test value"
+            val sentProperties = mapOf(key to value)
+
+            every { mockSentPropertiesStorage.properties}.returns(sentProperties)
+
+            val expErrorMessage =
+                """Invalid key "$key" for user property. 
+                    |The key should be nonempty and may consist of letters A-Za-z, 
+                    |numbers, and symbols _.:-.""".trimMargin()
+
+            val expInfoMessage =
+                """The same property with key: "$key" and value: "$value" 
+                |was already sent for the current user. 
+                |To avoid any confusion, it will not be sent again.""".trimMargin()
+
+            // when
+            val result = controller.shouldSendProperty(key, value)
+
+            // then
+            assertThat(result).isFalse
+            assertThat(slotLoggerErrorMessage.captured).isEqualTo(expErrorMessage)
+
+            verify(exactly = 0) {
+                mockLogger.error(expInfoMessage)
+                mockSentPropertiesStorage.properties
+            }
+        }
+
+        @Test
+        fun `already sent property with the same key and another value`() {
+            // given
+            val key = "test_key"
+            val value = "test value"
+            val sentProperties = mapOf(key to "other value")
+
+            every { mockSentPropertiesStorage.properties}.returns(sentProperties)
+
+            // when
+            val result = controller.shouldSendProperty(key, value)
+
+            // then
+            assertThat(result).isTrue
+        }
+
+        @Test
+        fun `already sent property with the same value and another key`() {
+            // given
+            val key = "test_key"
+            val value = "test value"
+            val sentProperties = mapOf("some other key" to value)
+
+            every { mockSentPropertiesStorage.properties}.returns(sentProperties)
+
+            // when
+            val result = controller.shouldSendProperty(key, value)
 
             // then
             assertThat(result).isTrue
@@ -478,11 +581,15 @@ internal class UserPropertiesControllerTest {
                     |numbers, and symbols _.:-.""".trimMargin()
 
             // when
-            val result = controller.isValidUserProperty(key, value)
+            val result = controller.shouldSendProperty(key, value)
 
             // then
             assertThat(result).isFalse
             assertThat(slotLoggerErrorMessage.captured).isEqualTo(expErrorMessage)
+
+            verify(exactly = 1) {
+                mockLogger.error(expErrorMessage)
+            }
         }
 
         @Test
@@ -493,11 +600,14 @@ internal class UserPropertiesControllerTest {
             val expErrorMessage = """The empty value provided for user property "$key"."""
 
             // when
-            val result = controller.isValidUserProperty(key, value)
+            val result = controller.shouldSendProperty(key, value)
 
             // then
             assertThat(result).isFalse
             assertThat(slotLoggerErrorMessage.captured).isEqualTo(expErrorMessage)
+            verify(exactly = 1) {
+                mockLogger.error(expErrorMessage)
+            }
         }
 
         @Test
@@ -515,11 +625,15 @@ internal class UserPropertiesControllerTest {
             every { mockLogger.error(capture(slotErrorMessages)) } just runs
 
             // when
-            val result = controller.isValidUserProperty(key, value)
+            val result = controller.shouldSendProperty(key, value)
 
             // then
             assertThat(result).isFalse
             assertThat(slotErrorMessages).isEqualTo(expErrorMessages)
+            verify(exactly = 1) {
+                mockLogger.error(expErrorMessages[0])
+                mockLogger.error(expErrorMessages[1])
+            }
         }
     }
 }
