@@ -18,18 +18,21 @@ internal class UserPropertiesStorageImpl(
         getPropertiesFromStorage().toMutableMap()
     }
 
+    @Synchronized
     override fun add(key: String, value: String) {
         properties[key] = value
         putPropertiesToStorage()
     }
 
+    @Synchronized
     override fun add(properties: Map<String, String>) {
-        this.properties.putAll(properties)
         if (properties.isNotEmpty()) {
+            this.properties.putAll(properties)
             putPropertiesToStorage()
         }
     }
 
+    @Synchronized
     override fun delete(key: String, value: String) {
         val localStoredValue = properties[key]
         if (localStoredValue == value) {
@@ -38,6 +41,7 @@ internal class UserPropertiesStorageImpl(
         }
     }
 
+    @Synchronized
     override fun delete(properties: Map<String, String>) {
         properties.forEach { (key, value) ->
             val localStoredValue = this.properties[key]

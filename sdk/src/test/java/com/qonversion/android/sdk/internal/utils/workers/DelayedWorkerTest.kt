@@ -73,6 +73,30 @@ internal class DelayedWorkerTest {
         }
 
         @Test
+        fun `do delayed job ignoring existing one`() = runTest {
+            // given
+            worker = spyk(DelayedWorkerImpl(this))
+            var isActionCalled = false
+            val delay = 5000L
+            every { worker.isInProgress() } returns true
+
+            // when
+            worker.doDelayed(delay, ignoreExistingJob = true) {
+                isActionCalled = true
+            }
+
+            // then
+            verify(exactly = 0) { worker.isInProgress() }
+            assertThat(worker.job).isNotNull
+            assertThat(isActionCalled).isFalse
+            advanceTimeBy(delay / 2)
+            assertThat(isActionCalled).isFalse
+            advanceTimeBy(delay / 2 + 1)
+            assertThat(isActionCalled).isTrue
+            assertThat(worker.job?.isCompleted).isTrue
+        }
+
+        @Test
         fun `check that job is exactly the launched one`() = runTest {
             // given
             worker = spyk(DelayedWorkerImpl(this))

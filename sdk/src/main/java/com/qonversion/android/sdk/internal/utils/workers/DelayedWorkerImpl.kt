@@ -10,10 +10,13 @@ internal class DelayedWorkerImpl(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : DelayedWorker {
 
+    @set:Synchronized
+    @get:Synchronized
+    @Volatile
     internal var job: Job? = null
 
-    override fun doDelayed(delayMs: Long, action: suspend () -> Unit) {
-        if (!isInProgress()) {
+    override fun doDelayed(delayMs: Long, ignoreExistingJob: Boolean, action: suspend () -> Unit) {
+        if (ignoreExistingJob || !isInProgress()) {
             job = scope.launch {
                 delay(delayMs)
                 action()
@@ -30,6 +33,7 @@ internal class DelayedWorkerImpl(
 
     override fun cancel() {
         job?.cancel()
+        job = null
     }
 
     override fun isInProgress(): Boolean {
