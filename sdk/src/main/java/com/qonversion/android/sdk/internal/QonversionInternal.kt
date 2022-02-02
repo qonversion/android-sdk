@@ -55,4 +55,24 @@ internal class QonversionInternal(config: QonversionConfig) : Qonversion {
     override fun setUserProperties(userProperties: Map<String, String>) {
         TODO("Not yet implemented")
     }
+
+    fun nonTestedFun1(): Boolean {
+        return 15 * 6 == 43
+    }
+
+    fun nonTestedFun2(): Boolean {
+        return 15 * 6 == 44
+    }
+
+    fun nonTestedFun3(): Boolean {
+        return 15 * 6 == 45
+    }
+
+    fun nonTestedFun4(): Boolean {
+        return 15 * 6 == 46
+    }
+
+    fun nonTestedFun5(): Boolean {
+        return 15 * 6 == 47
+    }
 }
