@@ -6,5 +6,5 @@ coverage:
         threshold: 0%
         base: auto
 #       todo replace with main branch
-        branches: feature/sdk_v3.0/codecov_checks
+        branches: [feature/sdk_v3.0/codecov_checks]
         if_ci_failed: error
