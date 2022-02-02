@@ -1,19 +1,20 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:405</ID>
-    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:423</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:468</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:486</ID>
     <ID>ComplexCondition:QonversionRepository.kt$QonversionRepository$(purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &amp;&amp; purchase.introductoryPeriodUnit != null &amp;&amp; purchase.introductoryPeriodUnitsCount != null</ID>
     <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
     <ID>EmptyFunctionBlock:AppLifecycleObserverImpl.kt$AppLifecycleObserverImpl${}</ID>
-    <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided>${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.InternalConfigTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
@@ -69,21 +70,28 @@
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoMonths$5</ID>
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoWeeks$3</ID>
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Year$8</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$15</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$43</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$44</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$45</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$46</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$47</ID>
+    <ID>MagicNumber:QonversionInternal.kt$QonversionInternal$6</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
     <ID>MatchingDeclarationName:HeaderBuilderImplTest.kt$HeaderBuilderTest</ID>
-    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
-    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest.QueryPurchasesHistoryTest$verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -&gt; Querying purchase history for type $skuType") }</ID>
+    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
+    <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
+    <ID>MaxLineLength:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest.QueryPurchasesHistoryTest$verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$private</ID>
     <ID>MaxLineLength:JsonSerializerTest.kt$JsonSerializerTest$"""{"field1": ["value1", "value2"]}""" to mapOf("field1" to listOf("value1", "value2"))</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$if</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -&gt; Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $skuType is retrieved ${record.getDescription()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("querySkuDetailsAsync() -&gt; Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("replaceOldPurchase() -&gt; Purchase was found successfully for sku: ${oldSkuDetails.sku}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.release("launchBillingFlow() -&gt; Failed to launch billing flow. ${billingResult.getDescription()}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -> Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -> purchase history for $skuType is retrieved ${record.getDescription()}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("querySkuDetailsAsync() -> Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$private</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
@@ -104,15 +112,19 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.billing.utils.kt:22</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.converter.GooglePurchaseConverter.kt:83</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.utils.kt:25</ID>
-    <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
+    <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T> getErrorFromResponse(value: Response&lt;T>): QonversionError</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
-    <ID>NewLineAtEndOfFile:UserPropertiesMapperTest.kt$com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:MapDataMapperTest.kt$com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:UserPropertiesServiceImplTest.kt$com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.UserPropertiesBuilderTest.kt:8</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QonversionInternalTest.kt:115</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QonversionInternalTest.kt:172</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapperTest.kt:82</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt:82</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:333</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImplTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.IncrementalDelayCalculator.kt:3</ID>
@@ -129,8 +141,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.di.module.NetworkModule.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.dto.QonversionMappingAdapters.kt:19</ID>
-    <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
+    <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String>): AutomationsEvent?</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails>) -> Unit)? = null, onLoadFailed: ((error: QonversionError) -> Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
@@ -139,7 +151,7 @@
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherTest.kt:499</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherTest.kt:511</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
-    <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
+    <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
@@ -148,7 +160,7 @@
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
     <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
-    <ID>ThrowsCount:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest$private fun mockQuerySkuDetails( subsResult: List&lt;SkuDetails&gt;?, inAppsResult: List&lt;SkuDetails&gt;?, subsThrowException: Boolean = false, inAppsThrowException: Boolean = false, )</ID>
+    <ID>ThrowsCount:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest$private fun mockQuerySkuDetails( subsResult: List&lt;SkuDetails>?, inAppsResult: List&lt;SkuDetails>?, subsThrowException: Boolean = false, inAppsThrowException: Boolean = false, )</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
@@ -163,22 +175,23 @@
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion$Qonversion</ID>
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
+    <ID>TooManyFunctions:QonversionInternal.kt$QonversionInternal : Qonversion</ID>
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.old.billing.utils.kt</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility&gt;): List&lt;ProductEligibility&gt;</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility>): List&lt;ProductEligibility></ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo>): List&lt;QExperimentInfo></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering&gt;</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering></ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission>): List&lt;QPermission></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductDurationAdapter$@ToJson private fun toJson(enum: QProductDuration): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductTypeAdapter$@ToJson private fun toJson(enum: QProductType): Int</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct&gt;): List&lt;QProduct&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct>): List&lt;QProduct></ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.old.dto.*</ID>
     <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.old.dto.request.*</ID>
