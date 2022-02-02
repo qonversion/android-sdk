@@ -69,7 +69,7 @@ internal class QonversionInternal(config: QonversionConfig) : Qonversion {
     }
 
     fun nonTestedFun4(): Boolean {
-        return 15 * 6 == 46
+        return 15 * 6 == 462323
     }
 
     fun nonTestedFun5(): Boolean {
