@@ -1,9 +1,9 @@
 package com.qonversion.android.sdk.internal.networkLayer.apiInteractor
 
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
+import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
@@ -31,7 +31,7 @@ internal data class RetryConfig(
 internal class ApiInteractorImpl(
     private val networkClient: NetworkClient,
     private val delayCalculator: RetryDelayCalculator,
-    private val config: InternalConfig,
+    private val configHolder: NetworkConfigHolder,
     private val errorMapper: ErrorResponseMapper,
     private val defaultRetryPolicy: RetryPolicy = RetryPolicy.Exponential()
 ) : ApiInteractor {
@@ -49,7 +49,7 @@ internal class ApiInteractorImpl(
         attemptIndex: Int
     ): Response {
         return withContext(Dispatchers.IO) {
-            if (!config.canSendRequests) {
+            if (!configHolder.canSendRequests) {
                 throw QonversionException(ErrorCode.RequestDenied)
             }
 
@@ -73,7 +73,7 @@ internal class ApiInteractorImpl(
                 Response.Success(response.code, data)
             } else {
                 if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
-                    config.canSendRequests = false
+                    configHolder.canSendRequests = false
                     return@withContext getErrorResponse(response, executionException)
                 }
 

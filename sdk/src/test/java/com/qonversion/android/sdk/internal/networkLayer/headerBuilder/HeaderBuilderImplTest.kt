@@ -1,12 +1,14 @@
 package com.qonversion.android.sdk.internal.networkLayer.headerBuilder
 
 import android.os.Build
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.common.DEBUG_MODE_PREFIX
 import com.qonversion.android.sdk.internal.common.PLATFORM
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.networkLayer.ApiHeader
+import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
+import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
+import com.qonversion.android.sdk.internal.provider.UidProvider
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -19,7 +21,9 @@ internal class HeaderBuilderTest {
     private lateinit var headerBuilder: HeaderBuilderImpl
     private val localStorage = mockk<LocalStorage>()
     private val locale = mockk<Locale>()
-    private val config = mockk<InternalConfig>()
+    private val primaryConfigProvider = mockk<PrimaryConfigProvider>()
+    private val environmentProvider = mockk<EnvironmentProvider>()
+    private val uidProvider = mockk<UidProvider>()
 
     private val testSourceKey = "test source key"
     private val testVersionKey = "test version key"
@@ -41,7 +45,14 @@ internal class HeaderBuilderTest {
 
     @BeforeEach
     fun setUp() {
-        headerBuilder = HeaderBuilderImpl(localStorage, locale, config)
+        headerBuilder = HeaderBuilderImpl(
+            localStorage,
+            locale,
+            primaryConfigProvider,
+            environmentProvider,
+            uidProvider
+        )
+
         every {
             localStorage.getString(StorageConstants.SourceKey.key, any())
         } returns testSourceKey
@@ -49,10 +60,10 @@ internal class HeaderBuilderTest {
             localStorage.getString(StorageConstants.VersionKey.key, any())
         } returns testVersionKey
         every { locale.language } returns testLanguage
-        every { config.isSandbox } returns false
-        every { config.uid } returns testUid
-        every { config.primaryConfig.sdkVersion } returns testSdkVersion
-        every { config.primaryConfig.projectKey } returns testProjectKey
+        every { environmentProvider.isSandbox } returns false
+        every { uidProvider.uid } returns testUid
+        every { primaryConfigProvider.primaryConfig.sdkVersion } returns testSdkVersion
+        every { primaryConfigProvider.primaryConfig.projectKey } returns testProjectKey
     }
 
     @Test
@@ -91,7 +102,7 @@ internal class HeaderBuilderTest {
     fun `debug mode`() {
         // given
         every {
-            config.isSandbox
+            environmentProvider.isSandbox
         } returns true
 
         val expectedResult = defaultExpectedHeaders +

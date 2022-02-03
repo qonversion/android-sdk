@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.networkLayer
+package com.qonversion.android.sdk.internal.provider
 
 internal interface NetworkConfigHolder {
 

@@ -8,24 +8,27 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
-import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
+import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
+import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
+import com.qonversion.android.sdk.internal.provider.UidProvider
 
 internal object InternalConfig :
     EnvironmentProvider,
     LoggerConfigProvider,
     CacheLifetimeConfigProvider,
-    NetworkConfigHolder {
-    var uid: String = ""
+    NetworkConfigHolder,
+    PrimaryConfigProvider,
+    UidProvider {
+    override var uid: String = ""
 
-    lateinit var primaryConfig: PrimaryConfig
+    override lateinit var primaryConfig: PrimaryConfig
     lateinit var storeConfig: StoreConfig
     lateinit var networkConfig: NetworkConfig
     lateinit var loggerConfig: LoggerConfig
-
-    override var cacheLifetimeConfig = CacheLifetimeConfig()
+    override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
 
     override val environment
         get() = primaryConfig.environment
