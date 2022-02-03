@@ -54,18 +54,16 @@ internal class UserPropertiesControllerImpl(
             val processedPropertiesKeys: List<String> = service.sendProperties(propertiesToSend)
             // We delete all sent properties even if they were not successfully handled
             // to prevent spamming api with unacceptable properties.
+
+            val nonProcessedProperties = propertiesToSend - processedPropertiesKeys
+            val processedProperties = propertiesToSend - nonProcessedProperties.keys
+
             pendingPropertiesStorage.delete(propertiesToSend)
 
-            propertiesToSend.filter {
-                processedPropertiesKeys.contains(it.key)
-            }.also {
-                sentPropertiesStorage.add(it)
-            }
+            sentPropertiesStorage.add(processedProperties)
 
-            propertiesToSend.keys.filter {
-                !processedPropertiesKeys.contains(it)
-            }.takeIf { it.isNotEmpty() }?.let {
-                logger.warn("Some user properties were not processed: ${it.joinToString(", ")}.")
+            nonProcessedProperties.takeIf { it.isNotEmpty() }?.let {
+                logger.warn("Some user properties were not processed: ${it.keys.joinToString(", ")}.")
             }
 
             sendUserPropertiesIfNeeded(ignoreExistingJob = true)
