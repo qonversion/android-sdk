@@ -1,0 +1,34 @@
+name: Tests and coverage reports
+
+on:
+  push:
+    branches:
+#      todo rename to main before release (here and in readme file for badge)
+      - feature/sdk_v3.0/root
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Unit Test with Codecov
+        run: ./gradlew jacocoTestReport
+
+      - name: Generate report
+        uses: actions/upload-artifact@v2
+        with:
+          name: jacoco
+          path: sdk/build/jacoco
+
+      - name: Download Test Reports Folder
+        uses: actions/download-artifact@v2
+        with:
+          name: jacoco
+          path: sdk/build/jacoco
+
+      - name: Upload Test Report
+        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/jacoco/jacoco.xml"

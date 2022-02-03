@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
 
-internal class UserPropertiesStorageImplTest {
+internal class UserPropertiesStorageTest {
 
     private lateinit var userPropertiesStorage: UserPropertiesStorageImpl
 
     private val mockLocalStorage = mockk<LocalStorage>()
     private val mockMapper = mockk<MapDataMapper>()
-    private val propertiesKeyInMemory = "com.qonversion.keys.userProperties"
+    private val propertiesKeyInMemory = "storage random key"
     private val propertiesStr = "properties"
     private val mockLogger = mockk<Logger>()
     private val slotErrorLogMessage = slot<String>()
@@ -27,7 +27,7 @@ internal class UserPropertiesStorageImplTest {
         every { mockLogger.error(capture(slotErrorLogMessage), any()) } just runs
 
         userPropertiesStorage =
-            UserPropertiesStorageImpl(mockLocalStorage, mockMapper, mockLogger)
+            UserPropertiesStorageImpl(mockLocalStorage, mockMapper, propertiesKeyInMemory, mockLogger)
     }
 
     @Nested

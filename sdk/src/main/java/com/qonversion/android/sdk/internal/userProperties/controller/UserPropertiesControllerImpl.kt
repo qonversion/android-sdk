@@ -12,7 +12,8 @@ private const val SENDING_DELAY_MS = 5000L
 private const val KEY_REGEX = """(?=.*[a-zA-Z])^[-a-zA-Z0-9_.:]+$"""
 
 internal class UserPropertiesControllerImpl(
-    private val storage: UserPropertiesStorage,
+    private val pendingPropertiesStorage: UserPropertiesStorage,
+    private val sentPropertiesStorage: UserPropertiesStorage,
     private val service: UserPropertiesService,
     private val worker: DelayedWorker,
     private val sendingDelayMs: Long = SENDING_DELAY_MS,
@@ -20,23 +21,23 @@ internal class UserPropertiesControllerImpl(
 ) : BaseClass(logger), UserPropertiesController {
 
     override fun setProperty(key: String, value: String) {
-        if (isValidUserProperty(key, value)) {
-            storage.add(key, value)
+        if (shouldSendProperty(key, value)) {
+            pendingPropertiesStorage.add(key, value)
         }
         sendUserPropertiesIfNeeded()
     }
 
     override fun setProperties(properties: Map<String, String>) {
         val validatedProperties = properties.filter {
-            isValidUserProperty(it.key, it.value)
+            shouldSendProperty(it.key, it.value)
         }
-        storage.add(validatedProperties)
+        pendingPropertiesStorage.add(validatedProperties)
         sendUserPropertiesIfNeeded()
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun sendUserPropertiesIfNeeded(ignoreExistingJob: Boolean = false) {
-        if (storage.properties.isNotEmpty()) {
+        if (pendingPropertiesStorage.properties.isNotEmpty()) {
             worker.doDelayed(sendingDelayMs, ignoreExistingJob) {
                 sendUserProperties()
             }
@@ -46,19 +47,23 @@ internal class UserPropertiesControllerImpl(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     suspend fun sendUserProperties() {
         try {
-            val propertiesToSend = storage.properties.toMap()
+            val propertiesToSend = pendingPropertiesStorage.properties.toMap()
             if (propertiesToSend.isEmpty()) {
                 return
             }
-            val processedProperties = service.sendProperties(propertiesToSend)
+            val processedPropertiesKeys: List<String> = service.sendProperties(propertiesToSend)
             // We delete all sent properties even if they were not successfully handled
             // to prevent spamming api with unacceptable properties.
-            storage.delete(propertiesToSend)
 
-            propertiesToSend.keys.filter {
-                !processedProperties.contains(it)
-            }.takeIf { it.isNotEmpty() }?.let {
-                logger.warn("Some user properties were not processed: ${it.joinToString(", ")}.")
+            val nonProcessedProperties = propertiesToSend - processedPropertiesKeys
+            val processedProperties = propertiesToSend - nonProcessedProperties.keys
+
+            pendingPropertiesStorage.delete(propertiesToSend)
+
+            sentPropertiesStorage.add(processedProperties)
+
+            nonProcessedProperties.takeIf { it.isNotEmpty() }?.let {
+                logger.warn("Some user properties were not processed: ${it.keys.joinToString(", ")}.")
             }
 
             sendUserPropertiesIfNeeded(ignoreExistingJob = true)
@@ -68,21 +73,28 @@ internal class UserPropertiesControllerImpl(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun isValidUserProperty(key: String, value: String): Boolean {
-        var isValid = true
+    fun shouldSendProperty(key: String, value: String): Boolean {
+        var shouldSend = true
         if (!isValidKey(key)) {
-            isValid = false
+            shouldSend = false
             logger.error(
                 """Invalid key "$key" for user property. 
                     |The key should be nonempty and may consist of letters A-Za-z, 
                     |numbers, and symbols _.:-.""".trimMargin())
         }
         if (!isValidValue(value)) {
-            isValid = false
+            shouldSend = false
             logger.error("""The empty value provided for user property "$key".""")
         }
 
-        return isValid
+        if (shouldSend && sentPropertiesStorage.properties[key] == value) {
+            shouldSend = false
+            logger.info("""The same property with key: "$key" and value: "$value" 
+                |was already sent for the current user. 
+                |To avoid any confusion, it will not be sent again.""".trimMargin())
+        }
+
+        return shouldSend
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

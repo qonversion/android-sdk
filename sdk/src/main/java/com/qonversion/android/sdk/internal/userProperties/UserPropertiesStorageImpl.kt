@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.internal.userProperties
 
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.common.BaseClass
-import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -11,6 +10,7 @@ import java.lang.IllegalStateException
 internal class UserPropertiesStorageImpl(
     private val localStorage: LocalStorage,
     private val mapper: MapDataMapper,
+    private val key: String, // TODO update for identity flow, add user id provider
     logger: Logger
 ) : BaseClass(logger), UserPropertiesStorage {
 
@@ -57,7 +57,7 @@ internal class UserPropertiesStorageImpl(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun getPropertiesFromStorage(): Map<String, String> {
         val propertiesJsonString =
-            localStorage.getString(StorageConstants.UserProperties.key)
+            localStorage.getString(key)
 
         return if (propertiesJsonString != null) {
             try {
@@ -73,7 +73,7 @@ internal class UserPropertiesStorageImpl(
     fun putPropertiesToStorage() {
         try {
             val propertiesJsonString = mapper.fromMap(properties)
-            localStorage.putString(StorageConstants.UserProperties.key, propertiesJsonString)
+            localStorage.putString(key, propertiesJsonString)
         } catch (e: IllegalStateException) {
             logger.error("Couldn't save properties to storage", e)
         }

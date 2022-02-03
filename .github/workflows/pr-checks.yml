@@ -1,4 +1,4 @@
-name: Tests
+name: Pull request checks
 
 on:
   pull_request:
@@ -22,19 +22,3 @@ jobs:
 
     - name: Detekt
       run: ./gradlew detektAll
-
-    - name: Set up Ruby 2.6
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 2.6.0
-
-    - name: Install dependencies
-      run: bundle install
-
-    - name: Fastlane Action
-      uses: maierj/fastlane-action@v1.4.0
-      with:
-        lane: test
-    - name: Build and Tests
-      run: |
-          fastlane test
