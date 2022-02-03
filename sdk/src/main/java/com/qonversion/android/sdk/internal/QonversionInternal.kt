@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal
 
-import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
