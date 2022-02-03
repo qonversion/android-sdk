@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.internal.networkLayer.apiInteractor
 
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
+import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
@@ -32,7 +32,7 @@ internal class ApiInteractorTest {
     private lateinit var interactor: ApiInteractorImpl
     private val networkClient = mockk<NetworkClient>()
     private val delayCalculator = mockk<RetryDelayCalculator>()
-    private val config = mockk<InternalConfig>()
+    private val configHolder = mockk<NetworkConfigHolder>()
     private val errorMapper = mockk<ErrorResponseMapper>()
     private val request = Request.get("smth", emptyMap())
 
@@ -50,14 +50,14 @@ internal class ApiInteractorTest {
 
     @BeforeEach
     fun setUp() {
-        interactor = ApiInteractorImpl(networkClient, delayCalculator, config, errorMapper)
+        interactor = ApiInteractorImpl(networkClient, delayCalculator, configHolder, errorMapper)
 
         val minDelaySlot = slot<Long>()
         every {
             delayCalculator.countDelay(capture(minDelaySlot), any())
         } answers { minDelaySlot.captured + 1 }
         every {
-            config.canSendRequests
+            configHolder.canSendRequests
         } returns true
         coEvery {
             networkClient.execute(request)
@@ -282,7 +282,7 @@ internal class ApiInteractorTest {
     fun `execute request with deny option on`() {
         // given
         every {
-            config.canSendRequests
+            configHolder.canSendRequests
         } returns false
 
         // when and then
@@ -482,7 +482,7 @@ internal class ApiInteractorTest {
         } returns parsedErrorResponse
         val setValue = slot<Boolean>()
         every {
-            config.canSendRequests = capture(setValue)
+            configHolder.canSendRequests = capture(setValue)
         } just runs
 
         // when

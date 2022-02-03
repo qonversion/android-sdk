@@ -7,8 +7,7 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
-import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.networkLayer.NetworkConfigHolder
+import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
@@ -105,22 +104,6 @@ internal class InternalConfigTest {
     @Nested
     inner class CacheLifetimeConfigProviderTest {
         private val mockCacheLifetimeLoggerConfig = mockk<CacheLifetimeConfig>()
-
-        @Test
-        fun `get default cache lifetime config`() {
-            // given
-            val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider = InternalConfig
-            val expectedInternalCacheLifetimeConfig =
-                CacheLifetimeConfig(InternalCacheLifetime.ThreeDays, InternalCacheLifetime.FiveMin)
-
-            // when
-            val cacheLifetimeConfig = cacheLifetimeConfigProvider.cacheLifetimeConfig
-
-            // then
-            assertThat(cacheLifetimeConfig).isEqualToComparingFieldByField(
-                expectedInternalCacheLifetimeConfig
-            )
-        }
 
         @Test
         fun `get cache lifetime config`() {

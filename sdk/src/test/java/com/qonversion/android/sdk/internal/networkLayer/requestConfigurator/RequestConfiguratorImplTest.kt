@@ -1,15 +1,12 @@
 package com.qonversion.android.sdk.internal.networkLayer.requestConfigurator
 
 import com.qonversion.android.sdk.config.PrimaryConfig
-import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.LaunchMode
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
+import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
+import com.qonversion.android.sdk.internal.provider.UidProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,10 +19,17 @@ internal class RequestConfiguratorImplTest {
     private val testBaseUrl = "test.io"
     private val testUserId = "testId"
     private val testCommonHeaders = mapOf("someKey" to "someVal")
+    private val primaryConfigProvider = mockk<PrimaryConfigProvider>()
+    private val uidProvider = mockk<UidProvider>()
 
     @BeforeEach
     fun setUp() {
-        requestConfigurator = RequestConfiguratorImpl(headerBuilder, testBaseUrl)
+        requestConfigurator = RequestConfiguratorImpl(
+            headerBuilder,
+            testBaseUrl,
+            primaryConfigProvider,
+            uidProvider
+        )
         every {
             headerBuilder.buildCommonHeaders()
         } returns testCommonHeaders
@@ -78,10 +82,9 @@ internal class RequestConfiguratorImplTest {
         )
         val expectedUrl = "$testBaseUrl/properties"
 
-        val mockPrimaryConfig = PrimaryConfig(projectKey, mockk<LaunchMode>(), mockk<Environment>())
-        mockkObject(InternalConfig)
-        every { InternalConfig.uid } returns "uid"
-        every { InternalConfig.primaryConfig } returns mockPrimaryConfig
+        val mockPrimaryConfig = PrimaryConfig(projectKey, mockk(), mockk())
+        every { uidProvider.uid } returns "uid"
+        every { primaryConfigProvider.primaryConfig } returns mockPrimaryConfig
 
         // when
         val request = requestConfigurator.configureUserPropertiesRequest(propertiesMap)
@@ -91,7 +94,5 @@ internal class RequestConfiguratorImplTest {
         assertThat(request.headers).containsExactlyEntriesOf(testCommonHeaders)
         assertThat(request.body).containsExactlyEntriesOf(expectedBody)
         assertThat(request.url).isEqualTo(expectedUrl)
-
-        unmockkObject(InternalConfig)
     }
 }

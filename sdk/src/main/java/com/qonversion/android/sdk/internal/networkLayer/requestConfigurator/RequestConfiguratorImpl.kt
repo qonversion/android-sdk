@@ -1,12 +1,15 @@
 package com.qonversion.android.sdk.internal.networkLayer.requestConfigurator
 
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
+import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
+import com.qonversion.android.sdk.internal.provider.UidProvider
 
 internal class RequestConfiguratorImpl(
     private val headerBuilder: HeaderBuilder,
-    private val baseUrl: String
+    private val baseUrl: String,
+    private val primaryConfigProvider: PrimaryConfigProvider,
+    private val uidProvider: UidProvider
 ) : RequestConfigurator {
 
     override fun configureUserRequest(id: String): Request {
@@ -26,8 +29,8 @@ internal class RequestConfiguratorImpl(
         val headers = headerBuilder.buildCommonHeaders()
         // TODO delete access_token and q_uid from the body after migrating API to v2
         val body = mapOf(
-            "access_token" to InternalConfig.primaryConfig.projectKey,
-            "q_uid" to InternalConfig.uid,
+            "access_token" to primaryConfigProvider.primaryConfig.projectKey,
+            "q_uid" to uidProvider.uid,
             "properties" to properties
         )
 

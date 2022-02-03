@@ -16,7 +16,9 @@ import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import org.assertj.core.api.Assertions.assertThat
+import io.mockk.unmockkObject
+import io.mockk.verify
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -40,6 +42,7 @@ internal class QonversionInternalTest {
     private val mockNetworkConfig = NetworkConfig()
     private val mockStoreConfig = StoreConfig(mockStore, mockShouldConsumePurchases)
     private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
+    private val mockInternalConfig = mockk<InternalConfig>(relaxed = true)
 
     @BeforeEach
     fun setUp() {
@@ -58,6 +61,11 @@ internal class QonversionInternalTest {
         )
     }
 
+    @AfterEach
+    fun afterEach() {
+        unmockkObject(InternalCacheLifetime)
+    }
+
     @Nested
     inner class InitTest {
 
@@ -70,16 +78,16 @@ internal class QonversionInternalTest {
             )
 
             // when
-            qonversionInternal = QonversionInternal(qonversionConfig)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig)
 
             // then
-            assertThat(InternalConfig.primaryConfig).isSameAs(qonversionConfig.primaryConfig)
-            assertThat(InternalConfig.storeConfig).isSameAs(qonversionConfig.storeConfig)
-            assertThat(InternalConfig.networkConfig).isSameAs(qonversionConfig.networkConfig)
-            assertThat(InternalConfig.loggerConfig).isSameAs(qonversionConfig.loggerConfig)
-            assertThat(InternalConfig.cacheLifetimeConfig).isEqualToComparingFieldByField(
-                expectedCacheLifetimeConfig
-            )
+            verify {
+                mockInternalConfig.primaryConfig = mockPrimaryConfig
+                mockInternalConfig.storeConfig = mockStoreConfig
+                mockInternalConfig.networkConfig = mockNetworkConfig
+                mockInternalConfig.loggerConfig = mockLoggerConfig
+                mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
+            }
         }
     }
 
@@ -88,22 +96,23 @@ internal class QonversionInternalTest {
 
         @BeforeEach
         fun setUp() {
-            qonversionInternal = QonversionInternal(qonversionConfig)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig)
         }
 
         @Test
         fun `set environment`() {
             // given
             val environments = Environment.values()
+            every { mockInternalConfig.primaryConfig } returns mockPrimaryConfig
 
-            // when
             environments.forEach { environment ->
+                val expectedPrimaryConfig = mockPrimaryConfig.copy(environment = environment)
+
+                // when
                 qonversionInternal.setEnvironment(environment)
+
                 // then
-                assertThat(InternalConfig.primaryConfig.environment).isSameAs(environment)
-                assertThat(InternalConfig.primaryConfig.projectKey).isSameAs(mockPrimaryConfig.projectKey)
-                assertThat(InternalConfig.primaryConfig.launchMode).isSameAs(mockPrimaryConfig.launchMode)
-                assertThat(InternalConfig.primaryConfig.sdkVersion).isSameAs(mockPrimaryConfig.sdkVersion)
+                verify { mockInternalConfig.primaryConfig = expectedPrimaryConfig }
             }
         }
 
@@ -111,14 +120,16 @@ internal class QonversionInternalTest {
         fun `set log level`() {
             // given
             val logLevels = LogLevel.values()
-
+            every { mockInternalConfig.loggerConfig } returns mockLoggerConfig
 
             logLevels.forEach { logLevel ->
+                val expectedLoggerConfig = mockLoggerConfig.copy(logLevel = logLevel)
+
                 // when
                 qonversionInternal.setLogLevel(logLevel)
+
                 // then
-                assertThat(InternalConfig.loggerConfig.logTag).isSameAs(mockLogTag)
-                assertThat(InternalConfig.loggerConfig.logLevel).isSameAs(logLevel)
+                verify { mockInternalConfig.loggerConfig = expectedLoggerConfig }
             }
         }
 
@@ -126,13 +137,14 @@ internal class QonversionInternalTest {
         fun `set log tag`() {
             // given
             val logTag = "logTag"
+            every { mockInternalConfig.loggerConfig } returns mockLoggerConfig
+            val expectedLoggerConfig = mockLoggerConfig.copy(logTag = logTag)
 
             // when
             qonversionInternal.setLogTag(logTag)
 
             // then
-            assertThat(InternalConfig.loggerConfig.logTag).isSameAs(logTag)
-            assertThat(InternalConfig.loggerConfig.logLevel).isSameAs(mockLogLevel)
+            verify { mockInternalConfig.loggerConfig = expectedLoggerConfig }
         }
 
         @Test
@@ -143,27 +155,24 @@ internal class QonversionInternalTest {
                 mockBackgroundInternalCacheLifetime,
                 mockForegroundInternalCacheLifetime
             )
-            InternalConfig.cacheLifetimeConfig = mockCacheLifetimeConfig
+            every { mockInternalConfig.cacheLifetimeConfig} returns mockCacheLifetimeConfig
 
-            val cacheLifetimeConfigs = CacheLifetime.values()
-
-            cacheLifetimeConfigs.forEach { cacheLifetime ->
+            CacheLifetime.values().forEach { cacheLifetime ->
                 val internalCacheLifetime = mockk<InternalCacheLifetime>()
 
                 every {
                     InternalCacheLifetime.from(cacheLifetime)
                 } returns internalCacheLifetime
 
+                val expectedCacheLifetime = mockCacheLifetimeConfig.copy(
+                    backgroundCacheLifetime = internalCacheLifetime
+                )
+
                 // when
                 qonversionInternal.setCacheLifetime(cacheLifetime)
 
                 // then
-                assertThat(InternalConfig.cacheLifetimeConfig.foregroundCacheLifetime).isSameAs(
-                    mockForegroundInternalCacheLifetime
-                )
-                assertThat(InternalConfig.cacheLifetimeConfig.backgroundCacheLifetime).isSameAs(
-                    internalCacheLifetime
-                )
+                verify { mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetime }
             }
         }
     }
