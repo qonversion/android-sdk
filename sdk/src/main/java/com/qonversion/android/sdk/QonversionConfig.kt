@@ -43,8 +43,8 @@ class QonversionConfig internal constructor(
      *
      * @constructor creates an instance of a builder
      * @param application the instance of the current running application
-     * @param projectKey your Qonversion Project Key
-     * @param launchMode launch mode of the Qonversion SDK
+     * @param projectKey your Project Key from Qonversion Dashboard
+     * @param launchMode launch mode of the Qonversion SDK todo add link
      * @param store the store used for purchases (only [Store.GooglePlay] is supported for now)
      */
     class Builder @JvmOverloads constructor(
@@ -74,6 +74,9 @@ class QonversionConfig internal constructor(
          * It means that cached data won't be used if it is elder than the provided duration.
          * By the way it doesn't mean that cache will live exactly the provided time.
          * It may be updated earlier.
+         *
+         * Provide as bigger value as possible for you taking into account, among other things,
+         * how long may your users remain without the internet connection and so on.
          *
          * @param cacheLifetime the desired lifetime of Qonversion caches.
          * @return builder instance for chain calls.
@@ -105,12 +108,15 @@ class QonversionConfig internal constructor(
         }
 
         /**
-         * Define should Qonversion consume purchases on its own or not.
-         * If set to false make sure that you consume purchases yourself.
+         * Define should Qonversion consume purchases itself or not.
+         * You may need to consume purchases yourself if you want to add custom handling of them
+         * before it, for example, send the purchase to API or hand over coins to the user.
+         * If set to false make sure that you call [Qonversion.consume] for purchases yourself.
+         * todo fix method link above when it will be implemented
          *
          * The flag makes sense only for [LaunchMode.InfrastructureMode].
          *
-         * @param shouldConsumePurchases if true, the Qonversion will consume purchases. If false - it won't.
+         * @param shouldConsumePurchases if true, the Qonversion will consume purchases itself. If false - it won't.
          * @return builder instance for chain calls.
          */
         fun setShouldConsumePurchases(shouldConsumePurchases: Boolean): Builder = apply {
