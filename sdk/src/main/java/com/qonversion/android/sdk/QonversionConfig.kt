@@ -71,7 +71,7 @@ class QonversionConfig internal constructor(
 
         /**
          * Define the maximum lifetime of the data cached by Qonversion.
-         * It means that cached data won't be used if it is elder than the provided duration.
+         * It means that cached data won't be used if it is older than the provided duration.
          * By the way it doesn't mean that cache will live exactly the provided time.
          * It may be updated earlier.
          *
