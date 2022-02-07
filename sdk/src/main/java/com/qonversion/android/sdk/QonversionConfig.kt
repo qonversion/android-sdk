@@ -125,7 +125,7 @@ class QonversionConfig internal constructor(
 
         /**
          * Generate [QonversionConfig] instance with all the provided configurations.
-         * This method also validates some of provided data.
+         * This method also validates some of the provided data.
          *
          * @throws QonversionException if unacceptable configuration was provided.
          * @return the complete [QonversionConfig] instance.
