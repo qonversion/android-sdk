@@ -27,12 +27,12 @@ private const val DEFAULT_LOG_TAG = "Qonversion"
  * @see [The documentation](https://documentation.qonversion.io/v3.0/docs/configuring-the-sdks)
  */
 class QonversionConfig internal constructor(
-    val application: Application,
-    val primaryConfig: PrimaryConfig,
-    val storeConfig: StoreConfig,
-    val loggerConfig: LoggerConfig,
-    val networkConfig: NetworkConfig,
-    val cacheLifetime: CacheLifetime
+    internal val application: Application,
+    internal val primaryConfig: PrimaryConfig,
+    internal val storeConfig: StoreConfig,
+    internal val loggerConfig: LoggerConfig,
+    internal val networkConfig: NetworkConfig,
+    internal val cacheLifetime: CacheLifetime
 ) {
 
     /**
@@ -60,7 +60,7 @@ class QonversionConfig internal constructor(
         internal var shouldConsumePurchases = true
 
         /**
-         * Set current application environment. Used to distinguish sandbox and production users.
+         * Set current application [Environment]. Used to distinguish sandbox and production users.
          *
          * @param environment current environment.
          * @return builder instance for chain calls.
@@ -86,7 +86,7 @@ class QonversionConfig internal constructor(
         }
 
         /**
-         * Define the log level from which all the messages will be written.
+         * Define the level of the logs that the SDK prints.
          * The more strict the level is, the less logs will be written.
          * For example, setting the log level as Warning will disable all info and verbose logs.
          *
@@ -98,7 +98,8 @@ class QonversionConfig internal constructor(
         }
 
         /**
-         * Define tag value provided to all Qonversion logs.
+         * Define the log tag that the Qonversion SDK will print with every log message.
+         * For example, you can use it to filter the Qonversion SDK logs and your app own logs together.
          *
          * @param logTag the desired log tag.
          * @return builder instance for chain calls.
