@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
@@ -8,11 +9,20 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
+import com.qonversion.android.sdk.internal.di.DependencyInjection
+import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 
 internal class QonversionInternal(
     config: QonversionConfig,
-    private val internalConfig: InternalConfig
+    di: DependencyInjection
 ) : Qonversion {
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val internalConfig: InternalConfig = di.internalConfig
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val propertiesController: UserPropertiesController =
+        di.userPropertiesController
 
     init {
         internalConfig.primaryConfig = config.primaryConfig
