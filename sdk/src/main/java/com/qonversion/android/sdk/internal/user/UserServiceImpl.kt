@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.user
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
@@ -22,6 +23,7 @@ internal class UserServiceImpl(
     private val mapper: UserMapper,
     private val localStorage: LocalStorage
 ) : UserService {
+
     override fun obtainUserId(): String {
         val cachedUserID = localStorage.getString(StorageConstants.UserId.key)
         var resultUserID = cachedUserID
@@ -101,7 +103,8 @@ internal class UserServiceImpl(
     }
 
     @Throws(QonversionException::class)
-    private fun mapUser(response: Response.Success): User {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun mapUser(response: Response.Success): User {
         val data = try {
             response.data as Map<*, *>
         } catch (cause: ClassCastException) {
@@ -110,7 +113,8 @@ internal class UserServiceImpl(
         return mapper.fromMap(data) ?: throw QonversionException(ErrorCode.Mapping)
     }
 
-    private fun generateRandomUserID(): String {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun generateRandomUserID(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
 
         return "${USER_ID_PREFIX}${USER_ID_SEPARATOR}$uuid"
