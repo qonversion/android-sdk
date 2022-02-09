@@ -74,7 +74,10 @@ internal class UserServiceImpl(
             is Response.Success -> mapUser(response)
             is Response.Error -> {
                 if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
-                    return createUser(id)
+                    throw QonversionException(
+                        ErrorCode.UserNotFound,
+                        "Id: $id"
+                    )
                 }
                 throw QonversionException(
                     ErrorCode.BackendError,
