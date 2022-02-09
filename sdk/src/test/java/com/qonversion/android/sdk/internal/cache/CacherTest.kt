@@ -179,36 +179,76 @@ internal class CacherTest {
 
     @Nested
     inner class IsActualTest {
+        @BeforeEach
+        fun setUp() {
+            cacher = spyk(cacher)
+        }
 
         @Test
         fun `all tests`() {
             listOf(
-                listOf(100L, 10L, 5L, false, true), // cache is actual for foreground
-                listOf(100L, 10L, 15L, true, true), // cache is actual for background
-                listOf(100L, 10L, 15L, false, false), // cache is not actual for foreground
-                listOf(100L, 10L, 200L, false, false), // cache is not actual for background
+                listOf(5L, 100L, CacheState.Default, true), // cache is actual for default state(<)
+                listOf(5L, 100L, CacheState.Error, true), // cache is actual for error state(<)
+                listOf(100L, 100L, CacheState.Default, true), // cache is actual for default state(=)
+                listOf(100L, 100L, CacheState.Error, true), // cache is actual for error state(=)
+                listOf(200L, 100L, CacheState.Default, false), // cache is not actual for default state(>)
+                listOf(200L, 100L, CacheState.Error, false), // cache is not actual for error state(>)
             ).forEach { testCase ->
                 val (
-                    backgroundCacheLifetimeSec,
-                    foregroundCacheLifetimeSec,
                     cacheAgeSec,
-                    isBackground,
+                    maxCacheLifetimeSec,
+                    cacheState,
                     expectedResult
                 ) = testCase
 
                 // given
-                every { mockBackgroundCacheLifetime.seconds } returns backgroundCacheLifetimeSec as Long
-                every { mockForegroundCacheLifetime.seconds } returns foregroundCacheLifetimeSec as Long
-                every { mockAppLifecycleObserver.isInBackground() } returns isBackground as Boolean
+                every { cacher.getMaxCacheLifetimeSec(any()) } returns maxCacheLifetimeSec as Long
 
                 val cachedObjectTimeMs = Calendar.getInstance().timeInMillis - cacheAgeSec as Long * MS_IN_SEC
                 val cachedObject = CachedObject(Date(cachedObjectTimeMs), testCachingValue)
 
                 // when
-                val isActual = cacher.isActual(cachedObject)
+                val isActual = cacher.isActual(cachedObject, cacheState as CacheState)
 
                 // then
                 assertThat(isActual == expectedResult as Boolean).isTrue
+                verify (exactly = 1) {
+                    cacher.getMaxCacheLifetimeSec(cacheState)
+                }
+            }
+        }
+    }
+
+    @Nested
+    inner class GetMaxCacheLifetimeSecTest {
+        @Test
+        fun `all tests`() {
+            // given
+            val backgroundCacheLifetimeSec = 50L
+            val foregroundCacheLifetimeSec = 10L
+
+            listOf(
+                listOf(CacheState.Default, true, backgroundCacheLifetimeSec), // background and default state
+                listOf(CacheState.Error, true, backgroundCacheLifetimeSec), // background and error state
+                listOf(CacheState.Default, false, foregroundCacheLifetimeSec), // foreground and default state
+                listOf(CacheState.Error, false, backgroundCacheLifetimeSec), // foreground and error state
+            ).forEach { testCase ->
+                val (
+                    cacheState,
+                    isBackground,
+                    expectedResult
+                ) = testCase
+
+                // given
+                every { mockBackgroundCacheLifetime.seconds } returns backgroundCacheLifetimeSec
+                every { mockForegroundCacheLifetime.seconds } returns foregroundCacheLifetimeSec
+                every { mockAppLifecycleObserver.isInBackground() } returns isBackground as Boolean
+
+                // when
+                val maxCacheLifetimeSec = cacher.getMaxCacheLifetimeSec(cacheState as CacheState)
+
+                // then
+                assertThat(expectedResult).isSameAs(maxCacheLifetimeSec)
             }
         }
     }
@@ -255,11 +295,12 @@ internal class CacherTest {
         fun `get existing actual value`() {
             // given
             val cachedObject = CachedObject(mockk(), testCachingValue)
-            every { cacher.isActual(cachedObject) } returns true
+            val mockCacheState = mockk<CacheState>()
+            every { cacher.isActual(cachedObject, mockCacheState) } returns true
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(testCachingKey)
+            val result = cacher.getActual(testCachingKey, mockCacheState)
 
             // then
             assertThat(result).isSameAs(testCachingValue)
@@ -270,11 +311,12 @@ internal class CacherTest {
         fun `get existing non actual value`() {
             // given
             val cachedObject = CachedObject(mockk(), testCachingValue)
-            every { cacher.isActual(cachedObject) } returns false
+            val mockCacheState = mockk<CacheState>()
+            every { cacher.isActual(cachedObject, mockCacheState) } returns false
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(testCachingKey)
+            val result = cacher.getActual(testCachingKey, mockCacheState)
 
             // then
             assertThat(result).isNull()
