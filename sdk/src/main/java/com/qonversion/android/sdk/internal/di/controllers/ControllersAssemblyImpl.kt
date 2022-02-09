@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.di.controllers
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
@@ -27,27 +28,30 @@ internal object ControllersAssemblyImpl : ControllersAssembly {
     lateinit var miscAssembly: MiscAssembly
 
     override val userPropertiesController: UserPropertiesController
-        get() = provideUserPropertiesController()
-
-    override fun getGoogleBillingController(purchasesListener: PurchasesListener): GoogleBillingController {
-        return provideGoogleBillingController(purchasesListener)
-    }
-
-    override fun init(miscAssembly: MiscAssembly, servicesAssembly: ServicesAssembly) {
-        this.miscAssembly = miscAssembly
-        this.servicesAssembly = servicesAssembly
-    }
-
-    fun provideUserPropertiesController(): UserPropertiesController {
-        return UserPropertiesControllerImpl(
+        get() = UserPropertiesControllerImpl(
             pendingPropertiesStorage = providePropertiesStorage(StorageConstants.PendingUserProperties.key),
             sentPropertiesStorage = providePropertiesStorage(StorageConstants.SentUserProperties.key),
             service = servicesAssembly.userPropertiesService,
             worker = provideDelayedWorker(),
             logger = miscAssembly.logger
         )
+
+    override fun getGoogleBillingController(purchasesListener: PurchasesListener): GoogleBillingController {
+        return GoogleBillingControllerImpl(
+            provideGoogleBillingConsumer(),
+            provideGoogleBillingPurchaser(),
+            provideGoogleBillingDataFetcher(),
+            purchasesListener,
+            miscAssembly.logger
+        )
     }
 
+    override fun initialize(miscAssembly: MiscAssembly, servicesAssembly: ServicesAssembly) {
+        this.miscAssembly = miscAssembly
+        this.servicesAssembly = servicesAssembly
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun providePropertiesStorage(storageName: String): UserPropertiesStorage {
         return UserPropertiesStorageImpl(
             miscAssembly.localStorage,
@@ -57,32 +61,27 @@ internal object ControllersAssemblyImpl : ControllersAssembly {
         )
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideDelayedWorker(): DelayedWorker {
         return DelayedWorkerImpl()
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideMapDataMapper(): MapDataMapper {
         return MapDataMapper()
     }
 
-    fun provideGoogleBillingController(listener: PurchasesListener): GoogleBillingController {
-        return GoogleBillingControllerImpl(
-            provideGoogleBillingConsumer(),
-            provideGoogleBillingPurchaser(),
-            provideGoogleBillingDataFetcher(),
-            listener,
-            miscAssembly.logger
-        )
-    }
-
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideGoogleBillingConsumer(): GoogleBillingConsumer {
         return GoogleBillingConsumerImpl(miscAssembly.logger)
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideGoogleBillingPurchaser(): GoogleBillingPurchaser {
         return GoogleBillingPurchaserImpl(miscAssembly.logger)
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideGoogleBillingDataFetcher(): GoogleBillingDataFetcher {
         return GoogleBillingDataFetcherImpl(miscAssembly.logger)
     }

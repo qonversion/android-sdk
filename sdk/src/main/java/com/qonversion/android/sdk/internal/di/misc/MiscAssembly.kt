@@ -42,9 +42,9 @@ internal interface MiscAssembly {
 
     val networkClient: NetworkClient
 
-    val serializer: Serializer
+    val jsonSerializer: Serializer
 
-    val delayCalculator: RetryDelayCalculator
+    val exponentialDelayCalculator: RetryDelayCalculator
 
     val errorResponseMapper: ErrorResponseMapper
 
@@ -62,7 +62,7 @@ internal interface MiscAssembly {
 
     val userPropertiesMapper: UserPropertiesMapper
 
-    fun init(application: Application)
+    fun initialize(application: Application)
 
     fun getApiInteractor(retryPolicy: RetryPolicy): ApiInteractor
 }

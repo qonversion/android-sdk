@@ -10,5 +10,5 @@ internal interface ServicesAssembly {
 
     val userService: UserService
 
-    fun init(miscAssembly: MiscAssembly)
+    fun initialize(miscAssembly: MiscAssembly)
 }

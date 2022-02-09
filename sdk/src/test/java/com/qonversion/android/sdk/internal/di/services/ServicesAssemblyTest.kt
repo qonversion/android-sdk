@@ -38,7 +38,7 @@ internal class ServicesAssemblyTest {
         // given
         ServicesAssemblyImpl.miscAssembly = mockk()
         val miscAssemblyAfter = mockk<MiscAssembly>()
-        ServicesAssemblyImpl.init(miscAssemblyAfter)
+        ServicesAssemblyImpl.initialize(miscAssemblyAfter)
 
         // when
         val result = ServicesAssemblyImpl.miscAssembly

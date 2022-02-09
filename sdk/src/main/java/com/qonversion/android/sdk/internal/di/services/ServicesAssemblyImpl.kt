@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.di.services
 
-import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.user.UserService
@@ -12,31 +11,21 @@ internal object ServicesAssemblyImpl : ServicesAssembly {
     lateinit var miscAssembly: MiscAssembly
 
     override val userPropertiesService: UserPropertiesService
-        get() = provideUserPropertiesService()
-
-    override val userService: UserService
-        get() = provideUserService()
-
-    override fun init(miscAssembly: MiscAssembly) {
-        this.miscAssembly = miscAssembly
-    }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideUserPropertiesService(): UserPropertiesService {
-        return UserPropertiesServiceImpl(
+        get() = UserPropertiesServiceImpl(
             miscAssembly.requestConfigurator,
             miscAssembly.getApiInteractor(RetryPolicy.InfiniteExponential()),
             miscAssembly.userPropertiesMapper
         )
-    }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideUserService(): UserService {
-        return UserServiceImpl(
+    override val userService: UserService
+        get() = UserServiceImpl(
             miscAssembly.requestConfigurator,
             miscAssembly.getApiInteractor(RetryPolicy.Exponential()),
             miscAssembly.userMapper,
             miscAssembly.localStorage
         )
+
+    override fun initialize(miscAssembly: MiscAssembly) {
+        this.miscAssembly = miscAssembly
     }
 }

@@ -61,7 +61,7 @@ internal class ControllersAssemblyTest {
         val miscAssemblyNew = mockk<MiscAssembly>()
         val servicesAssemblyNew = mockk<ServicesAssembly>()
 
-        ControllersAssemblyImpl.init(miscAssemblyNew, servicesAssemblyNew)
+        ControllersAssemblyImpl.initialize(miscAssemblyNew, servicesAssemblyNew)
 
         // when
         val resultMiscAssembly = ControllersAssemblyImpl.miscAssembly
@@ -69,7 +69,7 @@ internal class ControllersAssemblyTest {
 
         // then
         assertThat(resultMiscAssembly).isEqualTo(miscAssemblyNew)
-        assertThat(resultServicesAssembly).isEqualTo(servicesAssemblyNew)
+        assertThat(resultServicesAssembly).isSameAs(servicesAssemblyNew)
     }
 
     @Nested
@@ -173,7 +173,13 @@ internal class ControllersAssemblyTest {
                 val result = ControllersAssemblyImpl.providePropertiesStorage(key)
 
                 // then
-                assertThat(result).isEqualToComparingOnlyGivenFields(expectedResult)
+                assertThat(result).isEqualToComparingOnlyGivenFields(
+                    expectedResult,
+                    "localStorage",
+                    "mapper",
+                    "key",
+                    "logger"
+                )
             }
         }
 
@@ -267,7 +273,13 @@ internal class ControllersAssemblyTest {
                 ControllersAssemblyImpl.getGoogleBillingController(mockPurchasesListener)
 
             // then
-            assertThat(result).isEqualToComparingOnlyGivenFields(expectedResult)
+            assertThat(result).isEqualToComparingOnlyGivenFields(
+                expectedResult, "consumer",
+                "purchaser",
+                "dataFetcher",
+                "purchasesListener",
+                "logger"
+            )
         }
 
         @Test

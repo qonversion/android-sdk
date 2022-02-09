@@ -36,7 +36,7 @@ interface Qonversion {
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
-            DependencyInjection.init(config.application)
+            DependencyInjection.initialize(config.application)
             return QonversionInternal(config, DependencyInjection).also {
                 backingInstance = it
             }

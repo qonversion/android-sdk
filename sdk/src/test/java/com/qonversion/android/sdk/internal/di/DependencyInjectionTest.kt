@@ -19,13 +19,13 @@ internal class DependencyInjectionTest {
         mockkObject(ControllersAssemblyImpl)
 
         // when
-        DependencyInjection.init(mockkApplication)
+        DependencyInjection.initialize(mockkApplication)
 
         // then
         verifyOrder {
-            MiscAssemblyImpl.init(mockkApplication)
-            ServicesAssemblyImpl.init(MiscAssemblyImpl)
-            ControllersAssemblyImpl.init(MiscAssemblyImpl, ServicesAssemblyImpl)
+            MiscAssemblyImpl.initialize(mockkApplication)
+            ServicesAssemblyImpl.initialize(MiscAssemblyImpl)
+            ControllersAssemblyImpl.initialize(MiscAssemblyImpl, ServicesAssemblyImpl)
         }
 
         unmockkObject(MiscAssemblyImpl)

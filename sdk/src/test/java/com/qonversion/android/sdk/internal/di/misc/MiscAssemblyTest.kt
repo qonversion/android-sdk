@@ -56,7 +56,7 @@ internal class MiscAssemblyTest {
         // given
         MiscAssemblyImpl.application = mockk()
         val applicationAfter = mockk<Application>()
-        MiscAssemblyImpl.init(applicationAfter)
+        MiscAssemblyImpl.initialize(applicationAfter)
 
         // when
         val result = MiscAssemblyImpl.application
@@ -83,7 +83,7 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideInternalConfig()
+                MiscAssemblyImpl.internalConfig
             } returns mockInternalConfig
         }
 
@@ -120,11 +120,11 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideInternalConfig()
+                MiscAssemblyImpl.internalConfig
             } returns mockInternalConfig
 
             every {
-                MiscAssemblyImpl.provideHeaderBuilder()
+                MiscAssemblyImpl.headerBuilder
             } returns mockHeaderBuilder
         }
 
@@ -167,15 +167,15 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideInternalConfig()
+                MiscAssemblyImpl.internalConfig
             } returns mockInternalConfig
 
             every {
-                MiscAssemblyImpl.provideLocalStorage()
+                MiscAssemblyImpl.localStorage
             } returns mockLocalStorage
 
             every {
-                MiscAssemblyImpl.provideLocale()
+                MiscAssemblyImpl.locale
             } returns mockLocale
         }
 
@@ -194,7 +194,12 @@ internal class MiscAssemblyTest {
             val result = MiscAssemblyImpl.headerBuilder
 
             // then
-            assertThat(result).isEqualToComparingOnlyGivenFields(expectedResult)
+            assertThat(result).isEqualToComparingOnlyGivenFields(
+                expectedResult, "localStorage", "locale",
+                "primaryConfigProvider",
+                "environmentProvider",
+                "uidProvider"
+            )
         }
 
         @Test
@@ -238,7 +243,7 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideSharedPreferences()
+                MiscAssemblyImpl.sharedPreferences
             } returns mockSharedPreferences
         }
 
@@ -289,7 +294,7 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideSerializer()
+                MiscAssemblyImpl.jsonSerializer
             } returns mockSerializer
         }
 
@@ -319,13 +324,13 @@ internal class MiscAssemblyTest {
     }
 
     @Nested
-    inner class SerializerTest {
+    inner class JsonSerializerTest {
         @Test
         fun `get serializer`() {
             // given
 
             // when
-            val result = MiscAssemblyImpl.serializer
+            val result = MiscAssemblyImpl.jsonSerializer
 
             // then
             assertThat(result).isInstanceOf(JsonSerializer::class.java)
@@ -336,8 +341,8 @@ internal class MiscAssemblyTest {
             // given
 
             // when
-            val firstResult = MiscAssemblyImpl.serializer
-            val secondResult = MiscAssemblyImpl.serializer
+            val firstResult = MiscAssemblyImpl.jsonSerializer
+            val secondResult = MiscAssemblyImpl.jsonSerializer
 
             // then
             assertThat(firstResult).isNotEqualTo(secondResult)
@@ -345,14 +350,14 @@ internal class MiscAssemblyTest {
     }
 
     @Nested
-    inner class DelayCalculatorTest {
+    inner class ExponentialDelayCalculatorTest {
         @Test
         fun `get delay calculator`() {
             // given
             val expectedResult = ExponentialDelayCalculator(Random)
 
             // when
-            val result = MiscAssemblyImpl.delayCalculator
+            val result = MiscAssemblyImpl.exponentialDelayCalculator
 
             // then
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
@@ -364,8 +369,8 @@ internal class MiscAssemblyTest {
             // given
 
             // when
-            val firstResult = MiscAssemblyImpl.delayCalculator
-            val secondResult = MiscAssemblyImpl.delayCalculator
+            val firstResult = MiscAssemblyImpl.exponentialDelayCalculator
+            val secondResult = MiscAssemblyImpl.exponentialDelayCalculator
 
             // then
             assertThat(firstResult).isNotEqualTo(secondResult)
@@ -447,19 +452,19 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideInternalConfig()
+                MiscAssemblyImpl.internalConfig
             } returns mockInternalConfig
 
             every {
-                MiscAssemblyImpl.provideNetworkClient()
+                MiscAssemblyImpl.networkClient
             } returns mockNetworkClient
 
             every {
-                MiscAssemblyImpl.provideDelayCalculator()
+                MiscAssemblyImpl.exponentialDelayCalculator
             } returns mockCalculator
 
             every {
-                MiscAssemblyImpl.provideErrorResponseMapper()
+                MiscAssemblyImpl.errorResponseMapper
             } returns mockErrorResponseMapper
         }
 
@@ -506,11 +511,11 @@ internal class MiscAssemblyTest {
         @BeforeEach
         fun setup() {
             every {
-                MiscAssemblyImpl.provideUserPurchaseMapper()
+                MiscAssemblyImpl.userPurchaseMapper
             } returns mockUserPurchaseMapper
 
             every {
-                MiscAssemblyImpl.provideEntitlementMapper()
+                MiscAssemblyImpl.entitlementMapper
             } returns mockEntitlementMapper
         }
 

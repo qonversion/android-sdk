@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.common
 
-// todo don't forget to rename to `io.qonversion.keys` after renaming the package name
-const val PREFS_NAME = "com.qonversion.keys"
+const val PREFS_NAME = "io.qonversion.keys"
 private const val USER_PROPERTIES_PREFIX = "userProperties"
 
 internal enum class StorageConstants(val key: String) {
@@ -9,7 +8,7 @@ internal enum class StorageConstants(val key: String) {
     VersionKey("sourceVersion"),
     UserId("storedUserID"),
     OriginalUserId("originalUserID"),
-    Token("token_key"), // Deprecated location of user id - was used in old sdk versions.
+    Token("token_key"), // todo do not forget to remove this key after the migrator implementation
     PendingUserProperties("$USER_PROPERTIES_PREFIX.pending"),
     SentUserProperties("$USER_PROPERTIES_PREFIX.sent")
 }

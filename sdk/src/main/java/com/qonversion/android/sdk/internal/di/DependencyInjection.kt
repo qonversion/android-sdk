@@ -5,7 +5,6 @@ import com.qonversion.android.sdk.internal.di.controllers.ControllersAssembly
 import com.qonversion.android.sdk.internal.di.controllers.ControllersAssemblyImpl
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssemblyImpl
-
 import com.qonversion.android.sdk.internal.di.services.ServicesAssembly
 import com.qonversion.android.sdk.internal.di.services.ServicesAssemblyImpl
 
@@ -14,9 +13,9 @@ object DependencyInjection :
     ServicesAssembly by ServicesAssemblyImpl,
     MiscAssembly by MiscAssemblyImpl {
 
-    override fun init(application: Application) {
-        MiscAssemblyImpl.init(application)
-        ServicesAssemblyImpl.init(MiscAssemblyImpl)
-        ControllersAssemblyImpl.init(MiscAssemblyImpl, ServicesAssemblyImpl)
+    override fun initialize(application: Application) {
+        MiscAssemblyImpl.initialize(application)
+        ServicesAssemblyImpl.initialize(MiscAssemblyImpl)
+        ControllersAssemblyImpl.initialize(MiscAssemblyImpl, ServicesAssemblyImpl)
     }
 }

@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.internal.userProperties.controller.UserPropert
 
 internal interface ControllersAssembly {
 
-    fun init(miscAssembly: MiscAssembly, servicesAssembly: ServicesAssembly)
+    fun initialize(miscAssembly: MiscAssembly, servicesAssembly: ServicesAssembly)
 
     val userPropertiesController: UserPropertiesController
 
