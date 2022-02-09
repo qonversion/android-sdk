@@ -212,7 +212,7 @@ internal class CacherTest {
 
                 // then
                 assertThat(isActual == expectedResult as Boolean).isTrue
-                verify (exactly = 1) {
+                verify {
                     cacher.getMaxCacheLifetimeSec(cacheState)
                 }
             }
