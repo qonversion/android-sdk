@@ -528,7 +528,9 @@ internal class MiscAssemblyTest {
 
         @Test
         fun `get different user mappers`() {
-            // given and when
+            // given
+
+            // when
             val firstResult = MiscAssemblyImpl.userMapper
             val secondResult = MiscAssemblyImpl.userMapper
 
@@ -539,7 +541,9 @@ internal class MiscAssemblyTest {
 
     @Test
     fun `get different product mappers`() {
-        // given and when
+        // given
+
+        // when
         val firstResult = MiscAssemblyImpl.productMapper
         val secondResult = MiscAssemblyImpl.productMapper
 
@@ -549,7 +553,9 @@ internal class MiscAssemblyTest {
 
     @Test
     fun `get different subscription mappers`() {
-        // given and when
+        // given
+
+        // when
         val firstResult = MiscAssemblyImpl.subscriptionMapper
         val secondResult = MiscAssemblyImpl.subscriptionMapper
 
@@ -559,7 +565,9 @@ internal class MiscAssemblyTest {
 
     @Test
     fun `get different entitlement mappers`() {
-        // given and when
+        // given
+
+        // when
         val firstResult = MiscAssemblyImpl.entitlementMapper
         val secondResult = MiscAssemblyImpl.entitlementMapper
 
@@ -569,9 +577,23 @@ internal class MiscAssemblyTest {
 
     @Test
     fun `get different user properties mappers`() {
-        // given and when
+        // given
+
+        // when
         val firstResult = MiscAssemblyImpl.userPropertiesMapper
         val secondResult = MiscAssemblyImpl.userPropertiesMapper
+
+        // then
+        assertThat(firstResult).isNotEqualTo(secondResult)
+    }
+
+    @Test
+    fun `get different user purchase mappers`() {
+        // given
+
+        // when
+        val firstResult = MiscAssemblyImpl.userPurchaseMapper
+        val secondResult = MiscAssemblyImpl.userPurchaseMapper
 
         // then
         assertThat(firstResult).isNotEqualTo(secondResult)

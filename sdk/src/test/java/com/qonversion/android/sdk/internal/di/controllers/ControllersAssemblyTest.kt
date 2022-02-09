@@ -264,7 +264,7 @@ internal class ControllersAssemblyTest {
 
             // when
             val result =
-                ControllersAssemblyImpl.provideGoogleBillingController(mockPurchasesListener)
+                ControllersAssemblyImpl.getGoogleBillingController(mockPurchasesListener)
 
             // then
             assertThat(result).isEqualToComparingOnlyGivenFields(expectedResult)
@@ -276,9 +276,9 @@ internal class ControllersAssemblyTest {
 
             // when
             val firstResult =
-                ControllersAssemblyImpl.provideGoogleBillingController(mockPurchasesListener)
+                ControllersAssemblyImpl.getGoogleBillingController(mockPurchasesListener)
             val secondResult =
-                ControllersAssemblyImpl.provideGoogleBillingController(mockPurchasesListener)
+                ControllersAssemblyImpl.getGoogleBillingController(mockPurchasesListener)
 
             // then
             assertThat(firstResult).isNotEqualTo(secondResult)
