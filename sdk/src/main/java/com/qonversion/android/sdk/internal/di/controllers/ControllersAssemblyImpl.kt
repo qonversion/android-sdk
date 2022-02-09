@@ -22,16 +22,16 @@ import com.qonversion.android.sdk.internal.utils.workers.DelayedWorkerImpl
 
 internal object ControllersAssemblyImpl : ControllersAssembly {
 
+    lateinit var servicesAssembly: ServicesAssembly
+
+    lateinit var miscAssembly: MiscAssembly
+
     override val userPropertiesController: UserPropertiesController
         get() = provideUserPropertiesController()
 
     override fun getGoogleBillingController(purchasesListener: PurchasesListener): GoogleBillingController {
-        return provideGoogleBillingControllerImpl(purchasesListener)
+        return provideGoogleBillingController(purchasesListener)
     }
-
-    lateinit var servicesAssembly: ServicesAssembly
-
-    lateinit var miscAssembly: MiscAssembly
 
     override fun init(miscAssembly: MiscAssembly, servicesAssembly: ServicesAssembly) {
         this.miscAssembly = miscAssembly
@@ -40,28 +40,19 @@ internal object ControllersAssemblyImpl : ControllersAssembly {
 
     fun provideUserPropertiesController(): UserPropertiesController {
         return UserPropertiesControllerImpl(
-            pendingPropertiesStorage = providePendingPropertiesStorage(),
-            sentPropertiesStorage = provideSentPropertiesStorage(),
+            pendingPropertiesStorage = providePropertiesStorage(StorageConstants.PendingUserProperties.key),
+            sentPropertiesStorage = providePropertiesStorage(StorageConstants.SentUserProperties.key),
             service = servicesAssembly.userPropertiesService,
             worker = provideDelayedWorker(),
             logger = miscAssembly.logger
         )
     }
 
-    fun providePendingPropertiesStorage(): UserPropertiesStorage {
+    fun providePropertiesStorage(storageName: String): UserPropertiesStorage {
         return UserPropertiesStorageImpl(
             miscAssembly.localStorage,
             provideMapDataMapper(),
-            StorageConstants.PendingUserProperties.key,
-            miscAssembly.logger
-        )
-    }
-
-    fun provideSentPropertiesStorage(): UserPropertiesStorage {
-        return UserPropertiesStorageImpl(
-            miscAssembly.localStorage,
-            provideMapDataMapper(),
-            StorageConstants.SentUserProperties.key,
+            storageName,
             miscAssembly.logger
         )
     }
@@ -74,7 +65,7 @@ internal object ControllersAssemblyImpl : ControllersAssembly {
         return MapDataMapper()
     }
 
-    fun provideGoogleBillingControllerImpl(listener: PurchasesListener): GoogleBillingController {
+    fun provideGoogleBillingController(listener: PurchasesListener): GoogleBillingController {
         return GoogleBillingControllerImpl(
             provideGoogleBillingConsumer(),
             provideGoogleBillingPurchaser(),

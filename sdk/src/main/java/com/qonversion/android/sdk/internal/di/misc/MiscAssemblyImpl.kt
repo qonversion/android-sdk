@@ -3,18 +3,29 @@ package com.qonversion.android.sdk.internal.di.misc
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
+import com.qonversion.android.sdk.internal.common.BASE_API_URL
 import com.qonversion.android.sdk.internal.common.PREFS_NAME
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.localStorage.SharedPreferencesStorage
+import com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper
+import com.qonversion.android.sdk.internal.common.mappers.ProductMapper
+import com.qonversion.android.sdk.internal.common.mappers.SubscriptionMapper
+import com.qonversion.android.sdk.internal.common.mappers.UserMapper
+import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
+import com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
+import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
+import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorImpl
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImpl
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
@@ -25,8 +36,6 @@ import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.Exp
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import java.util.Locale
 import kotlin.random.Random
-
-private const val DEFAULT_BASE_URL = "https://api.qonversion.io/"
 
 internal object MiscAssemblyImpl : MiscAssembly {
 
@@ -68,65 +77,140 @@ internal object MiscAssemblyImpl : MiscAssembly {
     override val appLifecycleObserver: AppLifecycleObserver
         get() = provideAppLifecycleObserver()
 
+    override val userMapper: UserMapper
+        get() = provideUserMapper()
+
+    override val userPurchaseMapper: UserPurchaseMapper
+        get() = provideUserPurchaseMapper()
+
+    override val entitlementMapper: EntitlementMapper
+        get() = provideEntitlementMapper()
+
+    override val productMapper: ProductMapper
+        get() = provideProductMapper()
+
+    override val subscriptionMapper: SubscriptionMapper
+        get() = provideSubscriptionMapper()
+
+    override val userPropertiesMapper: UserPropertiesMapper
+        get() = provideUserPropertiesMapper()
+
     override fun init(application: Application) {
         this.application = application
     }
 
+    override fun getApiInteractor(retryPolicy: RetryPolicy): ApiInteractor {
+        return provideApiInteractor(retryPolicy)
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideInternalConfig(): InternalConfig {
         return InternalConfig
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideLogger(): Logger {
         return ConsoleLogger(internalConfig)
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideRequestConfigurator(): RequestConfigurator {
         return RequestConfiguratorImpl(
-            provideHeaderBuilder(),
-            DEFAULT_BASE_URL,
-            provideInternalConfig(),
-            provideInternalConfig()
+            headerBuilder,
+            BASE_API_URL,
+            internalConfig,
+            internalConfig
         )
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideHeaderBuilder(): HeaderBuilder {
         return HeaderBuilderImpl(
-            provideLocalStorage(),
-            provideLocale(),
-            provideInternalConfig(),
-            provideInternalConfig(),
-            provideInternalConfig()
+            localStorage,
+            locale,
+            internalConfig,
+            internalConfig,
+            internalConfig
         )
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideSharedPreferences(): SharedPreferences {
         return application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideLocalStorage(): LocalStorage {
         return SharedPreferencesStorage(provideSharedPreferences())
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideLocale(): Locale = Locale.getDefault()
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideNetworkClient(): NetworkClient {
         return NetworkClientImpl(provideSerializer())
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideSerializer(): Serializer = JsonSerializer()
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideDelayCalculator(): RetryDelayCalculator {
         return ExponentialDelayCalculator(Random)
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideErrorResponseMapper(): ErrorResponseMapper {
         return ApiErrorMapper()
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideAppLifecycleObserver(): AppLifecycleObserver {
         val instance = AppLifecycleObserverImpl()
         application.registerActivityLifecycleCallbacks(instance)
 
         return instance
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideApiInteractor(retryPolicy: RetryPolicy): ApiInteractor {
+        return ApiInteractorImpl(
+            networkClient,
+            delayCalculator,
+            internalConfig,
+            errorResponseMapper,
+            retryPolicy
+        )
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideUserMapper(): UserMapper {
+        return UserMapper(provideUserPurchaseMapper(), provideEntitlementMapper())
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideUserPurchaseMapper(): UserPurchaseMapper {
+        return UserPurchaseMapper()
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideEntitlementMapper(): EntitlementMapper {
+        return EntitlementMapper()
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideSubscriptionMapper(): SubscriptionMapper {
+        return SubscriptionMapper()
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideProductMapper(): ProductMapper {
+        return ProductMapper()
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideUserPropertiesMapper(): UserPropertiesMapper {
+        return UserPropertiesMapper()
     }
 }

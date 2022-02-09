@@ -6,9 +6,9 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 
 internal interface ServicesAssembly {
 
-    fun init(miscAssembly: MiscAssembly)
-
     val userPropertiesService: UserPropertiesService
 
     val userService: UserService
+
+    fun init(miscAssembly: MiscAssembly)
 }
