@@ -141,7 +141,7 @@ internal object MiscAssemblyImpl : MiscAssembly {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideLocalStorage(): LocalStorage {
-        return SharedPreferencesStorage(provideSharedPreferences())
+        return SharedPreferencesStorage(sharedPreferences)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -149,7 +149,7 @@ internal object MiscAssemblyImpl : MiscAssembly {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideNetworkClient(): NetworkClient {
-        return NetworkClientImpl(provideSerializer())
+        return NetworkClientImpl(serializer)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -186,7 +186,7 @@ internal object MiscAssemblyImpl : MiscAssembly {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideUserMapper(): UserMapper {
-        return UserMapper(provideUserPurchaseMapper(), provideEntitlementMapper())
+        return UserMapper(userPurchaseMapper, entitlementMapper)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
