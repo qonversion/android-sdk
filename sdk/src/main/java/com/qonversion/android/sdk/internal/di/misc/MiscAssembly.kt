@@ -4,22 +4,13 @@ import android.app.Application
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
-import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
-import com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper
-import com.qonversion.android.sdk.internal.common.mappers.ProductMapper
-import com.qonversion.android.sdk.internal.common.mappers.SubscriptionMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper
-import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
+import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
+import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
+import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
-import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
-import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
-import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
-import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
+import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 import java.util.Locale
 
 internal interface MiscAssembly {
@@ -30,39 +21,21 @@ internal interface MiscAssembly {
 
     val logger: Logger
 
-    val requestConfigurator: RequestConfigurator
-
-    val headerBuilder: HeaderBuilder
-
     val sharedPreferences: SharedPreferences
 
-    val localStorage: LocalStorage
-
     val locale: Locale
-
-    val networkClient: NetworkClient
 
     val jsonSerializer: Serializer
 
     val exponentialDelayCalculator: RetryDelayCalculator
 
-    val errorResponseMapper: ErrorResponseMapper
-
     val appLifecycleObserver: AppLifecycleObserver
 
-    val userMapper: UserMapper
+    val delayedWorker: DelayedWorker
 
-    val userPurchaseMapper: UserPurchaseMapper
+    val googleBillingConsumer: GoogleBillingConsumer
 
-    val entitlementMapper: EntitlementMapper
+    val googleBillingPurchaser: GoogleBillingPurchaser
 
-    val productMapper: ProductMapper
-
-    val subscriptionMapper: SubscriptionMapper
-
-    val userPropertiesMapper: UserPropertiesMapper
-
-    fun initialize(application: Application)
-
-    fun getApiInteractor(retryPolicy: RetryPolicy): ApiInteractor
+    val googleBillingDataFetcher: GoogleBillingDataFetcher
 }
