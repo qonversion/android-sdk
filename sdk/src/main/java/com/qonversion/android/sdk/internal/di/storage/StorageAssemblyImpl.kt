@@ -1,6 +1,9 @@
 package com.qonversion.android.sdk.internal.di.storage
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.internal.common.PREFS_NAME
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.localStorage.SharedPreferencesStorage
@@ -13,8 +16,11 @@ internal class StorageAssemblyImpl(
     private val mappersAssembly: MappersAssembly,
     private val miscAssembly: MiscAssembly
 ) : StorageAssembly {
+    override val sharedPreferences: SharedPreferences
+        get() = miscAssembly.application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
     override val sharedPreferencesStorage: LocalStorage
-        get() = SharedPreferencesStorage(miscAssembly.sharedPreferences)
+        get() = SharedPreferencesStorage(sharedPreferences)
 
     override val sentUserPropertiesStorage: UserPropertiesStorage
         get() = providePropertiesStorage(StorageConstants.SentUserProperties.key)

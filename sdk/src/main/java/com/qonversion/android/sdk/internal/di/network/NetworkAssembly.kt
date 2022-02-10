@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.di.network
 
-import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilder
 import com.qonversion.android.sdk.internal.networkLayer.networkClient.NetworkClient
@@ -14,5 +13,7 @@ internal interface NetworkAssembly {
 
     val requestConfigurator: RequestConfigurator
 
-    fun getApiInteractor(retryPolicy: RetryPolicy): ApiInteractor
+    val apiInteractorExponential: ApiInteractor
+
+    val apiInteractorInfinityExponential: ApiInteractor
 }

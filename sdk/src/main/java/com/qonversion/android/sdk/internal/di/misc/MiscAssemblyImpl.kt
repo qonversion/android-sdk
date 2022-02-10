@@ -1,8 +1,6 @@
 package com.qonversion.android.sdk.internal.di.misc
 
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
@@ -12,7 +10,6 @@ import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingData
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherImpl
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserImpl
-import com.qonversion.android.sdk.internal.common.PREFS_NAME
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -32,9 +29,6 @@ internal class MiscAssemblyImpl(
 
     override val logger: Logger
         get() = ConsoleLogger(internalConfig)
-
-    override val sharedPreferences: SharedPreferences
-        get() = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     override val locale: Locale
         get() = Locale.getDefault()

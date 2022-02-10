@@ -5,7 +5,7 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.QonversionInternal
-import com.qonversion.android.sdk.internal.di.DependencyInjectionBuilder
+import com.qonversion.android.sdk.internal.di.DependencyInjection
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
@@ -36,7 +36,7 @@ interface Qonversion {
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
-            val di = DependencyInjectionBuilder(config.application)
+            val di = DependencyInjection.Builder(config.application)
                 .build()
             return QonversionInternal(config, di).also {
                 backingInstance = it

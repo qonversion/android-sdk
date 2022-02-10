@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.di.misc
 
 import android.app.Application
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
@@ -20,8 +19,6 @@ internal interface MiscAssembly {
     val internalConfig: InternalConfig
 
     val logger: Logger
-
-    val sharedPreferences: SharedPreferences
 
     val locale: Locale
 
