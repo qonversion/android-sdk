@@ -11,11 +11,11 @@ internal class UserServiceDecorator(
     override suspend fun getUser(id: String): User {
         return try {
             userService.getUser(id)
-        } catch (e: QonversionException) {
-            if (e.code == ErrorCode.UserNotFound) {
+        } catch (exception: QonversionException) {
+            if (exception.code == ErrorCode.UserNotFound) {
                 userService.createUser(id)
             } else {
-                throw e
+                throw exception
             }
         }
     }
