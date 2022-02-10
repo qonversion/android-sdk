@@ -313,12 +313,13 @@ internal class UserServiceTest {
         @Test
         fun `api request failed`() = runTest {
             // given
+            val spyUserService = spyk(userService)
             val response = Response.Error(500, "Test error")
             coEvery { mockApiInteractor.execute(mockRequest) } returns response
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.BackendError) {
-                userService.getUser(testUserId)
+                spyUserService.getUser(testUserId)
             }
 
             // then
@@ -326,6 +327,7 @@ internal class UserServiceTest {
                 mockRequestConfigurator.configureUserRequest(testUserId)
                 mockApiInteractor.execute(mockRequest)
             }
+            verify(exactly = 0) { spyUserService.mapUser(any()) }
         }
 
         @Test
@@ -384,12 +386,13 @@ internal class UserServiceTest {
         @Test
         fun `api request failed`() = runTest {
             // given
+            val spyUserService = spyk(userService)
             val response = Response.Error(500, "Test error")
             coEvery { mockApiInteractor.execute(mockRequest) } returns response
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.BackendError) {
-                userService.createUser(testUserId)
+                spyUserService.createUser(testUserId)
             }
 
             // then
@@ -397,6 +400,7 @@ internal class UserServiceTest {
                 mockRequestConfigurator.configureCreateUserRequest(testUserId)
                 mockApiInteractor.execute(mockRequest)
             }
+            verify(exactly = 0) { spyUserService.mapUser(any()) }
         }
     }
 
@@ -431,17 +435,6 @@ internal class UserServiceTest {
 
             // then
             verify { mockMapper.fromMap(responseData) }
-        }
-
-        @Test
-        fun `unacceptable data type`() {
-            // given
-            val response = Response.Success(200, emptyList<String>())
-
-            // when and then
-            assertThatQonversionExceptionThrown(ErrorCode.Mapping) {
-                userService.mapUser(response)
-            }
         }
     }
 

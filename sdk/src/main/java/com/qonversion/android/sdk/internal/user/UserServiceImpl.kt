@@ -105,12 +105,7 @@ internal class UserServiceImpl(
     @Throws(QonversionException::class)
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun mapUser(response: Response.Success): User {
-        val data = try {
-            response.data as Map<*, *>
-        } catch (cause: ClassCastException) {
-            throw QonversionException(ErrorCode.Mapping, cause = cause)
-        }
-        return mapper.fromMap(data) ?: throw QonversionException(ErrorCode.Mapping)
+        return mapper.fromMap(response.mapData) ?: throw QonversionException(ErrorCode.Mapping)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
