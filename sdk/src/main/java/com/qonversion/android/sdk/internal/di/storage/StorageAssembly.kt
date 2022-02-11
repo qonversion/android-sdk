@@ -6,11 +6,11 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 
 internal interface StorageAssembly {
 
-    val sharedPreferences: SharedPreferences
+    fun sharedPreferences(): SharedPreferences
 
-    val sharedPreferencesStorage: LocalStorage
+    fun sharedPreferencesStorage(): LocalStorage
 
-    val sentUserPropertiesStorage: UserPropertiesStorage
+    fun sentUserPropertiesStorage(): UserPropertiesStorage
 
-    val pendingUserPropertiesStorage: UserPropertiesStorage
+    fun pendingUserPropertiesStorage(): UserPropertiesStorage
 }

@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.di.storage
 
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
@@ -13,28 +14,29 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImpl
 
 internal class StorageAssemblyImpl(
+    private val application: Application,
     private val mappersAssembly: MappersAssembly,
     private val miscAssembly: MiscAssembly
 ) : StorageAssembly {
-    override val sharedPreferences: SharedPreferences
-        get() = miscAssembly.application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    override fun sharedPreferences(): SharedPreferences =
+        application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    override val sharedPreferencesStorage: LocalStorage
-        get() = SharedPreferencesStorage(sharedPreferences)
+    override fun sharedPreferencesStorage(): LocalStorage =
+        SharedPreferencesStorage(sharedPreferences())
 
-    override val sentUserPropertiesStorage: UserPropertiesStorage
-        get() = providePropertiesStorage(StorageConstants.SentUserProperties.key)
+    override fun sentUserPropertiesStorage(): UserPropertiesStorage =
+        providePropertiesStorage(StorageConstants.SentUserProperties.key)
 
-    override val pendingUserPropertiesStorage: UserPropertiesStorage
-        get() = providePropertiesStorage(StorageConstants.PendingUserProperties.key)
+    override fun pendingUserPropertiesStorage(): UserPropertiesStorage =
+        providePropertiesStorage(StorageConstants.PendingUserProperties.key)
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun providePropertiesStorage(storageName: String): UserPropertiesStorage {
         return UserPropertiesStorageImpl(
-            sharedPreferencesStorage,
-            mappersAssembly.mapDataMapper,
+            sharedPreferencesStorage(),
+            mappersAssembly.mapDataMapper(),
             storageName,
-            miscAssembly.logger
+            miscAssembly.logger()
         )
     }
 }

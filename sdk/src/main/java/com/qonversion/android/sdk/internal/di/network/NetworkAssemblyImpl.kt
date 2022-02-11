@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.di.network
 
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.common.BASE_API_URL
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
@@ -16,44 +17,42 @@ import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.Requ
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfiguratorImpl
 
 internal class NetworkAssemblyImpl(
+    private val internalConfig: InternalConfig,
     private val mappersAssembly: MappersAssembly,
     private val storageAssembly: StorageAssembly,
     private val miscAssembly: MiscAssembly
 ) : NetworkAssembly {
 
-    override val networkClient: NetworkClient
-        get() = NetworkClientImpl(miscAssembly.jsonSerializer)
+    override fun networkClient(): NetworkClient = NetworkClientImpl(miscAssembly.jsonSerializer())
 
-    override val requestConfigurator: RequestConfigurator
-        get() = RequestConfiguratorImpl(
-            headerBuilder,
-            BASE_API_URL,
-            miscAssembly.internalConfig,
-            miscAssembly.internalConfig
-        )
+    override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
+        headerBuilder(),
+        BASE_API_URL,
+        internalConfig,
+        internalConfig
+    )
 
-    override val apiInteractorExponential: ApiInteractor
-        get() = provideApiInteractor(RetryPolicy.Exponential())
+    override fun exponentialApiInteractor(): ApiInteractor =
+        provideApiInteractor(RetryPolicy.Exponential())
 
-    override val apiInteractorInfinityExponential: ApiInteractor
-        get() = provideApiInteractor(RetryPolicy.InfiniteExponential())
+    override fun infiniteExponentialApiInteractor(): ApiInteractor =
+        provideApiInteractor(RetryPolicy.InfiniteExponential())
 
-    override val headerBuilder: HeaderBuilder
-        get() = HeaderBuilderImpl(
-            storageAssembly.sharedPreferencesStorage,
-            miscAssembly.locale,
-            miscAssembly.internalConfig,
-            miscAssembly.internalConfig,
-            miscAssembly.internalConfig
-        )
+    override fun headerBuilder(): HeaderBuilder = HeaderBuilderImpl(
+        storageAssembly.sharedPreferencesStorage(),
+        miscAssembly.locale(),
+        internalConfig,
+        internalConfig,
+        internalConfig
+    )
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun provideApiInteractor(retryPolicy: RetryPolicy): ApiInteractor {
         return ApiInteractorImpl(
-            networkClient,
-            miscAssembly.exponentialDelayCalculator,
-            miscAssembly.internalConfig,
-            mappersAssembly.apiErrorMapper,
+            networkClient(),
+            miscAssembly.exponentialDelayCalculator(),
+            internalConfig,
+            mappersAssembly.apiErrorMapper(),
             retryPolicy
         )
     }

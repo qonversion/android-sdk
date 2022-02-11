@@ -14,18 +14,16 @@ internal class ServicesAssemblyImpl(
     private val networkAssembly: NetworkAssembly
 ) : ServicesAssembly {
 
-    override val userPropertiesService: UserPropertiesService
-        get() = UserPropertiesServiceImpl(
-            networkAssembly.requestConfigurator,
-            networkAssembly.apiInteractorInfinityExponential,
-            mappersAssembly.userPropertiesMapper
-        )
+    override fun userPropertiesService(): UserPropertiesService = UserPropertiesServiceImpl(
+        networkAssembly.requestConfigurator(),
+        networkAssembly.infiniteExponentialApiInteractor(),
+        mappersAssembly.userPropertiesMapper()
+    )
 
-    override val userService: UserService
-        get() = UserServiceImpl(
-            networkAssembly.requestConfigurator,
-            networkAssembly.apiInteractorExponential,
-            mappersAssembly.userMapper,
-            storageAssembly.sharedPreferencesStorage
-        )
+    override fun userService(): UserService = UserServiceImpl(
+        networkAssembly.requestConfigurator(),
+        networkAssembly.exponentialApiInteractor(),
+        mappersAssembly.userMapper(),
+        storageAssembly.sharedPreferencesStorage()
+    )
 }

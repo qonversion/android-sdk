@@ -4,12 +4,6 @@ import android.app.Application
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
-import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
-import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
-import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
-import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherImpl
-import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
-import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserImpl
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -22,39 +16,24 @@ import java.util.Locale
 import kotlin.random.Random
 
 internal class MiscAssemblyImpl(
-    override val application: Application
+    private val application: Application,
+    private val internalConfig: InternalConfig
 ) : MiscAssembly {
-    override val internalConfig: InternalConfig
-        get() = InternalConfig
 
-    override val logger: Logger
-        get() = ConsoleLogger(internalConfig)
+    override fun logger(): Logger = ConsoleLogger(internalConfig)
 
-    override val locale: Locale
-        get() = Locale.getDefault()
+    override fun locale(): Locale = Locale.getDefault()
 
-    override val jsonSerializer: Serializer
-        get() = JsonSerializer()
+    override fun jsonSerializer(): Serializer = JsonSerializer()
 
-    override val exponentialDelayCalculator: RetryDelayCalculator
-        get() = ExponentialDelayCalculator(Random)
+    override fun exponentialDelayCalculator(): RetryDelayCalculator =
+        ExponentialDelayCalculator(Random)
 
-    override val appLifecycleObserver: AppLifecycleObserver
-        get() {
-            val instance = AppLifecycleObserverImpl()
-            application.registerActivityLifecycleCallbacks(instance)
-            return instance
-        }
+    override fun appLifecycleObserver(): AppLifecycleObserver {
+        val instance = AppLifecycleObserverImpl()
+        application.registerActivityLifecycleCallbacks(instance)
+        return instance
+    }
 
-    override val delayedWorker: DelayedWorker
-        get() = DelayedWorkerImpl()
-
-    override val googleBillingConsumer: GoogleBillingConsumer
-        get() = GoogleBillingConsumerImpl(logger)
-
-    override val googleBillingPurchaser: GoogleBillingPurchaser
-        get() = GoogleBillingPurchaserImpl(logger)
-
-    override val googleBillingDataFetcher: GoogleBillingDataFetcher
-        get() = GoogleBillingDataFetcherImpl(logger)
+    override fun delayedWorker(): DelayedWorker = DelayedWorkerImpl()
 }

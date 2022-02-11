@@ -3,48 +3,30 @@ package com.qonversion.android.sdk.internal.di.services
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.mappers.UserMapper
 import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
-import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
-import com.qonversion.android.sdk.internal.networkLayer.RetryPolicy
+import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
+import com.qonversion.android.sdk.internal.di.network.NetworkAssembly
+import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import com.qonversion.android.sdk.internal.user.UserServiceImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImpl
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
-import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class ServicesAssemblyTest {
-    private val mockMiscAssembly = mockk<MiscAssembly>()
+    private lateinit var servicesAssembly: ServicesAssembly
+    private val mockNetworkAssembly = mockk<NetworkAssembly>()
+    private val mockMappersAssembly = mockk<MappersAssembly>()
+    private val mockStorageAssembly = mockk<StorageAssembly>()
 
     @BeforeEach
     fun setup() {
-        mockkObject(ServicesAssemblyImpl)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        unmockkObject(ServicesAssemblyImpl)
-    }
-
-    @Test
-    fun `init`() {
-        // given
-        ServicesAssemblyImpl.miscAssembly = mockk()
-        val miscAssemblyAfter = mockk<MiscAssembly>()
-        ServicesAssemblyImpl.initialize(miscAssemblyAfter)
-
-        // when
-        val result = ServicesAssemblyImpl.miscAssembly
-
-        // then
-        assertThat(result).isEqualTo(miscAssemblyAfter)
+        servicesAssembly =
+            ServicesAssemblyImpl(mockMappersAssembly, mockStorageAssembly, mockNetworkAssembly)
     }
 
     @Nested
@@ -52,25 +34,20 @@ internal class ServicesAssemblyTest {
         private val mockRequestConfigurator = mockk<RequestConfigurator>()
         private val mockApiInteractor = mockk<ApiInteractor>()
         private val mockUserPropertiesMapper = mockk<UserPropertiesMapper>()
-        private val retryPolicySlot = slot<RetryPolicy>()
 
         @BeforeEach
         fun setup() {
             every {
-                mockMiscAssembly.requestConfigurator
+                mockNetworkAssembly.requestConfigurator()
             } returns mockRequestConfigurator
 
             every {
-                mockMiscAssembly.getApiInteractor(capture(retryPolicySlot))
+                mockNetworkAssembly.infiniteExponentialApiInteractor()
             } returns mockApiInteractor
 
             every {
-                mockMiscAssembly.userPropertiesMapper
+                mockMappersAssembly.userPropertiesMapper()
             } returns mockUserPropertiesMapper
-
-            every {
-                ServicesAssemblyImpl.miscAssembly
-            } returns mockMiscAssembly
         }
 
         @Test
@@ -83,11 +60,10 @@ internal class ServicesAssemblyTest {
             )
 
             // when
-            val result = ServicesAssemblyImpl.userPropertiesService
+            val result = servicesAssembly.userPropertiesService()
 
             // then
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
-            assertThat(retryPolicySlot.captured).isInstanceOf(RetryPolicy.InfiniteExponential::class.java)
         }
 
         @Test
@@ -95,44 +71,38 @@ internal class ServicesAssemblyTest {
             // given
 
             // when
-            val firstResult = ServicesAssemblyImpl.userPropertiesService
-            val secondResult = ServicesAssemblyImpl.userPropertiesService
+            val firstResult = servicesAssembly.userPropertiesService()
+            val secondResult = servicesAssembly.userPropertiesService()
 
             // then
             assertThat(firstResult).isNotEqualTo(secondResult)
         }
     }
 
-    //    return
     @Nested
     inner class UserServiceTest {
         private val mockRequestConfigurator = mockk<RequestConfigurator>()
         private val mockApiInteractor = mockk<ApiInteractor>()
         private val mockUserMapper = mockk<UserMapper>()
         private val mockLocalStorage = mockk<LocalStorage>()
-        private val retryPolicySlot = slot<RetryPolicy>()
 
         @BeforeEach
         fun setup() {
             every {
-                mockMiscAssembly.requestConfigurator
+                mockNetworkAssembly.requestConfigurator()
             } returns mockRequestConfigurator
 
             every {
-                mockMiscAssembly.getApiInteractor(capture(retryPolicySlot))
+                mockNetworkAssembly.exponentialApiInteractor()
             } returns mockApiInteractor
 
             every {
-                mockMiscAssembly.userMapper
+                mockMappersAssembly.userMapper()
             } returns mockUserMapper
 
             every {
-                mockMiscAssembly.localStorage
+                mockStorageAssembly.sharedPreferencesStorage()
             } returns mockLocalStorage
-
-            every {
-                ServicesAssemblyImpl.miscAssembly
-            } returns mockMiscAssembly
         }
 
         @Test
@@ -146,11 +116,10 @@ internal class ServicesAssemblyTest {
             )
 
             // when
-            val result = ServicesAssemblyImpl.userService
+            val result = servicesAssembly.userService()
 
             // then
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
-            assertThat(retryPolicySlot.captured).isInstanceOf(RetryPolicy.Exponential::class.java)
         }
 
         @Test
@@ -158,8 +127,8 @@ internal class ServicesAssemblyTest {
             // given
 
             // when
-            val firstResult = ServicesAssemblyImpl.userService
-            val secondResult = ServicesAssemblyImpl.userService
+            val firstResult = servicesAssembly.userService()
+            val secondResult = servicesAssembly.userService()
 
             // then
             assertThat(firstResult).isNotEqualTo(secondResult)

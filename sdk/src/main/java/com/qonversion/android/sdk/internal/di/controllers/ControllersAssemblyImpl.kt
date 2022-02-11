@@ -1,8 +1,15 @@
 package com.qonversion.android.sdk.internal.di.controllers
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
+import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
+import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
 import com.qonversion.android.sdk.internal.billing.controller.GoogleBillingController
 import com.qonversion.android.sdk.internal.billing.controller.GoogleBillingControllerImpl
+import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
+import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherImpl
+import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
+import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserImpl
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.di.services.ServicesAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
@@ -14,22 +21,33 @@ internal class ControllersAssemblyImpl(
     private val miscAssembly: MiscAssembly,
     private val servicesAssembly: ServicesAssembly
 ) : ControllersAssembly {
-    override val userPropertiesController: UserPropertiesController
-        get() = UserPropertiesControllerImpl(
-            pendingPropertiesStorage = storageAssembly.pendingUserPropertiesStorage,
-            sentPropertiesStorage = storageAssembly.sentUserPropertiesStorage,
-            service = servicesAssembly.userPropertiesService,
-            worker = miscAssembly.delayedWorker,
-            logger = miscAssembly.logger
+    override fun userPropertiesController(): UserPropertiesController =
+        UserPropertiesControllerImpl(
+            pendingPropertiesStorage = storageAssembly.pendingUserPropertiesStorage(),
+            sentPropertiesStorage = storageAssembly.sentUserPropertiesStorage(),
+            service = servicesAssembly.userPropertiesService(),
+            worker = miscAssembly.delayedWorker(),
+            logger = miscAssembly.logger()
         )
 
-    override fun getGoogleBillingController(purchasesListener: PurchasesListener): GoogleBillingController {
-        return GoogleBillingControllerImpl(
-            miscAssembly.googleBillingConsumer,
-            miscAssembly.googleBillingPurchaser,
-            miscAssembly.googleBillingDataFetcher,
+    override fun googleBillingController(purchasesListener: PurchasesListener): GoogleBillingController =
+        GoogleBillingControllerImpl(
+            provideGoogleBillingConsumer(),
+            provideGoogleBillingPurchaser(),
+            provideGoogleBillingDataFetcher(),
             purchasesListener,
-            miscAssembly.logger
+            miscAssembly.logger()
         )
-    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideGoogleBillingConsumer(): GoogleBillingConsumer =
+        GoogleBillingConsumerImpl(miscAssembly.logger())
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideGoogleBillingPurchaser(): GoogleBillingPurchaser =
+        GoogleBillingPurchaserImpl(miscAssembly.logger())
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun provideGoogleBillingDataFetcher(): GoogleBillingDataFetcher =
+        GoogleBillingDataFetcherImpl(miscAssembly.logger())
 }

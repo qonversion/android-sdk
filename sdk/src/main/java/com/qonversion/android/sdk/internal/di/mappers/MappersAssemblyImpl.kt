@@ -11,27 +11,20 @@ import com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 
 internal class MappersAssemblyImpl : MappersAssembly {
-    override val userMapper: UserMapper
-        get() = UserMapper(userPurchaseMapper, entitlementMapper)
+    override fun userMapper(): UserMapper =
+        UserMapper(userPurchaseMapper(), entitlementMapper())
 
-    override val userPurchaseMapper: UserPurchaseMapper
-        get() = UserPurchaseMapper()
+    override fun userPurchaseMapper(): UserPurchaseMapper = UserPurchaseMapper()
 
-    override val entitlementMapper: EntitlementMapper
-        get() = EntitlementMapper()
+    override fun entitlementMapper(): EntitlementMapper = EntitlementMapper()
 
-    override val productMapper: ProductMapper
-        get() = ProductMapper()
+    override fun productMapper(): ProductMapper = ProductMapper()
 
-    override val subscriptionMapper: SubscriptionMapper
-        get() = SubscriptionMapper()
+    override fun subscriptionMapper(): SubscriptionMapper = SubscriptionMapper()
 
-    override val userPropertiesMapper: UserPropertiesMapper
-        get() = UserPropertiesMapper()
+    override fun userPropertiesMapper(): UserPropertiesMapper = UserPropertiesMapper()
 
-    override val mapDataMapper: MapDataMapper
-        get() = MapDataMapper()
+    override fun mapDataMapper(): MapDataMapper = MapDataMapper()
 
-    override val apiErrorMapper: ErrorResponseMapper
-        get() = ApiErrorMapper()
+    override fun apiErrorMapper(): ErrorResponseMapper = ApiErrorMapper()
 }

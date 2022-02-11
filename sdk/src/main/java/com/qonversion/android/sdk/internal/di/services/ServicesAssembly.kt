@@ -5,7 +5,7 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 
 internal interface ServicesAssembly {
 
-    val userPropertiesService: UserPropertiesService
+    fun userPropertiesService(): UserPropertiesService
 
-    val userService: UserService
+    fun userService(): UserService
 }

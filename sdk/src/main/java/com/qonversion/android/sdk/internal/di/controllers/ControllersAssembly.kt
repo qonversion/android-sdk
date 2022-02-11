@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.internal.userProperties.controller.UserPropert
 
 internal interface ControllersAssembly {
 
-    val userPropertiesController: UserPropertiesController
+    fun userPropertiesController(): UserPropertiesController
 
-    fun getGoogleBillingController(purchasesListener: PurchasesListener): GoogleBillingController
+    fun googleBillingController(purchasesListener: PurchasesListener): GoogleBillingController
 }

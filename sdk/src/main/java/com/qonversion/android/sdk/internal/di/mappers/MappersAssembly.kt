@@ -11,19 +11,19 @@ import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMap
 
 internal interface MappersAssembly {
 
-    val userMapper: UserMapper
+    fun userMapper(): UserMapper
 
-    val userPurchaseMapper: UserPurchaseMapper
+    fun userPurchaseMapper(): UserPurchaseMapper
 
-    val entitlementMapper: EntitlementMapper
+    fun entitlementMapper(): EntitlementMapper
 
-    val productMapper: ProductMapper
+    fun productMapper(): ProductMapper
 
-    val subscriptionMapper: SubscriptionMapper
+    fun subscriptionMapper(): SubscriptionMapper
 
-    val userPropertiesMapper: UserPropertiesMapper
+    fun userPropertiesMapper(): UserPropertiesMapper
 
-    val mapDataMapper: MapDataMapper
+    fun mapDataMapper(): MapDataMapper
 
-    val apiErrorMapper: ErrorResponseMapper
+    fun apiErrorMapper(): ErrorResponseMapper
 }

@@ -8,14 +8,13 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.di.DependencyInjection
+import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 
 internal class QonversionInternal(
     config: QonversionConfig,
-    di: DependencyInjection
+    private val internalConfig: InternalConfig,
+    private val dependenciesAssembly: DependenciesAssembly
 ) : Qonversion {
-
-    private val internalConfig: InternalConfig = di.internalConfig
 
     init {
         internalConfig.primaryConfig = config.primaryConfig

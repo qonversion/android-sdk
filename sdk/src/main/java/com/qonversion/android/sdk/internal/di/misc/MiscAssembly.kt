@@ -1,11 +1,6 @@
 package com.qonversion.android.sdk.internal.di.misc
 
-import android.app.Application
-import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
-import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
-import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcher
-import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
@@ -14,25 +9,15 @@ import java.util.Locale
 
 internal interface MiscAssembly {
 
-    val application: Application
+    fun logger(): Logger
 
-    val internalConfig: InternalConfig
+    fun locale(): Locale
 
-    val logger: Logger
+    fun jsonSerializer(): Serializer
 
-    val locale: Locale
+    fun exponentialDelayCalculator(): RetryDelayCalculator
 
-    val jsonSerializer: Serializer
+    fun appLifecycleObserver(): AppLifecycleObserver
 
-    val exponentialDelayCalculator: RetryDelayCalculator
-
-    val appLifecycleObserver: AppLifecycleObserver
-
-    val delayedWorker: DelayedWorker
-
-    val googleBillingConsumer: GoogleBillingConsumer
-
-    val googleBillingPurchaser: GoogleBillingPurchaser
-
-    val googleBillingDataFetcher: GoogleBillingDataFetcher
+    fun delayedWorker(): DelayedWorker
 }

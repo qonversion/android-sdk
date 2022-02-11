@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
-import com.qonversion.android.sdk.internal.di.DependencyInjection
+import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -43,7 +43,8 @@ internal class QonversionInternalTest {
     private val mockNetworkConfig = NetworkConfig()
     private val mockStoreConfig = StoreConfig(mockStore, mockShouldConsumePurchases)
     private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
-    private val mockDI = mockk<DependencyInjection>(relaxed = true)
+    private val mockInternalConfig = mockk<InternalConfig>(relaxed = true)
+    private val mockDI = mockk<DependenciesAssembly>(relaxed = true)
 
     @BeforeEach
     fun setUp() {
@@ -79,15 +80,15 @@ internal class QonversionInternalTest {
             )
 
             // when
-            qonversionInternal = QonversionInternal(qonversionConfig, mockDI)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDI)
 
             // then
             verify {
-                mockDI.internalConfig.primaryConfig = mockPrimaryConfig
-                mockDI.internalConfig.storeConfig = mockStoreConfig
-                mockDI.internalConfig.networkConfig = mockNetworkConfig
-                mockDI.internalConfig.loggerConfig = mockLoggerConfig
-                mockDI.internalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
+                mockInternalConfig.primaryConfig = mockPrimaryConfig
+                mockInternalConfig.storeConfig = mockStoreConfig
+                mockInternalConfig.networkConfig = mockNetworkConfig
+                mockInternalConfig.loggerConfig = mockLoggerConfig
+                mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
             }
         }
     }
@@ -97,14 +98,14 @@ internal class QonversionInternalTest {
 
         @BeforeEach
         fun setUp() {
-            qonversionInternal = QonversionInternal(qonversionConfig, mockDI)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDI)
         }
 
         @Test
         fun `set environment`() {
             // given
             val environments = Environment.values()
-            every { mockDI.internalConfig.primaryConfig } returns mockPrimaryConfig
+            every { mockInternalConfig.primaryConfig } returns mockPrimaryConfig
 
             environments.forEach { environment ->
                 val expectedPrimaryConfig = mockPrimaryConfig.copy(environment = environment)
@@ -113,7 +114,7 @@ internal class QonversionInternalTest {
                 qonversionInternal.setEnvironment(environment)
 
                 // then
-                verify { mockDI.internalConfig.primaryConfig = expectedPrimaryConfig }
+                verify { mockInternalConfig.primaryConfig = expectedPrimaryConfig }
             }
         }
 
@@ -121,7 +122,7 @@ internal class QonversionInternalTest {
         fun `set log level`() {
             // given
             val logLevels = LogLevel.values()
-            every { mockDI.internalConfig.loggerConfig } returns mockLoggerConfig
+            every { mockInternalConfig.loggerConfig } returns mockLoggerConfig
 
             logLevels.forEach { logLevel ->
                 val expectedLoggerConfig = mockLoggerConfig.copy(logLevel = logLevel)
@@ -130,7 +131,7 @@ internal class QonversionInternalTest {
                 qonversionInternal.setLogLevel(logLevel)
 
                 // then
-                verify { mockDI.internalConfig.loggerConfig = expectedLoggerConfig }
+                verify { mockInternalConfig.loggerConfig = expectedLoggerConfig }
             }
         }
 
@@ -138,14 +139,14 @@ internal class QonversionInternalTest {
         fun `set log tag`() {
             // given
             val logTag = "logTag"
-            every { mockDI.internalConfig.loggerConfig } returns mockLoggerConfig
+            every { mockInternalConfig.loggerConfig } returns mockLoggerConfig
             val expectedLoggerConfig = mockLoggerConfig.copy(logTag = logTag)
 
             // when
             qonversionInternal.setLogTag(logTag)
 
             // then
-            verify { mockDI.internalConfig.loggerConfig = expectedLoggerConfig }
+            verify { mockInternalConfig.loggerConfig = expectedLoggerConfig }
         }
 
         @Test
@@ -156,7 +157,7 @@ internal class QonversionInternalTest {
                 mockBackgroundInternalCacheLifetime,
                 mockForegroundInternalCacheLifetime
             )
-            every { mockDI.internalConfig.cacheLifetimeConfig} returns mockCacheLifetimeConfig
+            every { mockInternalConfig.cacheLifetimeConfig} returns mockCacheLifetimeConfig
 
             CacheLifetime.values().forEach { cacheLifetime ->
                 val internalCacheLifetime = mockk<InternalCacheLifetime>()
@@ -173,7 +174,7 @@ internal class QonversionInternalTest {
                 qonversionInternal.setCacheLifetime(cacheLifetime)
 
                 // then
-                verify { mockDI.internalConfig.cacheLifetimeConfig = expectedCacheLifetime }
+                verify { mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetime }
             }
         }
     }

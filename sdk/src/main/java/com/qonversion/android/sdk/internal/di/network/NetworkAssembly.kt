@@ -7,13 +7,13 @@ import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.Requ
 
 internal interface NetworkAssembly {
 
-    val networkClient: NetworkClient
+    fun networkClient(): NetworkClient
 
-    val headerBuilder: HeaderBuilder
+    fun headerBuilder(): HeaderBuilder
 
-    val requestConfigurator: RequestConfigurator
+    fun requestConfigurator(): RequestConfigurator
 
-    val apiInteractorExponential: ApiInteractor
+    fun exponentialApiInteractor(): ApiInteractor
 
-    val apiInteractorInfinityExponential: ApiInteractor
+    fun infiniteExponentialApiInteractor(): ApiInteractor
 }

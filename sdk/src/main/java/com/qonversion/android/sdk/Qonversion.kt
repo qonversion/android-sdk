@@ -4,8 +4,9 @@ import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
-import com.qonversion.android.sdk.internal.di.DependencyInjection
+import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
@@ -36,9 +37,9 @@ interface Qonversion {
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
-            val di = DependencyInjection.Builder(config.application)
+            val dependenciesAssembly = DependenciesAssembly.Builder(config.application, InternalConfig)
                 .build()
-            return QonversionInternal(config, di).also {
+            return QonversionInternal(config, InternalConfig, dependenciesAssembly).also {
                 backingInstance = it
             }
         }
