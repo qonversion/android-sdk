@@ -44,7 +44,7 @@ internal class QonversionInternalTest {
     private val mockStoreConfig = StoreConfig(mockStore, mockShouldConsumePurchases)
     private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
     private val mockInternalConfig = mockk<InternalConfig>(relaxed = true)
-    private val mockDI = mockk<DependenciesAssembly>(relaxed = true)
+    private val mockDependenciesAssembly = mockk<DependenciesAssembly>(relaxed = true)
 
     @BeforeEach
     fun setUp() {
@@ -80,7 +80,7 @@ internal class QonversionInternalTest {
             )
 
             // when
-            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDI)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
 
             // then
             verify {
@@ -98,7 +98,7 @@ internal class QonversionInternalTest {
 
         @BeforeEach
         fun setUp() {
-            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDI)
+            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
         }
 
         @Test

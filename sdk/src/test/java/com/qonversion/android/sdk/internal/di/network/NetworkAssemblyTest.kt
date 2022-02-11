@@ -146,7 +146,7 @@ internal class NetworkAssemblyTest {
         }
 
         @Test
-        fun `get api interactor with possible retry policy`() {
+        fun `provaide api interactor with possible retry policy`() {
             // given
             val retryPolicy = listOf(RetryPolicy.Exponential(), RetryPolicy.InfiniteExponential())
             retryPolicy.forEach { policy ->
