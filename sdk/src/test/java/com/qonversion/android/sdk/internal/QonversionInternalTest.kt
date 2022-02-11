@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
+import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
@@ -14,11 +15,14 @@ import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
+import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import io.mockk.verify
+import io.mockk.just
+import io.mockk.Runs
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -80,7 +84,8 @@ internal class QonversionInternalTest {
             )
 
             // when
-            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
+            qonversionInternal =
+                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
 
             // then
             verify {
@@ -98,7 +103,8 @@ internal class QonversionInternalTest {
 
         @BeforeEach
         fun setUp() {
-            qonversionInternal = QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
+            qonversionInternal =
+                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
         }
 
         @Test
@@ -157,7 +163,7 @@ internal class QonversionInternalTest {
                 mockBackgroundInternalCacheLifetime,
                 mockForegroundInternalCacheLifetime
             )
-            every { mockInternalConfig.cacheLifetimeConfig} returns mockCacheLifetimeConfig
+            every { mockInternalConfig.cacheLifetimeConfig } returns mockCacheLifetimeConfig
 
             CacheLifetime.values().forEach { cacheLifetime ->
                 val internalCacheLifetime = mockk<InternalCacheLifetime>()
@@ -175,6 +181,77 @@ internal class QonversionInternalTest {
 
                 // then
                 verify { mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetime }
+            }
+        }
+    }
+
+    @Nested
+    inner class SetUserPropertiesTest {
+        private val mockUserPropertiesController = mockk<UserPropertiesController>()
+
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockDependenciesAssembly.userPropertiesController()
+            } returns mockUserPropertiesController
+
+            qonversionInternal =
+                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
+        }
+
+        @Test
+        fun `set all user properties`() {
+            // given
+            val userProperties = UserProperty.values()
+            val value = "value"
+
+            every {
+                mockUserPropertiesController.setProperty(any(), value)
+            } just Runs
+
+            userProperties.forEach { key ->
+                // when
+                qonversionInternal.setUserProperty(key, value)
+
+                // then
+                verify {
+                    mockUserPropertiesController.setProperty(key.code, value)
+                }
+            }
+        }
+
+        @Test
+        fun `set custom user property`() {
+            // given
+            val key = "key"
+            val value = "value"
+            every {
+                mockUserPropertiesController.setProperty(key, value)
+            } just Runs
+
+            // when
+            qonversionInternal.setCustomUserProperty(key, value)
+
+            // then
+            verify {
+                mockUserPropertiesController.setProperty(key, value)
+            }
+        }
+
+        @Test
+        fun `set user properties`() {
+            // given
+            val properties = mapOf("key" to "value")
+            every {
+                mockUserPropertiesController.setProperties(properties)
+            } just Runs
+
+            // when
+            qonversionInternal.setUserProperties(properties)
+
+            // then
+            verify {
+                mockUserPropertiesController.setProperties(properties)
             }
         }
     }

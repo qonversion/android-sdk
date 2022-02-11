@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
@@ -9,12 +10,17 @@ import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
+import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 
 internal class QonversionInternal(
     config: QonversionConfig,
     private val internalConfig: InternalConfig,
-    private val dependenciesAssembly: DependenciesAssembly
+    dependenciesAssembly: DependenciesAssembly
 ) : Qonversion {
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val propertiesController: UserPropertiesController =
+        dependenciesAssembly.userPropertiesController()
 
     init {
         internalConfig.primaryConfig = config.primaryConfig
@@ -50,14 +56,14 @@ internal class QonversionInternal(
     }
 
     override fun setUserProperty(property: UserProperty, value: String) {
-        TODO("Not yet implemented")
+        propertiesController.setProperty(property.code, value)
     }
 
     override fun setCustomUserProperty(key: String, value: String) {
-        TODO("Not yet implemented")
+        propertiesController.setProperty(key, value)
     }
 
     override fun setUserProperties(userProperties: Map<String, String>) {
-        TODO("Not yet implemented")
+        propertiesController.setProperties(userProperties)
     }
 }
