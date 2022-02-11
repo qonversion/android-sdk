@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
+import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 
@@ -44,6 +45,10 @@ internal class QonversionInternal(
     }
 
     override fun finish() {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUserInfo(): User {
         TODO("Not yet implemented")
     }
 

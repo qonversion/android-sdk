@@ -4,6 +4,8 @@ import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.user.service.UserService
+import com.qonversion.android.sdk.internal.user.service.UserServiceDecorator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder

@@ -1,8 +1,9 @@
-package com.qonversion.android.sdk.internal.user
+package com.qonversion.android.sdk.internal.user.service
 
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.user.service.UserService
 
 internal class UserServiceDecorator(
     private val userService: UserService

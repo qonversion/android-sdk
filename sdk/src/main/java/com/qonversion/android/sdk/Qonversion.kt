@@ -4,6 +4,7 @@ import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
+import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.exception.ErrorCode
@@ -156,4 +157,11 @@ interface Qonversion {
      * for the most part of use cases.
      */
     fun finish()
+
+    /**
+     * Get the most recent available User info.
+     * @return [User] instance
+     */
+    @Throws(QonversionException::class)
+    fun getUserInfo(): User
 }
