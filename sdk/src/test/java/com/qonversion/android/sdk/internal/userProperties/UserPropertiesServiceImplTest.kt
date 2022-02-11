@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.userProperties
 
-import com.qonversion.android.sdk.assertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
@@ -39,10 +38,8 @@ internal class UserPropertiesServiceImplTest {
         @Test
         fun `send properties success`() = runTest {
             // given
-            val spykService = spyk(service)
-
             val expectedProperties = listOf("_q_email", "_q_adjust_adid")
-            val mockResponseData = mockk<Any>()
+            val responseData = mapOf("one" to "three")
 
             val propertiesMap = mapOf(
                 "key1" to "value1",
@@ -53,33 +50,31 @@ internal class UserPropertiesServiceImplTest {
                 mockRequestConfigurator.configureUserPropertiesRequest(propertiesMap)
             } returns mockRequest
 
-            val mockSuccessResponse = Response.Success(200, mockResponseData)
+            val mockSuccessResponse = Response.Success(200, responseData)
 
             coEvery {
                 mockApiInteractor.execute(mockRequest)
             } returns mockSuccessResponse
 
             every {
-                spykService.mapProcessedProperties(mockSuccessResponse)
+                mockMapper.fromMap(responseData)
             } returns expectedProperties
 
             // when
-            val result = spykService.sendProperties(propertiesMap)
+            val result = service.sendProperties(propertiesMap)
 
             // then
             assertThat(result).isEqualTo(expectedProperties)
             coVerifyOrder {
                 mockRequestConfigurator.configureUserPropertiesRequest(propertiesMap)
                 mockApiInteractor.execute(mockRequest)
-                spykService.mapProcessedProperties(mockSuccessResponse)
+                mockMapper.fromMap(responseData)
             }
         }
 
         @Test
         fun `send properties error`() = runTest {
             // given
-            val spykService = spyk(service)
-
             val propertiesMap = mapOf(
                 "key1" to "value1",
                 "key2" to "value2"
@@ -98,7 +93,7 @@ internal class UserPropertiesServiceImplTest {
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.BackendError) {
-                spykService.sendProperties(propertiesMap)
+                service.sendProperties(propertiesMap)
             }
 
             // then
@@ -106,56 +101,7 @@ internal class UserPropertiesServiceImplTest {
                 mockRequestConfigurator.configureUserPropertiesRequest(propertiesMap)
                 mockApiInteractor.execute(mockRequest)
             }
-            verify(exactly = 0) {
-                spykService.mapProcessedProperties(any())
-            }
-        }
-    }
-
-    @Nested
-    inner class MapHandledPropertiesTest {
-        @Test
-        fun `map processed properties success`() {
-            // given
-            val expectedProperties = listOf("_q_email", "_q_adjust_adid")
-            val mockResponseData = mockk<Map<*, *>>()
-
-            val mockSuccessResponse = Response.Success(200, mockResponseData)
-            every {
-                mockMapper.fromMap(mockResponseData)
-            } returns expectedProperties
-
-            // when
-            val result = service.mapProcessedProperties(mockSuccessResponse)
-
-            // then
-            assertThat(result).isEqualTo(expectedProperties)
-            verify(exactly = 1) {
-                mockMapper.fromMap(mockResponseData)
-            }
-        }
-
-        @Test
-        fun `map processed properties error`() {
-            // given
-            val responseData = arrayOf(
-                "result",
-                "error",
-                "errors",
-                "processed"
-            )
-
-            val mockSuccessResponse = Response.Success(200, responseData)
-
-            // when
-            assertThatQonversionExceptionThrown(ErrorCode.Mapping) {
-                service.mapProcessedProperties(mockSuccessResponse)
-            }
-
-            // then
-            verify {
-                mockMapper wasNot called
-            }
+            verify { mockMapper wasNot called }
         }
     }
 }
