@@ -9,10 +9,13 @@ import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.utils.msToSec
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.storage.UserDataProvider
 import kotlin.jvm.Throws
 import java.util.Calendar
 
 internal class CacherImpl<T : Any>(
+    private val originalKey: String,
+    private val userDataProvider: UserDataProvider,
     private val cacheMapper: CacheMapper<T>,
     private val storage: LocalStorage,
     private val appLifecycleObserver: AppLifecycleObserver,
@@ -20,22 +23,24 @@ internal class CacherImpl<T : Any>(
     logger: Logger
 ) : Cacher<T>, BaseClass(logger) {
 
+    val key get() = "${userDataProvider.getUserId() ?: ""}_$originalKey"
+
     var cachedObjects: CacheHolder<CachedObject<T>?> = CacheHolder { key -> load(key) }
 
-    override fun store(key: String, value: T) {
+    override fun store(value: T) {
         val cachedObject = CachedObject(Calendar.getInstance().time, value)
         val mappedObject = cacheMapper.toSerializedString(cachedObject)
         storage.putString(key, mappedObject)
         cachedObjects[key] = cachedObject
     }
 
-    override fun get(key: String): T? = cachedObjects[key]?.value
+    override fun get(): T? = cachedObjects[key]?.value
 
-    override fun getActual(key: String, cacheState: CacheState): T? {
+    override fun getActual(cacheState: CacheState): T? {
         return cachedObjects[key]?.takeIf { isActual(it, cacheState) }?.value
     }
 
-    override fun reset(key: String) {
+    override fun reset() {
         storage.remove(key)
         cachedObjects.remove(key)
     }

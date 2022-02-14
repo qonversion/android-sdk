@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 
-// TODO don't forget to call registerObserver before using
 internal class AppLifecycleObserverImpl : AppLifecycleObserver,
     Application.ActivityLifecycleCallbacks {
     var appState = AppState.Background

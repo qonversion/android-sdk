@@ -62,14 +62,14 @@ internal class UserServiceTest {
         fun `cached user exists`() {
             // given
             val cachedUserId = "cached user id"
-            every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns cachedUserId
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns cachedUserId
 
             // when
             val result = spyUserService.obtainUserId()
 
             // then
             assertThat(result).isEqualTo(cachedUserId)
-            verify { mockLocalStorage.getString(StorageConstants.UserId.key) }
+            verify { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) }
             verify(exactly = 0) {
                 mockLocalStorage.getString(StorageConstants.Token.key)
                 mockLocalStorage.remove(any())
@@ -83,8 +83,8 @@ internal class UserServiceTest {
             // given
             val cachedUserId = "40egafre6_e_"
             val expectedId = "some generated id"
-            every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns cachedUserId
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, expectedId) } just runs
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns cachedUserId
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId) } just runs
             every { mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId) } just runs
             every { spyUserService.generateRandomUserID() } returns expectedId
 
@@ -94,9 +94,9 @@ internal class UserServiceTest {
             // then
             assertThat(result).isEqualTo(expectedId)
             verifyOrder {
-                mockLocalStorage.getString(StorageConstants.UserId.key)
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key)
                 spyUserService.generateRandomUserID()
-                mockLocalStorage.putString(StorageConstants.UserId.key, expectedId)
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId)
                 mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId)
             }
             verify(exactly = 0) {
@@ -109,10 +109,10 @@ internal class UserServiceTest {
         fun `deprecated token exists`() {
             // given
             val deprecatedUserId = "deprecated user id"
-            every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns null
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns null
             every { mockLocalStorage.getString(StorageConstants.Token.key) } returns deprecatedUserId
             every { mockLocalStorage.remove(StorageConstants.Token.key) } just runs
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, deprecatedUserId) } just runs
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, deprecatedUserId) } just runs
             every { mockLocalStorage.putString(StorageConstants.OriginalUserId.key, deprecatedUserId) } just runs
 
             // when
@@ -121,10 +121,10 @@ internal class UserServiceTest {
             // then
             assertThat(result).isEqualTo(deprecatedUserId)
             verifyOrder {
-                mockLocalStorage.getString(StorageConstants.UserId.key)
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key)
                 mockLocalStorage.getString(StorageConstants.Token.key)
                 mockLocalStorage.remove(StorageConstants.Token.key)
-                mockLocalStorage.putString(StorageConstants.UserId.key, deprecatedUserId)
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, deprecatedUserId)
                 mockLocalStorage.putString(StorageConstants.OriginalUserId.key, deprecatedUserId)
             }
             verify(exactly = 0) {
@@ -137,10 +137,10 @@ internal class UserServiceTest {
             // given
             val deprecatedTestUserId = "40egafre6_e_"
             val expectedId = "some generated id"
-            every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns null
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns null
             every { mockLocalStorage.getString(StorageConstants.Token.key) } returns deprecatedTestUserId
             every { mockLocalStorage.remove(StorageConstants.Token.key) } just runs
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, expectedId) } just runs
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId) } just runs
             every { mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId) } just runs
             every { spyUserService.generateRandomUserID() } returns expectedId
 
@@ -150,11 +150,11 @@ internal class UserServiceTest {
             // then
             assertThat(result).isEqualTo(expectedId)
             verifyOrder {
-                mockLocalStorage.getString(StorageConstants.UserId.key)
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key)
                 mockLocalStorage.getString(StorageConstants.Token.key)
                 mockLocalStorage.remove(StorageConstants.Token.key)
                 spyUserService.generateRandomUserID()
-                mockLocalStorage.putString(StorageConstants.UserId.key, expectedId)
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId)
                 mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId)
             }
         }
@@ -163,10 +163,10 @@ internal class UserServiceTest {
         fun `new user`() {
             // given
             val expectedId = "some generated id"
-            every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns null
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns null
             every { mockLocalStorage.getString(StorageConstants.Token.key) } returns null
             every { mockLocalStorage.remove(StorageConstants.Token.key) } just runs
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, expectedId) } just runs
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId) } just runs
             every { mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId) } just runs
             every { spyUserService.generateRandomUserID() } returns expectedId
 
@@ -176,11 +176,11 @@ internal class UserServiceTest {
             // then
             assertThat(result).isEqualTo(expectedId)
             verifyOrder {
-                mockLocalStorage.getString(StorageConstants.UserId.key)
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key)
                 mockLocalStorage.getString(StorageConstants.Token.key)
                 mockLocalStorage.remove(StorageConstants.Token.key)
                 spyUserService.generateRandomUserID()
-                mockLocalStorage.putString(StorageConstants.UserId.key, expectedId)
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, expectedId)
                 mockLocalStorage.putString(StorageConstants.OriginalUserId.key, expectedId)
             }
         }
@@ -193,14 +193,14 @@ internal class UserServiceTest {
         fun `update id`() {
             // given
             val testUserId = "test id"
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, testUserId) } just runs
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, testUserId) } just runs
 
             // when
             userService.updateCurrentUserId(testUserId)
 
             // then
             verify {
-                mockLocalStorage.putString(StorageConstants.UserId.key, testUserId)
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, testUserId)
             }
         }
     }
@@ -213,7 +213,7 @@ internal class UserServiceTest {
             // given
             val userId = "test user id"
             every { mockLocalStorage.getString(StorageConstants.OriginalUserId.key, "") } returns userId
-            every { mockLocalStorage.getString(StorageConstants.UserId.key, "") } returns userId
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key, "") } returns userId
 
             // when
             val result = userService.logoutIfNeeded()
@@ -222,7 +222,7 @@ internal class UserServiceTest {
             assertThat(result).isFalse
             verify {
                 mockLocalStorage.getString(StorageConstants.OriginalUserId.key, "")
-                mockLocalStorage.getString(StorageConstants.UserId.key, "")
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key, "")
             }
             verify(exactly = 0) {
                 mockLocalStorage.putString(any(), any())
@@ -235,8 +235,8 @@ internal class UserServiceTest {
             val originalUserId = "original test user id"
             val userId = "test user id"
             every { mockLocalStorage.getString(StorageConstants.OriginalUserId.key, "") } returns originalUserId
-            every { mockLocalStorage.getString(StorageConstants.UserId.key, "") } returns userId
-            every { mockLocalStorage.putString(StorageConstants.UserId.key, originalUserId) } just runs
+            every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key, "") } returns userId
+            every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, originalUserId) } just runs
 
             // when
             val result = userService.logoutIfNeeded()
@@ -245,8 +245,8 @@ internal class UserServiceTest {
             assertThat(result).isTrue
             verifyOrder {
                 mockLocalStorage.getString(StorageConstants.OriginalUserId.key, "")
-                mockLocalStorage.getString(StorageConstants.UserId.key, "")
-                mockLocalStorage.putString(StorageConstants.UserId.key, originalUserId)
+                mockLocalStorage.getString(StorageConstants.IdentityUserId.key, "")
+                mockLocalStorage.putString(StorageConstants.IdentityUserId.key, originalUserId)
             }
         }
     }
@@ -261,7 +261,7 @@ internal class UserServiceTest {
             every { mockLocalStorage.remove(capture(keys)) } just runs
             val expectedKeys = listOf(
                 StorageConstants.OriginalUserId.key,
-                StorageConstants.UserId.key,
+                StorageConstants.IdentityUserId.key,
                 StorageConstants.Token.key
             )
 

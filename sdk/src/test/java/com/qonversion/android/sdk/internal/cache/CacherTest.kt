@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.storage.UserDataProvider
 import com.qonversion.android.sdk.internal.utils.MS_IN_SEC
 import io.mockk.called
 import io.mockk.clearMocks
@@ -33,6 +34,7 @@ private typealias CacheObjectType = String
 internal class CacherTest {
 
     private lateinit var cacher: CacherImpl<CacheObjectType>
+    private val mockUserDataProvider = mockk<UserDataProvider>()
     private val mockCacheMapper = mockk<CacheMapper<CacheObjectType>>()
     private val mockLocalStorage = mockk<LocalStorage>()
     private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
@@ -40,7 +42,9 @@ internal class CacherTest {
     private val mockForegroundCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockLogger = mockk<Logger>()
 
-    private val testCachingKey: String = "test caching key"
+    private val testUserId = "test user id"
+    private val testOriginalKey = "test caching key"
+    private val testCachingKey = "${testUserId}_$testOriginalKey"
     private val testCachingValue: CacheObjectType = "test caching value"
 
     @BeforeEach
@@ -53,13 +57,46 @@ internal class CacherTest {
             mockForegroundCacheLifetime
         )
 
+        every { mockUserDataProvider.getUserId() } returns testUserId
+
         cacher = CacherImpl(
+            testOriginalKey,
+            mockUserDataProvider,
             mockCacheMapper,
             mockLocalStorage,
             mockAppLifecycleObserver,
             mockCacheLifetimeConfigProvider,
             mockLogger
         )
+    }
+
+    @Nested
+    inner class KeyTest {
+
+        @Test
+        fun `normal user id`() {
+            // given
+            val expectedKey = testCachingKey
+
+            // when
+            val key = cacher.key
+
+            // then
+            assertThat(key).isEqualTo(expectedKey)
+        }
+
+        @Test
+        fun `null user id`() {
+            // given
+            every { mockUserDataProvider.getUserId() } returns null
+            val expectedKey = "_$testOriginalKey"
+
+            // when
+            val key = cacher.key
+
+            // then
+            assertThat(key).isEqualTo(expectedKey)
+        }
     }
 
     @Nested
@@ -82,7 +119,7 @@ internal class CacherTest {
             every { Calendar.getInstance().time } returns mockDate
 
             // when
-            cacher.store(testCachingKey, testCachingValue)
+            cacher.store(testCachingValue)
 
             // then
             verify(exactly = 1) {
@@ -106,7 +143,7 @@ internal class CacherTest {
 
             // when
             val e = assertThatQonversionExceptionThrown {
-                cacher.store(testCachingKey, testCachingValue)
+                cacher.store(testCachingValue)
             }
 
             // then
@@ -263,7 +300,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.get(testCachingKey)
+            val result = cacher.get()
 
             // then
             assertThat(result).isSameAs(testCachingValue)
@@ -276,7 +313,7 @@ internal class CacherTest {
             every { mockLocalStorage.getString(testCachingKey) } returns null
 
             // when
-            val result = cacher.get(testCachingKey)
+            val result = cacher.get()
 
             // then
             assertThat(result).isNull()
@@ -300,7 +337,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(testCachingKey, mockCacheState)
+            val result = cacher.getActual(mockCacheState)
 
             // then
             assertThat(result).isSameAs(testCachingValue)
@@ -316,7 +353,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(testCachingKey, mockCacheState)
+            val result = cacher.getActual(mockCacheState)
 
             // then
             assertThat(result).isNull()
@@ -329,7 +366,7 @@ internal class CacherTest {
             every { mockLocalStorage.getString(testCachingKey) } returns null
 
             // when
-            val result = cacher.getActual(testCachingKey)
+            val result = cacher.getActual()
 
             // then
             assertThat(result).isNull()
@@ -350,7 +387,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = mockk()
 
             // when
-            cacher.reset(testCachingKey)
+            cacher.reset()
 
             // then
             assertThat(cacher.cachedObjects).doesNotContainKey(testCachingKey)
@@ -362,7 +399,7 @@ internal class CacherTest {
             // given
 
             // when
-            cacher.reset(testCachingKey)
+            cacher.reset()
 
             // then
             assertThat(cacher.cachedObjects).doesNotContainKey(testCachingKey)

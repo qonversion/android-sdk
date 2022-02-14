@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 
@@ -47,7 +48,9 @@ interface Qonversion {
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
-            return QonversionInternal(config, InternalConfig).also {
+            val dependenciesAssembly = DependenciesAssembly.Builder(config.application, InternalConfig)
+                .build()
+            return QonversionInternal(config, InternalConfig, dependenciesAssembly).also {
                 backingInstance = it
             }
         }

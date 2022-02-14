@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
@@ -14,13 +15,19 @@ import com.qonversion.android.sdk.internal.user.controller.UserController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.qonversion.android.sdk.internal.di.DependenciesAssembly
+import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 
 internal class QonversionInternal(
     config: QonversionConfig,
     private val internalConfig: InternalConfig,
-    private val userController: UserController,
+    dependenciesAssembly: DependenciesAssembly,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : Qonversion {
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val userPropertiesController: UserPropertiesController =
+        dependenciesAssembly.userPropertiesController()
 
     init {
         internalConfig.primaryConfig = config.primaryConfig
@@ -74,14 +81,14 @@ internal class QonversionInternal(
     }
 
     override fun setUserProperty(property: UserProperty, value: String) {
-        TODO("Not yet implemented")
+        userPropertiesController.setProperty(property.code, value)
     }
 
     override fun setCustomUserProperty(key: String, value: String) {
-        TODO("Not yet implemented")
+        userPropertiesController.setProperty(key, value)
     }
 
     override fun setUserProperties(userProperties: Map<String, String>) {
-        TODO("Not yet implemented")
+        userPropertiesController.setProperties(userProperties)
     }
 }
