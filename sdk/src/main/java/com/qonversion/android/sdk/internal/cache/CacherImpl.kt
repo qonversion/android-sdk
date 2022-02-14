@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.cache
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
@@ -30,26 +31,27 @@ internal class CacherImpl<T : Any>(
 
     override fun get(key: String): T? = cachedObjects[key]?.value
 
-    override fun getActual(key: String): T? = cachedObjects[key]?.takeIf { isActual(it) }?.value
+    override fun getActual(key: String, cacheState: CacheState): T? {
+        return cachedObjects[key]?.takeIf { isActual(it, cacheState) }?.value
+    }
 
     override fun reset(key: String) {
         storage.remove(key)
         cachedObjects.remove(key)
     }
 
-    fun isActual(cachedObject: CachedObject<T>): Boolean {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun isActual(cachedObject: CachedObject<T>, cacheState: CacheState): Boolean {
         val currentTime = Calendar.getInstance().time
         val cachedTime = cachedObject.date
         val ageSec = (currentTime.time - cachedTime.time).msToSec()
-        val lifetimeSec = if (appLifecycleObserver.isInBackground()) {
-            cacheLifetimeConfigProvider.cacheLifetimeConfig.backgroundCacheLifetime.seconds
-        } else {
-            cacheLifetimeConfigProvider.cacheLifetimeConfig.foregroundCacheLifetime.seconds
-        }
+        val lifetimeSec = getMaxCacheLifetimeSec(cacheState)
+
         return ageSec <= lifetimeSec
     }
 
     @Throws(QonversionException::class)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun load(key: String): CachedObject<T>? {
         val storedValue = storage.getString(key)
         return storedValue?.let {
@@ -59,6 +61,15 @@ internal class CacherImpl<T : Any>(
                 logger.error("Failed to deserialized stored value $storedValue.", exception)
                 null
             }
+        }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun getMaxCacheLifetimeSec(cacheState: CacheState): Long {
+        return if (appLifecycleObserver.isInBackground() || cacheState == CacheState.Error) {
+            cacheLifetimeConfigProvider.cacheLifetimeConfig.backgroundCacheLifetime.seconds
+        } else {
+            cacheLifetimeConfigProvider.cacheLifetimeConfig.foregroundCacheLifetime.seconds
         }
     }
 }

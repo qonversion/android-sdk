@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.user
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
@@ -22,6 +23,7 @@ internal class UserServiceImpl(
     private val mapper: Mapper<User?>,
     private val localStorage: LocalStorage
 ) : UserService {
+
     override fun obtainUserId(): String {
         val cachedUserID = localStorage.getString(StorageConstants.UserId.key)
         var resultUserID = cachedUserID
@@ -74,7 +76,10 @@ internal class UserServiceImpl(
             is Response.Success -> mapUser(response)
             is Response.Error -> {
                 if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
-                    return createUser(id)
+                    throw QonversionException(
+                        ErrorCode.UserNotFound,
+                        "Id: $id"
+                    )
                 }
                 throw QonversionException(
                     ErrorCode.BackendError,
@@ -98,16 +103,13 @@ internal class UserServiceImpl(
     }
 
     @Throws(QonversionException::class)
-    private fun mapUser(response: Response.Success): User {
-        val data = try {
-            response.data as Map<*, *>
-        } catch (cause: ClassCastException) {
-            throw QonversionException(ErrorCode.Mapping, cause = cause)
-        }
-        return mapper.fromMap(data) ?: throw QonversionException(ErrorCode.Mapping)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun mapUser(response: Response.Success): User {
+        return mapper.fromMap(response.mapData) ?: throw QonversionException(ErrorCode.Mapping)
     }
 
-    private fun generateRandomUserID(): String {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun generateRandomUserID(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
 
         return "${USER_ID_PREFIX}${USER_ID_SEPARATOR}$uuid"

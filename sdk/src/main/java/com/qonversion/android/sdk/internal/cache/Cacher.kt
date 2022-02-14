@@ -12,7 +12,7 @@ internal interface Cacher<T : Any> {
     fun get(key: String): T?
 
     @Throws(QonversionException::class)
-    fun getActual(key: String): T?
+    fun getActual(key: String, cacheState: CacheState = CacheState.Default): T?
 
     @Throws(QonversionException::class)
     fun reset(key: String)
