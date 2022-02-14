@@ -163,5 +163,16 @@ interface Qonversion {
      * @return [User] instance
      */
     @Throws(QonversionException::class)
-    fun getUserInfo(): User
+    suspend fun getUserInfo(): User
+
+    /**
+     * For function description see [getUserInfo]
+     * @param onSuccess
+     * @param onError
+     */
+    @Throws(QonversionException::class)
+    fun getUserInfo(
+        onSuccess: (user: User) -> Unit,
+        onError: (exception: QonversionException) -> Unit,
+    )
 }
