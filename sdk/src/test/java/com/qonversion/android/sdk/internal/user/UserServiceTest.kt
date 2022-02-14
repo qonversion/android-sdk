@@ -437,4 +437,25 @@ internal class UserServiceTest {
             verify { mockMapper.fromMap(responseData) }
         }
     }
+
+    @Nested
+    inner class GenerateRandomUserIdTest {
+
+        @Test
+        fun `format check`() {
+            val ids = (1..10).map {
+                // given
+                val regex = Regex("""^QON_[a-zA-Z\d]{32}$""")
+
+                // when
+                val id = userService.generateRandomUserID()
+
+                // then
+                assertThat(regex.matches(id)).isTrue
+                id
+            }
+            // check for duplicates
+            assertThat(ids.size).isEqualTo(ids.toSet().size)
+        }
+    }
 }
