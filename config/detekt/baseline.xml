@@ -2,8 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:468</ID>
-    <ID>CommentSpacing:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:486</ID>
     <ID>ComplexCondition:QonversionRepository.kt$QonversionRepository$(purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &amp;&amp; purchase.introductoryPeriodUnit != null &amp;&amp; purchase.introductoryPeriodUnitsCount != null</ID>
     <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
@@ -11,14 +9,17 @@
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
     <ID>EmptyFunctionBlock:AppLifecycleObserverImpl.kt$AppLifecycleObserverImpl${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided>${}</ID>
+    <ID>Filename:com.qonversion.android.sdk.internal.di.DependencyAssembliesBuilderTest.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.InternalConfigTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.dto.ResponseTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
+    <ID>LongParameterList:CacherImpl.kt$CacherImpl$( private val originalKey: String, private val userDataProvider: UserDataProvider, private val cacheMapper: CacheMapper&lt;T>, private val storage: LocalStorage, private val appLifecycleObserver: AppLifecycleObserver, private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider, logger: Logger )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -72,6 +73,7 @@
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoWeeks$3</ID>
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Year$8</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
+    <ID>MatchingDeclarationName:DependencyAssembliesBuilderTest.kt$DependenciesAssemblyBuilderTest</ID>
     <ID>MatchingDeclarationName:HeaderBuilderImplTest.kt$HeaderBuilderTest</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
@@ -109,14 +111,19 @@
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T> getErrorFromResponse(value: Response&lt;T>): QonversionError</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:MapDataMapperTest.kt$com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ResponseTest.kt$com.qonversion.android.sdk.internal.networkLayer.dto.ResponseTest.kt</ID>
     <ID>NewLineAtEndOfFile:UserPropertiesControllerTest.kt$com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt</ID>
     <ID>NewLineAtEndOfFile:UserPropertiesServiceImplTest.kt$com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.UserPropertiesBuilderTest.kt:8</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapperTest.kt:82</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:194</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:163</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:333</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:65</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.IncrementalDelayCalculator.kt:3</ID>
@@ -142,6 +149,11 @@
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherTest.kt:487</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherTest.kt:499</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherTest.kt:511</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:475</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:493</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:518</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:550</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerTest.kt:568</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
@@ -170,7 +182,6 @@
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.old.billing.utils.kt</ID>
-    <ID>UnusedPrivateMember:QonversionInternal.kt$QonversionInternal$private val dependenciesAssembly: DependenciesAssembly</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility>): List&lt;ProductEligibility></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility></ID>

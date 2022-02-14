@@ -25,7 +25,7 @@ internal class UserServiceImpl(
 ) : UserService {
 
     override fun obtainUserId(): String {
-        val cachedUserID = localStorage.getString(StorageConstants.UserId.key)
+        val cachedUserID = localStorage.getString(StorageConstants.IdentityUserId.key)
         var resultUserID = cachedUserID
 
         if (resultUserID.isNullOrEmpty()) {
@@ -38,7 +38,7 @@ internal class UserServiceImpl(
         }
 
         if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
-            localStorage.putString(StorageConstants.UserId.key, resultUserID)
+            localStorage.putString(StorageConstants.IdentityUserId.key, resultUserID)
             localStorage.putString(StorageConstants.OriginalUserId.key, resultUserID)
         }
 
@@ -46,25 +46,25 @@ internal class UserServiceImpl(
     }
 
     override fun updateCurrentUserId(id: String) {
-        localStorage.putString(StorageConstants.UserId.key, id)
+        localStorage.putString(StorageConstants.IdentityUserId.key, id)
     }
 
     override fun logoutIfNeeded(): Boolean {
         val originalUserId = localStorage.getString(StorageConstants.OriginalUserId.key, "")
-        val defaultUserId = localStorage.getString(StorageConstants.UserId.key, "")
+        val defaultUserId = localStorage.getString(StorageConstants.IdentityUserId.key, "")
 
         if (originalUserId == defaultUserId) {
             return false
         }
 
-        localStorage.putString(StorageConstants.UserId.key, originalUserId)
+        localStorage.putString(StorageConstants.IdentityUserId.key, originalUserId)
 
         return true
     }
 
     override fun resetUser() {
         localStorage.remove(StorageConstants.OriginalUserId.key)
-        localStorage.remove(StorageConstants.UserId.key)
+        localStorage.remove(StorageConstants.IdentityUserId.key)
         localStorage.remove(StorageConstants.Token.key)
     }
 
