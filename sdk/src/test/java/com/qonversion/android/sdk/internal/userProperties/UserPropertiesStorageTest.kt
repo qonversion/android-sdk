@@ -453,23 +453,36 @@ internal class UserPropertiesStorageTest {
         fun `get properties from filled storage`() {
             // given
             val jsonString = "jsonString"
-            val properties = mapOf("key1" to "value1", "key2" to "value2")
-            every {
-                mockLocalStorage.getString(propertiesKeyInMemory)
-            } returns jsonString
+            val stringProperties = mapOf("key1" to "value1", "key2" to "value2")
+            val numericalProperties = mapOf("key1" to 1, "key2" to 2)
+            val numericalPropertiesToStr = mapOf("key1" to "1", "key2" to "2")
 
-            every {
-                mockMapper.toMap(jsonString)
-            } returns properties
+            listOf(
+                listOf(stringProperties, stringProperties),
+                listOf(numericalProperties, numericalPropertiesToStr)
+            ).forEach { testCase ->
+                val (
+                    propertiesFromMapper,
+                    expectedValue
+                ) = testCase
 
-            // when
-            val result = userPropertiesStorage.getPropertiesFromStorage()
+                every {
+                    mockLocalStorage.getString(propertiesKeyInMemory)
+                } returns jsonString
 
-            //then
-            assertThat(result).isEqualTo(result)
-            verifySequence {
-                mockLocalStorage.getString(propertiesKeyInMemory)
-                mockMapper.toMap(jsonString)
+                every {
+                    mockMapper.toMap(jsonString)
+                } returns propertiesFromMapper
+
+                // when
+                val result = userPropertiesStorage.getPropertiesFromStorage()
+
+                // then
+                assertThat(result).isEqualTo(expectedValue)
+                verifyOrder {
+                    mockLocalStorage.getString(propertiesKeyInMemory)
+                    mockMapper.toMap(jsonString)
+                }
             }
         }
 
@@ -483,7 +496,7 @@ internal class UserPropertiesStorageTest {
             // when
             val result = userPropertiesStorage.getPropertiesFromStorage()
 
-            //then
+            // then
             verify { mockMapper wasNot called }
             assertThat(result).isEmpty()
         }

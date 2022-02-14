@@ -14,11 +14,10 @@ internal class MapDataMapper : Mapper<String> {
         }
     }
 
-    override fun toMap(value: String): Map<String, String> {
+    override fun toMap(value: String): Map<String, Any?> {
         try {
             val propertiesJsonObj = JSONObject(value)
-            val propertiesMap = propertiesJsonObj.toMap()
-            return propertiesMap.mapValues { it.value.toString() }
+            return propertiesJsonObj.toMap()
         } catch (e: JSONException) {
             throw IllegalStateException("Couldn't create JSONObject from string", e)
         }
