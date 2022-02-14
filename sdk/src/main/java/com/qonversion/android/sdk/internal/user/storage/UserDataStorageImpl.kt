@@ -14,7 +14,7 @@ internal class UserDataStorageImpl(
     var originalId: String? = localStorage.getString(StorageConstants.OriginalUserId.key)
 
     @VisibleForTesting
-    var identityId: String? = localStorage.getString(StorageConstants.UserId.key)
+    var identityId: String? = localStorage.getString(StorageConstants.IdentityUserId.key)
 
     override fun getUserId(): String? = identityId ?: originalId
 
@@ -30,12 +30,12 @@ internal class UserDataStorageImpl(
     }
 
     override fun setIdentityUserId(identityUserId: String) {
-        localStorage.putString(StorageConstants.UserId.key, identityUserId)
+        localStorage.putString(StorageConstants.IdentityUserId.key, identityUserId)
         identityId = identityUserId
     }
 
     override fun clearIdentityUserId() {
-        localStorage.remove(StorageConstants.UserId.key)
+        localStorage.remove(StorageConstants.IdentityUserId.key)
         identityId = null
     }
 }

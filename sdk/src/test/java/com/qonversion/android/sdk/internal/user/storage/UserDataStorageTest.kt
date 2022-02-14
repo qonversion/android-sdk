@@ -33,7 +33,7 @@ internal class UserDataStorageTest {
         val testOriginalId = "test original id"
         val testIdentityId = "test identity id"
         every { mockLocalStorage.getString(StorageConstants.OriginalUserId.key) } returns testOriginalId
-        every { mockLocalStorage.getString(StorageConstants.UserId.key) } returns testIdentityId
+        every { mockLocalStorage.getString(StorageConstants.IdentityUserId.key) } returns testIdentityId
 
         // when
         val userDataStorage = UserDataStorageImpl(mockLocalStorage)
@@ -143,7 +143,7 @@ internal class UserDataStorageTest {
         // given
         clearMocks(mockLocalStorage)
         val testId = "test id"
-        every { mockLocalStorage.putString(StorageConstants.UserId.key, testId) } just runs
+        every { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, testId) } just runs
         userDataStorage.identityId = null
 
         // when
@@ -151,14 +151,14 @@ internal class UserDataStorageTest {
 
         // then
         assertThat(userDataStorage.identityId).isEqualTo(testId)
-        verify { mockLocalStorage.putString(StorageConstants.UserId.key, testId) }
+        verify { mockLocalStorage.putString(StorageConstants.IdentityUserId.key, testId) }
     }
 
     @Test
     fun `clear identity user id`() {
         // given
         clearMocks(mockLocalStorage)
-        every { mockLocalStorage.remove(StorageConstants.UserId.key) } just runs
+        every { mockLocalStorage.remove(StorageConstants.IdentityUserId.key) } just runs
         userDataStorage.identityId = "test id"
 
         // when
@@ -166,6 +166,6 @@ internal class UserDataStorageTest {
 
         // then
         assertThat(userDataStorage.identityId).isNull()
-        verify { mockLocalStorage.remove(StorageConstants.UserId.key) }
+        verify { mockLocalStorage.remove(StorageConstants.IdentityUserId.key) }
     }
 }
