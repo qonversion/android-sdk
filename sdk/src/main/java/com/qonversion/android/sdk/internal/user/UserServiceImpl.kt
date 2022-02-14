@@ -108,6 +108,7 @@ internal class UserServiceImpl(
         return mapper.fromMap(response.mapData) ?: throw QonversionException(ErrorCode.Mapping)
     }
 
+    // todo replace with UserIdGenerator
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun generateRandomUserID(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
