@@ -6,11 +6,12 @@ import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculator
+import com.qonversion.android.sdk.internal.utils.workers.DelayedWorkerImpl
 import io.mockk.mockk
 import io.mockk.every
 import io.mockk.slot
 import io.mockk.just
-import io.mockk.Runs
+import io.mockk.runs
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -39,6 +40,7 @@ internal class MiscAssemblyTest {
             val result = miscAssembly.logger()
 
             // then
+            assertThat(result).isInstanceOf(ConsoleLogger::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -51,7 +53,7 @@ internal class MiscAssemblyTest {
             val secondResult = miscAssembly.logger()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -92,7 +94,7 @@ internal class MiscAssemblyTest {
             val secondResult = miscAssembly.jsonSerializer()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -120,7 +122,7 @@ internal class MiscAssemblyTest {
             val secondResult = miscAssembly.exponentialDelayCalculator()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -132,7 +134,7 @@ internal class MiscAssemblyTest {
         fun setUp() {
             every {
                 mockApplication.registerActivityLifecycleCallbacks(capture(lifecycleObserverSlot))
-            } just Runs
+            } just runs
         }
 
         @Test
@@ -143,6 +145,7 @@ internal class MiscAssemblyTest {
             val result = miscAssembly.appLifecycleObserver()
 
             // then
+            assertThat(result).isInstanceOf(AppLifecycleObserverImpl::class.java)
             assertThat(result).isEqualTo(lifecycleObserverSlot.captured)
         }
 
@@ -153,19 +156,34 @@ internal class MiscAssemblyTest {
             val secondResult = miscAssembly.appLifecycleObserver()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
-    @Test
-    fun `get different delayed workers`() {
-        // given
 
-        // when
-        val firstResult = miscAssembly.delayedWorker()
-        val secondResult = miscAssembly.delayedWorker()
+    @Nested
+    inner class DelayedWorkerTest {
+        @Test
+        fun `get api delayed worker`() {
+            // given
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // when
+            val result = miscAssembly.delayedWorker()
+
+            // then
+            assertThat(result).isInstanceOf(DelayedWorkerImpl::class.java)
+        }
+
+        @Test
+        fun `get different delayed workers`() {
+            // given
+
+            // when
+            val firstResult = miscAssembly.delayedWorker()
+            val secondResult = miscAssembly.delayedWorker()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 }

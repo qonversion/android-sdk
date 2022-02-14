@@ -32,22 +32,22 @@ internal class ControllersAssemblyImpl(
 
     override fun googleBillingController(purchasesListener: PurchasesListener): GoogleBillingController =
         GoogleBillingControllerImpl(
-            provideGoogleBillingConsumer(),
-            provideGoogleBillingPurchaser(),
-            provideGoogleBillingDataFetcher(),
+            googleBillingConsumer(),
+            googleBillingPurchaser(),
+            googleBillingDataFetcher(),
             purchasesListener,
             miscAssembly.logger()
         )
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideGoogleBillingConsumer(): GoogleBillingConsumer =
+    fun googleBillingConsumer(): GoogleBillingConsumer =
         GoogleBillingConsumerImpl(miscAssembly.logger())
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideGoogleBillingPurchaser(): GoogleBillingPurchaser =
+    fun googleBillingPurchaser(): GoogleBillingPurchaser =
         GoogleBillingPurchaserImpl(miscAssembly.logger())
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideGoogleBillingDataFetcher(): GoogleBillingDataFetcher =
+    fun googleBillingDataFetcher(): GoogleBillingDataFetcher =
         GoogleBillingDataFetcherImpl(miscAssembly.logger())
 }

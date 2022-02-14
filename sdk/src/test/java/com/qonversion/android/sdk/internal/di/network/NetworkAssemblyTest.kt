@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.Ret
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.every
+import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -63,6 +64,7 @@ internal class NetworkAssemblyTest {
             val result = networkAssembly.networkClient()
 
             // then
+            assertThat(result).isInstanceOf(NetworkClientImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -75,7 +77,7 @@ internal class NetworkAssemblyTest {
             val secondResult = networkAssembly.networkClient()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -106,6 +108,7 @@ internal class NetworkAssemblyTest {
             val result = networkAssembly.requestConfigurator()
 
             // then
+            assertThat(result).isInstanceOf(RequestConfiguratorImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -118,7 +121,7 @@ internal class NetworkAssemblyTest {
             val secondResult = networkAssembly.requestConfigurator()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -158,9 +161,10 @@ internal class NetworkAssemblyTest {
                     policy
                 )
                 // when
-                val result = networkAssembly.provideApiInteractor(policy)
+                val result = networkAssembly.apiInteractor(policy)
 
                 // then
+                assertThat(result).isInstanceOf(ApiInteractorImpl::class.java)
                 assertThat(result).isEqualToComparingFieldByField(expectedResult)
             }
         }
@@ -168,37 +172,37 @@ internal class NetworkAssemblyTest {
         @Test
         fun `get exponential api interactor`() {
             // given
-
             val mockApiInteractor = mockk<ApiInteractor>()
+            val policySlot = slot<RetryPolicy>()
 
             every {
-                networkAssembly.exponentialApiInteractor()
+                networkAssembly.apiInteractor(capture(policySlot))
             } returns mockApiInteractor
 
             // when
             val result = networkAssembly.exponentialApiInteractor()
 
             // then
-
             assertThat(result).isSameAs(mockApiInteractor)
+            assertThat(policySlot.captured).isInstanceOf(RetryPolicy.Exponential::class.java)
         }
 
         @Test
         fun `get infinite exponential api interactor`() {
             // given
-
             val mockApiInteractor = mockk<ApiInteractor>()
+            val policySlot = slot<RetryPolicy>()
 
             every {
-                networkAssembly.infiniteExponentialApiInteractor()
+                networkAssembly.apiInteractor(capture(policySlot))
             } returns mockApiInteractor
 
             // when
             val result = networkAssembly.infiniteExponentialApiInteractor()
 
             // then
-
             assertThat(result).isSameAs(mockApiInteractor)
+            assertThat(policySlot.captured).isInstanceOf(RetryPolicy.InfiniteExponential::class.java)
         }
 
         @Test
@@ -210,7 +214,7 @@ internal class NetworkAssemblyTest {
             val secondResult = networkAssembly.exponentialApiInteractor()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
 
         @Test
@@ -222,7 +226,7 @@ internal class NetworkAssemblyTest {
             val secondResult = networkAssembly.infiniteExponentialApiInteractor()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -257,8 +261,11 @@ internal class NetworkAssemblyTest {
             val result = networkAssembly.headerBuilder()
 
             // then
+            assertThat(result).isInstanceOf(HeaderBuilderImpl::class.java)
             assertThat(result).isEqualToComparingOnlyGivenFields(
-                expectedResult, "localStorage", "locale",
+                expectedResult,
+                "localStorage",
+                "locale",
                 "primaryConfigProvider",
                 "environmentProvider",
                 "uidProvider"
@@ -274,7 +281,7 @@ internal class NetworkAssemblyTest {
             val secondResult = networkAssembly.headerBuilder()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 }

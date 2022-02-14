@@ -33,10 +33,10 @@ internal class NetworkAssemblyImpl(
     )
 
     override fun exponentialApiInteractor(): ApiInteractor =
-        provideApiInteractor(RetryPolicy.Exponential())
+        apiInteractor(RetryPolicy.Exponential())
 
     override fun infiniteExponentialApiInteractor(): ApiInteractor =
-        provideApiInteractor(RetryPolicy.InfiniteExponential())
+        apiInteractor(RetryPolicy.InfiniteExponential())
 
     override fun headerBuilder(): HeaderBuilder = HeaderBuilderImpl(
         storageAssembly.sharedPreferencesStorage(),
@@ -47,7 +47,7 @@ internal class NetworkAssemblyImpl(
     )
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun provideApiInteractor(retryPolicy: RetryPolicy): ApiInteractor {
+    fun apiInteractor(retryPolicy: RetryPolicy): ApiInteractor {
         return ApiInteractorImpl(
             networkClient(),
             miscAssembly.exponentialDelayCalculator(),

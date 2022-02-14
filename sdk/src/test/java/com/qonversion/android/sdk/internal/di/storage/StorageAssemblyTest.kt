@@ -69,6 +69,7 @@ internal class StorageAssemblyTest {
             val result = storageAssembly.sharedPreferencesStorage()
 
             // then
+            assertThat(result).isInstanceOf(SharedPreferencesStorage::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -81,7 +82,7 @@ internal class StorageAssemblyTest {
             val secondResult = storageAssembly.sharedPreferencesStorage()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -122,6 +123,7 @@ internal class StorageAssemblyTest {
             val result = storageAssembly.sentUserPropertiesStorage()
 
             // then
+            assertThat(result).isInstanceOf(UserPropertiesStorageImpl::class.java)
             assertThat(result).isEqualToComparingOnlyGivenFields(
                 expectedResult,
                 "localStorage",
@@ -145,6 +147,7 @@ internal class StorageAssemblyTest {
             val result = storageAssembly.pendingUserPropertiesStorage()
 
             // then
+            assertThat(result).isInstanceOf(UserPropertiesStorageImpl::class.java)
             assertThat(result).isEqualToComparingOnlyGivenFields(
                 expectedResult,
                 "localStorage",
@@ -163,7 +166,7 @@ internal class StorageAssemblyTest {
             val secondResult = storageAssembly.sentUserPropertiesStorage()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
 
         @Test
@@ -175,7 +178,7 @@ internal class StorageAssemblyTest {
             val secondResult = storageAssembly.pendingUserPropertiesStorage()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 }

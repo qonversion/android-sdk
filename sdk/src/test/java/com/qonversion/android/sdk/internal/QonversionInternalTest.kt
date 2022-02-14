@@ -22,7 +22,7 @@ import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.just
-import io.mockk.Runs
+import io.mockk.runs
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -207,7 +207,7 @@ internal class QonversionInternalTest {
 
             every {
                 mockUserPropertiesController.setProperty(any(), value)
-            } just Runs
+            } just runs
 
             userProperties.forEach { key ->
                 // when
@@ -227,7 +227,7 @@ internal class QonversionInternalTest {
             val value = "value"
             every {
                 mockUserPropertiesController.setProperty(key, value)
-            } just Runs
+            } just runs
 
             // when
             qonversionInternal.setCustomUserProperty(key, value)
@@ -244,7 +244,7 @@ internal class QonversionInternalTest {
             val properties = mapOf("key" to "value")
             every {
                 mockUserPropertiesController.setProperties(properties)
-            } just Runs
+            } just runs
 
             // when
             qonversionInternal.setUserProperties(properties)

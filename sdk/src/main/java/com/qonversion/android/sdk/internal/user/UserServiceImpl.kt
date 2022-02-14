@@ -3,9 +3,9 @@ package com.qonversion.android.sdk.internal.user
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
+import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.internal.common.mappers.UserMapper
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
@@ -19,7 +19,7 @@ private const val USER_ID_SEPARATOR = "_"
 internal class UserServiceImpl(
     private val requestConfigurator: RequestConfigurator,
     private val apiInteractor: ApiInteractor,
-    private val mapper: UserMapper,
+    private val mapper: Mapper<User?>,
     private val localStorage: LocalStorage
 ) : UserService {
     override fun obtainUserId(): String {

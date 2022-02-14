@@ -63,6 +63,7 @@ internal class ServicesAssemblyTest {
             val result = servicesAssembly.userPropertiesService()
 
             // then
+            assertThat(result).isInstanceOf(UserPropertiesServiceImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -75,7 +76,7 @@ internal class ServicesAssemblyTest {
             val secondResult = servicesAssembly.userPropertiesService()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -119,6 +120,7 @@ internal class ServicesAssemblyTest {
             val result = servicesAssembly.userService()
 
             // then
+            assertThat(result).isInstanceOf(UserServiceImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -131,7 +133,7 @@ internal class ServicesAssemblyTest {
             val secondResult = servicesAssembly.userService()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 }

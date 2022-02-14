@@ -83,6 +83,7 @@ internal class ControllersAssemblyTest {
             val result = controllersAssembly.userPropertiesController()
 
             // then
+            assertThat(result).isInstanceOf(UserPropertiesControllerImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -95,7 +96,7 @@ internal class ControllersAssemblyTest {
             val secondResult = controllersAssembly.userPropertiesController()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -111,15 +112,15 @@ internal class ControllersAssemblyTest {
             controllersAssembly = spyk(controllersAssembly)
 
             every {
-                controllersAssembly.provideGoogleBillingConsumer()
+                controllersAssembly.googleBillingConsumer()
             } returns mockGoogleBillingConsumer
 
             every {
-                controllersAssembly.provideGoogleBillingPurchaser()
+                controllersAssembly.googleBillingPurchaser()
             } returns mockGoogleBillingPurchaser
 
             every {
-                controllersAssembly.provideGoogleBillingDataFetcher()
+                controllersAssembly.googleBillingDataFetcher()
             } returns mockGoogleBillingDataFetcher
         }
 
@@ -139,8 +140,10 @@ internal class ControllersAssemblyTest {
                 controllersAssembly.googleBillingController(mockPurchasesListener)
 
             // then
+            assertThat(result).isInstanceOf(GoogleBillingControllerImpl::class.java)
             assertThat(result).isEqualToComparingOnlyGivenFields(
-                expectedResult, "consumer",
+                expectedResult,
+                "consumer",
                 "purchaser",
                 "dataFetcher",
                 "purchasesListener",
@@ -159,7 +162,7 @@ internal class ControllersAssemblyTest {
                 controllersAssembly.googleBillingController(mockPurchasesListener)
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -171,9 +174,10 @@ internal class ControllersAssemblyTest {
             val expectedResult = GoogleBillingDataFetcherImpl(mockLogger)
 
             // when
-            val result = controllersAssembly.provideGoogleBillingDataFetcher()
+            val result = controllersAssembly.googleBillingDataFetcher()
 
             // then
+            assertThat(result).isInstanceOf(GoogleBillingDataFetcher::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -182,13 +186,14 @@ internal class ControllersAssemblyTest {
             // given
 
             // when
-            val firstResult = controllersAssembly.provideGoogleBillingDataFetcher()
-            val secondResult = controllersAssembly.provideGoogleBillingDataFetcher()
+            val firstResult = controllersAssembly.googleBillingDataFetcher()
+            val secondResult = controllersAssembly.googleBillingDataFetcher()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
+
     @Nested
     inner class GoogleBillingConsumerTest {
         @Test
@@ -197,9 +202,10 @@ internal class ControllersAssemblyTest {
             val expectedResult = GoogleBillingConsumerImpl(mockLogger)
 
             // when
-            val result = controllersAssembly.provideGoogleBillingConsumer()
+            val result = controllersAssembly.googleBillingConsumer()
 
             // then
+            assertThat(result).isInstanceOf(GoogleBillingConsumerImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -208,11 +214,11 @@ internal class ControllersAssemblyTest {
             // given
 
             // when
-            val firstResult = controllersAssembly.provideGoogleBillingConsumer()
-            val secondResult = controllersAssembly.provideGoogleBillingConsumer()
+            val firstResult = controllersAssembly.googleBillingConsumer()
+            val secondResult = controllersAssembly.googleBillingConsumer()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
@@ -224,9 +230,10 @@ internal class ControllersAssemblyTest {
             val expectedResult = GoogleBillingPurchaserImpl(mockLogger)
 
             // when
-            val result = controllersAssembly.provideGoogleBillingPurchaser()
+            val result = controllersAssembly.googleBillingPurchaser()
 
             // then
+            assertThat(result).isInstanceOf(GoogleBillingPurchaserImpl::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -235,11 +242,11 @@ internal class ControllersAssemblyTest {
             // given
 
             // when
-            val firstResult = controllersAssembly.provideGoogleBillingPurchaser()
-            val secondResult = controllersAssembly.provideGoogleBillingPurchaser()
+            val firstResult = controllersAssembly.googleBillingPurchaser()
+            val secondResult = controllersAssembly.googleBillingPurchaser()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 }

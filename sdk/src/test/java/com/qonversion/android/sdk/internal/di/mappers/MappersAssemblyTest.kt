@@ -1,8 +1,6 @@
 package com.qonversion.android.sdk.internal.di.mappers
 
-import com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper
+import com.qonversion.android.sdk.internal.common.mappers.*
 import com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapper
 import io.mockk.every
 import io.mockk.mockk
@@ -46,6 +44,7 @@ internal class MappersAssemblyTest {
             val result = mappersAssembly.userMapper()
 
             // then
+            assertThat(result).isInstanceOf(UserMapper::class.java)
             assertThat(result).isEqualToComparingFieldByField(expectedResult)
         }
 
@@ -58,80 +57,165 @@ internal class MappersAssemblyTest {
             val secondResult = mappersAssembly.userMapper()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 
-    @Test
-    fun `get different user purchase mappers`() {
-        // given
+    @Nested
+    inner class UserPurchaseMapperTest {
+        @Test
+        fun `get user purchase mapper`() {
+            // given
 
-        // when
-        val firstResult = mappersAssembly.userPurchaseMapper()
-        val secondResult = mappersAssembly.userPurchaseMapper()
+            // when
+            val result = mappersAssembly.userPurchaseMapper()
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // then
+            assertThat(result).isInstanceOf(UserPurchaseMapper::class.java)
+        }
+
+        @Test
+        fun `get different user purchase mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.userPurchaseMapper()
+            val secondResult = mappersAssembly.userPurchaseMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
-    @Test
-    fun `get different entitlement mappers`() {
-        // given
+    @Nested
+    inner class EntitlementMapperTest {
+        @Test
+        fun `get entitlement mapper`() {
+            // given
 
-        // when
-        val firstResult = mappersAssembly.entitlementMapper()
-        val secondResult = mappersAssembly.entitlementMapper()
+            // when
+            val result = mappersAssembly.entitlementMapper()
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // then
+            assertThat(result).isInstanceOf(EntitlementMapper::class.java)
+        }
+
+        @Test
+        fun `get different entitlement mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.entitlementMapper()
+            val secondResult = mappersAssembly.entitlementMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
-    @Test
-    fun `get different product mappers`() {
-        // given
+    @Nested
+    inner class ProductMapperTest {
+        @Test
+        fun `get product mapper`() {
+            // given
 
-        // when
-        val firstResult = mappersAssembly.productMapper()
-        val secondResult = mappersAssembly.productMapper()
+            // when
+            val result = mappersAssembly.productMapper()
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // then
+            assertThat(result).isInstanceOf(ProductMapper::class.java)
+        }
+
+        @Test
+        fun `get different product mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.productMapper()
+            val secondResult = mappersAssembly.productMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
-    @Test
-    fun `get different subscription mappers`() {
-        // given
+    @Nested
+    inner class SubscriptionMapperTest {
+        @Test
+        fun `get subscription mapper`() {
+            // given
 
-        // when
-        val firstResult = mappersAssembly.subscriptionMapper()
-        val secondResult = mappersAssembly.subscriptionMapper()
+            // when
+            val result = mappersAssembly.subscriptionMapper()
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // then
+            assertThat(result).isInstanceOf(SubscriptionMapper::class.java)
+        }
+
+        @Test
+        fun `get different subscription mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.subscriptionMapper()
+            val secondResult = mappersAssembly.subscriptionMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
-    @Test
-    fun `get different user properties mappers`() {
-        // given
+    @Nested
+    inner class UserPropertiesMapperTest {
+        @Test
+        fun `get user properties mapper`() {
+            // given
 
-        // when
-        val firstResult = mappersAssembly.userPropertiesMapper()
-        val secondResult = mappersAssembly.userPropertiesMapper()
+            // when
+            val result = mappersAssembly.userPropertiesMapper()
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // then
+            assertThat(result).isInstanceOf(UserPropertiesMapper::class.java)
+        }
+
+        @Test
+        fun `get different user properties mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.userPropertiesMapper()
+            val secondResult = mappersAssembly.userPropertiesMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
-    @Test
-    fun `get different map data mappers`() {
-        // given
 
-        // when
-        val firstResult = mappersAssembly.mapDataMapper()
-        val secondResult = mappersAssembly.mapDataMapper()
+    @Nested
+    inner class MapDataMapperTest {
+        @Test
+        fun `get map data mapper`() {
+            // given
 
-        // then
-        assertThat(firstResult).isNotEqualTo(secondResult)
+            // when
+            val result = mappersAssembly.mapDataMapper()
+
+            // then
+            assertThat(result).isInstanceOf(MapDataMapper::class.java)
+        }
+
+        @Test
+        fun `get different map data mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.mapDataMapper()
+            val secondResult = mappersAssembly.mapDataMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
     }
 
     @Nested
@@ -156,7 +240,7 @@ internal class MappersAssemblyTest {
             val secondResult = mappersAssembly.apiErrorMapper()
 
             // then
-            assertThat(firstResult).isNotEqualTo(secondResult)
+            assertThat(firstResult).isNotSameAs(secondResult)
         }
     }
 }

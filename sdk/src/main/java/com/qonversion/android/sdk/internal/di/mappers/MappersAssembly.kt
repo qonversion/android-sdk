@@ -1,29 +1,28 @@
 package com.qonversion.android.sdk.internal.di.mappers
 
-import com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper
-import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
-import com.qonversion.android.sdk.internal.common.mappers.ProductMapper
-import com.qonversion.android.sdk.internal.common.mappers.SubscriptionMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
-import com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper
+import com.qonversion.android.sdk.dto.User
+import com.qonversion.android.sdk.dto.UserPurchase
+import com.qonversion.android.sdk.dto.Entitlement
+import com.qonversion.android.sdk.dto.Product
+import com.qonversion.android.sdk.dto.Subscription
+import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 
 internal interface MappersAssembly {
 
-    fun userMapper(): UserMapper
+    fun userMapper(): Mapper<User?>
 
-    fun userPurchaseMapper(): UserPurchaseMapper
+    fun userPurchaseMapper(): Mapper<UserPurchase?>
 
-    fun entitlementMapper(): EntitlementMapper
+    fun entitlementMapper(): Mapper<Entitlement?>
 
-    fun productMapper(): ProductMapper
+    fun productMapper(): Mapper<Product?>
 
-    fun subscriptionMapper(): SubscriptionMapper
+    fun subscriptionMapper(): Mapper<Subscription?>
 
-    fun userPropertiesMapper(): UserPropertiesMapper
+    fun userPropertiesMapper(): Mapper<List<String>>
 
-    fun mapDataMapper(): MapDataMapper
+    fun mapDataMapper(): Mapper<String>
 
     fun apiErrorMapper(): ErrorResponseMapper
 }

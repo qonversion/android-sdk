@@ -25,13 +25,13 @@ internal class StorageAssemblyImpl(
         SharedPreferencesStorage(sharedPreferences())
 
     override fun sentUserPropertiesStorage(): UserPropertiesStorage =
-        providePropertiesStorage(StorageConstants.SentUserProperties.key)
+        userPropertiesStorage(StorageConstants.SentUserProperties.key)
 
     override fun pendingUserPropertiesStorage(): UserPropertiesStorage =
-        providePropertiesStorage(StorageConstants.PendingUserProperties.key)
+        userPropertiesStorage(StorageConstants.PendingUserProperties.key)
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun providePropertiesStorage(storageName: String): UserPropertiesStorage {
+    fun userPropertiesStorage(storageName: String): UserPropertiesStorage {
         return UserPropertiesStorageImpl(
             sharedPreferencesStorage(),
             mappersAssembly.mapDataMapper(),

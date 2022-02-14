@@ -19,7 +19,7 @@ internal class QonversionInternal(
 ) : Qonversion {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val propertiesController: UserPropertiesController =
+    val userPropertiesController: UserPropertiesController =
         dependenciesAssembly.userPropertiesController()
 
     init {
@@ -56,14 +56,14 @@ internal class QonversionInternal(
     }
 
     override fun setUserProperty(property: UserProperty, value: String) {
-        propertiesController.setProperty(property.code, value)
+        userPropertiesController.setProperty(property.code, value)
     }
 
     override fun setCustomUserProperty(key: String, value: String) {
-        propertiesController.setProperty(key, value)
+        userPropertiesController.setProperty(key, value)
     }
 
     override fun setUserProperties(userProperties: Map<String, String>) {
-        propertiesController.setProperties(userProperties)
+        userPropertiesController.setProperties(userProperties)
     }
 }
