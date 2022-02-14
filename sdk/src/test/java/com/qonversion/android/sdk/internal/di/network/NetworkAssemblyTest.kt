@@ -20,6 +20,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.every
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -183,6 +184,9 @@ internal class NetworkAssemblyTest {
             val result = networkAssembly.exponentialApiInteractor()
 
             // then
+            verify(exactly = 1) {
+                networkAssembly.apiInteractor(any())
+            }
             assertThat(result).isSameAs(mockApiInteractor)
             assertThat(policySlot.captured).isInstanceOf(RetryPolicy.Exponential::class.java)
         }
@@ -201,6 +205,10 @@ internal class NetworkAssemblyTest {
             val result = networkAssembly.infiniteExponentialApiInteractor()
 
             // then
+            verify(exactly = 1) {
+                networkAssembly.apiInteractor(any())
+            }
+
             assertThat(result).isSameAs(mockApiInteractor)
             assertThat(policySlot.captured).isInstanceOf(RetryPolicy.InfiniteExponential::class.java)
         }

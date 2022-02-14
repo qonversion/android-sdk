@@ -477,7 +477,7 @@ internal class UserPropertiesStorageTest {
                 // when
                 val result = userPropertiesStorage.getPropertiesFromStorage()
 
-                //then
+                // then
                 assertThat(result).isEqualTo(expectedValue)
                 verifyOrder {
                     mockLocalStorage.getString(propertiesKeyInMemory)
@@ -496,7 +496,7 @@ internal class UserPropertiesStorageTest {
             // when
             val result = userPropertiesStorage.getPropertiesFromStorage()
 
-            //then
+            // then
             verify { mockMapper wasNot called }
             assertThat(result).isEmpty()
         }

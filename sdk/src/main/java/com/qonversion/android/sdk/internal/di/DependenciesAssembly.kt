@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.di
 
 import android.app.Application
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.controllers.ControllersAssembly
 import com.qonversion.android.sdk.internal.di.controllers.ControllersAssemblyImpl
@@ -16,12 +17,12 @@ import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssemblyImpl
 
 internal class DependenciesAssembly(
-    private val mappersAssembly: MappersAssembly,
-    private val storageAssembly: StorageAssembly,
-    private val networkAssembly: NetworkAssembly,
-    private val miscAssembly: MiscAssembly,
-    private val servicesAssembly: ServicesAssembly,
-    private val controllersAssembly: ControllersAssembly
+    @VisibleForTesting val mappersAssembly: MappersAssembly,
+    @VisibleForTesting val storageAssembly: StorageAssembly,
+    @VisibleForTesting val networkAssembly: NetworkAssembly,
+    @VisibleForTesting val miscAssembly: MiscAssembly,
+    @VisibleForTesting val servicesAssembly: ServicesAssembly,
+    @VisibleForTesting val controllersAssembly: ControllersAssembly
 ) : ControllersAssembly by controllersAssembly,
     ServicesAssembly by servicesAssembly,
     MiscAssembly by miscAssembly,
