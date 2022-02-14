@@ -11,7 +11,6 @@ import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.internal.user.controller.UserController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,21 +62,14 @@ internal class QonversionInternal(
     }
 
     override suspend fun getUserInfo(): User {
-        return userController.getUser()
+        TODO("Not yet implemented")
     }
 
     override fun getUserInfo(
         onSuccess: (user: User) -> Unit,
         onError: (exception: QonversionException) -> Unit
     ) {
-        scope.launch {
-            try {
-                val user = userController.getUser()
-                onSuccess(user)
-            } catch (exception: QonversionException) {
-                onError(exception)
-            }
-        }
+        TODO("Not yet implemented")
     }
 
     override fun setUserProperty(property: UserProperty, value: String) {

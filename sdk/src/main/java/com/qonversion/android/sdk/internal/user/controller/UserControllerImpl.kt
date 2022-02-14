@@ -20,7 +20,7 @@ internal class UserControllerImpl(
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val cachedUserDefault = userCacher.getActual(StorageConstants.UserInfo.key)
+        val cachedUserDefault = userCacher.getActual()
         if (cachedUserDefault != null) {
             return cachedUserDefault
         }
@@ -33,7 +33,7 @@ internal class UserControllerImpl(
             return user
         } catch (exception: QonversionException) {
             val cachedUserError =
-                userCacher.getActual(StorageConstants.UserInfo.key, CacheState.Error)
+                userCacher.getActual(CacheState.Error)
 
             cachedUserError?.let {
                 return it
@@ -52,7 +52,7 @@ internal class UserControllerImpl(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun storeUser(user: User) {
         try {
-            userCacher.store(StorageConstants.UserInfo.key, user)
+            userCacher.store(user)
             logger.info("Cache with user was successfully updated")
         } catch (exception: QonversionException) {
             logger.error("Failed to update cache with User", exception)
