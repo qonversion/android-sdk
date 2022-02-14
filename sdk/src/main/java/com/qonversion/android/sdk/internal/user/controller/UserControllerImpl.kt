@@ -5,17 +5,27 @@ import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.cache.CacheState
 import com.qonversion.android.sdk.internal.cache.Cacher
 import com.qonversion.android.sdk.internal.common.BaseClass
-import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 
 internal class UserControllerImpl(
     private val userService: UserService,
     private val userCacher: Cacher<User>,
+    userDataStorage: UserDataStorage,
+    userIdGenerator: UserIdGenerator,
     logger: Logger
 ) : UserController, BaseClass(logger) {
+
+    init {
+        userDataStorage.getUserId() ?: run {
+            val userId = userIdGenerator.generate()
+            userDataStorage.setOriginalUserId(userId)
+        }
+    }
 
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
