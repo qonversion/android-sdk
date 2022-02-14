@@ -23,7 +23,7 @@ internal class CacherImpl<T : Any>(
     logger: Logger
 ) : Cacher<T>, BaseClass(logger) {
 
-    val key get() = "${userDataProvider.getUserId() ?: ""}$originalKey"
+    val key get() = "${userDataProvider.getUserId() ?: ""}_$originalKey"
 
     var cachedObjects: CacheHolder<CachedObject<T>?> = CacheHolder { key -> load(key) }
 
