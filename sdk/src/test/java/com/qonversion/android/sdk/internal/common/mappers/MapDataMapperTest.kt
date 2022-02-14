@@ -67,20 +67,6 @@ internal class MapDataMapperTest {
         }
 
         @Test
-        fun `to map success with numbers`() {
-            // given
-            val jsonString = "{\"key1\":1,\"key2\":2}"
-            val expectedResult = mapOf("key1" to "1", "key2" to "2")
-
-            // when
-            val result = mapper.toMap(jsonString)
-
-            // then
-            assertThat(result).isEqualTo(expectedResult)
-        }
-
-
-        @Test
         fun `to map when exception occurred`() {
             // given
             val jsonString = "{\"key1lue1\",\"key2\":\"value2\"}"
