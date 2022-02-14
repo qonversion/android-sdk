@@ -14,7 +14,7 @@ internal class UserIdGeneratorTest {
             val regex = Regex("""^QON_[a-zA-Z\d]{32}$""")
 
             // when
-            val id = generator.generateUserId()
+            val id = generator.generate()
 
             // then
             assertThat(regex.matches(id)).isTrue

@@ -7,7 +7,7 @@ private const val USER_ID_SEPARATOR = "_"
 
 class UserIdGeneratorImpl : UserIdGenerator {
 
-    override fun generateUserId(): String {
+    override fun generate(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
 
         return "${USER_ID_PREFIX}${USER_ID_SEPARATOR}$uuid"
