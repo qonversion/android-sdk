@@ -200,7 +200,7 @@ internal class UserControllerTest {
             assertDoesNotThrow {
                 userController.storeUser(mockUser)
             }
-            verify(exactly = 1) { mockLogger.error("Failed to update cache with User", exception) }
+            verify(exactly = 1) { mockLogger.error("Failed to update user cache", exception) }
         }
     }
 }

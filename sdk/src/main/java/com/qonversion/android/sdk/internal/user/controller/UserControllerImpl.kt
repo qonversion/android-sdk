@@ -39,13 +39,13 @@ internal class UserControllerImpl(
         }
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     fun storeUser(user: User) {
         try {
             userCacher.store(user)
             logger.info("Cache with user was successfully updated")
         } catch (exception: QonversionException) {
-            logger.error("Failed to update cache with User", exception)
+            logger.error("Failed to update user cache", exception)
         }
     }
 }
