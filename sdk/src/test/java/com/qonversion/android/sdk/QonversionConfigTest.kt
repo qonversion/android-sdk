@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.utils.isDebuggable
-import com.qonversion.android.sdk.listeners.EntitlementsListener
+import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -36,7 +36,7 @@ internal class QonversionConfigTest {
     private val mockLogLevel = mockk<LogLevel>()
     private val mockLogTag = "some tag"
     private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
-    private val mockEntitlementsListener = mockk<EntitlementsListener>()
+    private val mockEntitlementsListener = mockk<EntitlementUpdatesListener>()
     private val mockShouldConsumePurchases = true
     private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment)
     private val mockNetworkConfig = NetworkConfig()
@@ -109,13 +109,13 @@ internal class QonversionConfigTest {
             // given
             val builder =
                 QonversionConfig.Builder(mockApplication, projectKey, mockLaunchMode, mockStore)
-            builder.entitlementsListener = null
+            builder.entitlementUpdatesListener = null
 
             // when
-            builder.setEntitlementsListener(mockEntitlementsListener)
+            builder.setEntitlementUpdatesListener(mockEntitlementsListener)
 
             // then
-            assertThat(builder.entitlementsListener).isSameAs(mockEntitlementsListener)
+            assertThat(builder.entitlementUpdatesListener).isSameAs(mockEntitlementsListener)
         }
 
         @Test
@@ -151,7 +151,7 @@ internal class QonversionConfigTest {
                         logTag = mockLogTag
                         cacheLifetime = mockBackgroundCacheLifetime
                         shouldConsumePurchases = mockShouldConsumePurchases
-                        entitlementsListener = mockEntitlementsListener
+                        entitlementUpdatesListener = mockEntitlementsListener
                     }
             val expResult = QonversionConfig(
                 mockApplication,
@@ -178,7 +178,7 @@ internal class QonversionConfigTest {
             val defaultLogLevel = LogLevel.Info
             val defaultLogTag = "Qonversion"
             val defaultBackgroundCacheLifetime = CacheLifetime.ThreeDays
-            val defaultEntitlementsListener: EntitlementsListener? = null
+            val defaultEntitlementUpdatesListener: EntitlementUpdatesListener? = null
             val defaultShouldConsumePurchases = true
             val defaultEnvironment = Environment.Production
             val defaultCanSendRequests = true
@@ -198,7 +198,7 @@ internal class QonversionConfigTest {
                 expLoggerConfig,
                 expNetworkConfig,
                 defaultBackgroundCacheLifetime,
-                defaultEntitlementsListener
+                defaultEntitlementUpdatesListener
             )
 
             // when
@@ -221,7 +221,7 @@ internal class QonversionConfigTest {
                         logTag = mockLogTag
                         cacheLifetime = mockBackgroundCacheLifetime
                         shouldConsumePurchases = mockShouldConsumePurchases
-                        entitlementsListener = mockEntitlementsListener
+                        entitlementUpdatesListener = mockEntitlementsListener
                     }
             every { mockApplication.isDebuggable } returns false
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
@@ -260,7 +260,7 @@ internal class QonversionConfigTest {
                         logTag = mockLogTag
                         cacheLifetime = mockBackgroundCacheLifetime
                         shouldConsumePurchases = mockShouldConsumePurchases
-                        entitlementsListener = mockEntitlementsListener
+                        entitlementUpdatesListener = mockEntitlementsListener
                     }
             every { mockApplication.isDebuggable } returns true
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)
@@ -299,7 +299,7 @@ internal class QonversionConfigTest {
                         logTag = mockLogTag
                         cacheLifetime = mockBackgroundCacheLifetime
                         shouldConsumePurchases = mockShouldConsumePurchases
-                        entitlementsListener = mockEntitlementsListener
+                        entitlementUpdatesListener = mockEntitlementsListener
                     }
             every { mockApplication.isDebuggable } returns true
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
@@ -334,7 +334,7 @@ internal class QonversionConfigTest {
                         logTag = mockLogTag
                         cacheLifetime = mockBackgroundCacheLifetime
                         shouldConsumePurchases = mockShouldConsumePurchases
-                        entitlementsListener = mockEntitlementsListener
+                        entitlementUpdatesListener = mockEntitlementsListener
                     }
             every { mockApplication.isDebuggable } returns false
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)

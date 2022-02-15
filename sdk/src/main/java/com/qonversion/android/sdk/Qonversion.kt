@@ -9,7 +9,7 @@ import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.listeners.EntitlementsListener
+import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
 
 /**
  * The public API of the Qonversion SDK.
@@ -109,14 +109,15 @@ interface Qonversion {
     fun setCacheLifetime(cacheLifetime: CacheLifetime)
 
     /**
-     * Provide a listener to be notified about asynchronous user entitlements changes.
+     * Provide a listener to be notified about asynchronous user entitlements updates.
      *
      * You may set entitlements listener both *after* Qonversion SDK initializing
-     * with [Qonversion.setEntitlementsListener] and *while* Qonversion initializing with [Qonversion.initialize]
+     * with [Qonversion.setEntitlementUpdatesListener] and *while* Qonversion initializing
+     * with [Qonversion.initialize]
      *
-     * @param entitlementsListener listener to be called when entitlements change
+     * @param entitlementUpdatesListener listener to be called when entitlements update.
      */
-    fun setEntitlementsListener(entitlementsListener: EntitlementsListener)
+    fun setEntitlementUpdatesListener(entitlementUpdatesListener: EntitlementUpdatesListener)
 
     /**
      * Add property value for the current user to use it then for segmentation or analytics

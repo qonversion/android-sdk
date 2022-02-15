@@ -11,10 +11,12 @@ import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
+import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.lang.ref.WeakReference
 
 internal class InternalConfigTest {
     @Nested
@@ -147,6 +149,35 @@ internal class InternalConfigTest {
 
             // then
             assertThat(InternalConfig.networkConfig.canSendRequests).isSameAs(mockCanSendRequests)
+        }
+    }
+
+    @Nested
+    inner class EntitlementUpdatesListenerProviderTest {
+
+        @Test
+        fun `get entitlement updates listener`() {
+            // given
+            val mockEntitlementUpdatesListener = mockk<EntitlementUpdatesListener>()
+            InternalConfig.weakEntitlementUpdatesListener = WeakReference(mockEntitlementUpdatesListener)
+
+            // when
+            val result = InternalConfig.entitlementUpdatesListener
+
+            // then
+            assertThat(result).isSameAs(mockEntitlementUpdatesListener)
+        }
+
+        @Test
+        fun `get entitlement updates listener when reference died`() {
+            // given
+            InternalConfig.weakEntitlementUpdatesListener = WeakReference(null)
+
+            // when
+            val result = InternalConfig.entitlementUpdatesListener
+
+            // then
+            assertThat(result).isNull()
         }
     }
 }

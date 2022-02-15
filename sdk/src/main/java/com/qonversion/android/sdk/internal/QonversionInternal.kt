@@ -11,7 +11,8 @@ import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
-import com.qonversion.android.sdk.listeners.EntitlementsListener
+import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
+import java.lang.ref.WeakReference
 
 internal class QonversionInternal(
     config: QonversionConfig,
@@ -32,7 +33,7 @@ internal class QonversionInternal(
         internalConfig.cacheLifetimeConfig = CacheLifetimeConfig(internalBackgroundCacheLifetime)
 
         internalConfig.loggerConfig = config.loggerConfig
-        internalConfig.entitlementsListener = config.entitlementsListener
+        internalConfig.weakEntitlementUpdatesListener = WeakReference(config.entitlementUpdatesListener)
     }
 
     override fun setEnvironment(environment: Environment) {
@@ -53,8 +54,8 @@ internal class QonversionInternal(
             internalConfig.cacheLifetimeConfig.copy(backgroundCacheLifetime = internalCacheLifetime)
     }
 
-    override fun setEntitlementsListener(entitlementsListener: EntitlementsListener) {
-        internalConfig.entitlementsListener = entitlementsListener
+    override fun setEntitlementUpdatesListener(entitlementUpdatesListener: EntitlementUpdatesListener) {
+        internalConfig.weakEntitlementUpdatesListener = WeakReference(entitlementUpdatesListener)
     }
 
     override fun finish() {

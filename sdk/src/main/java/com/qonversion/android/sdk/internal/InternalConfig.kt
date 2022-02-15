@@ -10,12 +10,13 @@ import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
 import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
-import com.qonversion.android.sdk.internal.provider.EntitlementsListenerProvider
+import com.qonversion.android.sdk.internal.provider.EntitlementUpdatesListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
-import com.qonversion.android.sdk.listeners.EntitlementsListener
+import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
+import java.lang.ref.WeakReference
 
 internal object InternalConfig :
     EnvironmentProvider,
@@ -24,15 +25,18 @@ internal object InternalConfig :
     NetworkConfigHolder,
     PrimaryConfigProvider,
     UidProvider,
-    EntitlementsListenerProvider {
+    EntitlementUpdatesListenerProvider {
     override var uid: String = ""
 
     override lateinit var primaryConfig: PrimaryConfig
     lateinit var storeConfig: StoreConfig
     lateinit var networkConfig: NetworkConfig
     lateinit var loggerConfig: LoggerConfig
+    lateinit var weakEntitlementUpdatesListener: WeakReference<EntitlementUpdatesListener?>
     override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
-    override var entitlementsListener: EntitlementsListener? = null
+
+    override val entitlementUpdatesListener: EntitlementUpdatesListener?
+        get() = weakEntitlementUpdatesListener.get()
 
     override val environment
         get() = primaryConfig.environment
