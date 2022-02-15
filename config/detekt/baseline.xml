@@ -21,7 +21,7 @@
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongParameterList:CacherImpl.kt$CacherImpl$( private val originalKey: String, private val userDataProvider: UserDataProvider, private val cacheMapper: CacheMapper&lt;T>, private val storage: LocalStorage, private val appLifecycleObserver: AppLifecycleObserver, private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider, logger: Logger )</ID>
-    <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val storeConfig: StoreConfig, internal val loggerConfig: LoggerConfig, internal val networkConfig: NetworkConfig, internal val cacheLifetime: CacheLifetime, internal val entitlementsListener: EntitlementsListener? )</ID>
+    <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val storeConfig: StoreConfig, internal val loggerConfig: LoggerConfig, internal val networkConfig: NetworkConfig, internal val cacheLifetime: CacheLifetime, internal val entitlementUpdatesListener: EntitlementUpdatesListener? )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -79,7 +79,7 @@
     <ID>MatchingDeclarationName:HeaderBuilderImplTest.kt$HeaderBuilderTest</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:EntitlementsListener.kt$EntitlementsListener$*</ID>
+    <ID>MaxLineLength:EntitlementUpdatesListener.kt$EntitlementUpdatesListener$*</ID>
     <ID>MaxLineLength:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest.QueryPurchasesHistoryTest$verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$private</ID>
     <ID>MaxLineLength:JsonSerializerTest.kt$JsonSerializerTest$"""{"field1": ["value1", "value2"]}""" to mapOf("field1" to listOf("value1", "value2"))</ID>
@@ -126,7 +126,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:333</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:65</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.QonversionInternalTest.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:6</ID>
