@@ -11,11 +11,14 @@ import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import com.qonversion.android.sdk.internal.user.storage.UserDataStorageImpl
+import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImpl
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -29,7 +32,7 @@ internal class StorageAssemblyTest {
 
     @BeforeEach
     fun setUp() {
-        storageAssembly = StorageAssemblyImpl(mockApplication, mockMappersAssembly, mockMiscAssembly)
+        storageAssembly = spyk(StorageAssemblyImpl(mockApplication, mockMappersAssembly, mockMiscAssembly))
     }
 
     @Test
@@ -54,8 +57,6 @@ internal class StorageAssemblyTest {
 
         @BeforeEach
         fun setup() {
-            storageAssembly = spyk(storageAssembly)
-
             every {
                 storageAssembly.sharedPreferences()
             } returns mockSharedPreferences
@@ -95,8 +96,6 @@ internal class StorageAssemblyTest {
 
         @BeforeEach
         fun setup() {
-            storageAssembly = spyk(storageAssembly)
-
             every {
                 storageAssembly.sharedPreferencesStorage()
             } returns mockLocaleStorage
@@ -185,12 +184,28 @@ internal class StorageAssemblyTest {
 
     @Nested
     inner class UserDataProviderTest {
+        private val mockUserDataStorage = mockk<UserDataStorage>()
+
+        @Test
+        fun `get user data provider`() {
+            // given
+            every { storageAssembly.userDataStorage() } returns mockUserDataStorage
+
+            // when
+            val result = storageAssembly.userDataProvider()
+
+            // then
+            assertThat(result).isSameAs(mockUserDataStorage)
+            verify { storageAssembly.userDataStorage() }
+        }
+    }
+
+    @Nested
+    inner class UserDataStorageTest {
         private val mockLocalStorage = mockk<LocalStorage>(relaxed = true)
 
         @BeforeEach
         fun setup() {
-            storageAssembly = spyk(storageAssembly)
-
             every {
                 storageAssembly.sharedPreferencesStorage()
             } returns mockLocalStorage
@@ -202,7 +217,7 @@ internal class StorageAssemblyTest {
             val expectedResult = UserDataStorageImpl(mockLocalStorage)
 
             // when
-            val result = storageAssembly.userDataProvider()
+            val result = storageAssembly.userDataStorage()
 
             // then
             assertThat(result).isInstanceOf(UserDataStorageImpl::class.java)
@@ -214,8 +229,8 @@ internal class StorageAssemblyTest {
             // given
 
             // when
-            val firstResult = storageAssembly.userDataProvider()
-            val secondResult = storageAssembly.userDataProvider()
+            val firstResult = storageAssembly.userDataStorage()
+            val secondResult = storageAssembly.userDataStorage()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)

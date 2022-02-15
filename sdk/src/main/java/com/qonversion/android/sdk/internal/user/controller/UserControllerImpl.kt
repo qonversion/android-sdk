@@ -17,7 +17,7 @@ private const val TEST_UID = "40egafre6_e_"
 internal class UserControllerImpl(
     private val userService: UserService,
     private val userCacher: Cacher<User?>,
-    userDataStorage: UserDataStorage,
+    private val userDataStorage: UserDataStorage,
     userIdGenerator: UserIdGenerator,
     logger: Logger
 ) : UserController, BaseClass(logger) {
@@ -36,7 +36,7 @@ internal class UserControllerImpl(
 
         val user = userCacher.getActual() ?: run {
             try {
-                val userId = "" // todo fix after controller merge
+                val userId = userDataStorage.requireUserId()
                 val apiUser = userService.getUser(userId)
                 logger.info("User info was successfully received from API")
                 storeUser(apiUser)

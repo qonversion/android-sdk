@@ -10,6 +10,8 @@ import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculator
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
+import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
+import com.qonversion.android.sdk.internal.user.generator.UserIdGeneratorImpl
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorkerImpl
 import java.util.Locale
@@ -36,4 +38,6 @@ internal class MiscAssemblyImpl(
     }
 
     override fun delayedWorker(): DelayedWorker = DelayedWorkerImpl()
+
+    override fun userIdGenerator(): UserIdGenerator = UserIdGeneratorImpl()
 }
