@@ -5,7 +5,6 @@ import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.cache.CacheState
 import com.qonversion.android.sdk.internal.cache.Cacher
 import com.qonversion.android.sdk.internal.common.BaseClass
-import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -13,39 +12,30 @@ import com.qonversion.android.sdk.internal.user.service.UserService
 
 internal class UserControllerImpl(
     private val userService: UserService,
-    private val userCacher: Cacher<User>,
+    private val userCacher: Cacher<User?>,
     logger: Logger
 ) : UserController, BaseClass(logger) {
 
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val cachedUserDefault = userCacher.getActual()
-        if (cachedUserDefault != null) {
-            return cachedUserDefault
-        }
-        try {
+        val user = userCacher.getActual() ?: try {
             val userId = userService.obtainUserId()
-            val user = userService.getUser(userId)
+            val apiUser = userService.getUser(userId)
             logger.info("User info was successfully received from API")
-
-            storeUser(user)
-            return user
+            storeUser(apiUser)
+            apiUser
         } catch (exception: QonversionException) {
-            val cachedUserError =
-                userCacher.getActual(CacheState.Error)
+            userCacher.getActual(CacheState.Error)
+        }
 
-            cachedUserError?.let {
-                return it
-            } ?: run {
-                val details = "Failed to retrieve User info"
-                logger.error(details, exception)
-                throw QonversionException(
-                    ErrorCode.BackendError,
-                    details,
-                    exception
-                )
-            }
+        return user ?: run {
+            val details = "Failed to retrieve User info"
+            logger.error(details)
+            throw QonversionException(
+                ErrorCode.UserInfoIsMissing,
+                details
+            )
         }
     }
 

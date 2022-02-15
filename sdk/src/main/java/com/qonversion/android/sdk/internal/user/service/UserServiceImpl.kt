@@ -10,7 +10,6 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
-import com.qonversion.android.sdk.internal.user.service.UserService
 import java.net.HttpURLConnection
 import java.util.UUID
 

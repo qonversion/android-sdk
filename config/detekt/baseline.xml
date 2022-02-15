@@ -162,6 +162,7 @@
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
+    <ID>SwallowedException:UserControllerImpl.kt$UserControllerImpl$catch (exception: QonversionException) { userCacher.getActual(CacheState.Error) }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
     <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>ThrowsCount:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest$private fun mockQuerySkuDetails( subsResult: List&lt;SkuDetails>?, inAppsResult: List&lt;SkuDetails>?, subsThrowException: Boolean = false, inAppsThrowException: Boolean = false, )</ID>

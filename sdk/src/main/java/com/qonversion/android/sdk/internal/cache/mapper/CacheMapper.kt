@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.internal.cache.CachedObject
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlin.jvm.Throws
 
-internal interface CacheMapper<T : Any> {
+internal interface CacheMapper<T> {
 
     @Throws(QonversionException::class)
     fun toSerializedString(cachedObject: CachedObject<T>): String

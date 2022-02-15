@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
+import com.qonversion.android.sdk.internal.user.controller.UserController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 
 internal class QonversionInternal(
@@ -24,9 +25,13 @@ internal class QonversionInternal(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : Qonversion {
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     val userPropertiesController: UserPropertiesController =
         dependenciesAssembly.userPropertiesController()
+
+    @VisibleForTesting
+    val userController: UserController =
+        dependenciesAssembly.userController()
 
     init {
         internalConfig.primaryConfig = config.primaryConfig
@@ -62,14 +67,21 @@ internal class QonversionInternal(
     }
 
     override suspend fun getUserInfo(): User {
-        TODO("Not yet implemented")
+        return userController.getUser()
     }
 
     override fun getUserInfo(
         onSuccess: (user: User) -> Unit,
         onError: (exception: QonversionException) -> Unit
     ) {
-        TODO("Not yet implemented")
+        scope.launch {
+            try {
+                val user = userController.getUser()
+                onSuccess(user)
+            } catch (exception: QonversionException) {
+                onError(exception)
+            }
+        }
     }
 
     override fun setUserProperty(property: UserProperty, value: String) {
