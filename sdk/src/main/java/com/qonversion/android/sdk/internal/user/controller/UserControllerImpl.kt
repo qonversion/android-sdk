@@ -12,6 +12,8 @@ import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
 import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 
+private const val TEST_UID = "40egafre6_e_"
+
 internal class UserControllerImpl(
     private val userService: UserService,
     private val userCacher: Cacher<User>,
@@ -21,7 +23,9 @@ internal class UserControllerImpl(
 ) : UserController, BaseClass(logger) {
 
     init {
-        userDataStorage.getUserId() ?: run {
+        val existingUserId = userDataStorage.getUserId()
+
+        if (existingUserId.isNullOrEmpty() || existingUserId == TEST_UID) {
             val userId = userIdGenerator.generate()
             userDataStorage.setOriginalUserId(userId)
         }
@@ -35,7 +39,7 @@ internal class UserControllerImpl(
             return cachedUserDefault
         }
         try {
-            val userId = userService.obtainUserId()
+            val userId = "" // todo fix after controller merge
             val user = userService.getUser(userId)
             logger.info("User info was successfully received from API")
 

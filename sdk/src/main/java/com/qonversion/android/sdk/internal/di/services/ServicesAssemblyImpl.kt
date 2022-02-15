@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.internal.di.services
 
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.network.NetworkAssembly
-import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.user.service.UserService
 import com.qonversion.android.sdk.internal.user.service.UserServiceImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
@@ -10,7 +9,6 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceI
 
 internal class ServicesAssemblyImpl(
     private val mappersAssembly: MappersAssembly,
-    private val storageAssembly: StorageAssembly,
     private val networkAssembly: NetworkAssembly
 ) : ServicesAssembly {
 
@@ -24,6 +22,5 @@ internal class ServicesAssemblyImpl(
         networkAssembly.requestConfigurator(),
         networkAssembly.exponentialApiInteractor(),
         mappersAssembly.userMapper(),
-        storageAssembly.sharedPreferencesStorage()
     )
 }

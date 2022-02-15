@@ -101,6 +101,30 @@ internal class UserControllerTest {
                 mockUserDataStorage.setOriginalUserId(testUserId)
             }
         }
+
+        @Test
+        fun `user id is test`() {
+            // given
+            every { mockUserDataStorage.getUserId() } returns "40egafre6_e_"
+            every { mockUserIdGenerator.generate() } returns testUserId
+            every { mockUserDataStorage.setOriginalUserId(testUserId) } just runs
+
+            // when
+            userController = UserControllerImpl(
+                mockUserService,
+                mockUserCacher,
+                mockUserDataStorage,
+                mockUserIdGenerator,
+                mockLogger
+            )
+
+            // then
+            verifyOrder {
+                mockUserDataStorage.getUserId()
+                mockUserIdGenerator.generate()
+                mockUserDataStorage.setOriginalUserId(testUserId)
+            }
+        }
     }
 
     @Test
@@ -129,9 +153,6 @@ internal class UserControllerTest {
         } returns null
 
         val userId = "userId"
-        every {
-            mockUserService.obtainUserId()
-        } returns userId
 
         coEvery {
             mockUserService.getUser(userId)
@@ -148,7 +169,6 @@ internal class UserControllerTest {
         assertThat(result).isEqualTo(mockUser)
         coVerifyOrder {
             mockUserCacher.getActual()
-            mockUserService.obtainUserId()
             mockUserService.getUser(userId)
             userController.storeUser(mockUser)
         }
@@ -196,9 +216,6 @@ internal class UserControllerTest {
         } returns mockUser
 
         val userId = "userId"
-        every {
-            mockUserService.obtainUserId()
-        } returns userId
 
         coEvery {
             mockUserService.getUser(userId)
