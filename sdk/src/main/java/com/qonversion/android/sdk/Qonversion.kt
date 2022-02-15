@@ -174,7 +174,6 @@ interface Qonversion {
      * @param onError returns [QonversionException] instance if an error occurred while
      * trying to get user info
      */
-    @Throws(QonversionException::class)
     fun getUserInfo(
         onSuccess: (user: User) -> Unit,
         onError: (exception: QonversionException) -> Unit,
