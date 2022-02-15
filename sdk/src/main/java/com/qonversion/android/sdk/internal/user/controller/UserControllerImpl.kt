@@ -34,15 +34,17 @@ internal class UserControllerImpl(
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val user = userCacher.getActual() ?: try {
-            val userId = "" // todo fix after controller merge
-            val apiUser = userService.getUser(userId)
-            logger.info("User info was successfully received from API")
-            storeUser(apiUser)
-            apiUser
-        } catch (exception: QonversionException) {
-            logger.error("Failed to get User from API", exception)
-            userCacher.getActual(CacheState.Error)
+        val user = userCacher.getActual() ?: run {
+            try {
+                val userId = "" // todo fix after controller merge
+                val apiUser = userService.getUser(userId)
+                logger.info("User info was successfully received from API")
+                storeUser(apiUser)
+                return@run apiUser
+            } catch (exception: QonversionException) {
+                logger.error("Failed to get User from API", exception)
+                userCacher.getActual(CacheState.Error)
+            }
         }
 
         return user ?: run {

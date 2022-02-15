@@ -30,8 +30,7 @@ internal class QonversionInternal(
         dependenciesAssembly.userPropertiesController()
 
     @VisibleForTesting
-    val userController: UserController =
-        dependenciesAssembly.userController()
+    val userController: UserController = dependenciesAssembly.userController()
 
     init {
         internalConfig.primaryConfig = config.primaryConfig
@@ -76,7 +75,7 @@ internal class QonversionInternal(
     ) {
         scope.launch {
             try {
-                val user = userController.getUser()
+                val user = getUserInfo()
                 onSuccess(user)
             } catch (exception: QonversionException) {
                 onError(exception)
