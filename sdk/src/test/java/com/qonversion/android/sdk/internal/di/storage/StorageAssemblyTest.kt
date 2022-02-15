@@ -11,6 +11,7 @@ import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorageImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImpl
 import io.mockk.every
 import io.mockk.mockk
@@ -176,6 +177,45 @@ internal class StorageAssemblyTest {
             // when
             val firstResult = storageAssembly.pendingUserPropertiesStorage()
             val secondResult = storageAssembly.pendingUserPropertiesStorage()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
+    }
+
+    @Nested
+    inner class UserDataProviderTest {
+        private val mockLocalStorage = mockk<LocalStorage>(relaxed = true)
+
+        @BeforeEach
+        fun setup() {
+            storageAssembly = spyk(storageAssembly)
+
+            every {
+                storageAssembly.sharedPreferencesStorage()
+            } returns mockLocalStorage
+        }
+
+        @Test
+        fun `get user data provider`() {
+            // given
+            val expectedResult = UserDataStorageImpl(mockLocalStorage)
+
+            // when
+            val result = storageAssembly.userDataProvider()
+
+            // then
+            assertThat(result).isInstanceOf(UserDataStorageImpl::class.java)
+            assertThat(result).isEqualToComparingFieldByField(expectedResult)
+        }
+
+        @Test
+        fun `get different user data providers`() {
+            // given
+
+            // when
+            val firstResult = storageAssembly.userDataProvider()
+            val secondResult = storageAssembly.userDataProvider()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)

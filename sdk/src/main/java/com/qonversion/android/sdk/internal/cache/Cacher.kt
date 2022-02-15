@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.cache
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlin.jvm.Throws
 
-internal interface Cacher<T : Any> {
+internal interface Cacher<T> {
 
     @Throws(QonversionException::class)
     fun store(value: T)

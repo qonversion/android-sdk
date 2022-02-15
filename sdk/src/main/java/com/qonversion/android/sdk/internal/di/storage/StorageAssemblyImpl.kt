@@ -10,6 +10,8 @@ import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.localStorage.SharedPreferencesStorage
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
+import com.qonversion.android.sdk.internal.user.storage.UserDataProvider
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorageImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImpl
 
@@ -29,6 +31,9 @@ internal class StorageAssemblyImpl(
 
     override fun pendingUserPropertiesStorage(): UserPropertiesStorage =
         userPropertiesStorage(StorageConstants.PendingUserProperties.key)
+
+    override fun userDataProvider(): UserDataProvider =
+        UserDataStorageImpl(sharedPreferencesStorage())
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun userPropertiesStorage(storageName: String): UserPropertiesStorage {

@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.dto.UserPurchase
 import com.qonversion.android.sdk.dto.Entitlement
 import com.qonversion.android.sdk.dto.Product
 import com.qonversion.android.sdk.dto.Subscription
+import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
 import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 
@@ -25,4 +26,6 @@ internal interface MappersAssembly {
     fun mapDataMapper(): Mapper<String>
 
     fun apiErrorMapper(): ErrorResponseMapper
+
+    fun userCacheMapper(): CacheMapper<User?>
 }

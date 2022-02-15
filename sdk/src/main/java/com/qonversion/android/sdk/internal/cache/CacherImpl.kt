@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.internal.user.storage.UserDataProvider
 import kotlin.jvm.Throws
 import java.util.Calendar
 
-internal class CacherImpl<T : Any>(
+internal class CacherImpl<T>(
     private val originalKey: String,
     private val userDataProvider: UserDataProvider,
     private val cacheMapper: CacheMapper<T>,

@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.internal.di.network.NetworkAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
-import com.qonversion.android.sdk.internal.user.UserServiceImpl
+import com.qonversion.android.sdk.internal.user.service.UserServiceImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImpl
 import io.mockk.every
 import io.mockk.mockk

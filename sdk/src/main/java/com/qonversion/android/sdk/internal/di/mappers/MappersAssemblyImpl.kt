@@ -5,6 +5,8 @@ import com.qonversion.android.sdk.dto.UserPurchase
 import com.qonversion.android.sdk.dto.Entitlement
 import com.qonversion.android.sdk.dto.Product
 import com.qonversion.android.sdk.dto.Subscription
+import com.qonversion.android.sdk.internal.cache.mapper.CacheMapper
+import com.qonversion.android.sdk.internal.cache.mapper.CacheMapperImpl
 import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper
 import com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper
@@ -15,8 +17,11 @@ import com.qonversion.android.sdk.internal.common.mappers.MapDataMapper
 import com.qonversion.android.sdk.internal.common.mappers.UserMapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapper
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
+import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 
-internal class MappersAssemblyImpl : MappersAssembly {
+internal class MappersAssemblyImpl(
+    private val miscAssembly: MiscAssembly
+) : MappersAssembly {
     override fun userMapper(): Mapper<User?> =
         UserMapper(userPurchaseMapper(), entitlementMapper())
 
@@ -33,4 +38,7 @@ internal class MappersAssemblyImpl : MappersAssembly {
     override fun mapDataMapper(): Mapper<String> = MapDataMapper()
 
     override fun apiErrorMapper(): ErrorResponseMapper = ApiErrorMapper()
+
+    override fun userCacheMapper(): CacheMapper<User?> =
+        CacheMapperImpl(miscAssembly.jsonSerializer(), userMapper())
 }
