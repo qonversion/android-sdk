@@ -210,7 +210,7 @@ internal class StorageAssemblyTest {
         }
 
         @Test
-        fun `get different local storages`() {
+        fun `get different user data providers`() {
             // given
 
             // when
