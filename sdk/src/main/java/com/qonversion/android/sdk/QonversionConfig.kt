@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.utils.isDebuggable
+import com.qonversion.android.sdk.listeners.EntitlementsListener
 
 private const val DEFAULT_LOG_TAG = "Qonversion"
 
@@ -32,7 +33,8 @@ class QonversionConfig internal constructor(
     internal val storeConfig: StoreConfig,
     internal val loggerConfig: LoggerConfig,
     internal val networkConfig: NetworkConfig,
-    internal val cacheLifetime: CacheLifetime
+    internal val cacheLifetime: CacheLifetime,
+    internal val entitlementsListener: EntitlementsListener?
 ) {
 
     /**
@@ -58,6 +60,7 @@ class QonversionConfig internal constructor(
         internal var logTag = DEFAULT_LOG_TAG
         internal var cacheLifetime = CacheLifetime.ThreeDays
         internal var shouldConsumePurchases = true
+        internal var entitlementsListener: EntitlementsListener? = null
 
         /**
          * Set current application [Environment]. Used to distinguish sandbox and production users.
@@ -125,6 +128,16 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Provide a listener to be notified about asynchronous user entitlements changes.
+         *
+         * @param entitlementsListener listener to be called when entitlements change
+         * @return builder instance for chain calls.
+         */
+        fun setEntitlementsListener(entitlementsListener: EntitlementsListener): Builder = apply {
+            this.entitlementsListener = entitlementsListener
+        }
+
+        /**
          * Generate [QonversionConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -153,7 +166,8 @@ class QonversionConfig internal constructor(
                 storeConfig,
                 loggerConfig,
                 networkConfig,
-                cacheLifetime
+                cacheLifetime,
+                entitlementsListener
             )
         }
     }

@@ -10,10 +10,12 @@ import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 
 import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
+import com.qonversion.android.sdk.internal.provider.EntitlementsListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
+import com.qonversion.android.sdk.listeners.EntitlementsListener
 
 internal object InternalConfig :
     EnvironmentProvider,
@@ -21,7 +23,8 @@ internal object InternalConfig :
     CacheLifetimeConfigProvider,
     NetworkConfigHolder,
     PrimaryConfigProvider,
-    UidProvider {
+    UidProvider,
+    EntitlementsListenerProvider {
     override var uid: String = ""
 
     override lateinit var primaryConfig: PrimaryConfig
@@ -29,6 +32,7 @@ internal object InternalConfig :
     lateinit var networkConfig: NetworkConfig
     lateinit var loggerConfig: LoggerConfig
     override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
+    override var entitlementsListener: EntitlementsListener? = null
 
     override val environment
         get() = primaryConfig.environment
