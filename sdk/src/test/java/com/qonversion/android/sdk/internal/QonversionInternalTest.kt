@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.dto.UserProperty
+import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
@@ -15,18 +16,25 @@ import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
+import com.qonversion.android.sdk.internal.exception.ErrorCode
+import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.user.controller.UserController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.just
 import io.mockk.runs
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.AssertionsForClassTypes.fail
+import org.junit.jupiter.api.*
 
 internal class QonversionInternalTest {
     private lateinit var qonversionInternal: QonversionInternal
@@ -253,6 +261,96 @@ internal class QonversionInternalTest {
             verify {
                 mockUserPropertiesController.setProperties(properties)
             }
+        }
+    }
+
+    @Nested
+    inner class GetUserInfoTest {
+        private val mockUserController = mockk<UserController>()
+
+        @BeforeEach
+        fun setUp() {
+            every {
+                mockDependenciesAssembly.userController()
+            } returns mockUserController
+        }
+
+        @ExperimentalCoroutinesApi
+        @Test
+        fun `get user info suspend`() = runTest {
+            // given
+            qonversionInternal =
+                QonversionInternal(
+                    qonversionConfig,
+                    mockInternalConfig,
+                    mockDependenciesAssembly
+                )
+            val mockUser = mockk<User>()
+            coEvery { mockUserController.getUser() } returns mockUser
+
+            // when
+            val result = qonversionInternal.getUserInfo()
+
+            // then
+            assertThat(result).isEqualTo(mockUser)
+        }
+
+        @Test
+        fun `get user info success callback`() = runTest {
+            // given
+            qonversionInternal =
+                QonversionInternal(
+                    qonversionConfig,
+                    mockInternalConfig,
+                    mockDependenciesAssembly,
+                    this
+                )
+            val mockUser = mockk<User>()
+            coEvery { mockUserController.getUser() } returns mockUser
+            var isLambdaCalled = false
+
+            // when and then
+            qonversionInternal.getUserInfo(
+                onSuccess = {
+                    isLambdaCalled = true
+                    assertThat(it).isEqualTo(mockUser)
+                },
+                onError = {
+                    fail("Shouldn't go here")
+                })
+
+            yield()
+            assertThat(isLambdaCalled).isTrue
+            coVerify(exactly = 1) { mockUserController.getUser() }
+        }
+
+        @Test
+        fun `get user info error callback`() = runTest {
+            // given
+            qonversionInternal =
+                QonversionInternal(
+                    qonversionConfig,
+                    mockInternalConfig,
+                    mockDependenciesAssembly,
+                    this
+                )
+            val exception = QonversionException(ErrorCode.Serialization, "error")
+            coEvery { mockUserController.getUser() } throws exception
+            var isLambdaCalled = false
+
+            // when and then
+            qonversionInternal.getUserInfo(
+                onSuccess = {
+                    fail("Shouldn't go here")
+                },
+                onError = {
+                    isLambdaCalled = true
+                    assertThat(it).isSameAs(exception)
+                })
+
+            yield()
+            assertThat(isLambdaCalled).isTrue
+            coVerify(exactly = 1) { mockUserController.getUser() }
         }
     }
 }

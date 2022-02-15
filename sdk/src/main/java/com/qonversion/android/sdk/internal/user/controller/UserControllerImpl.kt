@@ -16,7 +16,7 @@ private const val TEST_UID = "40egafre6_e_"
 
 internal class UserControllerImpl(
     private val userService: UserService,
-    private val userCacher: Cacher<User>,
+    private val userCacher: Cacher<User?>,
     userDataStorage: UserDataStorage,
     userIdGenerator: UserIdGenerator,
     logger: Logger
@@ -34,42 +34,32 @@ internal class UserControllerImpl(
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val cachedUserDefault = userCacher.getActual()
-        if (cachedUserDefault != null) {
-            return cachedUserDefault
-        }
-        try {
+        val user = userCacher.getActual() ?: try {
             val userId = "" // todo fix after controller merge
-            val user = userService.getUser(userId)
+            val apiUser = userService.getUser(userId)
             logger.info("User info was successfully received from API")
-
-            storeUser(user)
-            return user
+            storeUser(apiUser)
+            apiUser
         } catch (exception: QonversionException) {
-            val cachedUserError =
-                userCacher.getActual(CacheState.Error)
+            logger.error("Failed to get User from API", exception)
+            userCacher.getActual(CacheState.Error)
+        }
 
-            cachedUserError?.let {
-                return it
-            } ?: run {
-                val details = "Failed to retrieve User info"
-                logger.error(details, exception)
-                throw QonversionException(
-                    ErrorCode.BackendError,
-                    details,
-                    exception
-                )
-            }
+        return user ?: run {
+            logger.error("Failed to retrieve User info")
+            throw QonversionException(
+                ErrorCode.UserInfoIsMissing
+            )
         }
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     fun storeUser(user: User) {
         try {
             userCacher.store(user)
-            logger.info("Cache with user was successfully updated")
+            logger.info("User cache was successfully updated")
         } catch (exception: QonversionException) {
-            logger.error("Failed to update cache with User", exception)
+            logger.error("Failed to update user cache", exception)
         }
     }
 }

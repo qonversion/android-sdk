@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.di
 
 import android.app.Application
 import com.qonversion.android.sdk.internal.InternalConfig
+import com.qonversion.android.sdk.internal.di.cacher.CacherAssemblyImpl
 import com.qonversion.android.sdk.internal.di.controllers.ControllersAssemblyImpl
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyImpl
 import com.qonversion.android.sdk.internal.di.misc.MiscAssemblyImpl
@@ -38,5 +39,6 @@ internal class DependenciesAssemblyBuilderTest {
         assertThat(result.networkAssembly).isInstanceOf(NetworkAssemblyImpl::class.java)
         assertThat(result.servicesAssembly).isInstanceOf(ServicesAssemblyImpl::class.java)
         assertThat(result.storageAssembly).isInstanceOf(StorageAssemblyImpl::class.java)
+        assertThat(result.cacherAssembly).isInstanceOf(CacherAssemblyImpl::class.java)
     }
 }

@@ -20,6 +20,7 @@
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongParameterList:CacherImpl.kt$CacherImpl$( private val originalKey: String, private val userDataProvider: UserDataProvider, private val cacheMapper: CacheMapper&lt;T>, private val storage: LocalStorage, private val appLifecycleObserver: AppLifecycleObserver, private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider, logger: Logger )</ID>
+    <ID>LongParameterList:DependenciesAssembly.kt$DependenciesAssembly$( @VisibleForTesting val mappersAssembly: MappersAssembly, @VisibleForTesting val storageAssembly: StorageAssembly, @VisibleForTesting val networkAssembly: NetworkAssembly, @VisibleForTesting val miscAssembly: MiscAssembly, @VisibleForTesting val servicesAssembly: ServicesAssembly, @VisibleForTesting val controllersAssembly: ControllersAssembly, @VisibleForTesting val cacherAssembly: CacherAssembly )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -162,6 +163,7 @@
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
+    <ID>SwallowedException:UserControllerImpl.kt$UserControllerImpl$catch (exception: QonversionException) { userCacher.getActual(CacheState.Error) }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
     <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>ThrowsCount:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest$private fun mockQuerySkuDetails( subsResult: List&lt;SkuDetails>?, inAppsResult: List&lt;SkuDetails>?, subsThrowException: Boolean = false, inAppsThrowException: Boolean = false, )</ID>

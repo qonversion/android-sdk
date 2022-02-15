@@ -10,16 +10,20 @@ import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingData
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherImpl
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserImpl
+import com.qonversion.android.sdk.internal.di.cacher.CacherAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.di.services.ServicesAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
+import com.qonversion.android.sdk.internal.user.controller.UserController
+import com.qonversion.android.sdk.internal.user.controller.UserControllerImpl
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerImpl
 
 internal class ControllersAssemblyImpl(
     private val storageAssembly: StorageAssembly,
     private val miscAssembly: MiscAssembly,
-    private val servicesAssembly: ServicesAssembly
+    private val servicesAssembly: ServicesAssembly,
+    private val cacherAssembly: CacherAssembly,
 ) : ControllersAssembly {
     override fun userPropertiesController(): UserPropertiesController =
         UserPropertiesControllerImpl(
@@ -38,6 +42,10 @@ internal class ControllersAssemblyImpl(
             purchasesListener,
             miscAssembly.logger()
         )
+
+    override fun userController(): UserController = UserControllerImpl(
+        servicesAssembly.userService(), cacherAssembly.userCacher(), miscAssembly.logger()
+    )
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun googleBillingConsumer(): GoogleBillingConsumer =

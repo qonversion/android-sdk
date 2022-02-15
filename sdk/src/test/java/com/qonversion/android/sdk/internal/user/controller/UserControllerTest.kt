@@ -1,15 +1,14 @@
 package com.qonversion.android.sdk.internal.user.controller
 
+import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.cache.CacheState
 import com.qonversion.android.sdk.internal.cache.Cacher
-import com.qonversion.android.sdk.internal.common.StorageConstants
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
-import com.qonversion.android.sdk.internal.user.storage.UserDataProvider
 import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +26,7 @@ internal class UserControllerTest {
     private val mockUserDataStorage = mockk<UserDataStorage>()
     private val mockUserIdGenerator = mockk<UserIdGenerator>()
     private val mockUserService = mockk<UserService>()
-    private val mockUserCacher = mockk<Cacher<User>>()
+    private val mockUserCacher = mockk<Cacher<User?>>()
     private val mockLogger = mockk<Logger>()
 
     private val testUserId = "test user id"
@@ -127,105 +126,157 @@ internal class UserControllerTest {
         }
     }
 
-    @Test
-    suspend fun `get user from cache with default state`() {
-        // given
-        every {
-            mockUserCacher.getActual()
-        } returns mockUser
-
-        // when
-        val result = userController.getUser()
-
-        // then
-        assertThat(result).isEqualTo(mockUser)
-        assertThat(slotVerboseLogMessage.captured).isEqualTo("getUser() -> started")
-    }
-
+    @Nested
     @ExperimentalCoroutinesApi
-    @Test
-    fun `get user from API successfully`() = runTest {
-        // given
-        userController = spyk(userController)
+    inner class GetUserTest {
+        private val userId = "userId"
 
-        every {
-            mockUserCacher.getActual()
-        } returns null
+        @Test
+        fun `get user from cache with default state`() = runTest {
+            // given
+            every {
+                mockUserCacher.getActual()
+            } returns mockUser
 
-        val userId = "userId"
+            // when
+            val result = userController.getUser()
 
-        coEvery {
-            mockUserService.getUser(userId)
-        } returns mockUser
+            // then
+            assertThat(result).isEqualTo(mockUser)
+            assertThat(slotVerboseLogMessage.captured).isEqualTo("getUser() -> started")
+        }
 
-        every {
-            userController.storeUser(mockUser)
-        } just Runs
+        @Test
+        fun `get user from API successfully`() = runTest {
+            // given
+            userController = spyk(userController)
 
-        // when
-        val result = userController.getUser()
+            every {
+                mockUserCacher.getActual()
+            } returns null
 
-        // then
-        assertThat(result).isEqualTo(mockUser)
-        coVerifyOrder {
-            mockUserCacher.getActual()
-            mockUserService.getUser(userId)
-            userController.storeUser(mockUser)
+            coEvery {
+                mockUserService.getUser(userId)
+            } returns mockUser
+
+            every {
+                userController.storeUser(mockUser)
+            } just runs
+
+            // when
+            val result = userController.getUser()
+
+            // then
+            assertThat(result).isEqualTo(mockUser)
+            assertThat(slotInfoLogMessage.captured).isEqualTo("User info was successfully received from API")
+            coVerifyOrder {
+                mockUserCacher.getActual()
+                mockUserService.getUser(userId)
+                userController.storeUser(mockUser)
+            }
+        }
+
+        @Test
+        fun `get user from cache with error state`() = runTest {
+            // given
+            userController = spyk(userController)
+
+            every {
+                mockUserCacher.getActual()
+            } returns null
+            val exception = QonversionException(ErrorCode.BackendError)
+            coEvery {
+                mockUserService.getUser(userId)
+            } throws exception
+
+            every {
+                mockUserCacher.getActual(CacheState.Error)
+            } returns mockUser
+
+            // when
+            val result = userController.getUser()
+
+            // then
+            assertThat(result).isEqualTo(mockUser)
+            verify(exactly = 0) {
+                mockLogger.info(any())
+                userController.storeUser(any())
+            }
+
+            coVerifyOrder {
+                mockUserCacher.getActual()
+                mockUserService.getUser(userId)
+                mockLogger.error("Failed to get User from API", exception)
+                mockUserCacher.getActual(CacheState.Error)
+            }
+        }
+
+        @Test
+        fun `user is missing`() = runTest {
+            // given
+            every {
+                mockUserCacher.getActual()
+            } returns null
+
+            coEvery {
+                mockUserService.getUser(userId)
+            } throws QonversionException(ErrorCode.BackendError)
+
+            every {
+                mockUserCacher.getActual(CacheState.Error)
+            } returns null
+
+            // when and then
+            coAssertThatQonversionExceptionThrown(ErrorCode.UserInfoIsMissing) {
+                userController.getUser()
+            }
+
+            verify(exactly = 0) {
+                mockLogger.info(any())
+                userController.storeUser(any())
+            }
+
+            coVerifySequence {
+                mockUserCacher.getActual()
+                mockUserService.getUser(userId)
+                mockUserCacher.getActual(CacheState.Error)
+            }
         }
     }
 
-    @Test
-    fun `store user success`() {
-        // given
-        val mockUser = mockk<User>()
-        val userSlot = slot<User>()
-        every {
-            mockUserCacher.store(capture(userSlot))
-        } just Runs
+    @Nested
+    inner class StoreUserTest {
+        @Test
+        fun `store user successful`() {
+            // given
+            val mockUser = mockk<User>()
+            val userSlot = slot<User>()
+            every {
+                mockUserCacher.store(capture(userSlot))
+            } just Runs
 
-        // when
-        userController.storeUser(mockUser)
-
-        // then
-        assertThat(userSlot.captured).isEqualTo(mockUser)
-    }
-
-    @Test
-    fun `store user error`() {
-        // given
-        val throwable = QonversionException(ErrorCode.Serialization, "error")
-        every {
-            mockUserCacher.store(mockUser)
-        } throws throwable
-
-        // when and then
-        assertDoesNotThrow {
+            // when
             userController.storeUser(mockUser)
+
+            // then
+            verify(exactly = 1) { mockUserCacher.store(mockUser) }
+            assertThat(userSlot.captured).isEqualTo(mockUser)
+            assertThat(slotInfoLogMessage.captured).contains("User cache was successfully updated")
         }
-    }
 
-    @Test
-    suspend fun `get user from cache with error state`() {
-        // given
-        every {
-            mockUserCacher.getActual()
-        } returns null
+        @Test
+        fun `store user error`() {
+            // given
+            val exception = QonversionException(ErrorCode.Serialization, "error")
+            every {
+                mockUserCacher.store(mockUser)
+            } throws exception
 
-        every {
-            mockUserCacher.getActual(CacheState.Error)
-        } returns mockUser
-
-        val userId = "userId"
-
-        coEvery {
-            mockUserService.getUser(userId)
-        } returns mockUser
-
-        // when
-        val result = userController.getUser()
-
-        // then
-        assertThat(result).isEqualTo(mockUser)
-        assertThat(slotVerboseLogMessage.captured).isEqualTo("getUser() -> started")
+            // when and then
+            assertDoesNotThrow {
+                userController.storeUser(mockUser)
+            }
+            verify(exactly = 1) { mockLogger.error("Failed to update user cache", exception) }
+        }
     }
 }

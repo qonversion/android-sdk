@@ -163,17 +163,17 @@ interface Qonversion {
 
     /**
      * Get the most recent available User info.
-     * @return [User] instance
+     * @return [User] instance.
      */
     @Throws(QonversionException::class)
     suspend fun getUserInfo(): User
 
     /**
-     * For function description see [getUserInfo]
-     * @param onSuccess
-     * @param onError
+     * For the function description see [getUserInfo].
+     * @param onSuccess returns [User] instance.
+     * @param onError returns [QonversionException] instance if an error occurred while
+     * trying to get user info.
      */
-    @Throws(QonversionException::class)
     fun getUserInfo(
         onSuccess: (user: User) -> Unit,
         onError: (exception: QonversionException) -> Unit,

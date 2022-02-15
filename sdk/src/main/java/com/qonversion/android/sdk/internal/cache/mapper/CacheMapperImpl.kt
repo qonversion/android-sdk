@@ -11,7 +11,7 @@ import java.util.Date
 private const val KEY_TIMESTAMP = "timestamp"
 private const val KEY_OBJECT = "object"
 
-internal class CacheMapperImpl<T : Any>(
+internal class CacheMapperImpl<T>(
     private val serializer: Serializer,
     private val mapper: Mapper<T>
 ) : CacheMapper<T> {
