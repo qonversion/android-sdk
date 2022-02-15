@@ -16,6 +16,7 @@ import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
+import com.qonversion.android.sdk.listeners.EntitlementsListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -23,6 +24,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.just
 import io.mockk.runs
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -40,6 +42,7 @@ internal class QonversionInternalTest {
     private val mockLogLevel = mockk<LogLevel>()
     private val mockLogTag = "log tag"
     private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
+    private val mockEntitlementsListener = mockk<EntitlementsListener>()
     private val mockShouldConsumePurchases = false
     private val mockBackgroundInternalCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockPrimaryConfig =
@@ -63,7 +66,8 @@ internal class QonversionInternalTest {
             mockStoreConfig,
             mockLoggerConfig,
             mockNetworkConfig,
-            mockBackgroundCacheLifetime
+            mockBackgroundCacheLifetime,
+            mockEntitlementsListener
         )
     }
 
@@ -94,6 +98,7 @@ internal class QonversionInternalTest {
                 mockInternalConfig.networkConfig = mockNetworkConfig
                 mockInternalConfig.loggerConfig = mockLoggerConfig
                 mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
+                mockInternalConfig.entitlementsListener = mockEntitlementsListener
             }
         }
     }
@@ -182,6 +187,18 @@ internal class QonversionInternalTest {
                 // then
                 verify { mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetime }
             }
+        }
+
+        @Test
+        fun `set entitlements listener`() {
+            // given
+            val newEntitlementsListener = mockk<EntitlementsListener>()
+
+            // when
+            qonversionInternal.setEntitlementsListener(newEntitlementsListener)
+
+            // then
+            verify { mockInternalConfig.entitlementsListener = newEntitlementsListener }
         }
     }
 
