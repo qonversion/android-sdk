@@ -20,6 +20,7 @@
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongParameterList:CacherImpl.kt$CacherImpl$( private val originalKey: String, private val userDataProvider: UserDataProvider, private val cacheMapper: CacheMapper&lt;T>, private val storage: LocalStorage, private val appLifecycleObserver: AppLifecycleObserver, private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider, logger: Logger )</ID>
+    <ID>LongParameterList:DependenciesAssembly.kt$DependenciesAssembly$( @VisibleForTesting val mappersAssembly: MappersAssembly, @VisibleForTesting val storageAssembly: StorageAssembly, @VisibleForTesting val networkAssembly: NetworkAssembly, @VisibleForTesting val miscAssembly: MiscAssembly, @VisibleForTesting val servicesAssembly: ServicesAssembly, @VisibleForTesting val controllersAssembly: ControllersAssembly, @VisibleForTesting val cacherAssembly: CacherAssembly )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
