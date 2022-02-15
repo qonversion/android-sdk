@@ -31,5 +31,5 @@ enum class ErrorCode(val defaultMessage: String) {
     NotInitialized("Qonversion has not been initialized. You should call " +
             "the initialize method before accessing the shared instance of Qonversion."),
     ConfigPreparation("Failed to prepare configuration for SDK initialization"),
-    UserInfoIsMissing("Failed to retrieve user user info")
+    UserInfoIsMissing("Failed to retrieve user info")
 }

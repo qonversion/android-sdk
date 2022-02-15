@@ -106,10 +106,10 @@ internal class UserControllerTest {
             every {
                 mockUserCacher.getActual()
             } returns null
-
+            val exception = QonversionException(ErrorCode.BackendError)
             coEvery {
                 mockUserService.getUser(userId)
-            } throws QonversionException(ErrorCode.BackendError)
+            } throws exception
 
             every {
                 mockUserCacher.getActual(CacheState.Error)
@@ -125,10 +125,11 @@ internal class UserControllerTest {
                 userController.storeUser(any())
             }
 
-            coVerifySequence {
+            coVerifyOrder {
                 mockUserCacher.getActual()
                 mockUserService.obtainUserId()
                 mockUserService.getUser(userId)
+                mockLogger.error("Failed to get User from API", exception)
                 mockUserCacher.getActual(CacheState.Error)
             }
         }
@@ -149,10 +150,9 @@ internal class UserControllerTest {
             } returns null
 
             // when and then
-            val e = coAssertThatQonversionExceptionThrown(ErrorCode.UserInfoIsMissing) {
+            coAssertThatQonversionExceptionThrown(ErrorCode.UserInfoIsMissing) {
                 userController.getUser()
             }
-            assertThat(e.message).contains("Failed to retrieve User info")
 
             verify(exactly = 0) {
                 mockLogger.info(any())
@@ -185,7 +185,7 @@ internal class UserControllerTest {
             // then
             verify(exactly = 1) { mockUserCacher.store(mockUser) }
             assertThat(userSlot.captured).isEqualTo(mockUser)
-            assertThat(slotInfoLogMessage.captured).contains("Cache with user was successfully updated")
+            assertThat(slotInfoLogMessage.captured).contains("User cache was successfully updated")
         }
 
         @Test

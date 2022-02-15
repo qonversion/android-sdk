@@ -26,15 +26,14 @@ internal class UserControllerImpl(
             storeUser(apiUser)
             apiUser
         } catch (exception: QonversionException) {
+            logger.error("Failed to get User from API", exception)
             userCacher.getActual(CacheState.Error)
         }
 
         return user ?: run {
-            val details = "Failed to retrieve User info"
-            logger.error(details)
+            logger.error("Failed to retrieve User info")
             throw QonversionException(
-                ErrorCode.UserInfoIsMissing,
-                details
+                ErrorCode.UserInfoIsMissing
             )
         }
     }
@@ -43,7 +42,7 @@ internal class UserControllerImpl(
     fun storeUser(user: User) {
         try {
             userCacher.store(user)
-            logger.info("Cache with user was successfully updated")
+            logger.info("User cache was successfully updated")
         } catch (exception: QonversionException) {
             logger.error("Failed to update user cache", exception)
         }
