@@ -13,6 +13,7 @@
     <ID>Filename:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.InternalConfigTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.internal.di.cacher.CacherAssemblyTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.networkLayer.dto.ResponseTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.user.generator.UserIdGeneratorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:1</ID>
@@ -113,6 +114,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.old.converter.GooglePurchaseConverter.kt:83</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.utils.kt:25</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T> getErrorFromResponse(value: Response&lt;T>): QonversionError</ID>
+    <ID>NewLineAtEndOfFile:CacherAssemblyTest.kt$com.qonversion.android.sdk.internal.di.cacher.CacherAssemblyTest.kt</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:MapDataMapperTest.kt$com.qonversion.android.sdk.internal.common.mappers.MapDataMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ResponseTest.kt$com.qonversion.android.sdk.internal.networkLayer.dto.ResponseTest.kt</ID>
@@ -122,12 +124,13 @@
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.UserPropertiesBuilderTest.kt:8</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:194</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:199</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:163</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:333</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:65</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.user.controller.UserControllerTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>
@@ -167,7 +170,6 @@
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
-    <ID>SwallowedException:UserControllerImpl.kt$UserControllerImpl$catch (exception: QonversionException) { userCacher.getActual(CacheState.Error) }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
     <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>ThrowsCount:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest$private fun mockQuerySkuDetails( subsResult: List&lt;SkuDetails>?, inAppsResult: List&lt;SkuDetails>?, subsThrowException: Boolean = false, inAppsThrowException: Boolean = false, )</ID>
@@ -183,8 +185,10 @@
     <ID>TooManyFunctions:GooglePurchaseConverter.kt$GooglePurchaseConverter : PurchaseConverter</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
+    <ID>TooManyFunctions:Qonversion.kt$Qonversion</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion$Qonversion</ID>
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
+    <ID>TooManyFunctions:QonversionInternal.kt$QonversionInternal : Qonversion</ID>
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : AppCompatActivityView</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.old.billing.utils.kt</ID>
