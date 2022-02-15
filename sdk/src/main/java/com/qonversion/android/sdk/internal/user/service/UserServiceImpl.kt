@@ -2,8 +2,6 @@ package com.qonversion.android.sdk.internal.user.service
 
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.User
-import com.qonversion.android.sdk.internal.common.StorageConstants
-import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -11,7 +9,6 @@ import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInterac
 import com.qonversion.android.sdk.internal.networkLayer.dto.Response
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import java.net.HttpURLConnection
-import java.util.UUID
 
 internal class UserServiceImpl(
     private val requestConfigurator: RequestConfigurator,
