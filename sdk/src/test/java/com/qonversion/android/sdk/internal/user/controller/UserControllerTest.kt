@@ -65,6 +65,9 @@ internal class UserControllerTest {
             // then
             assertThat(result).isEqualTo(mockUser)
             assertThat(slotVerboseLogMessage.captured).isEqualTo("getUser() -> started")
+            verify {
+                mockUserService wasNot called
+            }
         }
 
         @Test
@@ -174,17 +177,16 @@ internal class UserControllerTest {
         fun `store user successful`() {
             // given
             val mockUser = mockk<User>()
-            val userSlot = slot<User>()
+
             every {
-                mockUserCacher.store(capture(userSlot))
-            } just Runs
+                mockUserCacher.store(any())
+            } just runs
 
             // when
             userController.storeUser(mockUser)
 
             // then
             verify(exactly = 1) { mockUserCacher.store(mockUser) }
-            assertThat(userSlot.captured).isEqualTo(mockUser)
             assertThat(slotInfoLogMessage.captured).contains("User cache was successfully updated")
         }
 

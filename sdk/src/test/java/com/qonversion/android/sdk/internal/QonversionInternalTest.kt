@@ -29,12 +29,16 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.just
 import io.mockk.runs
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes.fail
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 internal class QonversionInternalTest {
     private lateinit var qonversionInternal: QonversionInternal
@@ -264,6 +268,7 @@ internal class QonversionInternalTest {
         }
     }
 
+    @ExperimentalCoroutinesApi
     @Nested
     inner class GetUserInfoTest {
         private val mockUserController = mockk<UserController>()
@@ -275,7 +280,6 @@ internal class QonversionInternalTest {
             } returns mockUserController
         }
 
-        @ExperimentalCoroutinesApi
         @Test
         fun `get user info suspend`() = runTest {
             // given
@@ -293,20 +297,25 @@ internal class QonversionInternalTest {
 
             // then
             assertThat(result).isEqualTo(mockUser)
+            coVerify(exactly = 1) {
+                mockUserController.getUser()
+            }
         }
 
         @Test
         fun `get user info success callback`() = runTest {
             // given
-            qonversionInternal =
+            qonversionInternal = spyk(
                 QonversionInternal(
                     qonversionConfig,
                     mockInternalConfig,
                     mockDependenciesAssembly,
                     this
                 )
+            )
+
             val mockUser = mockk<User>()
-            coEvery { mockUserController.getUser() } returns mockUser
+            coEvery { qonversionInternal.getUserInfo() } returns mockUser
             var isLambdaCalled = false
 
             // when and then
@@ -321,21 +330,22 @@ internal class QonversionInternalTest {
 
             yield()
             assertThat(isLambdaCalled).isTrue
-            coVerify(exactly = 1) { mockUserController.getUser() }
+            coVerify(exactly = 1) { qonversionInternal.getUserInfo() }
         }
 
         @Test
         fun `get user info error callback`() = runTest {
             // given
-            qonversionInternal =
+            qonversionInternal = spyk(
                 QonversionInternal(
                     qonversionConfig,
                     mockInternalConfig,
                     mockDependenciesAssembly,
                     this
                 )
+            )
             val exception = QonversionException(ErrorCode.Serialization, "error")
-            coEvery { mockUserController.getUser() } throws exception
+            coEvery { qonversionInternal.getUserInfo() } throws exception
             var isLambdaCalled = false
 
             // when and then
@@ -350,7 +360,7 @@ internal class QonversionInternalTest {
 
             yield()
             assertThat(isLambdaCalled).isTrue
-            coVerify(exactly = 1) { mockUserController.getUser() }
+            coVerify(exactly = 1) { qonversionInternal.getUserInfo() }
         }
     }
 }

@@ -44,7 +44,9 @@ internal class ControllersAssemblyImpl(
         )
 
     override fun userController(): UserController = UserControllerImpl(
-        servicesAssembly.userService(), cacherAssembly.userCacher(), miscAssembly.logger()
+        servicesAssembly.userService(),
+        cacherAssembly.userCacher(),
+        miscAssembly.logger()
     )
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
