@@ -43,7 +43,7 @@ internal class UserControllerImpl(
                 return@run apiUser
             } catch (exception: QonversionException) {
                 logger.error("Failed to get User from API", exception)
-                userCacher.getActual(CacheState.Error)
+                return@run userCacher.getActual(CacheState.Error)
             }
         }
 
