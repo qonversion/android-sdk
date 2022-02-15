@@ -1,7 +1,11 @@
 package com.qonversion.android.sdk.internal.di.mappers
 
+import com.qonversion.android.sdk.dto.User
+import com.qonversion.android.sdk.internal.cache.mapper.CacheMapperImpl
 import com.qonversion.android.sdk.internal.common.mappers.*
 import com.qonversion.android.sdk.internal.common.mappers.error.ApiErrorMapper
+import com.qonversion.android.sdk.internal.common.serializers.Serializer
+import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -12,10 +16,11 @@ import org.junit.jupiter.api.Test
 
 internal class MappersAssemblyTest {
     private lateinit var mappersAssembly: MappersAssembly
+    private val mockMiscAssembly = mockk<MiscAssembly>()
 
     @BeforeEach
     fun setUp() {
-        mappersAssembly = MappersAssemblyImpl()
+        mappersAssembly = MappersAssemblyImpl(mockMiscAssembly)
     }
 
     @Nested
@@ -238,6 +243,50 @@ internal class MappersAssemblyTest {
             // when
             val firstResult = mappersAssembly.apiErrorMapper()
             val secondResult = mappersAssembly.apiErrorMapper()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
+    }
+
+    @Nested
+    inner class UserCacheMapperTest {
+        private val mockSerializer = mockk<Serializer>()
+        private val mockUserMapper = mockk<Mapper<User?>>()
+
+        @BeforeEach
+        fun setUp() {
+            mappersAssembly = spyk(mappersAssembly)
+
+            every {
+                mockMiscAssembly.jsonSerializer()
+            } returns mockSerializer
+
+            every {
+                mappersAssembly.userMapper()
+            } returns mockUserMapper
+        }
+
+        @Test
+        fun `get user cache mapper`() {
+            // given
+            val expectedResult = CacheMapperImpl(mockSerializer, mockUserMapper)
+
+            // when
+            val result = mappersAssembly.userCacheMapper()
+
+            // then
+            assertThat(result).isInstanceOf(CacheMapperImpl::class.java)
+            assertThat(result).isEqualToComparingFieldByField(expectedResult)
+        }
+
+        @Test
+        fun `get different user cache mappers`() {
+            // given
+
+            // when
+            val firstResult = mappersAssembly.userCacheMapper()
+            val secondResult = mappersAssembly.userCacheMapper()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)

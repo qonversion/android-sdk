@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.di.controllers
 
+import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
@@ -8,10 +9,14 @@ import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingData
 import com.qonversion.android.sdk.internal.billing.dataFetcher.GoogleBillingDataFetcherImpl
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserImpl
+import com.qonversion.android.sdk.internal.cache.Cacher
+import com.qonversion.android.sdk.internal.di.cacher.CacherAssemblyImpl
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.di.services.ServicesAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.controller.UserControllerImpl
+import com.qonversion.android.sdk.internal.user.service.UserService
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerImpl
@@ -31,12 +36,18 @@ internal class ControllersAssemblyTest {
     private val mockMiscAssembly = mockk<MiscAssembly>()
     private val mockServicesAssembly = mockk<ServicesAssembly>()
     private val mockStorageAssembly = mockk<StorageAssembly>()
+    private val mockCacherAssembly = mockk<CacherAssemblyImpl>()
     private val mockLogger = mockk<Logger>()
 
     @BeforeEach
     fun setup() {
         controllersAssembly =
-            ControllersAssemblyImpl(mockStorageAssembly, mockMiscAssembly, mockServicesAssembly)
+            ControllersAssemblyImpl(
+                mockStorageAssembly,
+                mockMiscAssembly,
+                mockServicesAssembly,
+                mockCacherAssembly
+            )
 
         every {
             mockMiscAssembly.logger()
@@ -244,6 +255,52 @@ internal class ControllersAssemblyTest {
             // when
             val firstResult = controllersAssembly.googleBillingPurchaser()
             val secondResult = controllersAssembly.googleBillingPurchaser()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
+    }
+
+    @Nested
+    inner class UserControllerTest {
+        private val mockUserCacher = mockk<Cacher<User?>>()
+        private val mockUserService = mockk<UserService>()
+
+        @BeforeEach
+        fun setup() {
+            every {
+                mockCacherAssembly.userCacher()
+            } returns mockUserCacher
+
+            every {
+                mockServicesAssembly.userService()
+            } returns mockUserService
+        }
+
+        @Test
+        fun `get user controller`() {
+            // given
+            val expectedResult = UserControllerImpl(
+                mockUserService,
+                mockUserCacher,
+                mockLogger
+            )
+
+            // when
+            val result = controllersAssembly.userController()
+
+            // then
+            assertThat(result).isInstanceOf(UserControllerImpl::class.java)
+            assertThat(result).isEqualToComparingFieldByField(expectedResult)
+        }
+
+        @Test
+        fun `get different user controllers`() {
+            // given
+
+            // when
+            val firstResult = controllersAssembly.userController()
+            val secondResult = controllersAssembly.userController()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)

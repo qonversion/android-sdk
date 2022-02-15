@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.user
+package com.qonversion.android.sdk.internal.user.service
 
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.dto.User
