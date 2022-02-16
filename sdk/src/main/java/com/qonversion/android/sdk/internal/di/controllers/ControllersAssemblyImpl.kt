@@ -46,6 +46,8 @@ internal class ControllersAssemblyImpl(
     override fun userController(): UserController = UserControllerImpl(
         servicesAssembly.userService(),
         cacherAssembly.userCacher(),
+        storageAssembly.userDataStorage(),
+        miscAssembly.userIdGenerator(),
         miscAssembly.logger()
     )
 

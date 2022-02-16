@@ -4,6 +4,7 @@ import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
+import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorker
 import java.util.Locale
 
@@ -20,4 +21,6 @@ internal interface MiscAssembly {
     fun appLifecycleObserver(): AppLifecycleObserver
 
     fun delayedWorker(): DelayedWorker
+
+    fun userIdGenerator(): UserIdGenerator
 }

@@ -74,6 +74,21 @@ internal class UserDataStorageTest {
         }
 
         @Test
+        fun `both original and identity ids exist`() {
+            // given
+            val testIdentityId = "test identity id"
+            val testOriginalId = "test original id"
+            userDataStorage.identityId = testIdentityId
+            userDataStorage.originalId = testOriginalId
+
+            // when
+            val result = userDataStorage.getUserId()
+
+            // then
+            assertThat(result).isEqualTo(testIdentityId)
+        }
+
+        @Test
         fun `no user id exists`() {
             // given
             userDataStorage.identityId = null

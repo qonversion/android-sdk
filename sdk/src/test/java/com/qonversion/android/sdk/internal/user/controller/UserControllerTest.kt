@@ -7,7 +7,9 @@ import com.qonversion.android.sdk.internal.cache.Cacher
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -21,10 +23,13 @@ internal class UserControllerTest {
 
     private lateinit var userController: UserControllerImpl
 
+    private val mockUserDataStorage = mockk<UserDataStorage>()
+    private val mockUserIdGenerator = mockk<UserIdGenerator>()
     private val mockUserService = mockk<UserService>()
     private val mockUserCacher = mockk<Cacher<User?>>()
     private val mockLogger = mockk<Logger>()
 
+    private val testUserId = "test user id"
     private val slotInfoLogMessage = slot<String>()
     private val slotErrorLogMessage = slot<String>()
     private val slotVerboseLogMessage = slot<String>()
@@ -32,7 +37,17 @@ internal class UserControllerTest {
 
     @BeforeEach
     fun setUp() {
-        userController = UserControllerImpl(mockUserService, mockUserCacher, mockLogger)
+        every { mockUserDataStorage.getUserId() } returns testUserId
+
+        userController = UserControllerImpl(
+            mockUserService,
+            mockUserCacher,
+            mockUserDataStorage,
+            mockUserIdGenerator,
+            mockLogger
+        )
+
+        clearMocks(mockUserDataStorage)
 
         every { mockLogger.info(capture(slotInfoLogMessage)) } just runs
         every { mockLogger.error(capture(slotErrorLogMessage)) } just runs
@@ -41,17 +56,82 @@ internal class UserControllerTest {
     }
 
     @Nested
-    @ExperimentalCoroutinesApi
-    inner class GetUserTest {
-        private val userId = "userId"
+    inner class InitTest {
 
-        @BeforeEach
-        fun setUp() {
-            every {
-                mockUserService.obtainUserId()
-            } returns userId
+        @Test
+        fun `user id exists`() {
+            // given
+            every { mockUserDataStorage.getUserId() } returns testUserId
+
+            // when
+            userController = UserControllerImpl(
+                mockUserService,
+                mockUserCacher,
+                mockUserDataStorage,
+                mockUserIdGenerator,
+                mockLogger
+            )
+
+            // then
+            verify { mockUserDataStorage.getUserId() }
+            verify(exactly = 0) {
+                mockUserIdGenerator.generate()
+                mockUserDataStorage.setOriginalUserId(any())
+            }
         }
 
+        @Test
+        fun `user id does not exist`() {
+            // given
+            every { mockUserDataStorage.getUserId() } returns null
+            every { mockUserIdGenerator.generate() } returns testUserId
+            every { mockUserDataStorage.setOriginalUserId(testUserId) } just runs
+
+            // when
+            userController = UserControllerImpl(
+                mockUserService,
+                mockUserCacher,
+                mockUserDataStorage,
+                mockUserIdGenerator,
+                mockLogger
+            )
+
+            // then
+            verifyOrder {
+                mockUserDataStorage.getUserId()
+                mockUserIdGenerator.generate()
+                mockUserDataStorage.setOriginalUserId(testUserId)
+            }
+        }
+
+        @Test
+        fun `user id is test`() {
+            // given
+            every { mockUserDataStorage.getUserId() } returns "40egafre6_e_"
+            every { mockUserIdGenerator.generate() } returns testUserId
+            every { mockUserDataStorage.setOriginalUserId(testUserId) } just runs
+
+            // when
+            userController = UserControllerImpl(
+                mockUserService,
+                mockUserCacher,
+                mockUserDataStorage,
+                mockUserIdGenerator,
+                mockLogger
+            )
+
+            // then
+            verifyOrder {
+                mockUserDataStorage.getUserId()
+                mockUserIdGenerator.generate()
+                mockUserDataStorage.setOriginalUserId(testUserId)
+            }
+        }
+    }
+
+    @Nested
+    @ExperimentalCoroutinesApi
+    inner class GetUserTest {
         @Test
         fun `get user from cache with default state`() = runTest {
             // given
@@ -79,8 +159,10 @@ internal class UserControllerTest {
                 mockUserCacher.getActual()
             } returns null
 
+            every { mockUserDataStorage.requireUserId() } returns testUserId
+
             coEvery {
-                mockUserService.getUser(userId)
+                mockUserService.getUser(testUserId)
             } returns mockUser
 
             every {
@@ -95,28 +177,22 @@ internal class UserControllerTest {
             assertThat(slotInfoLogMessage.captured).isEqualTo("User info was successfully received from API")
             coVerifyOrder {
                 mockUserCacher.getActual()
-                mockUserService.obtainUserId()
-                mockUserService.getUser(userId)
+                mockUserDataStorage.requireUserId()
+                mockUserService.getUser(testUserId)
                 userController.storeUser(mockUser)
             }
         }
 
         @Test
-        fun `get user from cache with error state`() = runTest {
+        fun `get user from cache due to service exception`() = runTest {
             // given
             userController = spyk(userController)
-
-            every {
-                mockUserCacher.getActual()
-            } returns null
             val exception = QonversionException(ErrorCode.BackendError)
-            coEvery {
-                mockUserService.getUser(userId)
-            } throws exception
 
-            every {
-                mockUserCacher.getActual(CacheState.Error)
-            } returns mockUser
+            every { mockUserCacher.getActual() } returns null
+            every { mockUserDataStorage.requireUserId() } returns testUserId
+            coEvery { mockUserService.getUser(testUserId) } throws exception
+            every { mockUserCacher.getActual(CacheState.Error) } returns mockUser
 
             // when
             val result = userController.getUser()
@@ -130,8 +206,37 @@ internal class UserControllerTest {
 
             coVerifyOrder {
                 mockUserCacher.getActual()
-                mockUserService.obtainUserId()
-                mockUserService.getUser(userId)
+                mockUserDataStorage.requireUserId()
+                mockUserService.getUser(testUserId)
+                mockLogger.error("Failed to get User from API", exception)
+                mockUserCacher.getActual(CacheState.Error)
+            }
+        }
+
+        @Test
+        fun `get user from cache due to user id exception`() = runTest {
+            // given
+            userController = spyk(userController)
+            val exception = QonversionException(ErrorCode.UserNotFound)
+
+            every { mockUserCacher.getActual() } returns null
+            every { mockUserDataStorage.requireUserId() } throws exception
+            every { mockUserCacher.getActual(CacheState.Error) } returns mockUser
+
+            // when
+            val result = userController.getUser()
+
+            // then
+            assertThat(result).isEqualTo(mockUser)
+            coVerify(exactly = 0) {
+                mockLogger.info(any())
+                userController.storeUser(any())
+                mockUserService.getUser(any())
+            }
+
+            coVerifyOrder {
+                mockUserCacher.getActual()
+                mockUserDataStorage.requireUserId()
                 mockLogger.error("Failed to get User from API", exception)
                 mockUserCacher.getActual(CacheState.Error)
             }
@@ -140,17 +245,12 @@ internal class UserControllerTest {
         @Test
         fun `user is missing`() = runTest {
             // given
-            every {
-                mockUserCacher.getActual()
-            } returns null
-
+            every { mockUserCacher.getActual() } returns null
+            every { mockUserDataStorage.requireUserId() } returns testUserId
             coEvery {
-                mockUserService.getUser(userId)
+                mockUserService.getUser(testUserId)
             } throws QonversionException(ErrorCode.BackendError)
-
-            every {
-                mockUserCacher.getActual(CacheState.Error)
-            } returns null
+            every { mockUserCacher.getActual(CacheState.Error) } returns null
 
             // when and then
             coAssertThatQonversionExceptionThrown(ErrorCode.UserInfoIsMissing) {
@@ -164,8 +264,8 @@ internal class UserControllerTest {
 
             coVerifySequence {
                 mockUserCacher.getActual()
-                mockUserService.obtainUserId()
-                mockUserService.getUser(userId)
+                mockUserDataStorage.requireUserId()
+                mockUserService.getUser(testUserId)
                 mockUserCacher.getActual(CacheState.Error)
             }
         }

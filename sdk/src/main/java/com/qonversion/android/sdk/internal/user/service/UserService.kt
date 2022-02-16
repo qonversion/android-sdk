@@ -5,14 +5,6 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 
 internal interface UserService {
 
-    fun obtainUserId(): String
-
-    fun updateCurrentUserId(id: String)
-
-    fun logoutIfNeeded(): Boolean
-
-    fun resetUser()
-
     @Throws(QonversionException::class)
     suspend fun getUser(id: String): User
 

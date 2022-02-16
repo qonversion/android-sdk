@@ -16,7 +16,9 @@ import com.qonversion.android.sdk.internal.di.services.ServicesAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.user.controller.UserControllerImpl
+import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
+import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesService
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesControllerImpl
@@ -265,16 +267,15 @@ internal class ControllersAssemblyTest {
     inner class UserControllerTest {
         private val mockUserCacher = mockk<Cacher<User?>>()
         private val mockUserService = mockk<UserService>()
+        private val mockUserDataStorage = mockk<UserDataStorage>(relaxed = true)
+        private val mockUserIdGenerator = mockk<UserIdGenerator>(relaxed = true)
 
         @BeforeEach
         fun setup() {
-            every {
-                mockCacherAssembly.userCacher()
-            } returns mockUserCacher
-
-            every {
-                mockServicesAssembly.userService()
-            } returns mockUserService
+            every { mockCacherAssembly.userCacher() } returns mockUserCacher
+            every { mockServicesAssembly.userService() } returns mockUserService
+            every { mockStorageAssembly.userDataStorage() } returns mockUserDataStorage
+            every { mockMiscAssembly.userIdGenerator() } returns mockUserIdGenerator
         }
 
         @Test
@@ -283,6 +284,8 @@ internal class ControllersAssemblyTest {
             val expectedResult = UserControllerImpl(
                 mockUserService,
                 mockUserCacher,
+                mockUserDataStorage,
+                mockUserIdGenerator,
                 mockLogger
             )
 

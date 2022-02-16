@@ -1,11 +1,9 @@
 package com.qonversion.android.sdk.internal.di.services
 
-import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.mappers.UserMapper
 import com.qonversion.android.sdk.internal.common.mappers.UserPropertiesMapper
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.network.NetworkAssembly
-import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
 import com.qonversion.android.sdk.internal.user.service.UserServiceImpl
@@ -21,12 +19,11 @@ internal class ServicesAssemblyTest {
     private lateinit var servicesAssembly: ServicesAssembly
     private val mockNetworkAssembly = mockk<NetworkAssembly>()
     private val mockMappersAssembly = mockk<MappersAssembly>()
-    private val mockStorageAssembly = mockk<StorageAssembly>()
 
     @BeforeEach
     fun setup() {
         servicesAssembly =
-            ServicesAssemblyImpl(mockMappersAssembly, mockStorageAssembly, mockNetworkAssembly)
+            ServicesAssemblyImpl(mockMappersAssembly, mockNetworkAssembly)
     }
 
     @Nested
@@ -85,7 +82,6 @@ internal class ServicesAssemblyTest {
         private val mockRequestConfigurator = mockk<RequestConfigurator>()
         private val mockApiInteractor = mockk<ApiInteractor>()
         private val mockUserMapper = mockk<UserMapper>()
-        private val mockLocalStorage = mockk<LocalStorage>()
 
         @BeforeEach
         fun setup() {
@@ -100,10 +96,6 @@ internal class ServicesAssemblyTest {
             every {
                 mockMappersAssembly.userMapper()
             } returns mockUserMapper
-
-            every {
-                mockStorageAssembly.sharedPreferencesStorage()
-            } returns mockLocalStorage
         }
 
         @Test
@@ -112,8 +104,7 @@ internal class ServicesAssemblyTest {
             val expectedResult = UserServiceImpl(
                 mockRequestConfigurator,
                 mockApiInteractor,
-                mockUserMapper,
-                mockLocalStorage
+                mockUserMapper
             )
 
             // when

@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculator
+import com.qonversion.android.sdk.internal.user.generator.UserIdGeneratorImpl
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorkerImpl
 import io.mockk.mockk
 import io.mockk.every
@@ -168,11 +169,10 @@ internal class MiscAssemblyTest {
         }
     }
 
-
     @Nested
     inner class DelayedWorkerTest {
         @Test
-        fun `get api delayed worker`() {
+        fun `get delayed worker`() {
             // given
 
             // when
@@ -189,6 +189,32 @@ internal class MiscAssemblyTest {
             // when
             val firstResult = miscAssembly.delayedWorker()
             val secondResult = miscAssembly.delayedWorker()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
+    }
+
+    @Nested
+    inner class UserIdGeneratorTest {
+        @Test
+        fun `get user id generator`() {
+            // given
+
+            // when
+            val result = miscAssembly.userIdGenerator()
+
+            // then
+            assertThat(result).isInstanceOf(UserIdGeneratorImpl::class.java)
+        }
+
+        @Test
+        fun `get different user id generators`() {
+            // given
+
+            // when
+            val firstResult = miscAssembly.userIdGenerator()
+            val secondResult = miscAssembly.userIdGenerator()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)
