@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.internal.appState
 
-import android.app.Application
-
 internal interface AppLifecycleObserver {
 
     fun isInBackground(): Boolean
 
-    fun register(application: Application)
+    fun subscribeOnAppStateChanges(listener: AppStateChangeListener)
+
+    fun unsubscribeFromAppStateChanges(listener: AppStateChangeListener)
 }

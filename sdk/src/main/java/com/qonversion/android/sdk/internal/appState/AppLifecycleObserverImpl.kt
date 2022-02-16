@@ -1,36 +1,58 @@
 package com.qonversion.android.sdk.internal.appState
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
+import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 
 internal class AppLifecycleObserverImpl : AppLifecycleObserver,
-    Application.ActivityLifecycleCallbacks {
+    LifecycleObserver {
+
+    @VisibleForTesting
+    val appStateChangeListeners = mutableSetOf<AppStateChangeListener>()
+
+    @VisibleForTesting
     var appState = AppState.Background
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+    @VisibleForTesting
+    var wasFirstForegroundFired = false
 
-    override fun onActivityStarted(activity: Activity) {
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onSwitchToForeground() {
         appState = AppState.Foreground
+
+        fireToListeners { listener -> listener.onAppForeground() }
+        if (!wasFirstForegroundFired) {
+            wasFirstForegroundFired = true
+            fireToListeners { listener -> listener.onAppFirstForeground() }
+        }
     }
 
-    override fun onActivityResumed(activity: Activity) {}
-
-    override fun onActivityPaused(activity: Activity) {}
-
-    override fun onActivityStopped(activity: Activity) {
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onSwitchToBackground() {
         appState = AppState.Background
+
+        fireToListeners { listener -> listener.onAppBackground() }
     }
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-
-    override fun onActivityDestroyed(activity: Activity) {}
 
     override fun isInBackground(): Boolean {
         return appState == AppState.Background
     }
 
-    override fun register(application: Application) {
-        application.registerActivityLifecycleCallbacks(this)
+    override fun subscribeOnAppStateChanges(listener: AppStateChangeListener) {
+        synchronized(appStateChangeListeners) {
+            appStateChangeListeners.add(listener)
+        }
+    }
+
+    override fun unsubscribeFromAppStateChanges(listener: AppStateChangeListener) {
+        synchronized(appStateChangeListeners) {
+            appStateChangeListeners.remove(listener)
+        }
+    }
+
+    @VisibleForTesting
+    fun fireToListeners(block: (listener: AppStateChangeListener) -> Unit) {
+        appStateChangeListeners.forEach(block)
     }
 }

@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.di.storage
 
-import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
@@ -16,12 +15,12 @@ import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageImpl
 
 internal class StorageAssemblyImpl(
-    private val application: Application,
+    private val context: Context,
     private val mappersAssembly: MappersAssembly,
     private val miscAssembly: MiscAssembly
 ) : StorageAssembly {
     override fun sharedPreferences(): SharedPreferences =
-        application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     override fun sharedPreferencesStorage(): LocalStorage =
         SharedPreferencesStorage(sharedPreferences())

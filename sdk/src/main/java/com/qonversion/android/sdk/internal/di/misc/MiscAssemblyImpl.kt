@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.di.misc
 
-import android.app.Application
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
@@ -16,7 +16,6 @@ import java.util.Locale
 import kotlin.random.Random
 
 internal class MiscAssemblyImpl(
-    private val application: Application,
     private val internalConfig: InternalConfig
 ) : MiscAssembly {
 
@@ -31,7 +30,7 @@ internal class MiscAssemblyImpl(
 
     override fun appLifecycleObserver(): AppLifecycleObserver {
         val instance = AppLifecycleObserverImpl()
-        application.registerActivityLifecycleCallbacks(instance)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(instance)
         return instance
     }
 
