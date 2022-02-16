@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
-import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
 /**
  * The public API of the Qonversion SDK.
@@ -117,12 +117,12 @@ interface Qonversion {
      * should live for the whole lifetime of the application.
      *
      * You may set entitlements listener both *after* Qonversion SDK initializing
-     * with [Qonversion.setEntitlementUpdatesListener] and *while* Qonversion initializing
+     * with [Qonversion.setEntitlementsUpdateListener] and *while* Qonversion initializing
      * with [Qonversion.initialize]
      *
-     * @param entitlementUpdatesListener listener to be called when entitlements update.
+     * @param entitlementsUpdateListener listener to be called when entitlements update.
      */
-    fun setEntitlementUpdatesListener(entitlementUpdatesListener: EntitlementUpdatesListener)
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
 
     /**
      * Add property value for the current user to use it then for segmentation or analytics

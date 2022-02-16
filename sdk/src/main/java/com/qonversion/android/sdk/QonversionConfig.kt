@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.utils.isDebuggable
-import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
 private const val DEFAULT_LOG_TAG = "Qonversion"
 
@@ -34,7 +34,7 @@ class QonversionConfig internal constructor(
     internal val loggerConfig: LoggerConfig,
     internal val networkConfig: NetworkConfig,
     internal val cacheLifetime: CacheLifetime,
-    internal val entitlementUpdatesListener: EntitlementUpdatesListener?
+    internal val entitlementsUpdateListener: EntitlementsUpdateListener?
 ) {
 
     /**
@@ -60,7 +60,7 @@ class QonversionConfig internal constructor(
         internal var logTag = DEFAULT_LOG_TAG
         internal var cacheLifetime = CacheLifetime.ThreeDays
         internal var shouldConsumePurchases = true
-        internal var entitlementUpdatesListener: EntitlementUpdatesListener? = null
+        internal var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
         /**
          * Set current application [Environment]. Used to distinguish sandbox and production users.
@@ -134,11 +134,11 @@ class QonversionConfig internal constructor(
          * Else you can lose some important updates. Also, please, take into account that this listener
          * should live for the whole lifetime of the application.
          *
-         * @param entitlementUpdatesListener listener to be called when entitlements update.
+         * @param entitlementsUpdateListener listener to be called when entitlements update.
          * @return builder instance for chain calls.
          */
-        fun setEntitlementUpdatesListener(entitlementUpdatesListener: EntitlementUpdatesListener): Builder = apply {
-            this.entitlementUpdatesListener = entitlementUpdatesListener
+        fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener): Builder = apply {
+            this.entitlementsUpdateListener = entitlementsUpdateListener
         }
 
         /**
@@ -171,7 +171,7 @@ class QonversionConfig internal constructor(
                 loggerConfig,
                 networkConfig,
                 cacheLifetime,
-                entitlementUpdatesListener
+                entitlementsUpdateListener
             )
         }
     }

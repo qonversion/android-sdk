@@ -20,7 +20,7 @@ import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.user.controller.UserController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
-import com.qonversion.android.sdk.listeners.EntitlementUpdatesListener
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -55,7 +55,7 @@ internal class QonversionInternalTest {
     private val mockLogLevel = mockk<LogLevel>()
     private val mockLogTag = "log tag"
     private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
-    private val mockEntitlementUpdatesListener = mockk<EntitlementUpdatesListener>()
+    private val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
     private val mockShouldConsumePurchases = false
     private val mockBackgroundInternalCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockPrimaryConfig =
@@ -80,7 +80,7 @@ internal class QonversionInternalTest {
             mockLoggerConfig,
             mockNetworkConfig,
             mockBackgroundCacheLifetime,
-            mockEntitlementUpdatesListener
+            mockEntitlementsUpdateListener
         )
     }
 
@@ -99,8 +99,8 @@ internal class QonversionInternalTest {
                 mockBackgroundInternalCacheLifetime,
                 InternalCacheLifetime.FiveMin
             )
-            val slotWeakReference = slot<WeakReference<EntitlementUpdatesListener?>>()
-            every { mockInternalConfig.weakEntitlementUpdatesListener = capture(slotWeakReference) } just runs
+            val slotWeakReference = slot<WeakReference<EntitlementsUpdateListener?>>()
+            every { mockInternalConfig.weakEntitlementsUpdateListener = capture(slotWeakReference) } just runs
 
             // when
             qonversionInternal =
@@ -114,7 +114,7 @@ internal class QonversionInternalTest {
                 mockInternalConfig.loggerConfig = mockLoggerConfig
                 mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
             }
-            assertThat(slotWeakReference.captured.get()).isSameAs(mockEntitlementUpdatesListener)
+            assertThat(slotWeakReference.captured.get()).isSameAs(mockEntitlementsUpdateListener)
         }
     }
 
@@ -207,12 +207,12 @@ internal class QonversionInternalTest {
         @Test
         fun `set entitlements listener`() {
             // given
-            val newEntitlementsListener = mockk<EntitlementUpdatesListener>()
-            val slotWeakReference = slot<WeakReference<EntitlementUpdatesListener?>>()
-            every { mockInternalConfig.weakEntitlementUpdatesListener = capture(slotWeakReference) } just runs
+            val newEntitlementsListener = mockk<EntitlementsUpdateListener>()
+            val slotWeakReference = slot<WeakReference<EntitlementsUpdateListener?>>()
+            every { mockInternalConfig.weakEntitlementsUpdateListener = capture(slotWeakReference) } just runs
 
             // when
-            qonversionInternal.setEntitlementUpdatesListener(newEntitlementsListener)
+            qonversionInternal.setEntitlementsUpdateListener(newEntitlementsListener)
 
             // then
             assertThat(slotWeakReference.captured.get()).isSameAs(newEntitlementsListener)
