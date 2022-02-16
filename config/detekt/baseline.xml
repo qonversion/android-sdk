@@ -23,7 +23,7 @@
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongParameterList:CacherImpl.kt$CacherImpl$( private val originalKey: String, private val userDataProvider: UserDataProvider, private val cacheMapper: CacheMapper&lt;T>, private val storage: LocalStorage, private val appLifecycleObserver: AppLifecycleObserver, private val cacheLifetimeConfigProvider: CacheLifetimeConfigProvider, logger: Logger )</ID>
     <ID>LongParameterList:DependenciesAssembly.kt$DependenciesAssembly$( @VisibleForTesting val mappersAssembly: MappersAssembly, @VisibleForTesting val storageAssembly: StorageAssembly, @VisibleForTesting val networkAssembly: NetworkAssembly, @VisibleForTesting val miscAssembly: MiscAssembly, @VisibleForTesting val servicesAssembly: ServicesAssembly, @VisibleForTesting val controllersAssembly: ControllersAssembly, @VisibleForTesting val cacherAssembly: CacherAssembly )</ID>
-    <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val storeConfig: StoreConfig, internal val loggerConfig: LoggerConfig, internal val networkConfig: NetworkConfig, internal val cacheLifetime: CacheLifetime, internal val entitlementUpdatesListener: EntitlementUpdatesListener? )</ID>
+    <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val storeConfig: StoreConfig, internal val loggerConfig: LoggerConfig, internal val networkConfig: NetworkConfig, internal val cacheLifetime: CacheLifetime, internal val entitlementsUpdateListener: EntitlementsUpdateListener? )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
@@ -81,7 +81,7 @@
     <ID>MatchingDeclarationName:HeaderBuilderImplTest.kt$HeaderBuilderTest</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -> "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -> "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:EntitlementUpdatesListener.kt$EntitlementUpdatesListener$*</ID>
+    <ID>MaxLineLength:EntitlementsUpdateListener.kt$EntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:GoogleBillingDataFetcherTest.kt$GoogleBillingDataFetcherTest.QueryPurchasesHistoryTest$verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$private</ID>
     <ID>MaxLineLength:JsonSerializerTest.kt$JsonSerializerTest$"""{"field1": ["value1", "value2"]}""" to mapOf("field1" to listOf("value1", "value2"))</ID>
