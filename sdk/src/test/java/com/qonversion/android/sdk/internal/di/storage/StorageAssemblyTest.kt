@@ -212,7 +212,7 @@ internal class StorageAssemblyTest {
         }
 
         @Test
-        fun `get user data provider`() {
+        fun `get user data storage`() {
             // given
             val expectedResult = UserDataStorageImpl(mockLocalStorage)
 
@@ -225,7 +225,7 @@ internal class StorageAssemblyTest {
         }
 
         @Test
-        fun `get different user data providers`() {
+        fun `get different user data storages`() {
             // given
 
             // when

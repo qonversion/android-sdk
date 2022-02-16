@@ -177,6 +177,7 @@ internal class UserControllerTest {
             assertThat(slotInfoLogMessage.captured).isEqualTo("User info was successfully received from API")
             coVerifyOrder {
                 mockUserCacher.getActual()
+                mockUserDataStorage.requireUserId()
                 mockUserService.getUser(testUserId)
                 userController.storeUser(mockUser)
             }
