@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.user.controller.UserController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import java.lang.ref.WeakReference
 
 internal class QonversionInternal(
     config: QonversionConfig,
@@ -41,6 +43,7 @@ internal class QonversionInternal(
         internalConfig.cacheLifetimeConfig = CacheLifetimeConfig(internalBackgroundCacheLifetime)
 
         internalConfig.loggerConfig = config.loggerConfig
+        internalConfig.weakEntitlementsUpdateListener = WeakReference(config.entitlementsUpdateListener)
     }
 
     override fun setEnvironment(environment: Environment) {
@@ -59,6 +62,10 @@ internal class QonversionInternal(
         val internalCacheLifetime = InternalCacheLifetime.from(cacheLifetime)
         internalConfig.cacheLifetimeConfig =
             internalConfig.cacheLifetimeConfig.copy(backgroundCacheLifetime = internalCacheLifetime)
+    }
+
+    override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+        internalConfig.weakEntitlementsUpdateListener = WeakReference(entitlementsUpdateListener)
     }
 
     override fun finish() {
