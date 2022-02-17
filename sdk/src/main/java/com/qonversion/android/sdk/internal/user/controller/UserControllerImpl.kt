@@ -97,7 +97,7 @@ internal class UserControllerImpl(
                     }
                 }
             }
-        } catch (exception: Exception) {
+        } catch (exception: QonversionException) {
             logger.error("Requesting user on app first foreground failed", exception)
         }
     }
