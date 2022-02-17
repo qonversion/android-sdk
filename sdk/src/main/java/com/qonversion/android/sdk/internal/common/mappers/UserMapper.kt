@@ -34,8 +34,8 @@ internal class UserMapper(
 
         return User(
             id,
-            entitlements.filterNotNull().toSet(),
-            purchases.filterNotNull().toSet(),
+            entitlements.filterNotNull(),
+            purchases.filterNotNull(),
             createdDate,
             lastOnlineDate
         )

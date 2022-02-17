@@ -18,5 +18,5 @@ fun interface EntitlementsUpdateListener {
      *
      * @param entitlements all the current entitlements of the user.
      */
-    fun onEntitlementsUpdated(entitlements: Set<Entitlement>)
+    fun onEntitlementsUpdated(entitlements: List<Entitlement>)
 }
