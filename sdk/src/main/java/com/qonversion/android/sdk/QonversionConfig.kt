@@ -46,7 +46,7 @@ class QonversionConfig internal constructor(
      * You can call them sequentially and call [build] finally to get the configuration instance.
      *
      * @constructor creates an instance of a builder
-     * @param context the current context (no matter application or activity)
+     * @param context the current context
      * @param projectKey your Project Key from Qonversion Dashboard
      * @param launchMode launch mode of the Qonversion SDK todo add link
      * @param store the store used for purchases (only [Store.GooglePlay] is supported for now)
