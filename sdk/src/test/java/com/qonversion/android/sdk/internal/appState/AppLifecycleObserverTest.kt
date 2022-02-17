@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -21,7 +22,57 @@ class AppLifecycleObserverTest {
     }
 
     @Nested
-    inner class ActivityCallbackTest {
+    inner class LifecycleObserverTest {
+
+        private val listener = mockk<AppStateChangeListener>(relaxed = true)
+
+        @BeforeEach
+        fun setUp() {
+            appLifecycleObserver.appStateChangeListeners.add(WeakReference(listener))
+        }
+
+        @Test
+        fun `on app switched to foreground first time`() {
+            // given
+            appLifecycleObserver.appState = AppState.Background
+            appLifecycleObserver.isFirstForegroundPassed = false
+
+            // when
+            appLifecycleObserver.onSwitchToForeground()
+
+            // then
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Foreground)
+            assertThat(appLifecycleObserver.isFirstForegroundPassed).isTrue
+            verify { listener.onAppForeground(true) }
+        }
+
+        @Test
+        fun `on app switched to foreground`() {
+            // given
+            appLifecycleObserver.appState = AppState.Background
+            appLifecycleObserver.isFirstForegroundPassed = true
+
+            // when
+            appLifecycleObserver.onSwitchToForeground()
+
+            // then
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Foreground)
+            assertThat(appLifecycleObserver.isFirstForegroundPassed).isTrue
+            verify { listener.onAppForeground(false) }
+        }
+
+        @Test
+        fun `on app switched to background`() {
+            // given
+            appLifecycleObserver.appState = AppState.Foreground
+
+            // when
+            appLifecycleObserver.onSwitchToBackground()
+
+            // then
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
+            verify { listener.onAppBackground() }
+        }
     }
 
     @Nested
