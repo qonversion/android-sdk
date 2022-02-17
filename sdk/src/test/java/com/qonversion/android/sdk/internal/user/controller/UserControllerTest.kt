@@ -2,11 +2,13 @@ package com.qonversion.android.sdk.internal.user.controller
 
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
 import com.qonversion.android.sdk.dto.User
+import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.cache.CacheState
 import com.qonversion.android.sdk.internal.cache.Cacher
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
 import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
 import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
@@ -27,6 +29,8 @@ internal class UserControllerTest {
     private val mockUserIdGenerator = mockk<UserIdGenerator>()
     private val mockUserService = mockk<UserService>()
     private val mockUserCacher = mockk<Cacher<User?>>()
+    private val mockEntitlementsUpdateListenerProvider = mockk<EntitlementsUpdateListenerProvider>()
+    private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
     private val mockLogger = mockk<Logger>()
 
     private val testUserId = "test user id"
@@ -38,12 +42,15 @@ internal class UserControllerTest {
     @BeforeEach
     fun setUp() {
         every { mockUserDataStorage.getUserId() } returns testUserId
+        every { mockAppLifecycleObserver.addListener(any()) } just runs
 
         userController = UserControllerImpl(
             mockUserService,
             mockUserCacher,
             mockUserDataStorage,
+            mockEntitlementsUpdateListenerProvider,
             mockUserIdGenerator,
+            mockAppLifecycleObserver,
             mockLogger
         )
 
@@ -64,16 +71,13 @@ internal class UserControllerTest {
             every { mockUserDataStorage.getUserId() } returns testUserId
 
             // when
-            userController = UserControllerImpl(
-                mockUserService,
-                mockUserCacher,
-                mockUserDataStorage,
-                mockUserIdGenerator,
-                mockLogger
-            )
+            userController = createController()
 
             // then
-            verify { mockUserDataStorage.getUserId() }
+            verify {
+                mockAppLifecycleObserver.addListener(userController)
+                mockUserDataStorage.getUserId()
+            }
             verify(exactly = 0) {
                 mockUserIdGenerator.generate()
                 mockUserDataStorage.setOriginalUserId(any())
@@ -88,16 +92,11 @@ internal class UserControllerTest {
             every { mockUserDataStorage.setOriginalUserId(testUserId) } just runs
 
             // when
-            userController = UserControllerImpl(
-                mockUserService,
-                mockUserCacher,
-                mockUserDataStorage,
-                mockUserIdGenerator,
-                mockLogger
-            )
+            userController = createController()
 
             // then
             verifyOrder {
+                mockAppLifecycleObserver.addListener(userController)
                 mockUserDataStorage.getUserId()
                 mockUserIdGenerator.generate()
                 mockUserDataStorage.setOriginalUserId(testUserId)
@@ -112,21 +111,26 @@ internal class UserControllerTest {
             every { mockUserDataStorage.setOriginalUserId(testUserId) } just runs
 
             // when
-            userController = UserControllerImpl(
-                mockUserService,
-                mockUserCacher,
-                mockUserDataStorage,
-                mockUserIdGenerator,
-                mockLogger
-            )
+            userController = createController()
 
             // then
             verifyOrder {
+                mockAppLifecycleObserver.addListener(userController)
                 mockUserDataStorage.getUserId()
                 mockUserIdGenerator.generate()
                 mockUserDataStorage.setOriginalUserId(testUserId)
             }
         }
+
+        private fun createController() = UserControllerImpl(
+            mockUserService,
+            mockUserCacher,
+            mockUserDataStorage,
+            mockEntitlementsUpdateListenerProvider,
+            mockUserIdGenerator,
+            mockAppLifecycleObserver,
+            mockLogger
+        )
     }
 
     @Nested
