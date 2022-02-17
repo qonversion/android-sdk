@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.di.network
 
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.InternalConfig
-import com.qonversion.android.sdk.internal.common.BASE_API_URL
+import com.qonversion.android.sdk.internal.common.API_URL
 import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.misc.MiscAssembly
 import com.qonversion.android.sdk.internal.di.storage.StorageAssembly
@@ -27,7 +27,7 @@ internal class NetworkAssemblyImpl(
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
         headerBuilder(),
-        BASE_API_URL,
+        API_URL,
         internalConfig,
         internalConfig
     )

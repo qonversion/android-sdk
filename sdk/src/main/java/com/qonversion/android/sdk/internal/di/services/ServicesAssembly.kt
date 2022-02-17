@@ -8,4 +8,6 @@ internal interface ServicesAssembly {
     fun userPropertiesService(): UserPropertiesService
 
     fun userService(): UserService
+
+    fun userServiceDecorator(): UserService
 }

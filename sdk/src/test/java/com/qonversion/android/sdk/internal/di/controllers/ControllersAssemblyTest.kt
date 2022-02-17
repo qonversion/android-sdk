@@ -1,6 +1,8 @@
 package com.qonversion.android.sdk.internal.di.controllers
 
 import com.qonversion.android.sdk.dto.User
+import com.qonversion.android.sdk.internal.InternalConfig
+import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
@@ -40,6 +42,7 @@ internal class ControllersAssemblyTest {
     private val mockStorageAssembly = mockk<StorageAssembly>()
     private val mockCacherAssembly = mockk<CacherAssemblyImpl>()
     private val mockLogger = mockk<Logger>()
+    private val mockInternalConfig = mockk<InternalConfig>()
 
     @BeforeEach
     fun setup() {
@@ -48,7 +51,8 @@ internal class ControllersAssemblyTest {
                 mockStorageAssembly,
                 mockMiscAssembly,
                 mockServicesAssembly,
-                mockCacherAssembly
+                mockCacherAssembly,
+                mockInternalConfig
             )
 
         every {
@@ -269,6 +273,7 @@ internal class ControllersAssemblyTest {
         private val mockUserService = mockk<UserService>()
         private val mockUserDataStorage = mockk<UserDataStorage>(relaxed = true)
         private val mockUserIdGenerator = mockk<UserIdGenerator>(relaxed = true)
+        private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
 
         @BeforeEach
         fun setup() {
@@ -276,6 +281,7 @@ internal class ControllersAssemblyTest {
             every { mockServicesAssembly.userService() } returns mockUserService
             every { mockStorageAssembly.userDataStorage() } returns mockUserDataStorage
             every { mockMiscAssembly.userIdGenerator() } returns mockUserIdGenerator
+            every { mockMiscAssembly.appLifecycleObserver() } returns mockAppLifecycleObserver
         }
 
         @Test
@@ -285,7 +291,9 @@ internal class ControllersAssemblyTest {
                 mockUserService,
                 mockUserCacher,
                 mockUserDataStorage,
+                mockInternalConfig,
                 mockUserIdGenerator,
+                mockAppLifecycleObserver,
                 mockLogger
             )
 

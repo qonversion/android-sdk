@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.dto.Entitlement
  * or set directly to the current [Qonversion](com.qonversion.android.sdk.Qonversion) instance
  * via [Qonversion.setEntitlementsUpdateListener](com.qonversion.android.sdk.Qonversion.setEntitlementsUpdateListener).
  */
-interface EntitlementsUpdateListener {
+fun interface EntitlementsUpdateListener {
 
     /**
      * Called when user entitlements are updated asynchronously. For example when the purchase is made

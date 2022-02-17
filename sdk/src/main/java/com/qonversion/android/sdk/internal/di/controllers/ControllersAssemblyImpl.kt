@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.di.controllers
 
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.billing.PurchasesListener
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumer
 import com.qonversion.android.sdk.internal.billing.consumer.GoogleBillingConsumerImpl
@@ -24,6 +25,7 @@ internal class ControllersAssemblyImpl(
     private val miscAssembly: MiscAssembly,
     private val servicesAssembly: ServicesAssembly,
     private val cacherAssembly: CacherAssembly,
+    private val internalConfig: InternalConfig
 ) : ControllersAssembly {
     override fun userPropertiesController(): UserPropertiesController =
         UserPropertiesControllerImpl(
@@ -44,10 +46,12 @@ internal class ControllersAssemblyImpl(
         )
 
     override fun userController(): UserController = UserControllerImpl(
-        servicesAssembly.userService(),
+        servicesAssembly.userServiceDecorator(),
         cacherAssembly.userCacher(),
         storageAssembly.userDataStorage(),
+        internalConfig,
         miscAssembly.userIdGenerator(),
+        miscAssembly.appLifecycleObserver(),
         miscAssembly.logger()
     )
 

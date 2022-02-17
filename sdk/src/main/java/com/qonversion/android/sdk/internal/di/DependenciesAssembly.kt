@@ -53,7 +53,8 @@ internal class DependenciesAssembly(
                     storageAssembly,
                     miscAssembly,
                     servicesAssembly,
-                    cacherAssembly
+                    cacherAssembly,
+                    internalConfig
                 )
 
             return DependenciesAssembly(
