@@ -8,17 +8,24 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@ExperimentalCoroutinesApi
 internal class UserServiceDecoratorTest {
 
     private val mockUserService = mockk<UserService>()
     private val mockUser = mockk<User>()
+    private val testUserId = "test id"
     private lateinit var userServiceDecorator: UserServiceDecorator
 
     @BeforeEach
@@ -26,11 +33,59 @@ internal class UserServiceDecoratorTest {
         userServiceDecorator = UserServiceDecorator(mockUserService)
     }
 
-    @ExperimentalCoroutinesApi
     @Nested
     inner class GetUserTest {
 
-        private val testUserId = "test id"
+        private val mockUserDeferred = mockk<CompletableDeferred<User>>(relaxed = true)
+
+        @BeforeEach
+        fun setUp() {
+            userServiceDecorator = spyk(userServiceDecorator)
+        }
+
+        @Test
+        fun `no concurrent request exists`() = runTest {
+            // given
+            val loadingTime = 10_000L
+            userServiceDecorator.userLoadingDeferred = null
+            coEvery { userServiceDecorator.loadOrCreateUser(testUserId) } coAnswers {
+                delay(loadingTime)
+                mockUser
+            }
+
+            // when
+            val result = userServiceDecorator.getUser(testUserId)
+
+            // then
+            assertThat(userServiceDecorator.userLoadingDeferred).isNotNull
+            coVerify { userServiceDecorator.loadOrCreateUser(testUserId) }
+
+            // replace deferred with mock one to be able to verify `complete` call
+            userServiceDecorator.userLoadingDeferred = mockUserDeferred
+
+            advanceTimeBy(loadingTime)
+            verify { mockUserDeferred.complete(mockUser) }
+            assertThat(userServiceDecorator.userLoadingDeferred).isNull()
+            assertThat(result).isSameAs(mockUser)
+        }
+
+        @Test
+        fun `concurrent request exists`() = runTest {
+            // given
+            userServiceDecorator.userLoadingDeferred = mockUserDeferred
+            coEvery { mockUserDeferred.await() } returns mockUser
+
+            // when
+            val result = userServiceDecorator.getUser(testUserId)
+
+            // then
+            coVerify(exactly = 0) { userServiceDecorator.loadOrCreateUser(any()) }
+            assertThat(result).isSameAs(mockUser)
+        }
+    }
+
+    @Nested
+    inner class LoadOrCreateUserTest {
 
         @Test
         fun `user exists`() = runTest {
@@ -38,7 +93,7 @@ internal class UserServiceDecoratorTest {
             coEvery { mockUserService.getUser(testUserId) } returns mockUser
 
             // when
-            val user = userServiceDecorator.getUser(testUserId)
+            val user = userServiceDecorator.loadOrCreateUser(testUserId)
 
             // then
             coVerify { mockUserService.getUser(testUserId) }
@@ -55,7 +110,7 @@ internal class UserServiceDecoratorTest {
             coEvery { mockUserService.createUser(testUserId) } returns mockUser
 
             // when
-            val user = userServiceDecorator.getUser(testUserId)
+            val user = userServiceDecorator.loadOrCreateUser(testUserId)
 
             // then
             coVerifyOrder {
@@ -73,7 +128,7 @@ internal class UserServiceDecoratorTest {
 
             // when
             val e = coAssertThatQonversionExceptionThrown {
-                userServiceDecorator.getUser(testUserId)
+                userServiceDecorator.loadOrCreateUser(testUserId)
             }
 
             // then

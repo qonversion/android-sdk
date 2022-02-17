@@ -10,7 +10,8 @@ internal class UserServiceDecorator(
     private val userService: UserService
 ) : UserService by userService {
 
-    private var userLoadingDeferred: CompletableDeferred<User>? = null
+    @VisibleForTesting
+    var userLoadingDeferred: CompletableDeferred<User>? = null
 
     override suspend fun getUser(id: String): User {
         return userLoadingDeferred?.await() ?: run {
