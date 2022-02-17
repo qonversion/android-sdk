@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "11599271839",
+    "firebase_url": "https://qonversion-sample-app.firebaseio.com",
+    "project_id": "qonversion-sample-app",
+    "storage_bucket": "qonversion-sample-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11599271839:android:134918dd6bba6f6970cfaa",
+        "android_client_info": {
+          "package_name": "com.qonversion.sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11599271839-80scbffkjmh7171bjq26us23m7beda98.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.qonversion.sample",
+            "certificate_hash": "95dc3a3a1565f800edf4029a5399b0cf5c5ac087"
+          }
+        },
+        {
+          "client_id": "11599271839-8qigpcp0uepdo53grbaesbgjgdf2u34j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.qonversion.sample",
+            "certificate_hash": "6a66b4f224c69919689b6dd44a7805a664ab3778"
+          }
+        },
+        {
+          "client_id": "11599271839-jg1njos9hp2d07jg7d3oqi523io0pdr6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClJuW1Z3_lUnvnsCtjDl-P2vgTLMK39OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11599271839-jg1njos9hp2d07jg7d3oqi523io0pdr6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "11599271839-qalspkpqrihnkl1e12be731tgmre5uop.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.qonversion.sample"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

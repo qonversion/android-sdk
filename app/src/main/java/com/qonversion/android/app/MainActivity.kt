@@ -1,5 +1,7 @@
 package com.qonversion.android.app
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -20,5 +22,11 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.findNavController()
 
         bottom_nav.setupWithNavController(navController)
+    }
+
+    companion object {
+        fun getCallingIntent(context: Context): Intent {
+            return Intent(context, MainActivity::class.java)
+        }
     }
 }

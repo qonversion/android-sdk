@@ -397,37 +397,44 @@ class QUserPropertiesManagerTest {
     }
 
     @Test
-    fun `should send properties with delay when onAppForeground called on foreground`() {
+    fun `on app foreground when properties is not empty`() {
         // given
-        val handlerDelay = (minDelay * 1000).toLong()
-        mockPostDelayed(handlerDelay)
+        propertiesManager = spyk(propertiesManager)
+        every { propertiesManager.sendPropertiesWithDelay(minDelay) } just runs
 
-        Qonversion.appState = AppState.Foreground
-
-        every {
-            propertiesManager.forceSendProperties()
-        } just Runs
+        mockPropertiesStorage(mapOf("testKey" to "testValue"))
 
         // when
         propertiesManager.onAppForeground()
 
         // then
-        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
-        assertEquals(true, isSendingScheduled)
-
-        verifyOrder {
-            mockHandler.postDelayed(any(), handlerDelay)
-            propertiesManager.forceSendProperties()
+        verify(exactly = 1) {
+            propertiesManager.sendPropertiesWithDelay(minDelay)
         }
     }
 
     @Test
-    fun `should not send properties with delay when onAppForeground called on background`() {
+    fun `on app foreground when properties is empty`() {
         // given
-        Qonversion.appState = AppState.Background
+        propertiesManager = spyk(propertiesManager)
+        mockPropertiesStorage(emptyMap())
 
         // when
         propertiesManager.onAppForeground()
+
+        verify(exactly = 0) {
+            propertiesManager.sendPropertiesWithDelay(any())
+        }
+    }
+
+    @Test
+    fun `send properties with delay on background`() {
+        // given
+        Qonversion.appState = AppState.Background
+        val mockDelay = 10
+
+        // when
+        propertiesManager.sendPropertiesWithDelay(mockDelay)
 
         // then
         val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
@@ -435,6 +442,31 @@ class QUserPropertiesManagerTest {
 
         verify(exactly = 0) {
             mockHandler.postDelayed(any(), any())
+            propertiesManager.forceSendProperties()
+        }
+    }
+
+    @Test
+    fun `send properties with delay on foreground`() {
+        // given
+        Qonversion.appState = AppState.Foreground
+
+        val handlerDelay = (minDelay * 1000).toLong()
+        mockPostDelayed(handlerDelay)
+
+        every {
+            propertiesManager.forceSendProperties()
+        } just Runs
+
+        // when
+        propertiesManager.sendPropertiesWithDelay(minDelay)
+
+        // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(true, isSendingScheduled)
+
+        verifyOrder {
+            mockHandler.postDelayed(any(), handlerDelay)
             propertiesManager.forceSendProperties()
         }
     }
