@@ -31,11 +31,9 @@ internal class UserControllerImpl(
     userIdGenerator: UserIdGenerator,
     appLifecycleObserver: AppLifecycleObserver,
     logger: Logger,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
+    private val userRequestMutex: Mutex = Mutex()
 ) : BaseClass(logger), UserController, AppStateChangeListener {
-
-    @VisibleForTesting
-    val userRequestMutex = Mutex()
 
     init {
         appLifecycleObserver.subscribeOnAppStateChanges(this)
@@ -74,7 +72,11 @@ internal class UserControllerImpl(
         }
     }
 
-    override fun onAppFirstForeground() {
+    override fun onAppForeground(isFirst: Boolean) {
+        if (!isFirst) {
+            return
+        }
+
         if (!userRequestMutex.isLocked) {
             scope.launch {
                 if (userCacher.getActual() !== null) {
@@ -84,7 +86,7 @@ internal class UserControllerImpl(
                 val currentlyStoredUser = userCacher.get()
                 val newUser = try {
                     getUser()
-                } catch (exception: QonversionException) {
+                } catch (_: QonversionException) {
                     null
                 }
 

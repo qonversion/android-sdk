@@ -4,28 +4,26 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import java.lang.ref.WeakReference
 
 internal class AppLifecycleObserverImpl : AppLifecycleObserver,
     LifecycleObserver {
 
     @VisibleForTesting
-    val appStateChangeListeners = mutableSetOf<AppStateChangeListener>()
+    val appStateChangeListeners = mutableSetOf<WeakReference<AppStateChangeListener>>()
 
     @VisibleForTesting
     var appState = AppState.Background
 
     @VisibleForTesting
-    var wasFirstForegroundFired = false
+    var isFirstForegroundPassed = false
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onSwitchToForeground() {
         appState = AppState.Foreground
 
-        fireToListeners { listener -> listener.onAppForeground() }
-        if (!wasFirstForegroundFired) {
-            wasFirstForegroundFired = true
-            fireToListeners { listener -> listener.onAppFirstForeground() }
-        }
+        fireToListeners { listener -> listener.onAppForeground(!isFirstForegroundPassed) }
+        isFirstForegroundPassed = true
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -41,18 +39,20 @@ internal class AppLifecycleObserverImpl : AppLifecycleObserver,
 
     override fun subscribeOnAppStateChanges(listener: AppStateChangeListener) {
         synchronized(appStateChangeListeners) {
-            appStateChangeListeners.add(listener)
+            appStateChangeListeners.add(WeakReference(listener))
         }
     }
 
     override fun unsubscribeFromAppStateChanges(listener: AppStateChangeListener) {
         synchronized(appStateChangeListeners) {
-            appStateChangeListeners.remove(listener)
+            appStateChangeListeners.removeAll { it.get() === listener }
         }
     }
 
     @VisibleForTesting
     fun fireToListeners(block: (listener: AppStateChangeListener) -> Unit) {
-        appStateChangeListeners.forEach(block)
+        appStateChangeListeners
+            .mapNotNull { it.get() }
+            .forEach(block)
     }
 }
