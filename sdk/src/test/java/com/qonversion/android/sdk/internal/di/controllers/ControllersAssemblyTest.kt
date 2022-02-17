@@ -273,12 +273,12 @@ internal class ControllersAssemblyTest {
         private val mockUserService = mockk<UserService>()
         private val mockUserDataStorage = mockk<UserDataStorage>(relaxed = true)
         private val mockUserIdGenerator = mockk<UserIdGenerator>(relaxed = true)
-        private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
+        private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>(relaxed = true)
 
         @BeforeEach
         fun setup() {
             every { mockCacherAssembly.userCacher() } returns mockUserCacher
-            every { mockServicesAssembly.userService() } returns mockUserService
+            every { mockServicesAssembly.userServiceDecorator() } returns mockUserService
             every { mockStorageAssembly.userDataStorage() } returns mockUserDataStorage
             every { mockMiscAssembly.userIdGenerator() } returns mockUserIdGenerator
             every { mockMiscAssembly.appLifecycleObserver() } returns mockAppLifecycleObserver
@@ -302,7 +302,13 @@ internal class ControllersAssemblyTest {
 
             // then
             assertThat(result).isInstanceOf(UserControllerImpl::class.java)
-            assertThat(result).isEqualToComparingFieldByField(expectedResult)
+            assertThat(result).isEqualToComparingOnlyGivenFields(
+                expectedResult,
+                "userService",
+                "userCacher",
+                "userDataStorage",
+                "entitlementsUpdateListenerProvider"
+            )
         }
 
         @Test
