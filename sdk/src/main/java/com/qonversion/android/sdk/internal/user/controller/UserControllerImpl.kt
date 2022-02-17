@@ -72,33 +72,32 @@ internal class UserControllerImpl(
             return
         }
 
-        try {
-            scope.launch {
+        scope.launch {
+            try {
                 if (userCacher.getActual() !== null) {
                     return@launch
                 }
 
-                val newUser = try {
-                    val userId = userDataStorage.requireUserId()
-                    userService.getUser(userId)
-                } catch (_: QonversionException) {
-                    null
-                }
-
-                newUser?.let {
-                    val currentlyStoredUser = userCacher.get()
-                    storeUser(it)
-                    if (it.entitlements != currentlyStoredUser?.entitlements) {
-                        withContext(Dispatchers.Main) {
-                            entitlementsUpdateListenerProvider
-                                .entitlementsUpdateListener
-                                ?.onEntitlementsUpdated(it.entitlements)
-                        }
-                    }
-                }
+                val userId = userDataStorage.requireUserId()
+                val newUser = userService.getUser(userId)
+                handleNewUserInfo(newUser)
+            } catch (exception: QonversionException) {
+                logger.error("Requesting user on app first foreground failed", exception)
             }
-        } catch (exception: QonversionException) {
-            logger.error("Requesting user on app first foreground failed", exception)
+        }
+    }
+
+    @VisibleForTesting
+    @Throws(QonversionException::class)
+    suspend fun handleNewUserInfo(newUser: User) {
+        val currentlyStoredUser = userCacher.get()
+        storeUser(newUser)
+        if (newUser.entitlements != currentlyStoredUser?.entitlements) {
+            withContext(Dispatchers.Main) {
+                entitlementsUpdateListenerProvider
+                    .entitlementsUpdateListener
+                    ?.onEntitlementsUpdated(newUser.entitlements)
+            }
         }
     }
 

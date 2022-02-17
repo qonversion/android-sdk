@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.user.controller
 
 import com.qonversion.android.sdk.coAssertThatQonversionExceptionThrown
+import com.qonversion.android.sdk.dto.Entitlement
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserver
 import com.qonversion.android.sdk.internal.cache.CacheState
@@ -13,14 +14,23 @@ import com.qonversion.android.sdk.internal.user.generator.UserIdGenerator
 import com.qonversion.android.sdk.internal.user.service.UserService
 import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import io.mockk.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.yield
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
+@ExperimentalCoroutinesApi
 internal class UserControllerTest {
 
     private lateinit var userController: UserControllerImpl
@@ -29,7 +39,7 @@ internal class UserControllerTest {
     private val mockUserIdGenerator = mockk<UserIdGenerator>()
     private val mockUserService = mockk<UserService>()
     private val mockUserCacher = mockk<Cacher<User?>>()
-    private val mockEntitlementsUpdateListenerProvider = mockk<EntitlementsUpdateListenerProvider>()
+    private val mockEntitlementsUpdateListenerProvider = mockk<EntitlementsUpdateListenerProvider>(relaxed = true)
     private val mockAppLifecycleObserver = mockk<AppLifecycleObserver>()
     private val mockLogger = mockk<Logger>()
 
@@ -134,7 +144,6 @@ internal class UserControllerTest {
     }
 
     @Nested
-    @ExperimentalCoroutinesApi
     inner class GetUserTest {
         @Test
         fun `get user from cache with default state`() = runTest {
@@ -308,5 +317,188 @@ internal class UserControllerTest {
             }
             verify(exactly = 1) { mockLogger.error("Failed to update user cache", exception) }
         }
+    }
+
+    @Nested
+    inner class OnAppForegroundTest {
+
+        @Test
+        fun `not the first foreground`() {
+            // given
+
+            // when
+            userController.onAppForeground(false)
+
+            // then
+            verify {
+                mockUserCacher wasNot called
+                mockUserService wasNot called
+            }
+        }
+
+        @Test
+        fun `actual cache exists`() = runTest {
+            // given
+            userController = createController(this)
+            every { mockUserCacher.getActual() } returns mockUser
+
+            // when
+            userController.onAppForeground(true)
+
+            // then
+            yield()
+            verify { mockUserCacher.getActual() }
+            verify(exactly = 0) {
+                mockUserCacher.store(any())
+                mockUserService wasNot called
+            }
+        }
+
+        @Test
+        fun `actual cache does not exist`() = runTest {
+            // given
+            userController = spyk(createController(this))
+            every { mockUserCacher.getActual() } returns null
+            every { mockUserDataStorage.requireUserId() } returns testUserId
+            coEvery { mockUserService.getUser(testUserId) } returns mockUser
+            coEvery { userController.handleNewUserInfo(mockUser) } just runs
+
+            // when
+            userController.onAppForeground(true)
+
+            // then
+            yield()
+            coVerifyOrder {
+                mockUserCacher.getActual()
+                mockUserDataStorage.requireUserId()
+                mockUserService.getUser(testUserId)
+                userController.handleNewUserInfo(mockUser)
+            }
+        }
+
+        @Test
+        fun `cacher throws exception`() = runTest {
+            // given
+            val exception = QonversionException(ErrorCode.BackendError)
+            userController = spyk(createController(this))
+            every { mockUserCacher.getActual() } throws exception
+            coEvery { userController.handleNewUserInfo(mockUser) } just runs
+
+            // when
+            assertDoesNotThrow {
+                userController.onAppForeground(true)
+            }
+
+            // then
+            yield()
+            verify {
+                mockUserCacher.getActual()
+                mockLogger.error("Requesting user on app first foreground failed", exception)
+            }
+            coVerify(exactly = 0) {
+                mockUserDataStorage wasNot called
+                mockUserService wasNot called
+                userController.handleNewUserInfo(mockUser)
+            }
+        }
+    }
+
+    @Nested
+    inner class HandleNewUserInfoTest {
+
+        private val mockStoredUser = mockk<User>()
+        private val mockEntitlements = mockk<List<Entitlement>>()
+        private val mainDispatcher = StandardTestDispatcher()
+
+        @BeforeEach
+        fun setUp() {
+            Dispatchers.setMain(mainDispatcher)
+
+            every { mockUser.entitlements } returns mockEntitlements
+        }
+
+        @AfterEach
+        fun tearDown() {
+            Dispatchers.resetMain()
+        }
+
+        @Test
+        fun `user entitlements does not differ`() = runTest {
+            // given
+            userController = spyk(createController(this))
+            every { userController.storeUser(mockUser) } just runs
+            every { mockUserCacher.get() } returns mockStoredUser
+            every { mockStoredUser.entitlements } returns mockEntitlements
+
+            // when
+            userController.handleNewUserInfo(mockUser)
+
+            // then
+            verify {
+                mockUserCacher.get()
+                userController.storeUser(mockUser)
+                mockEntitlementsUpdateListenerProvider wasNot called
+            }
+        }
+
+        @Test
+        fun `stored user does not exist`() = runTest {
+            // given
+            userController = spyk(createController(this))
+            every { userController.storeUser(mockUser) } just runs
+            every { mockUserCacher.get() } returns null
+
+            // when
+            userController.handleNewUserInfo(mockUser)
+
+            // then
+            verify {
+                mockUserCacher.get()
+                userController.storeUser(mockUser)
+                mockEntitlementsUpdateListenerProvider
+                    .entitlementsUpdateListener
+                    ?.onEntitlementsUpdated(mockEntitlements)
+            }
+        }
+
+        @Test
+        fun `user entitlements differ`() = runTest {
+            // given
+            userController = spyk(createController(this))
+            every { userController.storeUser(mockUser) } just runs
+            every { mockUserCacher.get() } returns mockStoredUser
+            every { mockStoredUser.entitlements } returns emptyList()
+
+            // when
+            userController.handleNewUserInfo(mockUser)
+
+            // then
+            verify {
+                mockUserCacher.get()
+                userController.storeUser(mockUser)
+                mockEntitlementsUpdateListenerProvider
+                    .entitlementsUpdateListener
+                    ?.onEntitlementsUpdated(mockEntitlements)
+            }
+        }
+    }
+
+    private fun createController(scope: CoroutineScope): UserControllerImpl {
+        every { mockUserDataStorage.getUserId() } returns testUserId
+
+        val controller = UserControllerImpl(
+            mockUserService,
+            mockUserCacher,
+            mockUserDataStorage,
+            mockEntitlementsUpdateListenerProvider,
+            mockUserIdGenerator,
+            mockAppLifecycleObserver,
+            mockLogger,
+            scope
+        )
+
+        clearMocks(mockUserDataStorage)
+
+        return controller
     }
 }
