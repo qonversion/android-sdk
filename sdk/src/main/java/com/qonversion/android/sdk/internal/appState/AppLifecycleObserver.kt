@@ -4,7 +4,7 @@ internal interface AppLifecycleObserver {
 
     fun isInBackground(): Boolean
 
-    fun subscribeOnAppStateChanges(listener: AppStateChangeListener)
+    fun addListener(listener: AppStateChangeListener)
 
-    fun unsubscribeFromAppStateChanges(listener: AppStateChangeListener)
+    fun removeListener(listener: AppStateChangeListener)
 }

@@ -37,13 +37,13 @@ internal class AppLifecycleObserverImpl : AppLifecycleObserver,
         return appState == AppState.Background
     }
 
-    override fun subscribeOnAppStateChanges(listener: AppStateChangeListener) {
+    override fun addListener(listener: AppStateChangeListener) {
         synchronized(appStateChangeListeners) {
             appStateChangeListeners.add(WeakReference(listener))
         }
     }
 
-    override fun unsubscribeFromAppStateChanges(listener: AppStateChangeListener) {
+    override fun removeListener(listener: AppStateChangeListener) {
         synchronized(appStateChangeListeners) {
             appStateChangeListeners.removeAll { it.get() === listener }
         }

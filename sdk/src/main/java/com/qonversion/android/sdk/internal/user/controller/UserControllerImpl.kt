@@ -17,8 +17,6 @@ import com.qonversion.android.sdk.internal.user.storage.UserDataStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 private const val TEST_UID = "40egafre6_e_"
@@ -32,14 +30,11 @@ internal class UserControllerImpl(
     appLifecycleObserver: AppLifecycleObserver,
     logger: Logger,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
-    private val userRequestMutex: Mutex = Mutex()
 ) : BaseClass(logger), UserController, AppStateChangeListener {
 
     init {
-        appLifecycleObserver.subscribeOnAppStateChanges(this)
-    }
+        appLifecycleObserver.addListener(this)
 
-    init {
         val existingUserId = userDataStorage.getUserId()
 
         if (existingUserId.isNullOrEmpty() || existingUserId == TEST_UID) {
@@ -51,16 +46,16 @@ internal class UserControllerImpl(
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val user = userCacher.getActual() ?: userRequestMutex.withLock {
+        val user = userCacher.getActual() ?: run {
             try {
                 val userId = userDataStorage.requireUserId()
                 val apiUser = userService.getUser(userId)
                 logger.info("User info was successfully received from API")
                 storeUser(apiUser)
-                return@withLock apiUser
+                return@run apiUser
             } catch (exception: QonversionException) {
                 logger.error("Failed to get User from API", exception)
-                return@withLock userCacher.getActual(CacheState.Error)
+                return@run userCacher.getActual(CacheState.Error)
             }
         }
 
@@ -77,20 +72,22 @@ internal class UserControllerImpl(
             return
         }
 
-        if (!userRequestMutex.isLocked) {
+        try {
             scope.launch {
                 if (userCacher.getActual() !== null) {
                     return@launch
                 }
 
-                val currentlyStoredUser = userCacher.get()
                 val newUser = try {
-                    getUser()
+                    val userId = userDataStorage.requireUserId()
+                    userService.getUser(userId)
                 } catch (_: QonversionException) {
                     null
                 }
 
                 newUser?.let {
+                    val currentlyStoredUser = userCacher.get()
+                    storeUser(it)
                     if (it.entitlements != currentlyStoredUser?.entitlements) {
                         withContext(Dispatchers.Main) {
                             entitlementsUpdateListenerProvider
@@ -100,6 +97,8 @@ internal class UserControllerImpl(
                     }
                 }
             }
+        } catch (exception: Exception) {
+            logger.error("Requesting user on app first foreground failed", exception)
         }
     }
 
