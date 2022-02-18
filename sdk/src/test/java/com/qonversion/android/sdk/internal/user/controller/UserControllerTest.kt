@@ -65,7 +65,7 @@ internal class UserControllerTest {
 
         clearMocks(mockUserDataStorage)
 
-        every { mockLogger.info(capture(slotInfoLogMessage)) } just runs
+        every { mockLogger.info(capture(slotInfoLogMessage), any()) } just runs
         every { mockLogger.error(capture(slotErrorLogMessage)) } just runs
         every { mockLogger.error(capture(slotErrorLogMessage), any()) } just runs
         every { mockLogger.verbose(capture(slotVerboseLogMessage)) } just runs
@@ -395,7 +395,7 @@ internal class UserControllerTest {
             yield()
             verify {
                 mockUserCacher.getActualStoredValue()
-                mockLogger.error("Requesting user on app first foreground failed", exception)
+                mockLogger.info("Requesting user on app first foreground failed", exception)
             }
             coVerify(exactly = 0) {
                 mockUserDataStorage wasNot called
@@ -422,7 +422,7 @@ internal class UserControllerTest {
             verify {
                 mockUserCacher.getActualStoredValue()
                 mockUserDataStorage.requireUserId()
-                mockLogger.error("Requesting user on app first foreground failed", exception)
+                mockLogger.info("Requesting user on app first foreground failed", exception)
             }
             coVerify(exactly = 0) {
                 mockUserService wasNot called
@@ -450,10 +450,36 @@ internal class UserControllerTest {
                 mockUserCacher.getActualStoredValue()
                 mockUserDataStorage.requireUserId()
                 mockUserService.getUser(testUserId)
-                mockLogger.error("Requesting user on app first foreground failed", exception)
+                mockLogger.info("Requesting user on app first foreground failed", exception)
             }
             coVerify(exactly = 0) {
                 userController.handleNewUserInfo(mockUser)
+            }
+        }
+
+        @Test
+        fun `user info handling throws exception`() = runTest {
+            // given
+            val exception = QonversionException(ErrorCode.Mapping)
+            userController = spyk(createController(this))
+            every { mockUserCacher.getActualStoredValue() } returns null
+            every { mockUserDataStorage.requireUserId() } returns testUserId
+            coEvery { mockUserService.getUser(testUserId) } returns mockUser
+            coEvery { userController.handleNewUserInfo(mockUser) } throws exception
+
+            // when
+            assertDoesNotThrow {
+                userController.onAppForeground(true)
+            }
+
+            // then
+            yield()
+            coVerify {
+                mockUserCacher.getActualStoredValue()
+                mockUserDataStorage.requireUserId()
+                mockUserService.getUser(testUserId)
+                userController.handleNewUserInfo(mockUser)
+                mockLogger.info("Requesting user on app first foreground failed", exception)
             }
         }
     }
