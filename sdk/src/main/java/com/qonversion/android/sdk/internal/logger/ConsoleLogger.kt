@@ -3,7 +3,6 @@ package com.qonversion.android.sdk.internal.logger
 import android.util.Log
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
-import java.lang.Exception
 
 internal class ConsoleLogger(private val loggerConfigProvider: LoggerConfigProvider) : Logger {
     private val logLevel get() = loggerConfigProvider.logLevel.level
