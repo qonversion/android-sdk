@@ -113,8 +113,12 @@ interface Qonversion {
      * Provide a listener to be notified about asynchronous user entitlements updates.
      *
      * Make sure you provide this listener for being up-to-date with the user entitlements.
-     * Else you can lose some important updates. Also, please, take into account that this listener
-     * should live for the whole lifetime of the application.
+     * Else you can lose some important updates.
+     *
+     * Also, please, take into account that this listener should live for the whole lifetime
+     * of the application. We save the provided listener as a weak reference, so if you
+     * don't have any reference to the listener in your app, it may die, and you will stop
+     * receiving the events.
      *
      * You may set entitlements listener both *after* Qonversion SDK initializing
      * with [Qonversion.setEntitlementsUpdateListener] and *while* Qonversion initializing

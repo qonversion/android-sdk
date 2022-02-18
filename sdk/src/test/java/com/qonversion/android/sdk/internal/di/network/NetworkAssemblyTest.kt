@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.di.network
 
 import com.qonversion.android.sdk.internal.InternalConfig
-import com.qonversion.android.sdk.internal.common.BASE_API_URL
+import com.qonversion.android.sdk.internal.common.API_URL
 import com.qonversion.android.sdk.internal.common.localStorage.LocalStorage
 import com.qonversion.android.sdk.internal.common.mappers.error.ErrorResponseMapper
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
@@ -100,7 +100,7 @@ internal class NetworkAssemblyTest {
             // given
             val expectedResult = RequestConfiguratorImpl(
                 mockHeaderBuilder,
-                BASE_API_URL,
+                API_URL,
                 mockInternalConfig,
                 mockInternalConfig
             )

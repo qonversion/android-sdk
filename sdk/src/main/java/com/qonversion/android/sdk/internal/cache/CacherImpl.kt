@@ -34,9 +34,9 @@ internal class CacherImpl<T>(
         cachedObjects[key] = cachedObject
     }
 
-    override fun get(): T? = cachedObjects[key]?.value
+    override fun getStoredValue(): T? = cachedObjects[key]?.value
 
-    override fun getActual(cacheState: CacheState): T? {
+    override fun getActualStoredValue(cacheState: CacheState): T? {
         return cachedObjects[key]?.takeIf { isActual(it, cacheState) }?.value
     }
 
@@ -45,7 +45,7 @@ internal class CacherImpl<T>(
         cachedObjects.remove(key)
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     fun isActual(cachedObject: CachedObject<T>, cacheState: CacheState): Boolean {
         val currentTime = Calendar.getInstance().time
         val cachedTime = cachedObject.date
@@ -56,7 +56,7 @@ internal class CacherImpl<T>(
     }
 
     @Throws(QonversionException::class)
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     fun load(key: String): CachedObject<T>? {
         val storedValue = storage.getString(key)
         return storedValue?.let {
@@ -69,7 +69,7 @@ internal class CacherImpl<T>(
         }
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting
     fun getMaxCacheLifetimeSec(cacheState: CacheState): Long {
         return if (appLifecycleObserver.isInBackground() || cacheState == CacheState.Error) {
             cacheLifetimeConfigProvider.cacheLifetimeConfig.backgroundCacheLifetime.seconds

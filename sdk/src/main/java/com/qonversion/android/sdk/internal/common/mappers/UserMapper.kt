@@ -9,6 +9,11 @@ internal class UserMapper(
     private val entitlementsMapper: Mapper<Entitlement?>
 ) : Mapper<User?> {
 
+    override fun toMap(value: User?): Map<String, Any?> {
+        // todo implementation needed for caching
+        return emptyMap()
+    }
+
     override fun fromMap(data: Map<*, *>): User? {
         val id = data.getString("id")
 

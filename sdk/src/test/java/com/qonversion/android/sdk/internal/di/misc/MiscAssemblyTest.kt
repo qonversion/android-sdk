@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.di.misc
 
-import android.app.Application
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.appState.AppLifecycleObserverImpl
 import com.qonversion.android.sdk.internal.common.serializers.JsonSerializer
@@ -10,24 +10,26 @@ import com.qonversion.android.sdk.internal.user.generator.UserIdGeneratorImpl
 import com.qonversion.android.sdk.internal.utils.workers.DelayedWorkerImpl
 import io.mockk.mockk
 import io.mockk.every
-import io.mockk.slot
 import io.mockk.just
+import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.runs
+import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.Locale
 import kotlin.random.Random
+import org.junit.jupiter.api.AfterEach
 
 internal class MiscAssemblyTest {
     private lateinit var miscAssembly: MiscAssembly
-    private val mockApplication = mockk<Application>()
     private val mockInternalConfig = mockk<InternalConfig>()
 
     @BeforeEach
     fun setup() {
-        miscAssembly = MiscAssemblyImpl(mockApplication, mockInternalConfig)
+        miscAssembly = MiscAssemblyImpl(mockInternalConfig)
     }
 
     @Nested
@@ -129,12 +131,13 @@ internal class MiscAssemblyTest {
 
     @Nested
     inner class AppLifecycleObserverTest {
-        private val lifecycleObserverSlot = slot<AppLifecycleObserverImpl>()
+        private val slotLifecycleObserver = slot<AppLifecycleObserverImpl>()
 
         @BeforeEach
         fun setUp() {
+            mockkStatic(ProcessLifecycleOwner::class)
             every {
-                mockApplication.registerActivityLifecycleCallbacks(capture(lifecycleObserverSlot))
+                ProcessLifecycleOwner.get().lifecycle.addObserver(capture(slotLifecycleObserver))
             } just runs
         }
 
@@ -147,7 +150,7 @@ internal class MiscAssemblyTest {
 
             // then
             assertThat(result).isInstanceOf(AppLifecycleObserverImpl::class.java)
-            assertThat(result).isEqualTo(lifecycleObserverSlot.captured)
+            assertThat(result).isEqualTo(slotLifecycleObserver.captured)
         }
 
         @Test
@@ -158,6 +161,11 @@ internal class MiscAssemblyTest {
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)
+        }
+
+        @AfterEach
+        fun tearDown() {
+            unmockkStatic(ProcessLifecycleOwner::class)
         }
     }
 

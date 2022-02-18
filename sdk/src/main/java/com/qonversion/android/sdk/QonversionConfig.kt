@@ -1,18 +1,20 @@
 package com.qonversion.android.sdk
 
+import android.app.Application
 import android.util.Log
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.Store
-import android.app.Application
+import android.content.Context
 import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
 import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
+import com.qonversion.android.sdk.internal.utils.application
 import com.qonversion.android.sdk.internal.utils.isDebuggable
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
@@ -44,13 +46,13 @@ class QonversionConfig internal constructor(
      * You can call them sequentially and call [build] finally to get the configuration instance.
      *
      * @constructor creates an instance of a builder
-     * @param application the instance of the current running application
+     * @param context the current context
      * @param projectKey your Project Key from Qonversion Dashboard
      * @param launchMode launch mode of the Qonversion SDK todo add link
      * @param store the store used for purchases (only [Store.GooglePlay] is supported for now)
      */
     class Builder @JvmOverloads constructor(
-        private val application: Application,
+        private val context: Context,
         private val projectKey: String,
         private val launchMode: LaunchMode,
         private val store: Store = Store.GooglePlay
@@ -131,8 +133,12 @@ class QonversionConfig internal constructor(
          * Provide a listener to be notified about asynchronous user entitlements updates.
          *
          * Make sure you provide this listener for being up-to-date with the user entitlements.
-         * Else you can lose some important updates. Also, please, take into account that this listener
-         * should live for the whole lifetime of the application.
+         * Else you can lose some important updates.
+         *
+         * Also, please, take into account that this listener should live for the whole lifetime
+         * of the application. We save the provided listener as a weak reference, so if you
+         * don't have any reference to the listener in your app, it may die, and you will stop
+         * receiving the events.
          *
          * @param entitlementsUpdateListener listener to be called when entitlements update.
          * @return builder instance for chain calls.
@@ -153,9 +159,9 @@ class QonversionConfig internal constructor(
             if (projectKey.isBlank()) {
                 throw QonversionException(ErrorCode.ConfigPreparation, "Project key is empty")
             }
-            if (environment === Environment.Production && application.isDebuggable) {
+            if (environment === Environment.Production && context.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Production for debug build.")
-            } else if (environment === Environment.Sandbox && !application.isDebuggable) {
+            } else if (environment === Environment.Sandbox && !context.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
 
@@ -165,7 +171,7 @@ class QonversionConfig internal constructor(
             val networkConfig = NetworkConfig()
 
             return QonversionConfig(
-                application,
+                context.application,
                 primaryConfig,
                 storeConfig,
                 loggerConfig,

@@ -6,10 +6,13 @@ import com.qonversion.android.sdk.internal.di.mappers.MappersAssembly
 import com.qonversion.android.sdk.internal.di.network.NetworkAssembly
 import com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractor
 import com.qonversion.android.sdk.internal.networkLayer.requestConfigurator.RequestConfigurator
+import com.qonversion.android.sdk.internal.user.service.UserService
+import com.qonversion.android.sdk.internal.user.service.UserServiceDecorator
 import com.qonversion.android.sdk.internal.user.service.UserServiceImpl
 import com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImpl
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -122,6 +125,42 @@ internal class ServicesAssemblyTest {
             // when
             val firstResult = servicesAssembly.userService()
             val secondResult = servicesAssembly.userService()
+
+            // then
+            assertThat(firstResult).isNotSameAs(secondResult)
+        }
+    }
+
+    @Nested
+    inner class UserServiceDecoratorTest {
+        private val mockUserService = mockk<UserService>()
+
+        @BeforeEach
+        fun setup() {
+            servicesAssembly = spyk(servicesAssembly)
+            every { servicesAssembly.userService() } returns mockUserService
+        }
+
+        @Test
+        fun `get user service decorator`() {
+            // given
+            val expectedResult = UserServiceDecorator(mockUserService)
+
+            // when
+            val result = servicesAssembly.userServiceDecorator()
+
+            // then
+            assertThat(result).isInstanceOf(UserServiceDecorator::class.java)
+            assertThat(result).isEqualToComparingFieldByField(expectedResult)
+        }
+
+        @Test
+        fun `get different user service decorators`() {
+            // given
+
+            // when
+            val firstResult = servicesAssembly.userServiceDecorator()
+            val secondResult = servicesAssembly.userServiceDecorator()
 
             // then
             assertThat(firstResult).isNotSameAs(secondResult)

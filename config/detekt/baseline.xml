@@ -6,8 +6,8 @@
     <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
+    <ID>EmptyClassBlock:AppLifecycleObserverTest.kt$AppLifecycleObserverTest.ActivityCallbackTest${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
-    <ID>EmptyFunctionBlock:AppLifecycleObserverImpl.kt$AppLifecycleObserverImpl${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided>${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.di.DependencyAssembliesBuilderTest.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.networkLayer.headerBuilder.HeaderBuilderImplTest.kt:1</ID>
@@ -25,6 +25,7 @@
     <ID>LongParameterList:DependenciesAssembly.kt$DependenciesAssembly$( @VisibleForTesting val mappersAssembly: MappersAssembly, @VisibleForTesting val storageAssembly: StorageAssembly, @VisibleForTesting val networkAssembly: NetworkAssembly, @VisibleForTesting val miscAssembly: MiscAssembly, @VisibleForTesting val servicesAssembly: ServicesAssembly, @VisibleForTesting val controllersAssembly: ControllersAssembly, @VisibleForTesting val cacherAssembly: CacherAssembly )</ID>
     <ID>LongParameterList:QonversionConfig.kt$QonversionConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val storeConfig: StoreConfig, internal val loggerConfig: LoggerConfig, internal val networkConfig: NetworkConfig, internal val cacheLifetime: CacheLifetime, internal val entitlementsUpdateListener: EntitlementsUpdateListener? )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
+    <ID>LongParameterList:UserControllerImpl.kt$UserControllerImpl$( private val userService: UserService, private val userCacher: Cacher&lt;User?>, private val userDataStorage: UserDataStorage, private val entitlementsUpdateListenerProvider: EntitlementsUpdateListenerProvider, userIdGenerator: UserIdGenerator, appLifecycleObserver: AppLifecycleObserver, logger: Logger, private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO), )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10004</ID>
@@ -125,12 +126,18 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.UserPropertiesBuilderTest.kt:8</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaserTest.kt:26</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:199</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:163</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:333</ID>
-    <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:65</ID>
+    <ID>NoEmptyClassBody:com.qonversion.android.sdk.internal.appState.AppLifecycleObserverTest.kt:24</ID>
+    <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.di.misc.MiscAssemblyTest.kt:68</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.internal.networkLayer.apiInteractor.ApiInteractorTest.kt:379</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.di.storage.StorageAssemblyTest.kt:16</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.user.service.UserServiceTest.kt:17</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.user.service.UserServiceTest.kt:19</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.user.service.UserServiceTest.kt:22</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.user.service.UserServiceTest.kt:6</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.user.service.UserServiceTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.di.mappers.MappersAssemblyTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.user.controller.UserControllerTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.user.controller.UserControllerTest.kt:15</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesServiceImplTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.userProperties.UserPropertiesStorageTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.old.EnvironmentProvider.kt:10</ID>

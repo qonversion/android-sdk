@@ -1,14 +1,17 @@
 package com.qonversion.android.sdk.internal.appState
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import java.lang.ref.WeakReference
 
 class AppLifecycleObserverTest {
     private lateinit var appLifecycleObserver: AppLifecycleObserverImpl
@@ -19,92 +22,56 @@ class AppLifecycleObserverTest {
     }
 
     @Nested
-    inner class ActivityCallbackTest {
-        private val mockActivity = mockk<Activity>()
-        private val mockBundle = mockk<Bundle>()
+    inner class LifecycleObserverTest {
 
-        @Test
-        fun `on activity created`() {
-            // given
-            appLifecycleObserver.appState = AppState.Background
+        private val listener = mockk<AppStateChangeListener>(relaxed = true)
 
-            // when
-            appLifecycleObserver.onActivityCreated(mockActivity, mockBundle)
-
-            // then
-            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
+        @BeforeEach
+        fun setUp() {
+            appLifecycleObserver.appStateChangeListeners.add(WeakReference(listener))
         }
 
         @Test
-        fun `on activity started`() {
+        fun `on app switched to foreground first time`() {
             // given
             appLifecycleObserver.appState = AppState.Background
+            appLifecycleObserver.isFirstForegroundPassed = false
 
             // when
-            appLifecycleObserver.onActivityStarted(mockActivity)
+            appLifecycleObserver.onSwitchToForeground()
 
             // then
             assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Foreground)
+            assertThat(appLifecycleObserver.isFirstForegroundPassed).isTrue
+            verify { listener.onAppForeground(true) }
         }
 
         @Test
-        fun `on activity resumed`() {
+        fun `on app switched to foreground`() {
             // given
             appLifecycleObserver.appState = AppState.Background
+            appLifecycleObserver.isFirstForegroundPassed = true
 
             // when
-            appLifecycleObserver.onActivityResumed(mockActivity)
+            appLifecycleObserver.onSwitchToForeground()
 
             // then
-            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
+            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Foreground)
+            assertThat(appLifecycleObserver.isFirstForegroundPassed).isTrue
+            verify { listener.onAppForeground(false) }
         }
 
         @Test
-        fun `on activity paused`() {
-            // given
-            appLifecycleObserver.appState = AppState.Background
-
-            // when
-            appLifecycleObserver.onActivityPaused(mockActivity)
-
-            // then
-            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
-        }
-
-        @Test
-        fun `on activity stopped`() {
+        fun `on app switched to background`() {
             // given
             appLifecycleObserver.appState = AppState.Foreground
 
             // when
-            appLifecycleObserver.onActivityStopped(mockActivity)
+            appLifecycleObserver.onSwitchToBackground()
 
             // then
             assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
-        }
-
-        @Test
-        fun `on activity save instance state`() {
-            // given
-            appLifecycleObserver.appState = AppState.Background
-
-            // when
-            appLifecycleObserver.onActivitySaveInstanceState(mockActivity, mockBundle)
-
-            // then
-            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
-        }
-
-        @Test
-        fun `on activity destoyed`() {
-            // given
-            appLifecycleObserver.appState = AppState.Background
-
-            // when
-            appLifecycleObserver.onActivityDestroyed(mockActivity)
-
-            // then
-            assertThat(appLifecycleObserver.appState).isEqualTo(AppState.Background)
+            verify { listener.onAppBackground() }
         }
     }
 
@@ -136,19 +103,116 @@ class AppLifecycleObserverTest {
     }
 
     @Nested
-    inner class RegisterTest {
-        private val mockApplication = mockk<Application>(relaxed = true)
+    inner class ListenersTest {
+
+        private val listener = mockk<AppStateChangeListener>()
 
         @Test
-        fun `should register activity lifecycle callbacks`() {
+        fun `add listener`() {
             // given
 
             // when
-            appLifecycleObserver.register(mockApplication)
+            appLifecycleObserver.addListener(listener)
 
             // then
-            verify(exactly = 1) {
-                mockApplication.registerActivityLifecycleCallbacks(appLifecycleObserver)
+            assertThat(appLifecycleObserver.appStateChangeListeners.first()).isInstanceOf(WeakReference::class.java)
+            assertThat(appLifecycleObserver.appStateChangeListeners.first().get()).isSameAs(listener)
+        }
+
+        @Test
+        fun `remove single listener`() {
+            // given
+            appLifecycleObserver.appStateChangeListeners.add(WeakReference(listener))
+
+            // when
+            appLifecycleObserver.removeListener(listener)
+
+            // then
+            assertThat(appLifecycleObserver.appStateChangeListeners).isEmpty()
+        }
+
+        @Test
+        fun `remove existing listener`() {
+            // given
+            val secondValue = mockk<WeakReference<AppStateChangeListener>>(relaxed = true)
+            appLifecycleObserver.appStateChangeListeners.addAll(setOf(
+                WeakReference(listener),
+                secondValue
+            ))
+            val expResult = setOf(secondValue)
+
+            // when
+            appLifecycleObserver.removeListener(listener)
+
+            // then
+            assertThat(appLifecycleObserver.appStateChangeListeners).isEqualTo(expResult)
+        }
+
+        @Test
+        fun `remove non-existing listener`() {
+            // given
+            val weakListener = WeakReference(listener)
+            appLifecycleObserver.appStateChangeListeners.add(weakListener)
+            val expectedResult = setOf(weakListener)
+
+            // when
+            appLifecycleObserver.removeListener(mockk())
+
+            // then
+            assertThat(appLifecycleObserver.appStateChangeListeners).isEqualTo(expectedResult)
+        }
+
+        @Test
+        fun `fire to several listeners`() {
+            // given
+            val secondListener = mockk<AppStateChangeListener>()
+            every { listener.onAppBackground() } just runs
+            every { secondListener.onAppBackground() } just runs
+            appLifecycleObserver.appStateChangeListeners.addAll(
+                setOf(
+                    WeakReference(listener),
+                    WeakReference(secondListener)
+                )
+            )
+
+            // when
+            appLifecycleObserver.fireToListeners { it.onAppBackground() }
+
+            // then
+            verify {
+                listener.onAppBackground()
+                secondListener.onAppBackground()
+            }
+        }
+
+        @Test
+        fun `fire to died listener`() {
+            // given
+            every { listener.onAppBackground() } just runs
+            appLifecycleObserver.appStateChangeListeners.addAll(
+                setOf(
+                    WeakReference(listener),
+                    WeakReference(null)
+                )
+            )
+
+            // when
+            appLifecycleObserver.fireToListeners { it.onAppBackground() }
+
+            // then
+            verify {
+                listener.onAppBackground()
+            }
+        }
+
+        @Test
+        fun `fire to empty listeners`() {
+            // given
+            appLifecycleObserver.appStateChangeListeners.clear()
+
+            // when and then
+            assertDoesNotThrow {
+                appLifecycleObserver.fireToListeners { it.onAppBackground() }
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.di
 
-import android.app.Application
+import android.content.Context
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.cacher.CacherAssemblyImpl
 import com.qonversion.android.sdk.internal.di.controllers.ControllersAssemblyImpl
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Test
 internal class DependenciesAssemblyBuilderTest {
     private lateinit var builder: DependenciesAssembly.Builder
 
-    private val mockApplication = mockk<Application>()
+    private val mockContext = mockk<Context>()
     private val internalConfig = mockk<InternalConfig>()
 
     @BeforeEach
     fun setUp() {
-        builder = DependenciesAssembly.Builder(mockApplication, internalConfig)
+        builder = DependenciesAssembly.Builder(mockContext, internalConfig)
     }
 
     @Test

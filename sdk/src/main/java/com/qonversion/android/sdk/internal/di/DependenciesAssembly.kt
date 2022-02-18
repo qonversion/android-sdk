@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.di
 
-import android.app.Application
+import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.cacher.CacherAssembly
@@ -35,13 +35,13 @@ internal class DependenciesAssembly(
     CacherAssembly by cacherAssembly {
 
     class Builder(
-        private val application: Application,
+        private val context: Context,
         private val internalConfig: InternalConfig
     ) {
         fun build(): DependenciesAssembly {
-            val miscAssembly = MiscAssemblyImpl(application, internalConfig)
+            val miscAssembly = MiscAssemblyImpl(internalConfig)
             val mappersAssembly = MappersAssemblyImpl(miscAssembly)
-            val storageAssembly = StorageAssemblyImpl(application, mappersAssembly, miscAssembly)
+            val storageAssembly = StorageAssemblyImpl(context, mappersAssembly, miscAssembly)
             val networkAssembly =
                 NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly)
             val servicesAssembly =
@@ -53,7 +53,8 @@ internal class DependenciesAssembly(
                     storageAssembly,
                     miscAssembly,
                     servicesAssembly,
-                    cacherAssembly
+                    cacherAssembly,
+                    internalConfig
                 )
 
             return DependenciesAssembly(

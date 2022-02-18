@@ -14,15 +14,15 @@ internal class ConsoleLogger(private val loggerConfigProvider: LoggerConfigProvi
         }
     }
 
-    override fun info(message: String) {
+    override fun info(message: String, throwable: Throwable?) {
         if (logLevel <= LogLevel.Info.level) {
-            Log.i(tag, format(message))
+            Log.i(tag, format(message), throwable)
         }
     }
 
-    override fun warn(message: String) {
+    override fun warn(message: String, throwable: Throwable?) {
         if (logLevel <= LogLevel.Warning.level) {
-            Log.w(tag, format(message))
+            Log.w(tag, format(message), throwable)
         }
     }
 

@@ -40,10 +40,10 @@ internal class LoggerTest {
             Log.v(capture(capturedTag), capture(capturedMessage))
         } returns 0
         every {
-            Log.i(capture(capturedTag), capture(capturedMessage))
+            Log.i(capture(capturedTag), capture(capturedMessage), capture(capturedThrowable))
         } returns 0
         every {
-            Log.w(capture(capturedTag), capture(capturedMessage))
+            Log.w(capture(capturedTag), capture(capturedMessage), capture(capturedThrowable))
         } returns 0
         every {
             Log.e(capture(capturedTag), capture(capturedMessage), capture(capturedThrowable))
@@ -228,24 +228,28 @@ internal class LoggerTest {
 
     private fun testLogInfoSuccess() {
         // given
+        val throwable = mockk<Throwable>()
 
         // when
-        logger.info(logMessage)
+        logger.info(logMessage, throwable)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
         assertThat(capturedTag.captured).isEqualTo(tag)
+        assertThat(capturedThrowable.captured).isSameAs(throwable)
     }
 
     private fun testLogWarnSuccess() {
         // given
+        val throwable = mockk<Throwable>()
 
         // when
-        logger.warn(logMessage)
+        logger.warn(logMessage, throwable)
 
         // then
         assertThat(capturedMessage.captured).contains(logMessage)
         assertThat(capturedTag.captured).isEqualTo(tag)
+        assertThat(capturedThrowable.captured).isSameAs(throwable)
     }
 
     private fun testLogErrorSuccess() {
