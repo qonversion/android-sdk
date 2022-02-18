@@ -32,11 +32,8 @@ internal object InternalConfig :
     lateinit var storeConfig: StoreConfig
     lateinit var networkConfig: NetworkConfig
     lateinit var loggerConfig: LoggerConfig
-    lateinit var weakEntitlementsUpdateListener: WeakReference<EntitlementsUpdateListener?>
     override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
-
-    override val entitlementsUpdateListener: EntitlementsUpdateListener?
-        get() = weakEntitlementsUpdateListener.get()
+    override var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
     override val environment
         get() = primaryConfig.environment

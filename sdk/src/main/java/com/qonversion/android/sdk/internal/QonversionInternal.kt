@@ -43,7 +43,7 @@ internal class QonversionInternal(
         internalConfig.cacheLifetimeConfig = CacheLifetimeConfig(internalBackgroundCacheLifetime)
 
         internalConfig.loggerConfig = config.loggerConfig
-        internalConfig.weakEntitlementsUpdateListener = WeakReference(config.entitlementsUpdateListener)
+        internalConfig.entitlementsUpdateListener = config.entitlementsUpdateListener
     }
 
     override fun setEnvironment(environment: Environment) {
@@ -65,7 +65,11 @@ internal class QonversionInternal(
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
-        internalConfig.weakEntitlementsUpdateListener = WeakReference(entitlementsUpdateListener)
+        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
+    }
+
+    override fun removeEntitlementsUpdateListener() {
+        internalConfig.entitlementsUpdateListener = null
     }
 
     override fun finish() {
