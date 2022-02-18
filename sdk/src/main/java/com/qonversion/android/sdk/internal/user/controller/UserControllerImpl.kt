@@ -82,7 +82,7 @@ internal class UserControllerImpl(
                 val newUser = userService.getUser(userId)
                 handleNewUserInfo(newUser)
             } catch (exception: QonversionException) {
-                logger.error("Requesting user on app first foreground failed", exception)
+                logger.info("Requesting user on app first foreground failed", exception)
             }
         }
     }
