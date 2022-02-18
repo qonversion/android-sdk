@@ -18,7 +18,6 @@ import com.qonversion.android.sdk.internal.di.DependenciesAssembly
 import com.qonversion.android.sdk.internal.user.controller.UserController
 import com.qonversion.android.sdk.internal.userProperties.controller.UserPropertiesController
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
-import java.lang.ref.WeakReference
 
 internal class QonversionInternal(
     config: QonversionConfig,

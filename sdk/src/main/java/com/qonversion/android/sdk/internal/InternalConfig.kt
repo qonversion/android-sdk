@@ -16,7 +16,6 @@ import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
-import java.lang.ref.WeakReference
 
 internal object InternalConfig :
     EnvironmentProvider,
