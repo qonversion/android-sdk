@@ -120,7 +120,7 @@ class AppLifecycleObserverTest {
         }
 
         @Test
-        fun `remove existing listener`() {
+        fun `remove single listener`() {
             // given
             appLifecycleObserver.appStateChangeListeners.add(WeakReference(listener))
 
@@ -129,6 +129,23 @@ class AppLifecycleObserverTest {
 
             // then
             assertThat(appLifecycleObserver.appStateChangeListeners).isEmpty()
+        }
+
+        @Test
+        fun `remove existing listener`() {
+            // given
+            val secondValue = mockk<WeakReference<AppStateChangeListener>>()
+            appLifecycleObserver.appStateChangeListeners.addAll(setOf(
+                WeakReference(listener),
+                secondValue
+            ))
+            val expResult = setOf(secondValue)
+
+            // when
+            appLifecycleObserver.removeListener(listener)
+
+            // then
+            assertThat(appLifecycleObserver.appStateChangeListeners).isEqualTo(expResult)
         }
 
         @Test

@@ -9,10 +9,10 @@ internal interface Cacher<T> {
     fun store(value: T)
 
     @Throws(QonversionException::class)
-    fun get(): T?
+    fun getStoredValue(): T?
 
     @Throws(QonversionException::class)
-    fun getActual(cacheState: CacheState = CacheState.Default): T?
+    fun getActualStoredValue(cacheState: CacheState = CacheState.Default): T?
 
     @Throws(QonversionException::class)
     fun reset()

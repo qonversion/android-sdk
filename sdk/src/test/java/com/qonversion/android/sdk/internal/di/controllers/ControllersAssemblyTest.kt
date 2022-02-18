@@ -307,7 +307,8 @@ internal class ControllersAssemblyTest {
                 "userService",
                 "userCacher",
                 "userDataStorage",
-                "entitlementsUpdateListenerProvider"
+                "entitlementsUpdateListenerProvider",
+                "logger"
             )
         }
 

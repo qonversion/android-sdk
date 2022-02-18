@@ -330,12 +330,14 @@ internal class UserPropertiesControllerTest {
             spykController.sendUserProperties()
 
             // then
-            verify { mockService wasNot called }
+            verify {
+                mockService wasNot called
+                mockLogger wasNot called
+            }
             verify(exactly = 0) {
                 mockPendingPropertiesStorage.delete(any())
                 spykController.sendUserPropertiesIfNeeded(any())
             }
-            verify { mockLogger wasNot called }
         }
 
         @Test

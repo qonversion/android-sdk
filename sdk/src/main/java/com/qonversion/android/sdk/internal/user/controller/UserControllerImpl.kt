@@ -46,7 +46,7 @@ internal class UserControllerImpl(
     override suspend fun getUser(): User {
         logger.verbose("getUser() -> started")
 
-        val user = userCacher.getActual() ?: run {
+        val user = userCacher.getActualStoredValue() ?: run {
             try {
                 val userId = userDataStorage.requireUserId()
                 val apiUser = userService.getUser(userId)
@@ -55,7 +55,7 @@ internal class UserControllerImpl(
                 return@run apiUser
             } catch (exception: QonversionException) {
                 logger.error("Failed to get User from API", exception)
-                return@run userCacher.getActual(CacheState.Error)
+                return@run userCacher.getActualStoredValue(CacheState.Error)
             }
         }
 
@@ -74,7 +74,7 @@ internal class UserControllerImpl(
 
         scope.launch {
             try {
-                if (userCacher.getActual() !== null) {
+                userCacher.getActualStoredValue()?.let {
                     return@launch
                 }
 
@@ -90,7 +90,7 @@ internal class UserControllerImpl(
     @VisibleForTesting
     @Throws(QonversionException::class)
     suspend fun handleNewUserInfo(newUser: User) {
-        val currentlyStoredUser = userCacher.get()
+        val currentlyStoredUser = userCacher.getStoredValue()
         storeUser(newUser)
         if (newUser.entitlements != currentlyStoredUser?.entitlements) {
             withContext(Dispatchers.Main) {

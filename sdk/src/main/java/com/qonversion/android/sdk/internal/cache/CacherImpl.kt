@@ -34,9 +34,9 @@ internal class CacherImpl<T>(
         cachedObjects[key] = cachedObject
     }
 
-    override fun get(): T? = cachedObjects[key]?.value
+    override fun getStoredValue(): T? = cachedObjects[key]?.value
 
-    override fun getActual(cacheState: CacheState): T? {
+    override fun getActualStoredValue(cacheState: CacheState): T? {
         return cachedObjects[key]?.takeIf { isActual(it, cacheState) }?.value
     }
 

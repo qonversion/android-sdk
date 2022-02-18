@@ -300,7 +300,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.get()
+            val result = cacher.getStoredValue()
 
             // then
             assertThat(result).isSameAs(testCachingValue)
@@ -313,7 +313,7 @@ internal class CacherTest {
             every { mockLocalStorage.getString(testCachingKey) } returns null
 
             // when
-            val result = cacher.get()
+            val result = cacher.getStoredValue()
 
             // then
             assertThat(result).isNull()
@@ -337,7 +337,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(mockCacheState)
+            val result = cacher.getActualStoredValue(mockCacheState)
 
             // then
             assertThat(result).isSameAs(testCachingValue)
@@ -353,7 +353,7 @@ internal class CacherTest {
             cacher.cachedObjects[testCachingKey] = cachedObject
 
             // when
-            val result = cacher.getActual(mockCacheState)
+            val result = cacher.getActualStoredValue(mockCacheState)
 
             // then
             assertThat(result).isNull()
@@ -366,7 +366,7 @@ internal class CacherTest {
             every { mockLocalStorage.getString(testCachingKey) } returns null
 
             // when
-            val result = cacher.getActual()
+            val result = cacher.getActualStoredValue()
 
             // then
             assertThat(result).isNull()
