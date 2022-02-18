@@ -13,8 +13,11 @@ import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -46,7 +49,7 @@ internal class UserServiceDecoratorTest {
         @Test
         fun `no concurrent request exists`() = runTest {
             // given
-            val loadingTime = 10_000L
+            val loadingTime = 100_000L
             userServiceDecorator.userLoadingDeferred = null
             coEvery { userServiceDecorator.loadOrCreateUser(testUserId) } coAnswers {
                 delay(loadingTime)
@@ -54,20 +57,21 @@ internal class UserServiceDecoratorTest {
             }
 
             // when
-            val result = userServiceDecorator.getUser(testUserId)
+            launch {
+                val result = userServiceDecorator.getUser(testUserId)
+                verify { mockUserDeferred.complete(mockUser) }
+                assertThat(userServiceDecorator.userLoadingDeferred).isNull()
+                assertThat(result).isSameAs(mockUser)
+            }
 
             // then
-            // todo fix the test checks below
-//            assertThat(userServiceDecorator.userLoadingDeferred).isNotNull
-//            coVerify { userServiceDecorator.loadOrCreateUser(testUserId) }
-//
-//            // replace deferred with mock one to be able to verify `complete` call
-//            userServiceDecorator.userLoadingDeferred = mockUserDeferred
-//
-//            advanceTimeBy(loadingTime)~
-//            verify { mockUserDeferred.complete(mockUser) }
-            assertThat(userServiceDecorator.userLoadingDeferred).isNull()
-            assertThat(result).isSameAs(mockUser)
+            yield()
+            assertThat(userServiceDecorator.userLoadingDeferred).isNotNull
+            coVerify { userServiceDecorator.loadOrCreateUser(testUserId) }
+
+            // replace deferred with mock one to be able to verify `complete` call
+            userServiceDecorator.userLoadingDeferred = mockUserDeferred
+
         }
 
         @Test
