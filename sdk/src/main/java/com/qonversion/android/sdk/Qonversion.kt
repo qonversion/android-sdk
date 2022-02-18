@@ -128,8 +128,8 @@ interface Qonversion {
      * Remove the entitlements update listener provided via [Qonversion.setEntitlementsUpdateListener]
      * or [Qonversion.initialize].
      *
-     * You probably won't need to call this method because the listener should live for the whole lifetime
-     * of the application, but we still provide this opportunity for some possible causes.
+     * You probably won't need to call this method because the listener should live for the whole
+     * lifetime of the application, but we still provide this opportunity for some possible causes.
      */
     fun removeEntitlementsUpdateListener()
 
