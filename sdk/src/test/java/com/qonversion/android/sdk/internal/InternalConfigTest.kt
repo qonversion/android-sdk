@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
+import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
@@ -159,25 +160,14 @@ internal class InternalConfigTest {
         fun `get entitlement updates listener`() {
             // given
             val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
-            InternalConfig.weakEntitlementsUpdateListener = WeakReference(mockEntitlementsUpdateListener)
+            InternalConfig.entitlementsUpdateListener = mockEntitlementsUpdateListener
+            val provider: EntitlementsUpdateListenerProvider = InternalConfig
 
             // when
-            val result = InternalConfig.entitlementsUpdateListener
+            val result = provider.entitlementsUpdateListener
 
             // then
             assertThat(result).isSameAs(mockEntitlementsUpdateListener)
-        }
-
-        @Test
-        fun `get entitlement updates listener when reference died`() {
-            // given
-            InternalConfig.weakEntitlementsUpdateListener = WeakReference(null)
-
-            // when
-            val result = InternalConfig.entitlementsUpdateListener
-
-            // then
-            assertThat(result).isNull()
         }
     }
 }

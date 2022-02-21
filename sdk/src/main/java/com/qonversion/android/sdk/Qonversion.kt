@@ -113,12 +113,8 @@ interface Qonversion {
      * Provide a listener to be notified about asynchronous user entitlements updates.
      *
      * Make sure you provide this listener for being up-to-date with the user entitlements.
-     * Else you can lose some important updates.
-     *
-     * Also, please, take into account that this listener should live for the whole lifetime
-     * of the application. We save the provided listener as a weak reference, so if you
-     * don't have any reference to the listener in your app, it may die, and you will stop
-     * receiving the events.
+     * Else you can lose some important updates. Also, please, take into account that
+     * this listener should live for the whole lifetime of the application.
      *
      * You may set entitlements listener both *after* Qonversion SDK initializing
      * with [Qonversion.setEntitlementsUpdateListener] and *while* Qonversion initializing
@@ -127,6 +123,15 @@ interface Qonversion {
      * @param entitlementsUpdateListener listener to be called when entitlements update.
      */
     fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
+
+    /**
+     * Remove the entitlements update listener provided via [Qonversion.setEntitlementsUpdateListener]
+     * or [Qonversion.initialize].
+     *
+     * You probably won't need to call this method because the listener should live for the whole
+     * lifetime of the application, but we still provide this opportunity for some possible causes.
+     */
+    fun removeEntitlementsUpdateListener()
 
     /**
      * Add property value for the current user to use it then for segmentation or analytics

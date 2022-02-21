@@ -16,7 +16,6 @@ import com.qonversion.android.sdk.internal.provider.LoggerConfigProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
-import java.lang.ref.WeakReference
 
 internal object InternalConfig :
     EnvironmentProvider,
@@ -32,11 +31,8 @@ internal object InternalConfig :
     lateinit var storeConfig: StoreConfig
     lateinit var networkConfig: NetworkConfig
     lateinit var loggerConfig: LoggerConfig
-    lateinit var weakEntitlementsUpdateListener: WeakReference<EntitlementsUpdateListener?>
     override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
-
-    override val entitlementsUpdateListener: EntitlementsUpdateListener?
-        get() = weakEntitlementsUpdateListener.get()
+    override var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
     override val environment
         get() = primaryConfig.environment
