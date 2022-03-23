@@ -120,4 +120,4 @@ Contact us via [issues on GitHub](https://github.com/qonversion/android-sdk/issu
 
 ## License
 
-Qonversion SDK is available under the MIT license.
+Qonversion SDK is available under the MIT license
