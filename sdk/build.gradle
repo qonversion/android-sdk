@@ -9,7 +9,17 @@ jacoco {
     toolVersion '0.8.7'
 }
 jacocoAndroidUnitTestReport {
-    excludes += ['**/old/*']
+    excludes += [
+            'com/qonversion/android/sdk/old',
+            'com/qonversion/android/sdk/dto',
+            'com/qonversion/android/sdk/config',
+            // todo remove lines below after the code will be implemented and covered.
+            'com/qonversion/android/sdk/internal/common/mappers/EntitlementMapper.class',
+            'com/qonversion/android/sdk/internal/common/mappers/ProductMapper.class',
+            'com/qonversion/android/sdk/internal/common/mappers/SubscriptionMapper.class',
+            'com/qonversion/android/sdk/internal/common/mappers/UserMapper.class',
+            'com/qonversion/android/sdk/internal/common/mappers/UserPurchaseMapper.class'
+    ]
 }
 
 android {
