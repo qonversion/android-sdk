@@ -1,15 +1,21 @@
 package com.qonversion.android.sdk.internal.billing.utils
 
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.internal.utils.toTimeString
+import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
+import io.mockk.verify
+import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -229,6 +235,91 @@ internal class ExtensionsTest {
                 // then
                 assertThat(res).isEqualTo(expectedResult)
             }
+        }
+    }
+
+    @Nested
+    inner class SetSubscriptionUpdateParamsTest {
+
+        private lateinit var builder: BillingFlowParams.Builder
+        private lateinit var mockFlowBuilder: BillingFlowParams.SubscriptionUpdateParams.Builder
+        private val purchaseToken = "test token"
+        private val mockUpdateParams = mockk<BillingFlowParams.SubscriptionUpdateParams>()
+
+        @BeforeEach
+        fun setUp() {
+            builder = spyk(BillingFlowParams.newBuilder())
+            mockFlowBuilder = mockk()
+
+            mockkStatic(BillingFlowParams.SubscriptionUpdateParams::class)
+            every { BillingFlowParams.SubscriptionUpdateParams.newBuilder() } returns mockFlowBuilder
+
+            every { mockFlowBuilder.setOldSkuPurchaseToken(any()) } returns mockFlowBuilder
+            every { mockFlowBuilder.setReplaceSkusProrationMode(any()) } returns mockFlowBuilder
+            every { mockFlowBuilder.build() } returns mockUpdateParams
+            every { builder.setSubscriptionUpdateParams(any()) } returns builder
+        }
+
+        @AfterEach
+        fun tearDown() {
+            unmockkStatic(BillingFlowParams.SubscriptionUpdateParams::class)
+        }
+
+        @Test
+        fun `complete info with proration mode`() {
+            // given
+            val prorationMode = BillingFlowParams.ProrationMode.DEFERRED
+            val updatePurchaseInfo = UpdatePurchaseInfo(purchaseToken, prorationMode)
+
+            // when
+            val res = builder.setSubscriptionUpdateParams(updatePurchaseInfo)
+
+            // then
+            verifyOrder {
+                BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                mockFlowBuilder.setOldSkuPurchaseToken(purchaseToken)
+                mockFlowBuilder.setReplaceSkusProrationMode(prorationMode)
+                mockFlowBuilder.build()
+                builder.setSubscriptionUpdateParams(mockUpdateParams)
+            }
+            assertThat(res).isSameAs(builder)
+        }
+
+        @Test
+        fun `complete info without proration mode`() {
+            // given
+            val updatePurchaseInfo = UpdatePurchaseInfo(purchaseToken)
+
+            // when
+            val res = builder.setSubscriptionUpdateParams(updatePurchaseInfo)
+
+            // then
+            verifyOrder {
+                BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                mockFlowBuilder.setOldSkuPurchaseToken(purchaseToken)
+                mockFlowBuilder.build()
+                builder.setSubscriptionUpdateParams(mockUpdateParams)
+            }
+            verify(exactly = 0) {
+                mockFlowBuilder.setReplaceSkusProrationMode(any())
+            }
+            assertThat(res).isSameAs(builder)
+        }
+
+        @Test
+        fun `null info`() {
+            // given
+            val updatePurchaseInfo = null
+
+            // when
+            val res = builder.setSubscriptionUpdateParams(updatePurchaseInfo)
+
+            // then
+            verify(exactly = 0) {
+                BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                mockFlowBuilder.setReplaceSkusProrationMode(any())
+            }
+            assertThat(res).isSameAs(builder)
         }
     }
 }

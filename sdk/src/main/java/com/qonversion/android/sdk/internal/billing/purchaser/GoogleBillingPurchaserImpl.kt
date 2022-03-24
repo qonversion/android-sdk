@@ -6,6 +6,7 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
+import com.qonversion.android.sdk.internal.billing.utils.setSubscriptionUpdateParams
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
@@ -40,24 +41,5 @@ internal class GoogleBillingPurchaserImpl(logger: Logger) : BaseClass(logger), G
                 )
             }
         }
-    }
-
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
-        info: UpdatePurchaseInfo? = null
-    ): BillingFlowParams.Builder {
-        if (info != null) {
-            val updateParams = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
-                .setOldSkuPurchaseToken(info.purchaseToken)
-                .apply {
-                    info.prorationMode?.let {
-                        setReplaceSkusProrationMode(it)
-                    }
-                }
-                .build()
-
-            setSubscriptionUpdateParams(updateParams)
-        }
-
-        return this
     }
 }
