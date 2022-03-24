@@ -20,6 +20,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 @ExperimentalCoroutinesApi
 internal class UserServiceDecoratorTest {
@@ -69,7 +70,6 @@ internal class UserServiceDecoratorTest {
 
             // replace deferred with mock one to be able to verify `complete` call
             userServiceDecorator.userLoadingDeferred = mockUserDeferred
-
         }
 
         @Test
@@ -84,6 +84,25 @@ internal class UserServiceDecoratorTest {
             // then
             coVerify(exactly = 0) { userServiceDecorator.loadOrCreateUser(any()) }
             assertThat(result).isSameAs(mockUser)
+        }
+
+        @Test
+        fun `somehow two concurrent requests executed`() {
+            // given
+            coEvery { userServiceDecorator.loadOrCreateUser(testUserId) } coAnswers {
+                userServiceDecorator.userLoadingDeferred = null
+                mockUser
+            }
+
+            // when
+            assertDoesNotThrow {
+                runTest {
+                    val result = userServiceDecorator.getUser(testUserId)
+
+                    // then
+                    assertThat(result).isSameAs(mockUser)
+                }
+            }
         }
     }
 

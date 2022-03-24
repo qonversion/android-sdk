@@ -5,7 +5,7 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.networkLayer.dto.Request
 import com.qonversion.android.sdk.internal.networkLayer.dto.RawResponse
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
-import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorCode
+import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorHttpCode
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -105,7 +105,7 @@ internal class NetworkClientImpl(
         } else {
             connection.errorStream
         }
-        val response = if (code.isInternalServerErrorCode) {
+        val response = if (code.isInternalServerErrorHttpCode) {
             emptyMap<Any, Any>()
         } else {
             val responsePayload = read(stream)
