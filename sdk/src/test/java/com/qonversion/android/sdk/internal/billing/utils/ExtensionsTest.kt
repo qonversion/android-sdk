@@ -4,8 +4,11 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.internal.utils.toTimeString
 import io.mockk.every
+import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -182,16 +185,22 @@ internal class ExtensionsTest {
         @Test
         fun `purchase history record description`() {
             // given
+            val purchaseTime = 42L
+            mockkStatic("com.qonversion.android.sdk.internal.utils.DateUtilsKt")
+            every { purchaseTime.toTimeString() } returns "purchase_time"
+
             val purchase = spyk(PurchaseHistoryRecord("{}", ""))
             every { purchase.skus } returns arrayListOf("test id")
-            every { purchase.purchaseTime } returns 783621064000
+            every { purchase.purchaseTime } returns purchaseTime
             every { purchase.purchaseToken } returns "test_token"
 
             // when
             val res = purchase.getDescription()
 
             // then
-            assertThat(res).isEqualTo("ProductId: test id; PurchaseTime: 1994.10.31 19:31; PurchaseToken: test_token")
+            assertThat(res).isEqualTo("ProductId: test id; PurchaseTime: purchase_time; PurchaseToken: test_token")
+
+            unmockkStatic("com.qonversion.android.sdk.internal.utils.DateUtilsKt")
         }
         
         @Test
