@@ -30,6 +30,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import io.mockk.called
+import io.mockk.spyk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.TimeoutCancellationException
@@ -72,6 +73,24 @@ internal class GoogleBillingControllerTest {
         every { mockConsumer.setup(mockBillingClient) } just runs
         every { mockDataFetcher.setup(mockBillingClient) } just runs
         every { mockPurchaser.setup(mockBillingClient) } just runs
+    }
+
+    @Test
+    fun `set null billing client`() {
+        // given
+        billingController = spyk(billingController)
+
+        // when
+        billingController.billingClient = null
+
+        // then
+        verify(exactly = 0) {
+            mockConsumer.setup(any())
+            mockPurchaser.setup(any())
+            mockDataFetcher.setup(any())
+            @Suppress("DeferredResultUnused")
+            billingController.connectToBillingAsync()
+        }
     }
 
     @Nested
@@ -220,6 +239,25 @@ internal class GoogleBillingControllerTest {
         fun `client is not ready and connects immediately`() {
             // given
             every { mockBillingClient.isReady } returns false
+            billingController.connectionDeferred = CompletableDeferred()
+
+            // when and then
+            assertDoesNotThrow {
+                runTest {
+                    withTimeout(waitingEpsilonMs) {
+                        launch {
+                            billingController.connectionDeferred?.complete(null)
+                        }
+                        billingController.waitForReadyClient()
+                    }
+                }
+            }
+        }
+
+        @Test
+        fun `client is null and connects immediately`() {
+            // given
+            billingController.billingClient = null
             billingController.connectionDeferred = CompletableDeferred()
 
             // when and then
@@ -501,6 +539,28 @@ internal class GoogleBillingControllerTest {
             assertThat(slotInfoLogMessage.captured)
                 .startsWith("Purchases:")
                 .contains(purchase1Sku, purchase2Sku)
+        }
+
+        @Test
+        fun `failed update with empty purchases`() {
+            // given
+            val errorCode = BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED
+            every { mockBillingResult.responseCode } returns errorCode
+            val purchases = emptyList<Purchase>()
+
+            // when
+            billingController.purchasesUpdatedListener.onPurchasesUpdated(mockBillingResult, purchases)
+
+            // then
+            verify(exactly = 1) { mockPurchasesListener.onPurchasesFailed(purchases, any()) }
+            assertThat(slotBillingError.captured.billingResponseCode).isEqualTo(errorCode)
+            assertThat(slotBillingError.captured.message).contains("ITEM_ALREADY_OWNED")
+
+            verify(exactly = 1) { mockLogger.error(any()) }
+            verify(exactly = 0) { mockLogger.info(any()) }
+            assertThat(slotErrorLogMessages.captured)
+                .startsWith("onPurchasesUpdated() -> failed to update purchases")
+                .contains("ITEM_ALREADY_OWNED")
         }
     }
 
@@ -978,6 +1038,42 @@ internal class GoogleBillingControllerTest {
             coEvery {
                 mockDataFetcher.queryPurchasesHistory(skuType)
             } returns Pair(mockBillingResult, listOf(mockPurchaseHistoryRecord))
+
+            // when
+            runTest {
+                billingController.purchase(mockActivity, mockSkuDetails, mockOldSkuDetails)
+            }
+
+            // then
+            coVerify(exactly = 1) { mockPurchaser.purchase(mockActivity, mockSkuDetails, any()) }
+            assertThat(slotUpdatePurchaseInfo.captured.purchaseToken).isEqualTo(testPurchaseToken)
+        }
+
+        @Test
+        fun `purchase update success with several history items`() {
+            // given
+            val sku = "temp sku"
+            val mockOldSkuDetails = mockk<SkuDetails>().also {
+                every { it.sku } returns sku
+            }
+            mockConnection()
+            every { mockBillingClient.isReady } returns true
+            billingController.billingClient = mockBillingClient
+
+            val testPurchaseToken = "test purchase token"
+            val mockPurchaseHistoryRecord = mockk<PurchaseHistoryRecord>().also {
+                every { it.purchaseToken } returns testPurchaseToken
+                every { it.skus } returns arrayListOf(sku)
+            }
+            val mockAnotherPurchaseHistoryRecord = mockk<PurchaseHistoryRecord>().also {
+                every { it.skus } returns arrayListOf("another sku")
+            }
+            val mockBillingResult = mockk<BillingResult>().also {
+                every { it.responseCode } returns BillingClient.BillingResponseCode.OK
+            }
+            coEvery {
+                mockDataFetcher.queryPurchasesHistory(skuType)
+            } returns Pair(mockBillingResult, listOf(mockAnotherPurchaseHistoryRecord, mockPurchaseHistoryRecord))
 
             // when
             runTest {

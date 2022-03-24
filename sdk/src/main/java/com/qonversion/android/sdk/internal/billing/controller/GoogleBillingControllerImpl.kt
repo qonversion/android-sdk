@@ -55,9 +55,7 @@ internal class GoogleBillingControllerImpl(
             logger.info("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
-            val errorMessage = if (
-                billingResult.isOk && purchases == null
-            ) {
+            val errorMessage = if (billingResult.isOk) {
                 "No purchase was passed for successful billing result."
             } else {
                 billingResult.getDescription()

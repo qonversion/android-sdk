@@ -1,8 +1,5 @@
 package com.qonversion.android.sdk.internal.networkLayer.utils
 
-import io.mockk.every
-import io.mockk.spyk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONArray
 import org.json.JSONObject
@@ -105,7 +102,7 @@ internal class ExtensionsKtTest {
         val res = obj.parseJsonValue()
 
         // then
-        assertThat(res).isEqualTo(obj)
+        assertThat(res).isEqualTo(expectedValues)
     }
 
     @Test
