@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal
 
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.config.LoggerConfig
 import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
@@ -7,6 +8,7 @@ import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
+import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 
 import com.qonversion.android.sdk.internal.provider.NetworkConfigHolder
 import com.qonversion.android.sdk.internal.provider.CacheLifetimeConfigProvider
@@ -17,22 +19,34 @@ import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
-internal object InternalConfig :
-    EnvironmentProvider,
+internal class InternalConfig(
+    override var primaryConfig: PrimaryConfig,
+    val storeConfig: StoreConfig,
+    val networkConfig: NetworkConfig,
+    var loggerConfig: LoggerConfig,
+    override var cacheLifetimeConfig: CacheLifetimeConfig,
+    override var entitlementsUpdateListener: EntitlementsUpdateListener? = null
+) : EnvironmentProvider,
     LoggerConfigProvider,
     CacheLifetimeConfigProvider,
     NetworkConfigHolder,
     PrimaryConfigProvider,
     UidProvider,
     EntitlementsUpdateListenerProvider {
+
     override var uid: String = ""
 
-    override lateinit var primaryConfig: PrimaryConfig
-    lateinit var storeConfig: StoreConfig
-    lateinit var networkConfig: NetworkConfig
-    lateinit var loggerConfig: LoggerConfig
-    override lateinit var cacheLifetimeConfig: CacheLifetimeConfig
-    override var entitlementsUpdateListener: EntitlementsUpdateListener? = null
+    constructor(qonversionConfig: QonversionConfig) : this(
+        qonversionConfig.primaryConfig,
+        qonversionConfig.storeConfig,
+        qonversionConfig.networkConfig,
+        qonversionConfig.loggerConfig,
+        qonversionConfig.cacheLifetime.run {
+            val internalBackgroundCacheLifetime = InternalCacheLifetime.from(this)
+            CacheLifetimeConfig(internalBackgroundCacheLifetime)
+        },
+        qonversionConfig.entitlementsUpdateListener
+    )
 
     override val environment
         get() = primaryConfig.environment

@@ -26,7 +26,7 @@ internal class DependenciesAssemblyBuilderTest {
     }
 
     @Test
-    fun `build`() {
+    fun build() {
         // given
 
         // when
