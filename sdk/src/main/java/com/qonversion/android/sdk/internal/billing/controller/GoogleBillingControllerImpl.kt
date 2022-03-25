@@ -16,11 +16,11 @@ import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.billing.purchaser.GoogleBillingPurchaser
 import com.qonversion.android.sdk.internal.billing.utils.getDescription
 import com.qonversion.android.sdk.internal.billing.utils.isOk
+import com.qonversion.android.sdk.internal.billing.utils.sku
 import com.qonversion.android.sdk.internal.common.BaseClass
 import com.qonversion.android.sdk.internal.exception.ErrorCode
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.utils.sku
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
