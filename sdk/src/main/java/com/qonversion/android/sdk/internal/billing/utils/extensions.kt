@@ -12,14 +12,14 @@ internal fun BillingResult.getDescription() =
 internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
 
 internal fun Purchase.getDescription() =
-    "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: $sku; OrderId: $orderId; PurchaseToken: $purchaseToken"
 
 internal val Purchase.sku: String? get() = skus.firstOrNull()
 
 internal fun PurchaseHistoryRecord.getDescription() =
-    "ProductId: ${this.sku}; " +
-            "PurchaseTime: ${this.purchaseTime.toTimeString()}; " +
-            "PurchaseToken: ${this.purchaseToken}"
+    "ProductId: $sku; " +
+            "PurchaseTime: ${purchaseTime.toTimeString()}; " +
+            "PurchaseToken: $purchaseToken"
 
 internal val PurchaseHistoryRecord.sku: String? get() = skus.firstOrNull()
 

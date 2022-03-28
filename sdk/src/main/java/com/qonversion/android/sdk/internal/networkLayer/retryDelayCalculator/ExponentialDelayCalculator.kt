@@ -19,19 +19,12 @@ internal class ExponentialDelayCalculator(
     @Throws(IllegalArgumentException::class)
     override fun countDelay(minDelay: Long, retriesCount: Int): Long {
         var delay: Long = (minDelay + factor.pow(retriesCount)).toLong()
-        var delta: Long = (delay * jitter).roundToLong()
+        val delta: Long = (delay * jitter).roundToLong()
 
-        if (delta != Long.MAX_VALUE) {
-            delta += 1L
-        }
-
-        delay += randomizer.nextLong(delta)
-
+        delay += randomizer.nextLong(delta + 1)
         // On big attempt indexes may overflow long bounds and become negative.
-        return if (delay >= 0) {
-            min(delay, maxDelayMS)
-        } else {
-            maxDelayMS
-        }
+        if (delay < 0) delay = maxDelayMS
+
+        return min(delay, maxDelayMS)
     }
 }

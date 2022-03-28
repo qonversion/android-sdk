@@ -52,6 +52,33 @@ internal class QonversionConfigTest {
     }
 
     @Nested
+    inner class GettersTest {
+
+        @Test
+        fun getters() {
+            // given
+            val config = QonversionConfig(
+                mockApplication,
+                mockPrimaryConfig,
+                mockStoreConfig,
+                mockLoggerConfig,
+                mockNetworkConfig,
+                mockBackgroundCacheLifetime,
+                mockEntitlementsListener
+            )
+
+            // then
+            assertThat(config.application).isSameAs(mockApplication)
+            assertThat(config.primaryConfig).isSameAs(mockPrimaryConfig)
+            assertThat(config.storeConfig).isSameAs(mockStoreConfig)
+            assertThat(config.loggerConfig).isSameAs(mockLoggerConfig)
+            assertThat(config.networkConfig).isSameAs(mockNetworkConfig)
+            assertThat(config.cacheLifetime).isSameAs(mockBackgroundCacheLifetime)
+            assertThat(config.entitlementsUpdateListener).isSameAs(mockEntitlementsListener)
+        }
+    }
+
+    @Nested
     inner class SettersTest {
 
         @Test

@@ -562,6 +562,25 @@ internal class UserControllerTest {
                     ?.onEntitlementsUpdated(mockEntitlements)
             }
         }
+
+        @Test
+        fun `user entitlements differ but no listener provided`() = runTest {
+            // given
+            userController = spyk(createController(this))
+            every { userController.storeUser(mockUser) } just runs
+            every { mockUserCacher.getStoredValue() } returns mockStoredUser
+            every { mockStoredUser.entitlements } returns emptyList()
+            every { mockEntitlementsUpdateListenerProvider.entitlementsUpdateListener } returns null
+
+            // when
+            userController.handleNewUserInfo(mockUser)
+
+            // then
+            verify {
+                mockUserCacher.getStoredValue()
+                userController.storeUser(mockUser)
+            }
+        }
     }
 
     private fun createController(scope: CoroutineScope): UserControllerImpl {

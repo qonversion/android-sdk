@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer.dto
 
-import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorCode
+import com.qonversion.android.sdk.internal.networkLayer.utils.isInternalServerErrorHttpCode
 import com.qonversion.android.sdk.internal.networkLayer.utils.isSuccessHttpCode
 
 internal class RawResponse(
@@ -8,5 +8,5 @@ internal class RawResponse(
     val payload: Any // Array or Map
 ) {
     val isSuccess: Boolean = code.isSuccessHttpCode
-    val isInternalServerError: Boolean = code.isInternalServerErrorCode
+    val isInternalServerError: Boolean = code.isInternalServerErrorHttpCode
 }

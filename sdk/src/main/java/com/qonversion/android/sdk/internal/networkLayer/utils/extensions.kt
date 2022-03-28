@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer.utils
 
+import androidx.annotation.VisibleForTesting
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -27,7 +28,8 @@ internal fun JSONArray.toList(): List<Any> {
 }
 
 @Throws(JSONException::class)
-private fun Any.parseJsonValue() = when (this) {
+@VisibleForTesting
+internal fun Any.parseJsonValue() = when (this) {
     is JSONArray -> toList()
     is JSONObject -> toMap()
     else -> this
@@ -39,5 +41,5 @@ private const val MIN_INTERNAL_SERVER_ERROR_CODE = 500
 private const val MAX_INTERNAL_SERVER_ERROR_CODE = 599
 
 internal val Int.isSuccessHttpCode: Boolean get() = this in MIN_SUCCESS_CODE..MAX_SUCCESS_CODE
-internal val Int.isInternalServerErrorCode: Boolean get() =
+internal val Int.isInternalServerErrorHttpCode: Boolean get() =
     this in MIN_INTERNAL_SERVER_ERROR_CODE..MAX_INTERNAL_SERVER_ERROR_CODE

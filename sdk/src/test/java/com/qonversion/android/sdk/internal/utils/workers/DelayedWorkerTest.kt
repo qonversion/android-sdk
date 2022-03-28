@@ -16,6 +16,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import java.lang.IllegalStateException
 
 internal class DelayedWorkerTest {
@@ -161,6 +162,17 @@ internal class DelayedWorkerTest {
 
             // then
             verify(exactly = 1) { job.cancel() }
+        }
+
+        @Test
+        fun `cancelling null job`() {
+            // given
+            worker.job = null
+
+            // when and then
+            assertDoesNotThrow {
+                worker.cancel()
+            }
         }
     }
 
