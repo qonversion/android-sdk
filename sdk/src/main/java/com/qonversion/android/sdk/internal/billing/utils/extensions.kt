@@ -1,9 +1,11 @@
 package com.qonversion.android.sdk.internal.billing.utils
 
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.internal.billing.dto.UpdatePurchaseInfo
 import com.qonversion.android.sdk.internal.utils.toTimeString
 
 internal fun BillingResult.getDescription() =
@@ -39,4 +41,23 @@ internal fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): S
         BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> "ITEM_NOT_OWNED"
         else -> "$this"
     }
+}
+
+internal fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
+    info: UpdatePurchaseInfo? = null
+): BillingFlowParams.Builder {
+    if (info != null) {
+        val updateParams = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+            .setOldSkuPurchaseToken(info.purchaseToken)
+            .apply {
+                info.prorationMode?.let {
+                    setReplaceSkusProrationMode(it)
+                }
+            }
+            .build()
+
+        setSubscriptionUpdateParams(updateParams)
+    }
+
+    return this
 }
