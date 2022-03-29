@@ -5,29 +5,10 @@ plugins {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 apply plugin: 'org.jetbrains.dokka'
-
-jacoco {
-    toolVersion '0.8.7'
-}
-jacocoAndroidUnitTestReport {
-    excludes += [
-            'com/qonversion/android/sdk/old',
-            'com/qonversion/android/sdk/dto',
-            'com/qonversion/android/sdk/config',
-            // todo remove lines below after the code will be implemented and covered.
-            'com/qonversion/android/sdk/internal/common/mappers/EntitlementMapper.class',
-            'com/qonversion/android/sdk/internal/common/mappers/ProductMapper.class',
-            'com/qonversion/android/sdk/internal/common/mappers/SubscriptionMapper.class',
-            'com/qonversion/android/sdk/internal/common/mappers/UserMapper.class',
-            'com/qonversion/android/sdk/internal/common/mappers/UserPurchaseMapper.class'
-    ]
-}
 
 kover {
     disabled = false
-    jacocoEngineVersion.set('0.8.7')
 }
 
 def koverExcludes = [
@@ -81,10 +62,6 @@ android {
     testOptions {
         unitTests.all {
             useJUnitPlatform()
-            jacoco {
-                includeNoLocationClasses = true
-                excludes = ['jdk.internal.*']
-            }
             // All the usual Gradle options.
             testLogging {
                 events "passed", "skipped", "failed", "standardOut", "standardError"
