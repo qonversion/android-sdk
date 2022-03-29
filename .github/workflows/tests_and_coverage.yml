@@ -21,11 +21,17 @@ jobs:
       - name: Generate unit test report with Kotlin Kover
         run: ./gradlew koverXmlReport
 
-      - name: Download Test Reports Folder
-        uses: actions/download-artifact@v2
-        with:
-          name: kover
-          path: sdk/build/reports/kover
+#      - name: Generate report
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: jacoco
+#          path: sdk/build/jacoco
+#
+#      - name: Download Test Reports Folder
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: kover
+#          path: sdk/build/reports/kover
 
       - name: Upload Test Report
         run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/reports/kover/project-xml/report.xml"
