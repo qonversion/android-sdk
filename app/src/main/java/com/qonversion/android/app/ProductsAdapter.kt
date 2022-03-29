@@ -1,11 +1,10 @@
 package com.qonversion.android.app
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.qonversion.android.app.databinding.TableRowProductBinding
 import com.qonversion.android.sdk.old.dto.products.QProduct
-import kotlinx.android.synthetic.main.table_row_product.view.*
 
 class ProductsAdapter(
     private val products: List<QProduct>,
@@ -14,9 +13,9 @@ class ProductsAdapter(
     RecyclerView.Adapter<ProductsAdapter.RowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_product, parent, false)
-        return RowViewHolder(itemView) { index ->
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = TableRowProductBinding.inflate(inflater)
+        return RowViewHolder(binding) { index ->
             onItemClicked(products[index])
         }
     }
@@ -26,18 +25,21 @@ class ProductsAdapter(
 
     override fun getItemCount() = products.size
 
-    inner class RowViewHolder(itemView: View, onItemClicked: (Int) -> Unit) :
-        RecyclerView.ViewHolder(itemView) {
+    inner class RowViewHolder(
+        private val binding: TableRowProductBinding,
+        onItemClicked: (Int) -> Unit
+    ) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
-            itemView.setOnClickListener {
+            binding.root.setOnClickListener {
                 onItemClicked(adapterPosition)
             }
         }
 
-        fun bind(product: QProduct) = with(itemView) {
-            txtName.text = product.qonversionID
-            txtDescription.text = product.skuDetail?.description
-            txtPrice.text = product.skuDetail?.price
+        fun bind(product: QProduct) = with(binding.root) {
+            binding.txtName.text = product.qonversionID
+            binding.txtDescription.text = product.skuDetail?.description
+            binding.txtPrice.text = product.skuDetail?.price
         }
     }
 }

@@ -10,6 +10,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.databinding.ActivityScreenBinding
 import com.qonversion.android.sdk.old.Qonversion
 import com.qonversion.android.sdk.old.QonversionError
 import com.qonversion.android.sdk.old.QonversionErrorCode
@@ -23,7 +24,6 @@ import com.qonversion.android.sdk.old.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.old.di.module.ActivityModule
 import com.qonversion.android.sdk.old.dto.QPermission
 import com.qonversion.android.sdk.old.logger.ConsoleLogger
-import kotlinx.android.synthetic.main.activity_screen.*
 import javax.inject.Inject
 
 class ScreenActivity : AppCompatActivity(), ScreenContract.View {
@@ -36,10 +36,12 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     @Inject
     lateinit var screenProcessor: ScreenProcessor
 
+    private lateinit var binding: ActivityScreenBinding
     private val logger = ConsoleLogger()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityScreenBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_screen)
 
         injectDependencies()
@@ -97,7 +99,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun purchase(productId: String) {
         val actionResult = QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
         automationsManager.automationsDidStartExecuting(actionResult)
-        progressBar.visibility = View.VISIBLE
+        binding.progressBarContainer.progressBar.visibility = View.VISIBLE
 
         Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
@@ -113,7 +115,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun restore() {
         val actionResult = QActionResult(QActionResultType.Restore)
         automationsManager.automationsDidStartExecuting(actionResult)
-        progressBar.visibility = View.VISIBLE
+        binding.progressBarContainer.progressBar.visibility = View.VISIBLE
 
         Qonversion.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
@@ -127,7 +129,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     override fun close(actionResult: QActionResult) {
-        progressBar.visibility = View.GONE
+        binding.progressBarContainer.progressBar.visibility = View.GONE
         finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()
@@ -153,13 +155,13 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     }
 
     private fun configureWebClient() {
-        webView.webViewClient = object : WebViewClient() {
+        binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                progressBar.visibility = View.GONE
+                binding.progressBarContainer.progressBar.visibility = View.GONE
                 return super.onPageFinished(view, url)
             }
         }
@@ -171,7 +173,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         extraHtmlPage?.let {
             screenProcessor.processScreen(it,
                 { macrosHtml ->
-                    webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
+                    binding.webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
                 }, { error ->
                     logger.release("loadWebView() -> Failure to process screen macros ${error.description}")
                     onError(error, true)
@@ -199,7 +201,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
         error: QonversionError,
         actionResult: QActionResult
     ) {
-        progressBar.visibility = View.GONE
+        binding.progressBarContainer.progressBar.visibility = View.GONE
         logger.debug("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)

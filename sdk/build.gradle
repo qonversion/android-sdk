@@ -1,6 +1,9 @@
+plugins {
+    id 'org.jetbrains.kotlinx.kover' version '0.5.0'
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 apply plugin: 'org.jetbrains.dokka'
@@ -22,16 +25,37 @@ jacocoAndroidUnitTestReport {
     ]
 }
 
+kover {
+    disabled = false
+    jacocoEngineVersion.set('0.8.7')
+}
+
+def koverExcludes = [
+        'com.qonversion.android.sdk.old.*',
+        'com.qonversion.android.sdk.dto.*',
+        'com.qonversion.android.sdk.config.*',
+        'com.qonversion.android.sdk.databinding.*',
+        // todo remove lines below after the code will be implemented and covered.
+        'com.qonversion.android.sdk.internal.common.mappers.EntitlementMapper',
+        'com.qonversion.android.sdk.internal.common.mappers.ProductMapper',
+        'com.qonversion.android.sdk.internal.common.mappers.SubscriptionMapper',
+        'com.qonversion.android.sdk.internal.common.mappers.UserMapper',
+        'com.qonversion.android.sdk.internal.common.mappers.UserPurchaseMapper'
+]
+tasks.koverHtmlReport {
+    excludes = koverExcludes
+}
+tasks.koverXmlReport {
+    excludes = koverExcludes
+}
+
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 30
 
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 29
-        versionCode release.versionCode
-        versionName release.versionName
+        targetSdkVersion 30
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'io.qonversion.android.sdk'
@@ -40,8 +64,8 @@ android {
 
     buildTypes {
         buildTypes.each {
-            it.buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
-            it.buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+//            it.buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
+            it.buildConfigField("String","VERSION_NAME", "\"${defaultConfig.versionName}\"")
         }
         release {
             minifyEnabled false
@@ -68,6 +92,11 @@ android {
                 showStandardStreams = true
             }
         }
+    }
+
+    // todo remove if automation will be moved to separate module
+    buildFeatures {
+        viewBinding true
     }
 }
 
