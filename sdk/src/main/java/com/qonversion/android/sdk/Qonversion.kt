@@ -24,7 +24,7 @@ interface Qonversion {
 
     companion object {
 
-        private var backingInstance: Qonversion? = null
+        internal var backingInstance: Qonversion? = null
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.
@@ -43,15 +43,18 @@ interface Qonversion {
          * The function is the best way to set additional configs you need to use Qonversion SDK.
          * You still have an option to set a part of additional configs later via calling separated setters.
          *
-         * @param config a config that contains key SDK settings.
+         * @param qonversionConfig a config that contains key SDK settings.
          * Call [QonversionConfig.Builder.build] to configure and create a QonversionConfig instance.
          * @return Initialized instance of the Qonversion SDK.
          */
         @JvmStatic
-        fun initialize(config: QonversionConfig): Qonversion {
-            val dependenciesAssembly = DependenciesAssembly.Builder(config.application, InternalConfig)
-                .build()
-            return QonversionInternal(config, InternalConfig, dependenciesAssembly).also {
+        fun initialize(qonversionConfig: QonversionConfig): Qonversion {
+            val internalConfig = InternalConfig(qonversionConfig)
+            val dependenciesAssembly = DependenciesAssembly.Builder(
+                qonversionConfig.application,
+                internalConfig
+            ).build()
+            return QonversionInternal(internalConfig, dependenciesAssembly).also {
                 backingInstance = it
             }
         }

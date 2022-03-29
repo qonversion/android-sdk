@@ -309,10 +309,9 @@ internal class ExtensionsTest {
         @Test
         fun `null info`() {
             // given
-            val updatePurchaseInfo = null
 
             // when
-            val res = builder.setSubscriptionUpdateParams(updatePurchaseInfo)
+            val res = builder.setSubscriptionUpdateParams()
 
             // then
             verify(exactly = 0) {

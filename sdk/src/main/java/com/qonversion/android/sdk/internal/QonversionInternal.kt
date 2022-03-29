@@ -1,14 +1,11 @@
 package com.qonversion.android.sdk.internal
 
-import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LogLevel
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.dto.User
-import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.exception.QonversionException
 import kotlinx.coroutines.CoroutineScope
@@ -20,30 +17,15 @@ import com.qonversion.android.sdk.internal.userProperties.controller.UserPropert
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
 internal class QonversionInternal(
-    config: QonversionConfig,
     private val internalConfig: InternalConfig,
     dependenciesAssembly: DependenciesAssembly,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : Qonversion {
 
-    @VisibleForTesting
-    val userPropertiesController: UserPropertiesController =
+    private val userPropertiesController: UserPropertiesController =
         dependenciesAssembly.userPropertiesController()
 
-    @VisibleForTesting
-    val userController: UserController = dependenciesAssembly.userController()
-
-    init {
-        internalConfig.primaryConfig = config.primaryConfig
-        internalConfig.storeConfig = config.storeConfig
-        internalConfig.networkConfig = config.networkConfig
-
-        val internalBackgroundCacheLifetime = InternalCacheLifetime.from(config.cacheLifetime)
-        internalConfig.cacheLifetimeConfig = CacheLifetimeConfig(internalBackgroundCacheLifetime)
-
-        internalConfig.loggerConfig = config.loggerConfig
-        internalConfig.entitlementsUpdateListener = config.entitlementsUpdateListener
-    }
+    private val userController: UserController = dependenciesAssembly.userController()
 
     override fun setEnvironment(environment: Environment) {
         internalConfig.primaryConfig = internalConfig.primaryConfig.copy(environment = environment)
@@ -72,7 +54,10 @@ internal class QonversionInternal(
     }
 
     override fun finish() {
-        TODO("Not yet implemented")
+        internalConfig.entitlementsUpdateListener = null
+        if (Qonversion.backingInstance == this) {
+            Qonversion.backingInstance = null
+        }
     }
 
     override suspend fun getUserInfo(): User {

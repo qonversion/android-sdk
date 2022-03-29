@@ -1,18 +1,14 @@
 package com.qonversion.android.sdk.internal
 
-import android.app.Application
-import com.qonversion.android.sdk.QonversionConfig
+import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.config.LoggerConfig
-import com.qonversion.android.sdk.config.NetworkConfig
 import com.qonversion.android.sdk.config.PrimaryConfig
-import com.qonversion.android.sdk.config.StoreConfig
 import com.qonversion.android.sdk.dto.UserProperty
 import com.qonversion.android.sdk.dto.User
 import com.qonversion.android.sdk.dto.CacheLifetime
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.LogLevel
-import com.qonversion.android.sdk.dto.Store
 import com.qonversion.android.sdk.internal.cache.CacheLifetimeConfig
 import com.qonversion.android.sdk.internal.cache.InternalCacheLifetime
 import com.qonversion.android.sdk.internal.di.DependenciesAssembly
@@ -30,7 +26,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import io.mockk.just
 import io.mockk.runs
-import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -41,27 +36,19 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.lang.ref.WeakReference
 
 internal class QonversionInternalTest {
     private lateinit var qonversionInternal: QonversionInternal
-    private lateinit var qonversionConfig: QonversionConfig
 
-    private val mockApplication = mockk<Application>()
-    private val mockStore = mockk<Store>()
     private val mockProjectKey = "projectKey"
     private val mockLaunchMode = mockk<LaunchMode>()
     private val mockEnvironment = mockk<Environment>()
     private val mockLogLevel = mockk<LogLevel>()
     private val mockLogTag = "log tag"
     private val mockBackgroundCacheLifetime = mockk<CacheLifetime>()
-    private val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
-    private val mockShouldConsumePurchases = false
     private val mockBackgroundInternalCacheLifetime = mockk<InternalCacheLifetime>()
     private val mockPrimaryConfig =
         PrimaryConfig(mockProjectKey, mockLaunchMode, mockEnvironment)
-    private val mockNetworkConfig = NetworkConfig()
-    private val mockStoreConfig = StoreConfig(mockStore, mockShouldConsumePurchases)
     private val mockLoggerConfig = LoggerConfig(mockLogLevel, mockLogTag)
     private val mockInternalConfig = mockk<InternalConfig>(relaxed = true)
     private val mockDependenciesAssembly = mockk<DependenciesAssembly>(relaxed = true)
@@ -72,16 +59,6 @@ internal class QonversionInternalTest {
         every {
             InternalCacheLifetime.from(mockBackgroundCacheLifetime)
         } returns mockBackgroundInternalCacheLifetime
-
-        qonversionConfig = QonversionConfig(
-            mockApplication,
-            mockPrimaryConfig,
-            mockStoreConfig,
-            mockLoggerConfig,
-            mockNetworkConfig,
-            mockBackgroundCacheLifetime,
-            mockEntitlementsUpdateListener
-        )
     }
 
     @AfterEach
@@ -90,39 +67,12 @@ internal class QonversionInternalTest {
     }
 
     @Nested
-    inner class InitTest {
-
-        @Test
-        fun `init`() {
-            // given
-            val expectedCacheLifetimeConfig = CacheLifetimeConfig(
-                mockBackgroundInternalCacheLifetime,
-                InternalCacheLifetime.FiveMin
-            )
-
-            // when
-            qonversionInternal =
-                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
-
-            // then
-            verify {
-                mockInternalConfig.primaryConfig = mockPrimaryConfig
-                mockInternalConfig.storeConfig = mockStoreConfig
-                mockInternalConfig.networkConfig = mockNetworkConfig
-                mockInternalConfig.loggerConfig = mockLoggerConfig
-                mockInternalConfig.cacheLifetimeConfig = expectedCacheLifetimeConfig
-                mockInternalConfig.entitlementsUpdateListener = mockEntitlementsUpdateListener
-            }
-        }
-    }
-
-    @Nested
     inner class SettersTest {
 
         @BeforeEach
         fun setUp() {
             qonversionInternal =
-                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
+                QonversionInternal(mockInternalConfig, mockDependenciesAssembly)
         }
 
         @Test
@@ -237,7 +187,7 @@ internal class QonversionInternalTest {
             } returns mockUserPropertiesController
 
             qonversionInternal =
-                QonversionInternal(qonversionConfig, mockInternalConfig, mockDependenciesAssembly)
+                QonversionInternal(mockInternalConfig, mockDependenciesAssembly)
         }
 
         @Test
@@ -312,12 +262,7 @@ internal class QonversionInternalTest {
         @Test
         fun `get user info suspend`() = runTest {
             // given
-            qonversionInternal =
-                QonversionInternal(
-                    qonversionConfig,
-                    mockInternalConfig,
-                    mockDependenciesAssembly
-                )
+            qonversionInternal = QonversionInternal(mockInternalConfig, mockDependenciesAssembly)
             val mockUser = mockk<User>()
             coEvery { mockUserController.getUser() } returns mockUser
 
@@ -335,12 +280,7 @@ internal class QonversionInternalTest {
         fun `get user info success callback`() = runTest {
             // given
             qonversionInternal = spyk(
-                QonversionInternal(
-                    qonversionConfig,
-                    mockInternalConfig,
-                    mockDependenciesAssembly,
-                    this
-                )
+                QonversionInternal(mockInternalConfig, mockDependenciesAssembly, this)
             )
 
             val mockUser = mockk<User>()
@@ -366,12 +306,7 @@ internal class QonversionInternalTest {
         fun `get user info error callback`() = runTest {
             // given
             qonversionInternal = spyk(
-                QonversionInternal(
-                    qonversionConfig,
-                    mockInternalConfig,
-                    mockDependenciesAssembly,
-                    this
-                )
+                QonversionInternal(mockInternalConfig, mockDependenciesAssembly, this)
             )
             val exception = QonversionException(ErrorCode.Serialization, "error")
             coEvery { qonversionInternal.getUserInfo() } throws exception
@@ -390,6 +325,52 @@ internal class QonversionInternalTest {
             yield()
             assertThat(isLambdaCalled).isTrue
             coVerify(exactly = 1) { qonversionInternal.getUserInfo() }
+        }
+    }
+
+    @Nested
+    inner class FinishTest {
+
+        @BeforeEach
+        fun setUp() {
+            mockkObject(Qonversion)
+
+            every { Qonversion.backingInstance = any() } just runs
+            qonversionInternal = QonversionInternal(mockInternalConfig, mockDependenciesAssembly)
+        }
+
+        @AfterEach
+        fun tearDown() {
+            unmockkObject(Qonversion)
+        }
+
+        @Test
+        fun `finish current shared instance`() {
+            // given
+            every { Qonversion.backingInstance } returns qonversionInternal
+
+            // when
+            qonversionInternal.finish()
+
+            // then
+            verify {
+                mockInternalConfig.entitlementsUpdateListener = null
+                Qonversion.backingInstance = null
+            }
+        }
+
+        @Test
+        fun `finish not shared instance`() {
+            // given
+            val sharedInstance = mockk<Qonversion>()
+            every { Qonversion.backingInstance } returns sharedInstance
+
+            // when
+            qonversionInternal.finish()
+
+            // then
+            verify { mockInternalConfig.entitlementsUpdateListener = null }
+            verify(exactly = 0) { Qonversion.backingInstance = any() }
         }
     }
 }

@@ -24,8 +24,8 @@ private val ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS = listOf(
 
 internal data class RetryConfig(
     internal val shouldRetry: Boolean,
-    internal val attemptIndex: Int = 0,
-    internal val delay: Long = 0L
+    internal val attemptIndex: Int,
+    internal val delay: Long
 )
 
 internal class ApiInteractorImpl(
