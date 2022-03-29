@@ -92,7 +92,7 @@ internal class NetworkClientImplTest {
         @Test
         fun `execute get request`() = runTest {
             // given
-            val request = Request.get(testUrlStr, mockHeaders, )
+            val request = Request.get(testUrlStr, mockHeaders)
 
             // when
             val res = networkClient.execute(request)
