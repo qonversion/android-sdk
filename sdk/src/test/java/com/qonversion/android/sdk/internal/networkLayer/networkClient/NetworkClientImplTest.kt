@@ -81,7 +81,7 @@ internal class NetworkClientImplTest {
             verifyOrder {
                 networkClient.parseUrl(testUrlStr)
                 networkClient.connect(mockUrl)
-                mockConnection.requestMethod = "POST"
+                mockConnection.requestMethod = request.type.toString()
                 networkClient.prepareHeaders(mockConnection, mockHeaders)
                 mockConnection.doOutput = true
                 networkClient.write(mockBody, mockOutputStream)
@@ -102,7 +102,7 @@ internal class NetworkClientImplTest {
             verifyOrder {
                 networkClient.parseUrl(testUrlStr)
                 networkClient.connect(mockUrl)
-                mockConnection.requestMethod = "GET"
+                mockConnection.requestMethod = request.type.toString()
                 networkClient.prepareHeaders(mockConnection, mockHeaders)
                 networkClient.handleResponse(mockConnection)
             }
