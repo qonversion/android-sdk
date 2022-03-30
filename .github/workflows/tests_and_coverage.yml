@@ -15,20 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Unit Test with Codecov
-        run: ./gradlew jacocoTestReport
-
-      - name: Generate report
-        uses: actions/upload-artifact@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
         with:
-          name: jacoco
-          path: sdk/build/jacoco
+          java-version: '11'
 
-      - name: Download Test Reports Folder
-        uses: actions/download-artifact@v2
-        with:
-          name: jacoco
-          path: sdk/build/jacoco
+      - name: Generate unit test report with Kotlin Kover
+        run: ./gradlew koverXmlReport
 
       - name: Upload Test Report
-        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/jacoco/jacoco.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -f "sdk/build/reports/kover/project-xml/report.xml"

@@ -1,19 +1,18 @@
 package com.qonversion.android.app
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.qonversion.android.app.databinding.TableRowPermissionBinding
 import com.qonversion.android.sdk.old.dto.QPermission
-import kotlinx.android.synthetic.main.table_row_permission.view.*
 
 class PermissionsAdapter(private val permissions: List<QPermission>) :
     RecyclerView.Adapter<PermissionsAdapter.RowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_permission, parent, false)
-        return RowViewHolder(itemView)
+        val inflater = LayoutInflater.from(parent.context)
+        val itemViewBinding = TableRowPermissionBinding.inflate(inflater)
+        return RowViewHolder(itemViewBinding)
     }
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) =
@@ -21,11 +20,13 @@ class PermissionsAdapter(private val permissions: List<QPermission>) :
 
     override fun getItemCount() = permissions.size
 
-    inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(permission: QPermission) = with(itemView) {
-            txtPermissionId.text = permission.permissionID
-            txtProductId.text = permission.productID
-            txtRenewStateLabel.text = permission.renewState.name
+    inner class RowViewHolder(
+        private val binding: TableRowPermissionBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(permission: QPermission) = with(binding.root) {
+            binding.txtPermissionId.text = permission.permissionID
+            binding.txtProductId.text = permission.productID
+            binding.txtRenewStateLabel.text = permission.renewState.name
         }
     }
 }
