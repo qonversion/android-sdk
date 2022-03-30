@@ -15,7 +15,7 @@ class EnvironmentProvider(private val context: Context) {
         private const val UNKNOWN = "UNKNOWN"
     }
 
-    fun getInfo(idfa: String? = null, pushToken: String? = null): Environment = Environment(
+    fun getInfo(idfa: String? = null): Environment = Environment(
         getVersionName(),
         getCarrier(),
         getDeviceId(),
