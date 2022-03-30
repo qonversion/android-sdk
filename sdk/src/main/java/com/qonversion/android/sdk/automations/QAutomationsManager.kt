@@ -55,7 +55,7 @@ class QAutomationsManager @Inject constructor(
                 }
 
                 if (shouldShowScreen) {
-                    loadScreenIfPossible()
+                    showScreenIfPossible()
                 }
             }
         }
@@ -140,16 +140,20 @@ class QAutomationsManager @Inject constructor(
                 "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
     }
 
-    private fun loadScreenIfPossible() {
+    fun showScreenIfPossible(callback: QonversionShowScreenCallback? = null) {
         repository.actionPoints(
             getQueryParams(),
             { actionPoint ->
                 actionPoint?.let {
                     logger.debug("loadScreenIfPossible() ->  Screen with id ${it.screenId} was found to show")
-                    loadScreen(it.screenId)
-                } ?: logger.release("loadScreenIfPossible() ->  No screens to show")
+                    loadScreen(it.screenId, callback)
+                } ?: run {
+                    callback?.onSuccess()
+                    logger.release("loadScreenIfPossible() ->  No screens to show")
+                }
             },
             {
+                callback?.onError(it)
                 logger.debug("loadScreenIfPossible() -> Failed to retrieve screenId to show")
             }
         )

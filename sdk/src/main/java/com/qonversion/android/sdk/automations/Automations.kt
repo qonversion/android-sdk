@@ -26,6 +26,13 @@ object Automations {
             )
     }
 
+    fun showScreenIfPossible(callback: QonversionShowScreenCallback? = null) {
+        automationsManager?.let { it.showScreenIfPossible(callback) }
+            ?: Qonversion.logLaunchErrorForFunctionName(
+                object {}.javaClass.enclosingMethod?.name
+            )
+    }
+
     /**
      * Show the screen using its ID.
      * @param withID - screen's ID that must be shown
