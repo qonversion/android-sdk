@@ -24,6 +24,7 @@ import java.lang.IllegalStateException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -70,11 +71,15 @@ class GoogleBillingDataFetcherTest {
         every { mockSubsSkuDetailsSecond.sku } returns secondSubsId
 
         dataFetcher = GoogleBillingDataFetcherImpl(mockLogger)
-        dataFetcher.setup(mockBillingClient)
     }
 
     @Nested
     inner class LoadProductsTest {
+
+        @BeforeEach
+        fun setUp() {
+            dataFetcher.setup(mockBillingClient)
+        }
 
         @Test
         fun `load products`() = runTest {
@@ -153,6 +158,7 @@ class GoogleBillingDataFetcherTest {
         @Test
         fun `query sku details`() = runTest {
             // given
+            dataFetcher.setup(mockBillingClient)
             val subsIds = listOf(firstSubsId, secondSubsId)
             val subsSkus = listOf(mockSubsSkuDetailsFirst, mockSubsSkuDetailsSecond)
 
@@ -180,6 +186,7 @@ class GoogleBillingDataFetcherTest {
         @Test
         fun `query sku details failed with error code`() {
             // given
+            dataFetcher.setup(mockBillingClient)
             mockQuerySkuDetails(emptyList(), emptyList())
             mockSubsBillingResult(BillingClient.BillingResponseCode.ERROR)
 
@@ -199,6 +206,7 @@ class GoogleBillingDataFetcherTest {
         @Test
         fun `query sku details succeeded but null returned`() {
             // given
+            dataFetcher.setup(mockBillingClient)
             mockQuerySkuDetails(null, emptyList())
             mockSubsBillingResult()
 
@@ -214,6 +222,19 @@ class GoogleBillingDataFetcherTest {
             verify(exactly = 1) { mockBillingClient.querySkuDetailsAsync(any(), any()) }
             assertThat(exception.message).contains("SkuDetails list for $ids is null.")
         }
+        @Test
+        fun `query sku details before billing initialization`() {
+            // given
+            val subsIds = listOf(firstSubsId, secondSubsId)
+            val skuType = BillingClient.SkuType.SUBS
+
+            // when and then
+            assertThatThrownBy {
+                runTest {
+                    dataFetcher.querySkuDetails(skuType, subsIds.toSet())
+                }
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
+        }
     }
 
     @Nested
@@ -222,6 +243,7 @@ class GoogleBillingDataFetcherTest {
         @Test
         fun `query purchases`() = runTest {
             // given
+            dataFetcher.setup(mockBillingClient)
             val subsResult = listOf<Purchase>(mockk(), mockk())
             val inAppsResult = listOf<Purchase>(mockk(), mockk())
             val expectedResult = subsResult + inAppsResult
@@ -243,6 +265,18 @@ class GoogleBillingDataFetcherTest {
             }
 
             assertThat(result).isEqualTo(expectedResult)
+        }
+
+        @Test
+        fun `query purchases before billing initialization`() {
+            // given
+
+            // when and then
+            assertThatThrownBy {
+                runTest {
+                    dataFetcher.queryPurchases()
+                }
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
         }
 
         @Test
@@ -274,6 +308,7 @@ class GoogleBillingDataFetcherTest {
             @BillingClient.BillingResponseCode inAppsResponseCode: Int
         ) {
             // given
+            dataFetcher.setup(mockBillingClient)
             mockBillingResults(subsResponseCode, inAppsResponseCode)
             mockQueryPurchasesAsyncForSubs(emptyList())
             mockQueryPurchasesAsyncForInApps(emptyList())
@@ -324,6 +359,11 @@ class GoogleBillingDataFetcherTest {
 
     @Nested
     inner class QueryAllPurchasesHistory {
+
+        @BeforeEach
+        fun setUp() {
+            dataFetcher.setup(mockBillingClient)
+        }
 
         @Test
         fun `query all purchases history`() = runTest {
@@ -438,6 +478,7 @@ class GoogleBillingDataFetcherTest {
         @Test
         fun `query purchases history`() = runTest {
             // given
+            dataFetcher.setup(mockBillingClient)
             val skuType = BillingClient.SkuType.SUBS
             val slotPurchasesHistoryCallback = slot<PurchaseHistoryResponseListener>()
             val expectedResult = mockk<List<PurchaseHistoryRecord>>()
@@ -458,10 +499,28 @@ class GoogleBillingDataFetcherTest {
             assertThat(result.second).isSameAs(expectedResult)
             verify(exactly = 1) { mockLogger.verbose("queryPurchasesHistory() -> Querying purchase history for type $skuType") }
         }
+
+        @Test
+        fun `query purchases history before billing initialization`() {
+            // given
+            val skuType = BillingClient.SkuType.SUBS
+
+            // when and then
+            assertThatThrownBy {
+                runTest {
+                    dataFetcher.queryPurchasesHistory(skuType)
+                }
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
+        }
     }
 
     @Nested
     inner class GetHistoryFromRecordsTest {
+
+        @BeforeEach
+        fun setUp() {
+            dataFetcher.setup(mockBillingClient)
+        }
 
         @Test
         fun `get history from null records for skyType SUBS`() {
@@ -545,6 +604,11 @@ class GoogleBillingDataFetcherTest {
 
     @Nested
     inner class LogSkuDetailsTest {
+
+        @BeforeEach
+        fun setUp() {
+            dataFetcher.setup(mockBillingClient)
+        }
 
         @Test
         fun `log sku details empty list`() {
