@@ -121,7 +121,10 @@ object Qonversion : LifecycleDelegate {
 
         productCenterManager?.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { callback?.onSuccess(launchResult) }
+                postToMainThread {
+                    automationsManager?.launchProcessed()
+                    callback?.onSuccess(launchResult)
+                }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback?.onError(error) }

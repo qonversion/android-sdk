@@ -27,8 +27,7 @@ class EnvironmentProvider(private val context: Context) {
         getTimeZone(),
         "android",
         getCountry(),
-        idfa,
-        pushToken
+        idfa
     )
 
     private fun getVersionName(): String = try {

@@ -13,6 +13,9 @@ interface Api {
     @POST("v1/user/init")
     fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
 
+    @POST("v1/user/push-token")
+    fun sendPushToken(@Body request: SendPushTokenRequest): Call<Data<Map<String, Any>>>
+
     @POST("v1/user/purchase")
     fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
 
