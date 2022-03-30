@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.internal.exception.QonversionException
 import com.qonversion.android.sdk.internal.common.serializers.Serializer
 import com.qonversion.android.sdk.internal.common.mappers.Mapper
 import java.lang.ClassCastException
+import java.lang.NullPointerException
 import java.util.Date
 
 private const val KEY_TIMESTAMP = "timestamp"
@@ -41,7 +42,11 @@ internal class CacheMapperImpl<T>(
         }
 
         try {
-            val timestamp = map[KEY_TIMESTAMP] as Long
+            val timestamp = try {
+                map[KEY_TIMESTAMP] as Long
+            } catch (cause: NullPointerException) {
+                throw QonversionException(ErrorCode.Deserialization, "No timestamp in data", cause = cause)
+            }
             val nestedObjectMap = map[KEY_OBJECT] as Map<*, *>?
             val nestedObject = nestedObjectMap?.let {
                 try {

@@ -200,6 +200,22 @@ class SharedPreferencesStorageTest {
             }
             assertThat(result).isEqualTo(expectedValue)
         }
+
+        @Test
+        fun `should load String preference with key without default value`() {
+            // given
+            val key = "key"
+            val expectedValue = "57"
+
+            every { mockPrefs.getString(key, null) } returns expectedValue
+
+            // when
+            val result = prefsStorage.getString(key)
+
+            // then
+            verify(exactly = 1) { mockPrefs.getString(key, null) }
+            assertThat(result).isEqualTo(expectedValue)
+        }
     }
 
     @Nested

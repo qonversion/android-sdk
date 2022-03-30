@@ -16,6 +16,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.io.OutputStreamWriter
+import java.lang.NullPointerException
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -58,12 +59,14 @@ internal class NetworkClientImpl(
     internal fun connect(url: URL): HttpURLConnection {
         return try {
             url.openConnection() as HttpURLConnection
-        } catch (cause: IOException) {
-            throw QonversionException(
-                ErrorCode.NetworkRequestExecution,
-                "Connection opening failed",
-                cause
-            )
+        } catch (cause: Exception) {
+            throw if (cause is IOException || cause is ClassCastException || cause is NullPointerException) {
+                QonversionException(
+                    ErrorCode.NetworkRequestExecution,
+                    "Connection opening failed",
+                    cause
+                )
+            } else cause
         }
     }
 
