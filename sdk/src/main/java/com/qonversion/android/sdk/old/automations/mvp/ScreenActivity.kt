@@ -9,7 +9,6 @@ import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
-import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.databinding.ActivityScreenBinding
 import com.qonversion.android.sdk.old.Qonversion
 import com.qonversion.android.sdk.old.QonversionError
@@ -42,7 +41,7 @@ class ScreenActivity : AppCompatActivity(), ScreenContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScreenBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_screen)
+        setContentView(binding.root)
 
         injectDependencies()
 
