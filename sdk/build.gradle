@@ -7,10 +7,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.jetbrains.dokka'
 
-kover {
-    disabled = false
-}
-
 def koverExcludes = [
         'com.qonversion.android.sdk.old.*', // will be removed
         'com.qonversion.android.sdk.dto.*', // data classes
@@ -43,11 +39,13 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
         group = 'io.qonversion.android.sdk'
         version = release.versionName
+        versionName = release.versionName
+        versionCode = release.versionCode
     }
 
     buildTypes {
         buildTypes.each {
-//            it.buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
+            it.buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
             it.buildConfigField("String","VERSION_NAME", "\"${defaultConfig.versionName}\"")
         }
         release {
