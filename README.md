@@ -1,6 +1,10 @@
+![Logo](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-light-mode-only)
+![Logo](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-dark-mode-only)
+
 <p align="center">
- <a href="https://qonversion.io" target="_blank"><img width="360" height="45" src="https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png"></a>
+ <a href="https://qonversion.io" target="_blank"><img width="480" height="60" src="https://user-images.githubusercontent.com/13959241/161106506-3e260c69-75dd-439d-8758-17f742255fe7.png"></a>
 </p>
+<br>
 
 Qonversion is the data platform to power in-app subscription revenue growth. 
 
@@ -24,7 +28,7 @@ Qonversion is the data platform to power in-app subscription revenue growth.
 ## How It Works: Product Center
 
 <p align="center">
-     <a href="https://documentation.qonversion.io/docs/integrations-overview"><img width="90%" src="https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_pc.png">
+     <a href="https://documentation.qonversion.io/docs/integrations-overview"><img width="90%" src="https://user-images.githubusercontent.com/13959241/161107203-8ef3ecee-86be-47a2-ac57-b21d3da19339.png">
      </a>
 </p>
 
