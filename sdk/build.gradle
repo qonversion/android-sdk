@@ -61,6 +61,10 @@ android {
 
     testOptions {
         unitTests.all {
+            kover {
+                disabled = (name == "testReleaseUnitTest")
+            }
+
             useJUnitPlatform()
             // All the usual Gradle options.
             testLogging {
