@@ -32,7 +32,7 @@ class QAutomationsManager @Inject constructor(
 
     private val logger = ConsoleLogger()
     private var pendingToken: String? = null
-    private var isLaunchFinished = false
+    internal var isLaunchFinished = false
 
     fun onAppForeground() {
         pendingToken?.let {

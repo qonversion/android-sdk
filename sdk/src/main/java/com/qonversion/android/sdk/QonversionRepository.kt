@@ -526,10 +526,8 @@ class QonversionRepository internal constructor(
 
         api.sendPushToken(request).enqueue {
             onResponse = {
-                if (it.body()?.data?.get("result") == "ok") {
-                    preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
-                    preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
-                }
+                preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
+                preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
             }
             onFailure = {
                 logger.release("sendPushTokenRequest - failure - ${it?.toQonversionError()}")
