@@ -62,7 +62,7 @@ android {
     testOptions {
         unitTests.all {
             kover {
-                disabled = (name == "testReleaseUnitTest")
+                disabled = (name != "testReleaseUnitTest")
             }
 
             useJUnitPlatform()
