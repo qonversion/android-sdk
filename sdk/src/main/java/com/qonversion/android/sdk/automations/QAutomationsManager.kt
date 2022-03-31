@@ -72,22 +72,19 @@ class QAutomationsManager @Inject constructor(
 
         if (!isLaunchFinished || Qonversion.appState.isBackground()) {
             pendingToken = token
-            return
+        } else {
+            sendPushToken(token)
         }
-
-        sendPushToken(token)
     }
 
     private fun processPushToken() {
         val token = getPendingToken()
-        if (token.isNullOrEmpty()) {
-            return
+        if (!token.isNullOrEmpty()) {
+            sendPushToken(token)
         }
-
-        sendPushToken(token)
     }
 
-    fun launchProcessed() {
+    internal fun onLaunchProcessed() {
         isLaunchFinished = true
         processPushToken()
     }
