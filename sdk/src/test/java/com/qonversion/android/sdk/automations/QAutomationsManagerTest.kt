@@ -318,7 +318,7 @@ class QAutomationsManagerTest {
             mockLooper()
 
             // when
-            automationsManager.launchProcessed()
+            automationsManager.onLaunchProcessed()
 
             // then
             verifySequence {
