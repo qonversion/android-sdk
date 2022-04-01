@@ -1,8 +1,16 @@
+Dark Theme	![GitHub Light](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-dark-mode-only)
+Light Theme	![GitHub Dark](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-light-mode-only)
+
+lhkjfwhkfjerhfweeeee
+
 ![Logo](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-light-mode-only)
 ![Logo](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-dark-mode-only)
 
 <p align="center">
- <a href="https://qonversion.io" target="_blank"><img width="480" height="60" src="https://user-images.githubusercontent.com/13959241/161106506-3e260c69-75dd-439d-8758-17f742255fe7.png"></a>
+ <a href="https://qonversion.io" target="_blank">
+   ![Logo](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-light-mode-only)
+   ![Logo](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-dark-mode-only)
+ </a>
 </p>
 <br>
 
