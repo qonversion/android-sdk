@@ -43,15 +43,15 @@ interface Qonversion {
          * The function is the best way to set additional configs you need to use Qonversion SDK.
          * You still have an option to set a part of additional configs later via calling separated setters.
          *
-         * @param qonversionConfig a config that contains key SDK settings.
+         * @param config a config that contains key SDK settings.
          * Call [QonversionConfig.Builder.build] to configure and create a QonversionConfig instance.
          * @return Initialized instance of the Qonversion SDK.
          */
         @JvmStatic
-        fun initialize(qonversionConfig: QonversionConfig): Qonversion {
-            val internalConfig = InternalConfig(qonversionConfig)
+        fun initialize(config: QonversionConfig): Qonversion {
+            val internalConfig = InternalConfig(config)
             val dependenciesAssembly = DependenciesAssembly.Builder(
-                qonversionConfig.application,
+                config.application,
                 internalConfig
             ).build()
             return QonversionInternal(internalConfig, dependenciesAssembly).also {

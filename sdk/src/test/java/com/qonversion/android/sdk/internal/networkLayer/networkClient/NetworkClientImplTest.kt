@@ -28,10 +28,11 @@ import java.io.BufferedWriter
 import java.io.IOException
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
+import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLConnection
 
 @ExperimentalCoroutinesApi
 internal class NetworkClientImplTest {
@@ -160,12 +161,56 @@ internal class NetworkClientImplTest {
         fun `connect with exception`() {
             // given
             val url = mockk<URL>()
-            every { url.openConnection() }.throws(IOException())
+            every { url.openConnection() } throws IOException()
 
             // when and then
-            assertThatQonversionExceptionThrown {
+            assertThatQonversionExceptionThrown(ErrorCode.NetworkRequestExecution) {
                 networkClient.connect(url)
             }
+        }
+
+        @Test
+        fun `connect with incorrect return type`() {
+            // given
+            val url = mockk<URL>()
+            val unexpectedConnection = mockk<URLConnection>()
+            every { url.openConnection() } returns unexpectedConnection
+
+            // when and then
+            assertThatQonversionExceptionThrown(ErrorCode.NetworkRequestExecution) {
+                networkClient.connect(url)
+            }
+        }
+
+        @Test
+        fun `connect with null return`() {
+            // given
+            val url = mockk<URL>()
+            every { url.openConnection() } returns null
+
+            // when and then
+            assertThatQonversionExceptionThrown(ErrorCode.NetworkRequestExecution) {
+                networkClient.connect(url)
+            }
+        }
+
+        @Test
+        fun `connect with unexpected exception`() {
+            // given
+            val url = mockk<URL>()
+            val expException = IllegalStateException()
+            every { url.openConnection() } throws expException
+
+            // when
+            val exception = try {
+                networkClient.connect(url)
+                null
+            } catch (e: Exception) {
+                e
+            }
+
+            // then
+            assertThat(exception).isSameAs(expException)
         }
     }
 

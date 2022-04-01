@@ -14,9 +14,11 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 
 internal class GoogleBillingConsumerTest {
 
@@ -31,7 +33,6 @@ internal class GoogleBillingConsumerTest {
     @BeforeEach
     fun setUp() {
         googleBillingConsumer = GoogleBillingConsumerImpl(logger)
-        googleBillingConsumer.setup(billingClient)
 
         every {
             logger.verbose(any())
@@ -48,69 +49,99 @@ internal class GoogleBillingConsumerTest {
         }
     }
 
-    @Test
-    fun `consuming success`() {
-        // given
-        every {
-            billingResult.responseCode
-        } returns BillingClient.BillingResponseCode.OK
+    @Nested
+    inner class ConsumeTest {
+        @Test
+        fun `consuming success`() {
+            // given
+            every {
+                billingResult.responseCode
+            } returns BillingClient.BillingResponseCode.OK
+            googleBillingConsumer.setup(billingClient)
 
-        // when
-        assertDoesNotThrow {
-            googleBillingConsumer.consume(purchaseToken)
+            // when
+            assertDoesNotThrow {
+                googleBillingConsumer.consume(purchaseToken)
+            }
+
+            // then
+            verify { billingClient.consumeAsync(any(), any()) }
         }
 
-        // then
-        verify { billingClient.consumeAsync(any(), any()) }
+        @Test
+        fun `consuming error`() {
+            // given
+            every {
+                billingResult.responseCode
+            } returns BillingClient.BillingResponseCode.ERROR
+            googleBillingConsumer.setup(billingClient)
+
+            // when
+            val exception = assertThatQonversionExceptionThrown(ErrorCode.Consuming) {
+                googleBillingConsumer.consume(purchaseToken)
+            }
+
+            // then
+            verify { billingClient.consumeAsync(any(), any()) }
+            assertThat(exception.message).contains(purchaseToken, "ERROR")
+        }
+
+        @Test
+        fun `consuming with uninitialized billing client`() {
+            // given
+
+            // when and then
+            assertThatThrownBy {
+                googleBillingConsumer.consume(purchaseToken)
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
+        }
     }
 
-    @Test
-    fun `consuming error`() {
-        // given
-        every {
-            billingResult.responseCode
-        } returns BillingClient.BillingResponseCode.ERROR
+    @Nested
+    inner class AcknowledgeTest {
+        @Test
+        fun `acknowledging success`() {
+            // given
+            every {
+                billingResult.responseCode
+            } returns BillingClient.BillingResponseCode.OK
+            googleBillingConsumer.setup(billingClient)
 
-        // when
-        val exception = assertThatQonversionExceptionThrown(ErrorCode.Consuming) {
-            googleBillingConsumer.consume(purchaseToken)
+            // when
+            assertDoesNotThrow {
+                googleBillingConsumer.acknowledge(purchaseToken)
+            }
+
+            // then
+            verify { billingClient.acknowledgePurchase(any(), any()) }
         }
 
-        // then
-        verify { billingClient.consumeAsync(any(), any()) }
-        assertThat(exception.message).contains(purchaseToken, "ERROR")
-    }
+        @Test
+        fun `acknowledging error`() {
+            // given
+            every {
+                billingResult.responseCode
+            } returns BillingClient.BillingResponseCode.ERROR
+            googleBillingConsumer.setup(billingClient)
 
-    @Test
-    fun `acknowledging success`() {
-        // given
-        every {
-            billingResult.responseCode
-        } returns BillingClient.BillingResponseCode.OK
+            // when
+            val exception = assertThatQonversionExceptionThrown(ErrorCode.Acknowledging) {
+                googleBillingConsumer.acknowledge(purchaseToken)
+            }
 
-        // when
-        assertDoesNotThrow {
-            googleBillingConsumer.acknowledge(purchaseToken)
+            // then
+            verify { billingClient.acknowledgePurchase(any(), any()) }
+            assertThat(exception.message).contains(purchaseToken, "ERROR")
         }
 
-        // then
-        verify { billingClient.acknowledgePurchase(any(), any()) }
-    }
+        @Test
+        fun `acknowledging with uninitialized billing client`() {
+            // given
 
-    @Test
-    fun `acknowledging error`() {
-        // given
-        every {
-            billingResult.responseCode
-        } returns BillingClient.BillingResponseCode.ERROR
-
-        // when
-        val exception = assertThatQonversionExceptionThrown(ErrorCode.Acknowledging) {
-            googleBillingConsumer.acknowledge(purchaseToken)
+            // when and then
+            assertThatThrownBy {
+                googleBillingConsumer.acknowledge(purchaseToken)
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
         }
-
-        // then
-        verify { billingClient.acknowledgePurchase(any(), any()) }
-        assertThat(exception.message).contains(purchaseToken, "ERROR")
     }
 }

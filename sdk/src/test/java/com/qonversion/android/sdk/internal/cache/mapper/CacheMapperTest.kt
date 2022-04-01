@@ -244,6 +244,25 @@ internal class CacheMapperTest {
         }
 
         @Test
+        fun `no timestamp in data`() {
+            // given
+            val nestedObjectMap = mapOf("1" to 3)
+            val deserializedMap = mapOf("object" to nestedObjectMap)
+            every { mockSerializer.deserialize(deserializingValue) } returns deserializedMap
+
+            every { mockMapper.fromMap(nestedObjectMap) } returns nestedObject
+
+            // when
+            val e = assertThatQonversionExceptionThrown(ErrorCode.Deserialization) {
+                cacheMapper.fromSerializedString(deserializingValue)
+            }
+
+            // then
+            assertThat(e.message).isEqualTo("No timestamp in data")
+            verify(exactly = 1) { mockSerializer.deserialize(deserializingValue) }
+        }
+
+        @Test
         fun `nested object is not map`() {
             // given
             val timestamp = Calendar.getInstance().time

@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -40,7 +41,6 @@ internal class GoogleBillingPurchaserTest {
         @BeforeEach
         fun setUp() {
             purchaser = GoogleBillingPurchaserImpl(mockk())
-            purchaser.setup(billingClient)
 
             every { billingClient.launchBillingFlow(activity, any()) } returns billingResult
             every { billingResult.responseCode } returns BillingClient.BillingResponseCode.OK
@@ -64,6 +64,7 @@ internal class GoogleBillingPurchaserTest {
         @Test
         fun `making new purchase`() {
             // given
+            purchaser.setup(billingClient)
 
             // when
             assertDoesNotThrow {
@@ -80,6 +81,7 @@ internal class GoogleBillingPurchaserTest {
         fun `making new purchase fails`() {
             // given
             every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
+            purchaser.setup(billingClient)
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
@@ -93,6 +95,7 @@ internal class GoogleBillingPurchaserTest {
         @Test
         fun `updating purchase`() {
             // given
+            purchaser.setup(billingClient)
 
             // when
             assertDoesNotThrow {
@@ -113,6 +116,7 @@ internal class GoogleBillingPurchaserTest {
         fun `updating purchase without passing proration mode`() {
             // given
             every { updateInfo.prorationMode } returns null
+            purchaser.setup(billingClient)
 
             // when
             assertDoesNotThrow {
@@ -132,6 +136,7 @@ internal class GoogleBillingPurchaserTest {
         fun `updating purchase fails`() {
             // given
             every { billingResult.responseCode } returns BillingClient.BillingResponseCode.ERROR
+            purchaser.setup(billingClient)
 
             // when
             coAssertThatQonversionExceptionThrown(ErrorCode.Purchasing) {
@@ -140,6 +145,18 @@ internal class GoogleBillingPurchaserTest {
 
             // then
             verify { billingClient.launchBillingFlow(activity, any()) }
+        }
+
+        @Test
+        fun `purchasing before initialization`() {
+            // given
+
+            // when and then
+            assertThatThrownBy {
+                runTest {
+                    purchaser.purchase(activity, skuDetails)
+                }
+            }.isInstanceOf(UninitializedPropertyAccessException::class.java)
         }
     }
 }

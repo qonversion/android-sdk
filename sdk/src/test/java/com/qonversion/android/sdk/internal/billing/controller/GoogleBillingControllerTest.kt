@@ -997,7 +997,7 @@ internal class GoogleBillingControllerTest {
             }
 
             // then
-            coVerify(exactly = 1) { mockPurchaser.purchase(mockActivity, mockSkuDetails) }
+            coVerify(exactly = 1) { mockPurchaser.purchase(mockActivity, mockSkuDetails, null) }
         }
 
         @Test
