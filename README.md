@@ -1,5 +1,5 @@
-Dark Theme	![GitHub Light](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-dark-mode-only)
-Light Theme	![GitHub Dark](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-light-mode-only)
+Dark Theme	![GitHub Light](https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png#gh-light-mode-only)
+Light Theme	![GitHub Dark](https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png#gh-dark-mode-only)
 
 lhkjfwhkfjerhfweeeee
 
