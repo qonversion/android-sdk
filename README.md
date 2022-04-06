@@ -1,9 +1,6 @@
-<p align="center">
- <a href="https://qonversion.io/#gh-light-mode-only" target="_blank"><img width="480" height="60" src="https://qcdn3.sfo3.digitaloceanspaces.com/github/qonversion_logo.png"></a>
- <a href="https://qonversion.io/#gh-dark-mode-only" target="_blank"><img width="480" height="60" src="https://user-images.githubusercontent.com/13959241/161104647-0bb44314-0fa3-4a43-ac30-4705b47b2ada.png"></a>
-</p>
-
-<br>
+<h1 align="center">
+    Qonversion
+</h1>
 
 Qonversion is the data platform to power in-app subscription revenue growth. 
 
