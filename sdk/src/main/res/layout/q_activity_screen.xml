@@ -13,5 +13,5 @@
     <include
         android:id="@+id/progressBar"
         android:visibility="visible"
-        layout="@layout/progress_bar"/>
+        layout="@layout/q_progress_bar"/>
 </RelativeLayout>

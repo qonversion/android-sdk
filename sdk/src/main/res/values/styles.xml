@@ -1,5 +1,5 @@
 <resources>
-    <style name="ProgressBarStyleGray">
-        <item name="colorAccent">@color/gray</item>
+    <style name="QProgressBarStyleGray">
+        <item name="colorAccent">@color/qGray</item>
     </style>
 </resources>
