@@ -342,13 +342,14 @@
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:274</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:13</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.requests.PropertiesRequestTest.kt:19</ID>
-    <ID>SpacingAroundParens:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:470</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:487</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:212</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:243</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:262</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
+    <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: SecurityException) { null }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenActivity.kt$ScreenActivity$catch (e: ActivityNotFoundException) { logger.release("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
