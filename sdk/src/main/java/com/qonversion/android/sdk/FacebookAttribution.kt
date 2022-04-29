@@ -16,7 +16,7 @@ class FacebookAttribution {
                 null
             )
         } catch (e: SecurityException) {
-            return null
+            null
         }
         if (c == null || !c.moveToFirst()) {
             return null
