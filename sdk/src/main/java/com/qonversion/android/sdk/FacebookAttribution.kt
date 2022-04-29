@@ -7,13 +7,17 @@ class FacebookAttribution {
     fun getAttributionId(contentResolver: ContentResolver): String? {
         val projection =
             arrayOf(ATTRIBUTION_ID_COLUMN_NAME)
-        val c = contentResolver.query(
-            ATTRIBUTION_ID_CONTENT_URI,
-            projection,
-            null,
-            null,
-            null
-        )
+        val c = try {
+            contentResolver.query(
+                ATTRIBUTION_ID_CONTENT_URI,
+                projection,
+                null,
+                null,
+                null
+            )
+        } catch (e: SecurityException) {
+            return null
+        }
         if (c == null || !c.moveToFirst()) {
             return null
         }
