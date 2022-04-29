@@ -7,19 +7,23 @@ class FacebookAttribution {
     fun getAttributionId(contentResolver: ContentResolver): String? {
         val projection =
             arrayOf(ATTRIBUTION_ID_COLUMN_NAME)
-        val c = contentResolver.query(
-            ATTRIBUTION_ID_CONTENT_URI,
-            projection,
-            null,
-            null,
+        val content = try {
+            contentResolver.query(
+                ATTRIBUTION_ID_CONTENT_URI,
+                projection,
+                null,
+                null,
+                null
+            )
+        } catch (e: SecurityException) {
             null
-        )
-        if (c == null || !c.moveToFirst()) {
+        }
+        if (content == null || !content.moveToFirst()) {
             return null
         }
         val attributionId =
-            c.getString(c.getColumnIndex(ATTRIBUTION_ID_COLUMN_NAME))
-        c.close()
+            content.getString(content.getColumnIndex(ATTRIBUTION_ID_COLUMN_NAME))
+        content.close()
 
         return attributionId
     }
