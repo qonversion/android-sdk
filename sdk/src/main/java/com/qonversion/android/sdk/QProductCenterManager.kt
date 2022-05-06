@@ -682,6 +682,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    @Synchronized
     private fun executeExperimentsBlocks() {
         if (experimentsCallbacks.isEmpty()) {
             return
@@ -702,6 +703,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    @Synchronized
     private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null) {
         if (productsCallbacks.isEmpty()) {
             return
@@ -728,6 +730,7 @@ class QProductCenterManager internal constructor(
         }
     }
 
+    @Synchronized
     private fun executePermissionsBlock() {
         if (permissionsCallbacks.isEmpty()) {
             return
