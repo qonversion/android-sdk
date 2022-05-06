@@ -26,6 +26,7 @@ class AdvertisingProvider {
             }
             if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
                 callback.onFailure(IllegalStateException("Binding to advertising id service failed"))
+                return@Runnable
             }
 
             try {
