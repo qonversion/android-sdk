@@ -597,14 +597,12 @@ class QProductCenterManager internal constructor(
 
     fun logout() {
         pendingIdentityUserID = null
-        val isLogoutNeeded = identityManager.logoutIfNeeded()
+        val userID = identityManager.logout()
 
-        if (isLogoutNeeded) {
-            unhandledLogoutAvailable = true
+        config.uid = userID
 
-            val userID = userInfoService.obtainUserID()
-            config.uid = userID
-        }
+        launchResultCache.resetActualCache()
+        handleLogout()
     }
 
     private fun handleLogout() {

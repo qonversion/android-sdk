@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.services
 
-import com.qonversion.android.sdk.Constants.PREFS_ORIGINAL_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.PREFS_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
 import com.qonversion.android.sdk.Constants.USER_ID_SEPARATOR
@@ -29,7 +28,6 @@ class QUserInfoService @Inject constructor(
 
         if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
             preferences.putString(PREFS_USER_ID_KEY, resultUserID)
-            preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserID)
         }
 
         return resultUserID
@@ -39,21 +37,15 @@ class QUserInfoService @Inject constructor(
         preferences.putString(PREFS_USER_ID_KEY, userID)
     }
 
-    fun logoutIfNeeded(): Boolean {
-        val originalUserID = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
-        val defaultUserID = preferences.getString(PREFS_USER_ID_KEY, null)
+    fun logout(): String {
+        val userID = generateRandomUserID()
 
-        if (originalUserID == defaultUserID) {
-            return false
-        }
+        preferences.putString(PREFS_USER_ID_KEY, userID)
 
-        preferences.putString(PREFS_USER_ID_KEY, originalUserID)
-
-        return true
+        return userID
     }
 
     fun deleteUser() {
-        preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, null)
         preferences.putString(PREFS_USER_ID_KEY, null)
         tokenStorage.delete()
     }
