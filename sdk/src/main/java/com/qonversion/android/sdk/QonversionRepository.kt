@@ -30,6 +30,7 @@ import com.qonversion.android.sdk.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.request.EventRequest
 import com.qonversion.android.sdk.dto.request.AttributionRequest
+import com.qonversion.android.sdk.dto.request.CreateIdentityRequest
 import com.qonversion.android.sdk.dto.request.RestoreRequest
 import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
@@ -163,14 +164,40 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun identify(
+    fun createIdentity(
         userID: String,
         currentUserID: String,
         onSuccess: (identityID: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val identityRequest = IdentityRequest(currentUserID, userID)
-        api.identify(identityRequest).enqueue {
+        val createIdentityRequest = CreateIdentityRequest(currentUserID, userID)
+        api.createIdentity(createIdentityRequest).enqueue {
+            onResponse = {
+                logger.release("identityRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (body != null && it.isSuccessful) {
+                    onSuccess(body.data.userID)
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.release("identityRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    onError(it.toQonversionError())
+                }
+            }
+        }
+    }
+
+    fun identity(
+        userID: String,
+        onSuccess: (identityID: String) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        val identityRequest = IdentityRequest(userID)
+        api.identity(identityRequest).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
