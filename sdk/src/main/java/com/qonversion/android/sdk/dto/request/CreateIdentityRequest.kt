@@ -5,6 +5,5 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class CreateIdentityRequest(
-    @Json(name = "anon_id") val anonID: String,
-    @Json(name = "identity_id") val identityID: String
+    @Json(name = "userId") val userId: String,
 )

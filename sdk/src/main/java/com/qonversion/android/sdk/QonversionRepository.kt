@@ -25,7 +25,6 @@ import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.PropertiesRequest
-import com.qonversion.android.sdk.dto.request.IdentityRequest
 import com.qonversion.android.sdk.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.request.EventRequest
@@ -170,8 +169,8 @@ class QonversionRepository internal constructor(
         onSuccess: (identityID: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val createIdentityRequest = CreateIdentityRequest(currentUserID, userID)
-        api.createIdentity(createIdentityRequest).enqueue {
+        val createIdentityRequest = CreateIdentityRequest(currentUserID)
+        api.createIdentity(userID, createIdentityRequest).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
@@ -196,8 +195,7 @@ class QonversionRepository internal constructor(
         onSuccess: (identityID: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val identityRequest = IdentityRequest(userID)
-        api.identity(identityRequest).enqueue {
+        api.identity(userID).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
