@@ -28,11 +28,11 @@ interface Api {
     @POST("v1/products/get")
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
 
-    @POST("v3/identities")
-    fun createIdentity(@Body request: CreateIdentityRequest): Call<Data<IdentityResult>>
+    @POST("v3/identities/{id}")
+    fun createIdentity(@Path("id") userID: String, @Body request: CreateIdentityRequest): Call<Data<IdentityResult>>
 
-    @GET("v3/identities")
-    fun identity(@Body request: IdentityRequest): Call<Data<IdentityResult>>
+    @GET("v3/identities/{id}")
+    fun identity(@Path("id") userID: String): Call<Data<IdentityResult>>
 
     @GET("v2/screens/{id}")
     fun screens(@Path("id") screenId: String): Call<Data<Screen>>
