@@ -2,6 +2,7 @@ package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.services.QUserInfoService
 import javax.inject.Inject
+import java.net.HttpURLConnection
 
 interface IdentityManagerCallback {
     fun onSuccess(identityID: String)
@@ -13,7 +14,7 @@ class QIdentityManager @Inject constructor(
     private val userInfoService: QUserInfoService
 ) {
     fun identify(userID: String, callback: IdentityManagerCallback) {
-        obtainIdentity(userID, object: IdentityManagerCallback {
+        obtainIdentity(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
                 if (identityID.isNotEmpty()) {
                     userInfoService.storeIdentity(identityID)
@@ -23,8 +24,8 @@ class QIdentityManager @Inject constructor(
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
-                if (responseCode == 404) {
-                    createIdentity(userID, callback);
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    createIdentity(userID, callback)
                 }
             }
         })
