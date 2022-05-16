@@ -190,7 +190,7 @@ class QProductCenterManager internal constructor(
                 }
             }
 
-            override fun onError(error: QonversionError) {
+            override fun onError(error: QonversionError, responseCode: Int?) {
                 pendingIdentityUserID = null
                 identityInProgress = false
 
