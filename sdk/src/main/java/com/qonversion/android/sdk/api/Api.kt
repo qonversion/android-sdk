@@ -32,7 +32,7 @@ interface Api {
     fun createIdentity(@Path("id") userID: String, @Body request: CreateIdentityRequest): Call<Data<IdentityResult>>
 
     @GET("v3/identities/{id}")
-    fun identity(@Path("id") userID: String): Call<Data<IdentityResult>>
+    fun obtainIdentity(@Path("id") userID: String): Call<Data<IdentityResult>>
 
     @GET("v2/screens/{id}")
     fun screens(@Path("id") screenId: String): Call<Data<Screen>>

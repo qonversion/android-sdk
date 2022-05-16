@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 interface IdentityManagerCallback {
     fun onSuccess(identityID: String)
-    fun onError(error: QonversionError)
+    fun onError(error: QonversionError, responseCode: Int?)
 }
 
 class QIdentityManager @Inject constructor(
@@ -22,12 +22,11 @@ class QIdentityManager @Inject constructor(
                 callback.onSuccess(identityID)
             }
 
-            override fun onError(error: QonversionError) {
-                if (error.code.equals(404)) {
+            override fun onError(error: QonversionError, responseCode: Int?) {
+                if (responseCode == 404) {
                     createIdentity(userID, callback);
                 }
             }
-
         })
     }
 
@@ -41,14 +40,13 @@ class QIdentityManager @Inject constructor(
 
                 callback.onSuccess(resultUserID)
             },
-            onError = {
-                callback.onError(it)
+            onError = { error, code ->
+                callback.onError(error, code)
             })
     }
 
     fun obtainIdentity(userID: String, callback: IdentityManagerCallback) {
-        val currentUserID = userInfoService.obtainUserID()
-        repository.identity(userID,
+        repository.obtainIdentity(userID,
             onSuccess = { resultUserID ->
                 if (resultUserID.isNotEmpty()) {
                     userInfoService.storeIdentity(resultUserID)
@@ -56,8 +54,8 @@ class QIdentityManager @Inject constructor(
 
                 callback.onSuccess(resultUserID)
             },
-            onError = {
-                callback.onError(it)
+            onError = { error, code ->
+                callback.onError(error, code)
             })
     }
 

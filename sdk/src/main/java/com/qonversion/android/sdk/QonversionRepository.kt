@@ -167,7 +167,7 @@ class QonversionRepository internal constructor(
         userID: String,
         currentUserID: String,
         onSuccess: (identityID: String) -> Unit,
-        onError: (error: QonversionError) -> Unit
+        onError: (error: QonversionError, responseCode: Int?) -> Unit
     ) {
         val createIdentityRequest = CreateIdentityRequest(currentUserID)
         api.createIdentity(userID, createIdentityRequest).enqueue {
@@ -178,24 +178,24 @@ class QonversionRepository internal constructor(
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.userID)
                 } else {
-                    onError(errorMapper.getErrorFromResponse(it))
+                    onError(errorMapper.getErrorFromResponse(it), it.code())
                 }
             }
             onFailure = {
                 logger.release("identityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    onError(it.toQonversionError())
+                    onError(it.toQonversionError(), null)
                 }
             }
         }
     }
 
-    fun identity(
+    fun obtainIdentity(
         userID: String,
         onSuccess: (identityID: String) -> Unit,
-        onError: (error: QonversionError) -> Unit
+        onError: (error: QonversionError, responseCode: Int?) -> Unit
     ) {
-        api.identity(userID).enqueue {
+        api.obtainIdentity(userID).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
@@ -203,13 +203,13 @@ class QonversionRepository internal constructor(
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.userID)
                 } else {
-                    onError(errorMapper.getErrorFromResponse(it))
+                    onError(errorMapper.getErrorFromResponse(it), it.code())
                 }
             }
             onFailure = {
                 logger.release("identityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    onError(it.toQonversionError())
+                    onError(it.toQonversionError(), null)
                 }
             }
         }
