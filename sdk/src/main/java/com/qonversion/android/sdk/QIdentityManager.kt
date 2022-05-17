@@ -1,11 +1,13 @@
 package com.qonversion.android.sdk
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.services.QUserInfoService
 import javax.inject.Inject
+import java.net.HttpURLConnection
 
 interface IdentityManagerCallback {
     fun onSuccess(identityID: String)
-    fun onError(error: QonversionError)
+    fun onError(error: QonversionError, responseCode: Int?)
 }
 
 class QIdentityManager @Inject constructor(
@@ -13,52 +15,45 @@ class QIdentityManager @Inject constructor(
     private val userInfoService: QUserInfoService
 ) {
     fun identify(userID: String, callback: IdentityManagerCallback) {
-        obtainIdentity(userID, object: IdentityManagerCallback {
+        obtainIdentity(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
-                if (identityID.isNotEmpty()) {
-                    userInfoService.storeIdentity(identityID)
-                }
-
                 callback.onSuccess(identityID)
             }
 
-            override fun onError(error: QonversionError) {
-                if (error.code.equals(404)) {
-                    createIdentity(userID, callback);
+            override fun onError(error: QonversionError, responseCode: Int?) {
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    createIdentity(userID, callback)
+                } else {
+                    callback.onError(error, responseCode)
                 }
             }
-
         })
     }
 
     fun createIdentity(userID: String, callback: IdentityManagerCallback) {
         val currentUserID = userInfoService.obtainUserID()
         repository.createIdentity(userID, currentUserID,
-            onSuccess = { resultUserID ->
-                if (resultUserID.isNotEmpty()) {
-                    userInfoService.storeIdentity(resultUserID)
-                }
-
-                callback.onSuccess(resultUserID)
-            },
-            onError = {
-                callback.onError(it)
+            onSuccess = { identityId -> handleIdentity(callback, identityId) },
+            onError = { error, code ->
+                callback.onError(error, code)
             })
     }
 
     fun obtainIdentity(userID: String, callback: IdentityManagerCallback) {
-        val currentUserID = userInfoService.obtainUserID()
-        repository.identity(userID,
-            onSuccess = { resultUserID ->
-                if (resultUserID.isNotEmpty()) {
-                    userInfoService.storeIdentity(resultUserID)
-                }
-
-                callback.onSuccess(resultUserID)
-            },
-            onError = {
-                callback.onError(it)
+        repository.obtainIdentity(userID,
+            onSuccess = { identityId -> handleIdentity(callback, identityId) },
+            onError = { error, code ->
+                callback.onError(error, code)
             })
+    }
+
+    @VisibleForTesting
+    fun handleIdentity(callback: IdentityManagerCallback, resultUserID: String) {
+        if (resultUserID.isNotEmpty()) {
+            userInfoService.storeIdentity(resultUserID)
+        }
+
+        callback.onSuccess(resultUserID)
     }
 
     fun logout(): String {
