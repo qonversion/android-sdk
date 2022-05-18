@@ -37,12 +37,12 @@ class QUserInfoService @Inject constructor(
         preferences.putString(PREFS_USER_ID_KEY, userID)
     }
 
-    fun logout(): String {
+    fun logoutIfNeeded(): Boolean {
         val userID = generateRandomUserID()
 
         preferences.putString(PREFS_USER_ID_KEY, userID)
 
-        return userID
+        return true
     }
 
     fun deleteUser() {
