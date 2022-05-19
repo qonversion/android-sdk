@@ -8,8 +8,8 @@ import com.qonversion.android.sdk.dto.request.*
 import retrofit2.Call
 import retrofit2.http.*
 
-private const val IDENTITIES_USER_ID_PARAM = "id"
-private const val IDENTITIES_URL = "v3/identities/{$IDENTITIES_USER_ID_PARAM}"
+private const val PARAM_ID = "id"
+private const val IDENTITIES_URL = "v3/identities/{$PARAM_ID}"
 
 interface Api {
 
@@ -32,10 +32,10 @@ interface Api {
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
 
     @POST(IDENTITIES_URL)
-    fun createIdentity(@Path(IDENTITIES_USER_ID_PARAM) userID: String, @Body request: CreateIdentityRequest): Call<IdentityResult>
+    fun createIdentity(@Path(PARAM_ID) userID: String, @Body request: CreateIdentityRequest): Call<IdentityResult>
 
     @GET(IDENTITIES_URL)
-    fun obtainIdentity(@Path(IDENTITIES_USER_ID_PARAM) userID: String): Call<IdentityResult>
+    fun obtainIdentity(@Path(PARAM_ID) userID: String): Call<IdentityResult>
 
     @GET("v2/screens/{id}")
     fun screens(@Path("id") screenId: String): Call<Data<Screen>>
