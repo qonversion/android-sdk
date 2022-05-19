@@ -29,10 +29,10 @@ interface Api {
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
 
     @POST("v3/identities/{id}")
-    fun createIdentity(@Path("id") userID: String, @Body request: CreateIdentityRequest): Call<Data<IdentityResult>>
+    fun createIdentity(@Path("id") userID: String, @Body request: CreateIdentityRequest): Call<IdentityResult>
 
     @GET("v3/identities/{id}")
-    fun obtainIdentity(@Path("id") userID: String): Call<Data<IdentityResult>>
+    fun obtainIdentity(@Path("id") userID: String): Call<IdentityResult>
 
     @GET("v2/screens/{id}")
     fun screens(@Path("id") screenId: String): Call<Data<Screen>>
