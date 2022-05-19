@@ -177,14 +177,14 @@ class QProductCenterManager internal constructor(
         val currentUserID = userInfoService.obtainUserID()
 
         identityManager.identify(userID, object : IdentityManagerCallback {
-            override fun onSuccess(identityID: String) {
+            override fun onSuccess(qonversionUserId: String) {
                 pendingIdentityUserID = null
                 identityInProgress = false
 
-                if (currentUserID == identityID) {
+                if (currentUserID == qonversionUserId) {
                     executePermissionsBlock()
                 } else {
-                    config.uid = identityID
+                    config.uid = qonversionUserId
 
                     launch()
                 }
