@@ -46,7 +46,7 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
+                override fun onSuccess(qonversionUserId: String) {
                     fail("Should not be reached")
                 }
 
@@ -73,7 +73,7 @@ class QIdentityManagerTest {
                 slotIdentityCallback.captured.onError(mockError, expectedCode)
             }
             val callback =  object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
+                override fun onSuccess(qonversionUserId: String) {
                     fail("Should not be reached")
                 }
 
@@ -108,8 +108,8 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
-                    resultIdentityId = identityID
+                override fun onSuccess(qonversionUserId: String) {
+                    resultIdentityId = qonversionUserId
                 }
 
                 override fun onError(error: QonversionError, responseCode: Int?) {
@@ -136,7 +136,7 @@ class QIdentityManagerTest {
             }
 
             val callback = object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
+                override fun onSuccess(qonversionUserId: String) {
                     fail("Should not be reached")
                 }
 
@@ -194,7 +194,7 @@ class QIdentityManagerTest {
             }
 
             val callback = object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
+                override fun onSuccess(qonversionUserId: String) {
                     fail("Should not be reached")
                 }
 
