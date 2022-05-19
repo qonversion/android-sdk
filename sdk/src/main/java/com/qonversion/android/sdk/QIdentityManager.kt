@@ -6,7 +6,7 @@ import javax.inject.Inject
 import java.net.HttpURLConnection
 
 interface IdentityManagerCallback {
-    fun onSuccess(identityID: String)
+    fun onSuccess(qonversionUserId: String)
     fun onError(error: QonversionError, responseCode: Int?)
 }
 
@@ -16,8 +16,8 @@ class QIdentityManager @Inject constructor(
 ) {
     fun identify(userID: String, callback: IdentityManagerCallback) {
         obtainIdentity(userID, object : IdentityManagerCallback {
-            override fun onSuccess(identityID: String) {
-                callback.onSuccess(identityID)
+            override fun onSuccess(qonversionUserId: String) {
+                callback.onSuccess(qonversionUserId)
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
@@ -31,9 +31,9 @@ class QIdentityManager @Inject constructor(
     }
 
     fun createIdentity(userID: String, callback: IdentityManagerCallback) {
-        val currentUserID = userInfoService.obtainUserID()
-        repository.createIdentity(userID, currentUserID,
-            onSuccess = { identityId -> handleIdentity(callback, identityId) },
+        val qonversionUserID = userInfoService.obtainUserID()
+        repository.createIdentity(qonversionUserID, userID,
+            onSuccess = { newQonversionUserId -> handleIdentity(callback, newQonversionUserId) },
             onError = { error, code ->
                 callback.onError(error, code)
             })
@@ -41,7 +41,7 @@ class QIdentityManager @Inject constructor(
 
     fun obtainIdentity(userID: String, callback: IdentityManagerCallback) {
         repository.obtainIdentity(userID,
-            onSuccess = { identityId -> handleIdentity(callback, identityId) },
+            onSuccess = { qonversionUserId -> handleIdentity(callback, qonversionUserId) },
             onError = { error, code ->
                 callback.onError(error, code)
             })

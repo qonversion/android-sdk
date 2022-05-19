@@ -164,19 +164,19 @@ class QonversionRepository internal constructor(
     }
 
     fun createIdentity(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
+        qonversionUserID: String,
+        customUserID: String,
+        onSuccess: (newQonversionUserId: String) -> Unit,
         onError: (error: QonversionError, responseCode: Int?) -> Unit
     ) {
-        val createIdentityRequest = CreateIdentityRequest(currentUserID)
-        api.createIdentity(userID, createIdentityRequest).enqueue {
+        val createIdentityRequest = CreateIdentityRequest(qonversionUserID)
+        api.createIdentity(customUserID, createIdentityRequest).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.userID)
+                    onSuccess(body.userID)
                 } else {
                     onError(errorMapper.getErrorFromResponse(it), it.code())
                 }
@@ -192,7 +192,7 @@ class QonversionRepository internal constructor(
 
     fun obtainIdentity(
         userID: String,
-        onSuccess: (identityID: String) -> Unit,
+        onSuccess: (qonversionUserId: String) -> Unit,
         onError: (error: QonversionError, responseCode: Int?) -> Unit
     ) {
         api.obtainIdentity(userID).enqueue {
@@ -201,7 +201,7 @@ class QonversionRepository internal constructor(
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.userID)
+                    onSuccess(body.userID)
                 } else {
                     onError(errorMapper.getErrorFromResponse(it), it.code())
                 }
