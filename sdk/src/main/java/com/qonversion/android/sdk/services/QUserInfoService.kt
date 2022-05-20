@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.services
 
-import com.qonversion.android.sdk.Constants.PREFS_USER_ID_KEY
+import com.qonversion.android.sdk.Constants.PREFS_CUSTOM_USER_ID_KEY
+import com.qonversion.android.sdk.Constants.PREFS_QONVERSION_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
 import com.qonversion.android.sdk.Constants.USER_ID_SEPARATOR
 import com.qonversion.android.sdk.storage.Cache
@@ -14,7 +15,7 @@ class QUserInfoService @Inject constructor(
     private val tokenStorage: TokenStorage
 ) {
     fun obtainUserID(): String {
-        val cachedUserID = preferences.getString(PREFS_USER_ID_KEY, null)
+        val cachedUserID = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
         var resultUserID = cachedUserID
 
         if (resultUserID.isNullOrEmpty()) {
@@ -27,26 +28,32 @@ class QUserInfoService @Inject constructor(
         }
 
         if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
-            preferences.putString(PREFS_USER_ID_KEY, resultUserID)
+            preferences.putString(PREFS_QONVERSION_USER_ID_KEY, resultUserID)
         }
 
         return resultUserID
     }
 
-    fun storeIdentity(userID: String) {
-        preferences.putString(PREFS_USER_ID_KEY, userID)
+    fun storeQonversionUserId(userID: String) {
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
+    }
+
+    fun storeCustomUserId(userID: String) {
+        preferences.putString(PREFS_CUSTOM_USER_ID_KEY, userID)
     }
 
     fun logoutIfNeeded(): Boolean {
+        preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null) ?: return false
+        preferences.remove(PREFS_CUSTOM_USER_ID_KEY)
         val userID = generateRandomUserID()
 
-        preferences.putString(PREFS_USER_ID_KEY, userID)
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
 
         return true
     }
 
     fun deleteUser() {
-        preferences.putString(PREFS_USER_ID_KEY, null)
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, null)
         tokenStorage.delete()
     }
 

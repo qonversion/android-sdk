@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.services.QUserInfoService
 import io.mockk.*
-import kotlin.math.exp
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
@@ -250,7 +249,7 @@ class QIdentityManagerTest {
 
             // then
             verifyOrder {
-                mockUserInfoService.storeIdentity(expectedIdentityId)
+                mockUserInfoService.storeQonversionUserId(expectedIdentityId)
                 callback.onSuccess(expectedIdentityId)
             }
         }
@@ -266,7 +265,7 @@ class QIdentityManagerTest {
 
             // then
             verifyOrder { callback.onSuccess(expectedIdentityId) }
-            verify(exactly = 0) { mockUserInfoService.storeIdentity(expectedIdentityId) }
+            verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(expectedIdentityId) }
         }
     }
 
