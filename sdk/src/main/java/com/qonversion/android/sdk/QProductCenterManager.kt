@@ -57,7 +57,6 @@ class QProductCenterManager internal constructor(
 
     private var identityInProgress: Boolean = false
     private var pendingIdentityUserID: String? = null
-    private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
     private var advertisingID: String? = null
@@ -147,7 +146,6 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
-        unhandledLogoutAvailable = false
         if (!isLaunchingFinished) {
             pendingIdentityUserID = userID
             return
@@ -568,8 +566,6 @@ class QProductCenterManager internal constructor(
                     val userID = pendingIdentityUserID
                     if (!userID.isNullOrEmpty()) {
                         identify(userID)
-                    } else if (unhandledLogoutAvailable) {
-                        handleLogout()
                     } else {
                         executePermissionsBlock()
                     }
@@ -600,16 +596,15 @@ class QProductCenterManager internal constructor(
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
-            unhandledLogoutAvailable = true
+            launchResultCache.resetActualCache()
+            launchError = null
+            launchResult = null
 
             val userID = userInfoService.obtainUserID()
             config.uid = userID
-        }
-    }
 
-    private fun handleLogout() {
-        unhandledLogoutAvailable = false
-        launch()
+            launch()
+        }
     }
 
     private fun updateLaunchResult(launchResult: QLaunchResult) {
@@ -795,14 +790,12 @@ class QProductCenterManager internal constructor(
         onSuccess: (permissions: Map<String, QPermission>) -> Unit,
         onError: (QonversionError) -> Unit
     ) {
-        if (launchError != null || unhandledLogoutAvailable) {
+        if (launchError != null) {
             retryLaunch(
                 onSuccess = { launchResult ->
                     onSuccess(launchResult.permissions)
-                    unhandledLogoutAvailable = false
                 },
                 onError = { error ->
-                    unhandledLogoutAvailable = false
                     if (forceLaunchRetry || pendingIdentityUserID != null) {
                         onError(error)
                     } else {
