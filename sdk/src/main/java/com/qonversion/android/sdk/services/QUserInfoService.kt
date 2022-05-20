@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.services
 
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.Constants.PREFS_CUSTOM_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.PREFS_QONVERSION_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
@@ -59,7 +60,8 @@ class QUserInfoService @Inject constructor(
 
     // Private
 
-    private fun generateRandomUserID(): String {
+    @VisibleForTesting
+    fun generateRandomUserID(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
         val result = "$USER_ID_PREFIX$USER_ID_SEPARATOR$uuid"
 
