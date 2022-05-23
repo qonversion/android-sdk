@@ -83,6 +83,29 @@ class QonversionRepository internal constructor(
         purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
     }
 
+    fun entitlements(
+        userId: String,
+        callback: QonversionEntitlementsCallback
+    ) {
+        api.entitlements(userId).enqueue {
+            onResponse = {
+                logger.release("entitlementsRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body != null) {
+                    callback.onSuccess(body.data)
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.release("entitlementsRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    callback.onError(it.toQonversionError())
+                }
+            }
+        }
+    }
+
     fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
