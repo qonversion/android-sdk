@@ -23,6 +23,11 @@ interface QonversionEntitlementsCallback {
    fun onError(error: QonversionError)
 }
 
+internal interface QonversionEntitlementsCallbackInternal {
+   fun onSuccess(entitlements: List<QEntitlement>)
+   fun onError(error: QonversionError, responseCode: Int?)
+}
+
 interface QonversionOfferingsCallback {
    fun onSuccess(offerings: QOfferings)
    fun onError(error: QonversionError)
