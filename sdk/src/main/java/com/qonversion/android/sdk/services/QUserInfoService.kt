@@ -1,7 +1,8 @@
 package com.qonversion.android.sdk.services
 
-import com.qonversion.android.sdk.Constants.PREFS_ORIGINAL_USER_ID_KEY
-import com.qonversion.android.sdk.Constants.PREFS_USER_ID_KEY
+import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.Constants.PREFS_CUSTOM_USER_ID_KEY
+import com.qonversion.android.sdk.Constants.PREFS_QONVERSION_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
 import com.qonversion.android.sdk.Constants.USER_ID_SEPARATOR
 import com.qonversion.android.sdk.storage.Cache
@@ -15,7 +16,7 @@ class QUserInfoService @Inject constructor(
     private val tokenStorage: TokenStorage
 ) {
     fun obtainUserID(): String {
-        val cachedUserID = preferences.getString(PREFS_USER_ID_KEY, null)
+        val cachedUserID = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
         var resultUserID = cachedUserID
 
         if (resultUserID.isNullOrEmpty()) {
@@ -28,39 +29,39 @@ class QUserInfoService @Inject constructor(
         }
 
         if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
-            preferences.putString(PREFS_USER_ID_KEY, resultUserID)
-            preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserID)
+            preferences.putString(PREFS_QONVERSION_USER_ID_KEY, resultUserID)
         }
 
         return resultUserID
     }
 
-    fun storeIdentity(userID: String) {
-        preferences.putString(PREFS_USER_ID_KEY, userID)
+    fun storeQonversionUserId(userID: String) {
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
+    }
+
+    fun storeCustomUserId(userID: String) {
+        preferences.putString(PREFS_CUSTOM_USER_ID_KEY, userID)
     }
 
     fun logoutIfNeeded(): Boolean {
-        val originalUserID = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
-        val defaultUserID = preferences.getString(PREFS_USER_ID_KEY, null)
+        preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null) ?: return false
+        preferences.remove(PREFS_CUSTOM_USER_ID_KEY)
+        val userID = generateRandomUserID()
 
-        if (originalUserID == defaultUserID) {
-            return false
-        }
-
-        preferences.putString(PREFS_USER_ID_KEY, originalUserID)
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
 
         return true
     }
 
     fun deleteUser() {
-        preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, null)
-        preferences.putString(PREFS_USER_ID_KEY, null)
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, null)
         tokenStorage.delete()
     }
 
     // Private
 
-    private fun generateRandomUserID(): String {
+    @VisibleForTesting
+    fun generateRandomUserID(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
         val result = "$USER_ID_PREFIX$USER_ID_SEPARATOR$uuid"
 
