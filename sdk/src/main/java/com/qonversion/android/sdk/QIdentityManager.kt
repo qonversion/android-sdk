@@ -33,7 +33,7 @@ class QIdentityManager @Inject constructor(
     fun createIdentity(userID: String, callback: IdentityManagerCallback) {
         val qonversionUserID = userInfoService.obtainUserID()
         repository.createIdentity(qonversionUserID, userID,
-            onSuccess = { newQonversionUserId -> handleIdentity(callback, newQonversionUserId) },
+            onSuccess = { newQonversionUserId -> handleIdentity(callback, newQonversionUserId, userID) },
             onError = { error, code ->
                 callback.onError(error, code)
             })
@@ -41,19 +41,20 @@ class QIdentityManager @Inject constructor(
 
     fun obtainIdentity(userID: String, callback: IdentityManagerCallback) {
         repository.obtainIdentity(userID,
-            onSuccess = { qonversionUserId -> handleIdentity(callback, qonversionUserId) },
+            onSuccess = { qonversionUserId -> handleIdentity(callback, qonversionUserId, userID) },
             onError = { error, code ->
                 callback.onError(error, code)
             })
     }
 
     @VisibleForTesting
-    fun handleIdentity(callback: IdentityManagerCallback, resultUserID: String) {
-        if (resultUserID.isNotEmpty()) {
-            userInfoService.storeIdentity(resultUserID)
+    fun handleIdentity(callback: IdentityManagerCallback, qonversionUserId: String, customUserId: String) {
+        userInfoService.storeCustomUserId(customUserId)
+        if (qonversionUserId.isNotEmpty()) {
+            userInfoService.storeQonversionUserId(qonversionUserId)
         }
 
-        callback.onSuccess(resultUserID)
+        callback.onSuccess(qonversionUserId)
     }
 
     fun logoutIfNeeded(): Boolean {
