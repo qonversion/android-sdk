@@ -18,7 +18,7 @@ import dagger.Provides
 import java.util.*
 
 @Module
-class ManagersModule {
+internal class ManagersModule {
 
     @ApplicationScope
     @Provides

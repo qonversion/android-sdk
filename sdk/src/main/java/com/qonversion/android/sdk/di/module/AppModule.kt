@@ -15,7 +15,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-class AppModule(
+internal class AppModule(
     private val application: Application,
     private val projectKey: String,
     private val isDebugMode: Boolean

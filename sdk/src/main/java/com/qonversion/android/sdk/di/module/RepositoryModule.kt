@@ -22,7 +22,7 @@ import dagger.Provides
 import retrofit2.Retrofit
 
 @Module
-class RepositoryModule {
+internal class RepositoryModule {
 
     @ApplicationScope
     @Provides

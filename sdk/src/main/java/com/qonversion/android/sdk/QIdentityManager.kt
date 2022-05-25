@@ -10,7 +10,7 @@ interface IdentityManagerCallback {
     fun onError(error: QonversionError, responseCode: Int?)
 }
 
-class QIdentityManager @Inject constructor(
+internal class QIdentityManager @Inject constructor(
     private val repository: QonversionRepository,
     private val userInfoService: QUserInfoService
 ) {
