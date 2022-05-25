@@ -22,7 +22,7 @@ import com.qonversion.android.sdk.logger.ConsoleLogger
 import kotlinx.android.synthetic.main.q_activity_screen.*
 import javax.inject.Inject
 
-class ScreenActivity : Activity(), ScreenContract.View {
+internal class ScreenActivity : Activity(), ScreenContract.View {
     @Inject
     lateinit var automationsManager: QAutomationsManager
 
