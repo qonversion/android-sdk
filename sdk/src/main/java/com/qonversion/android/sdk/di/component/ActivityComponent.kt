@@ -7,6 +7,6 @@ import dagger.Component
 
 @ActivityScope
 @Component(dependencies = [AppComponent::class], modules = [ActivityModule::class])
-interface ActivityComponent {
+internal interface ActivityComponent {
     fun inject(into: ScreenActivity)
 }
