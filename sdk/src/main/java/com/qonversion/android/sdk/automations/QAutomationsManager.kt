@@ -19,7 +19,7 @@ import java.lang.Exception
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 
-class QAutomationsManager @Inject constructor(
+internal class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,

@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QActionResultType
 import javax.inject.Inject
 
-class ScreenPresenter @Inject constructor(
+internal class ScreenPresenter @Inject constructor(
     private val repository: QonversionRepository,
     private val view: ScreenContract.View
 ) : ScreenContract.Presenter {
