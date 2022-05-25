@@ -19,10 +19,10 @@ data class QEntitlement(
 
     data class Product(
         @Json(name = "product_id") val productID: String,
-        @Json(name = "subscription") val subscription: Subscription,
+        @Json(name = "subscription") val subscription: Subscription
     ) {
         data class Subscription(
-            @Json(name = "renew_state") val renewState: QProductRenewState,
+            @Json(name = "renew_state") val renewState: QProductRenewState
         )
     }
 }
