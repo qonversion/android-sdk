@@ -11,8 +11,8 @@ import com.qonversion.android.sdk.ad.LoadStoreProductsState.*
 import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -23,6 +23,7 @@ import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
+import java.net.HttpURLConnection
 
 @SuppressWarnings("LongParameterList")
 class QProductCenterManager internal constructor(
@@ -34,6 +35,7 @@ class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
+    private val entitlementsManager: EntitlementsManager,
     private val config: QonversionConfig
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
@@ -51,7 +53,6 @@ class QProductCenterManager internal constructor(
     private var launchError: QonversionError? = null
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
-    private var permissionsCallbacks = mutableListOf<QonversionPermissionsCallback>()
     private var experimentsCallbacks = mutableListOf<QonversionExperimentsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
@@ -148,8 +149,8 @@ class QProductCenterManager internal constructor(
 
     fun identify(userID: String) {
         unhandledLogoutAvailable = false
+        pendingIdentityUserID = userID
         if (!isLaunchingFinished) {
-            pendingIdentityUserID = userID
             return
         }
 
@@ -162,7 +163,8 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
-                    executePermissionsBlock()
+//                    todo in #15337
+//                    executePermissionsBlock()
                 }
             }
 
@@ -182,11 +184,13 @@ class QProductCenterManager internal constructor(
                 identityInProgress = false
 
                 if (currentUserID == qonversionUserId) {
-                    executePermissionsBlock()
+//                    todo in #15337
+//                    executePermissionsBlock()
                 } else {
                     config.uid = qonversionUserId
 
-                    launch()
+                    // todo clear permissions cache
+                    launchResultCache.resetActualCache()
                 }
             }
 
@@ -194,7 +198,8 @@ class QProductCenterManager internal constructor(
                 pendingIdentityUserID = null
                 identityInProgress = false
 
-                executePermissionsBlock()
+//                todo in #15337
+//                executePermissionsBlock()
             }
         })
     }
@@ -409,43 +414,59 @@ class QProductCenterManager internal constructor(
         return product
     }
 
-    fun checkPermissions(
-        callback: QonversionPermissionsCallback
-    ) {
-        permissionsCallbacks.add(callback)
-
-        if (!isLaunchingFinished || identityInProgress) {
-            return
+    fun checkPermissions(callback: QonversionPermissionsCallback) {
+        if (unhandledLogoutAvailable) {
+            handleNewUserEntitlements(callback)
+        } else {
+            requestEntitlements(callback)
         }
+    }
 
-        val pendingUserID = pendingIdentityUserID
-        if (!pendingUserID.isNullOrEmpty()) {
-            identify(pendingUserID)
-            return
+    private fun requestEntitlements(callback: QonversionPermissionsCallback? = null) {
+        entitlementsManager.checkEntitlements(config.uid, pendingIdentityUserID, object : QonversionEntitlementsCallbackInternal {
+            override fun onSuccess(entitlements: List<QEntitlement>) {
+                val permissions = entitlements.associate { it.permissionID to it.toPermission() }
+                callback?.onSuccess(permissions)
+            }
+
+            override fun onError(error: QonversionError, responseCode: Int?) {
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    handleNewUserEntitlements(callback)
+                } else {
+                    callback?.onError(error)
+                }
+            }
+        })
+    }
+
+    private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
+        callback?.onSuccess(emptyMap())
+        // todo clear cache
+        if (isLaunchingFinished) {
+            handleLogout()
         }
-
-        executePermissionsBlock()
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
-        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
-            consumer.consumeHistoryRecords(historyRecords)
-            val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
-            repository.restore(
-                installDate,
-                purchaseHistoryRecords,
-                object : QonversionLaunchCallback {
-                    override fun onSuccess(launchResult: QLaunchResult) {
-                        updateLaunchResult(launchResult)
-                        callback?.onSuccess(launchResult.permissions)
-                    }
+        billingService.queryPurchasesHistory(
+            onQueryHistoryCompleted = { historyRecords ->
+                consumer.consumeHistoryRecords(historyRecords)
+                val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
+                repository.restore(
+                    installDate,
+                    purchaseHistoryRecords,
+                    object : QonversionLaunchCallback {
+                        override fun onSuccess(launchResult: QLaunchResult) {
+                            updateLaunchResult(launchResult)
+                            requestEntitlements(callback)
+                        }
 
-                    override fun onError(error: QonversionError) {
-                        forceLaunchRetry = true
-                        callback?.onError(error)
-                    }
-                })
-        },
+                        override fun onError(error: QonversionError) {
+                            forceLaunchRetry = true
+                            callback?.onError(error)
+                        }
+                    })
+            },
             onQueryHistoryFailed = {
                 callback?.onError(it.toQonversionError())
             })
@@ -570,8 +591,6 @@ class QProductCenterManager internal constructor(
                         identify(userID)
                     } else if (unhandledLogoutAvailable) {
                         handleLogout()
-                    } else {
-                        executePermissionsBlock()
                     }
                 }
 
@@ -588,7 +607,6 @@ class QProductCenterManager internal constructor(
                 launchError = error
 
                 loadStoreProductsIfPossible()
-                executePermissionsBlock()
 
                 callback?.onError(error)
             }
@@ -731,28 +749,6 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    @Synchronized
-    private fun executePermissionsBlock() {
-        if (permissionsCallbacks.isEmpty()) {
-            return
-        }
-
-        val callbacks = permissionsCallbacks.toList()
-        permissionsCallbacks.clear()
-
-        preparePermissionsResult(
-            { permissions ->
-                callbacks.forEach {
-                    it.onSuccess(permissions)
-                }
-            },
-            { error ->
-                callbacks.forEach {
-                    it.onError(error)
-                }
-            })
-    }
-
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
         launchResult?.let {
             handleLoadStateForProducts(onCompleted)
@@ -789,33 +785,6 @@ class QProductCenterManager internal constructor(
     ) {
         callbacks.forEach {
             it.onError(error ?: QonversionError(QonversionErrorCode.LaunchError))
-        }
-    }
-
-    private fun preparePermissionsResult(
-        onSuccess: (permissions: Map<String, QPermission>) -> Unit,
-        onError: (QonversionError) -> Unit
-    ) {
-        if (launchError != null || unhandledLogoutAvailable) {
-            unhandledLogoutAvailable = false
-            retryLaunch(
-                onSuccess = { launchResult ->
-                    onSuccess(launchResult.permissions)
-                },
-                onError = { error ->
-                    if (forceLaunchRetry || pendingIdentityUserID != null) {
-                        onError(error)
-                    } else {
-                        val cachedLaunchResult = launchResultCache.getActualLaunchResult()
-
-                        cachedLaunchResult?.let {
-                            onSuccess(it.permissions)
-                        } ?: onError(error)
-                    }
-                })
-        } else {
-            val permissions = launchResult?.permissions ?: mapOf()
-            onSuccess(permissions)
         }
     }
 

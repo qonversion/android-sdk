@@ -88,6 +88,7 @@ object Qonversion : LifecycleDelegate {
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
         val config = QDependencyInjector.appComponent.qonversionConfig()
+        val entitlementsManager = QDependencyInjector.appComponent.entitlementsManager()
 
         val userID = userInfoService.obtainUserID()
 
@@ -110,6 +111,7 @@ object Qonversion : LifecycleDelegate {
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
+            entitlementsManager,
             config
         )
 
