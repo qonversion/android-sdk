@@ -36,7 +36,8 @@ class ApiHeadersProvider @Inject constructor(
         SOURCE_VERSION to getSourceVersion(),
         PLATFORM to ANDROID_PLATFORM,
         PLATFORM_VERSION to Build.VERSION.RELEASE,
-        UID to config.uid
+        UID to config.uid,
+        API_MINOR_VERSION to "2"
     )
 
     private fun getSource() =
@@ -63,5 +64,6 @@ class ApiHeadersProvider @Inject constructor(
         const val PLATFORM = "Platform"
         const val PLATFORM_VERSION = "Platform-Version"
         const val UID = "User-Id"
+        const val API_MINOR_VERSION = "API-Minor-Version"
     }
 }
