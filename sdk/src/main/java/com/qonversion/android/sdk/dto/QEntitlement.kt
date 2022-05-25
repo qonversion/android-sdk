@@ -11,7 +11,8 @@ data class QEntitlement(
     @Json(name = "id") val permissionID: String,
     @Json(name = "started") val startedDate: Date,
     @Json(name = "expires") val expirationDate: Date?,
-    @Json(name = "active") internal val active: Int
+    @Json(name = "active") internal val active: Int,
+    @Json(name = "product") val product: Product
 ) {
     fun isActive(): Boolean {
         return active.toBoolean()
