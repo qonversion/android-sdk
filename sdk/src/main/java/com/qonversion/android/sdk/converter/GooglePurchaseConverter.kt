@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.converter
 
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.entity.Purchase
@@ -11,7 +12,6 @@ class GooglePurchaseConverter(
     private val extractor: Extractor<String>
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
     companion object {
-        private const val priceMicrosDivider: Double = 1000000.0
         private const val daysPeriodUnit = 0
     }
 
@@ -103,7 +103,7 @@ class GooglePurchaseConverter(
     }
 
     private fun formatPrice(price: Long): String {
-        val divideResult = price.toDouble() / (priceMicrosDivider)
+        val divideResult = price.toDouble() / (PRICE_MICROS_DIVIDER)
         val result = String.format("%.2f", divideResult)
 
         return result
