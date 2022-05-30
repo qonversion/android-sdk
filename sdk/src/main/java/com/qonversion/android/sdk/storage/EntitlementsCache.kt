@@ -22,7 +22,6 @@ internal class EntitlementsCache @Inject constructor(
         moshi.adapter(collectionEntitlementsType)
 
     fun getStoredValue(): List<QEntitlement>? {
-
         val json = preferences.getString(ENTITLEMENTS_KEY, null) ?: return null
         return jsonAdapter.fromJson(json)
     }

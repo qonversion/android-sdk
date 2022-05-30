@@ -31,14 +31,13 @@ internal class EntitlementsManager @Inject constructor(
             }
         }
 
-        val user = pendingIdentityUserId ?: qonversionUserId
-        val existingCallbackCount = entitlementsCallbacks[user]?.size ?: 0
-        storeCallback(user, callback)
-        if (pendingIdentityUserId != null || existingCallbackCount > 0) {
-            return
-        }
+        val userId = pendingIdentityUserId ?: qonversionUserId
+        val isRequestInProgress = isRequestInProgressForId(userId)
+        storeCallback(userId, callback)
 
-        repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+        if (pendingIdentityUserId == null && !isRequestInProgress) {
+            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+        }
     }
 
     fun checkEntitlementsAfterIdentity(
@@ -48,7 +47,7 @@ internal class EntitlementsManager @Inject constructor(
         val callbacks = entitlementsCallbacks[identityUserId]?.toList() ?: return
 
         entitlementsCallbacks.remove(identityUserId)
-        val isRequestInProgress = !entitlementsCallbacks[qonversionUserId].isNullOrEmpty()
+        val isRequestInProgress = isRequestInProgressForId(qonversionUserId)
         storeCallbacks(qonversionUserId, callbacks)
 
         if (!isRequestInProgress) {
@@ -56,8 +55,17 @@ internal class EntitlementsManager @Inject constructor(
         }
     }
 
+    fun onIdentityFailedWithError(identityUserId: String, error: QonversionError) {
+        fireErrorToListeners(identityUserId, error)
+    }
+
     override fun onUserChanged(oldUid: String, newUid: String) {
         cache.reset()
+    }
+
+    private fun isRequestInProgressForId(userId: String): Boolean {
+        val callbackCount = entitlementsCallbacks[userId]?.size ?: 0
+        return callbackCount > 0
     }
 
     private fun storeCallback(user: String, callback: QonversionEntitlementsCallbackInternal) {
@@ -88,9 +96,7 @@ internal class EntitlementsManager @Inject constructor(
                 cache.getActualStoredValue(true)?.let {
                     fireEntitlementsToListeners(qonversionUserId, it)
                 } ?: run {
-                    val callbacks = entitlementsCallbacks[qonversionUserId]?.toList()
-                    entitlementsCallbacks.remove(qonversionUserId)
-                    callbacks?.forEach { it.onError(error, responseCode) }
+                    fireErrorToListeners(qonversionUserId, error, responseCode)
                 }
             }
         }
@@ -103,5 +109,15 @@ internal class EntitlementsManager @Inject constructor(
         val callbacks = entitlementsCallbacks[qonversionUserId]?.toList()
         entitlementsCallbacks.remove(qonversionUserId)
         callbacks?.forEach { it.onSuccess(entitlements) }
+    }
+
+    private fun fireErrorToListeners(
+        userId: String,
+        error: QonversionError,
+        responseCode: Int? = null
+    ) {
+        val callbacks = entitlementsCallbacks[userId]?.toList()
+        entitlementsCallbacks.remove(userId)
+        callbacks?.forEach { it.onError(error, responseCode) }
     }
 }

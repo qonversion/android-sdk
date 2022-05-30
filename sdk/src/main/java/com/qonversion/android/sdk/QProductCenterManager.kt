@@ -170,7 +170,8 @@ class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError) {
                     pendingIdentityUserID = null
                     identityInProgress = false
-                    // todo do smth with permissions
+
+                    entitlementsManager.onIdentityFailedWithError(userID, error)
                 }
             }
 
@@ -194,7 +195,8 @@ class QProductCenterManager internal constructor(
             override fun onError(error: QonversionError, responseCode: Int?) {
                 pendingIdentityUserID = null
                 identityInProgress = false
-                // todo do smth with permissions
+
+                entitlementsManager.onIdentityFailedWithError(userID, error)
             }
         })
     }
