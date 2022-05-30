@@ -5,7 +5,6 @@ import android.app.Application
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.ad.AdvertisingProvider
 import com.qonversion.android.sdk.ad.LoadStoreProductsState.*
@@ -434,8 +433,7 @@ class QProductCenterManager internal constructor(
             consumer.consumeHistoryRecords(historyRecords)
             val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
             val loadedSkuDetails = skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
-            val loadedSkuDetailsIds = loadedSkuDetails.mapNotNull { it.value.sku }
-            val resultSkuIds = (skuIds - loadedSkuDetailsIds).toSet()
+            val resultSkuIds = (skuIds - loadedSkuDetails.keys).toSet()
 
             if (resultSkuIds.isNotEmpty()) {
                 billingService.loadProducts(resultSkuIds, onLoadCompleted = {
@@ -479,9 +477,11 @@ class QProductCenterManager internal constructor(
 
     // Private functions
 
-    private fun processRestore(purchaseHistoryRecords: List<PurchaseHistory>,
-                               loadedSkuDetails: Map<String, SkuDetails>,
-                               callback: QonversionPermissionsCallback? = null) {
+    private fun processRestore(
+        purchaseHistoryRecords: List<PurchaseHistory>,
+        loadedSkuDetails: Map<String, SkuDetails>,
+        callback: QonversionPermissionsCallback? = null
+    ) {
         purchaseHistoryRecords.forEach { purchaseHistory ->
             val skuDetails = loadedSkuDetails[purchaseHistory.historyRecord.sku]
             purchaseHistory.skuDetails = skuDetails
