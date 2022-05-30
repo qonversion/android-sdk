@@ -10,7 +10,7 @@ internal class EntitlementsManager @Inject constructor(
     private val cache: EntitlementsCache,
     private val config: QonversionConfig,
     private val entitlementsCallbacks: ConcurrentHashMap<String, MutableList<QonversionEntitlementsCallbackInternal>> = ConcurrentHashMap()
-): QUserChangedListener {
+) : QUserChangedListener {
 
     private var firstRequestExecuted = false
 

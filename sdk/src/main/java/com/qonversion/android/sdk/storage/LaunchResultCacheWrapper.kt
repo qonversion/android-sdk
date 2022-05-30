@@ -16,7 +16,7 @@ internal class LaunchResultCacheWrapper @Inject constructor(
     moshi: Moshi,
     private val cache: SharedPreferencesCache,
     config: QonversionConfig
-): QUserChangedListener {
+) : QUserChangedListener {
     private val jsonAdapter: JsonAdapter<QLaunchResult> =
         moshi.adapter(QLaunchResult::class.java)
 

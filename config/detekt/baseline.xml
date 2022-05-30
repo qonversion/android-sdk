@@ -57,7 +57,6 @@
     <ID>ForbiddenComment:RequestValidatorTest.kt$RequestValidatorTest$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ForbiddenComment:util.kt$Util.Companion$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
-    <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>LongMethod:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.Purchase$@Test fun `purchase with oldSkuDetails billing flow params is correct`()</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: QonversionConfig, logger: Logger, purchasesCache: PurchasesCache, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
@@ -81,6 +80,7 @@
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20300</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20303</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20399</ID>
+    <ID>MagicNumber:EntitlementsCache.kt$EntitlementsCache$1000</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$30</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$365</ID>
@@ -119,6 +119,7 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
+    <ID>MaxLineLength:EntitlementsManager.kt$EntitlementsManager$private val entitlementsCallbacks: ConcurrentHashMap&lt;String, MutableList&lt;QonversionEntitlementsCallbackInternal&gt;&gt; = ConcurrentHashMap()</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$private</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
@@ -157,6 +158,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:12</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:155</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
@@ -286,7 +288,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:7</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
@@ -298,6 +299,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:13</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
+    <ID>ReturnCount:EntitlementsCache.kt$EntitlementsCache$fun getActualStoredValue(isError: Boolean = false): List&lt;QEntitlement&gt;?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
@@ -357,6 +359,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility&gt;): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEntitlementRenewStateAdapter$@ToJson private fun toJson(enum: QEntitlementRenewState): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>

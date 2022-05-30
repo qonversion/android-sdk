@@ -426,20 +426,25 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback? = null,
         ignoreCache: Boolean = false
     ) {
-        entitlementsManager.checkEntitlements(config.uid, pendingIdentityUserID, object : QonversionEntitlementsCallbackInternal {
-            override fun onSuccess(entitlements: List<QEntitlement>) {
-                val permissions = entitlements.associate { it.permissionID to it.toPermission() }
-                callback?.onSuccess(permissions)
-            }
-
-            override fun onError(error: QonversionError, responseCode: Int?) {
-                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    handleNewUserEntitlements(callback)
-                } else {
-                    callback?.onError(error)
+        entitlementsManager.checkEntitlements(
+            config.uid,
+            pendingIdentityUserID,
+            object : QonversionEntitlementsCallbackInternal {
+                override fun onSuccess(entitlements: List<QEntitlement>) {
+                    val permissions = entitlements.associate { it.permissionID to it.toPermission() }
+                    callback?.onSuccess(permissions)
                 }
-            }
-        }, ignoreCache)
+
+                override fun onError(error: QonversionError, responseCode: Int?) {
+                    if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                        handleNewUserEntitlements(callback)
+                    } else {
+                        callback?.onError(error)
+                    }
+                }
+            },
+            ignoreCache
+        )
     }
 
     private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
