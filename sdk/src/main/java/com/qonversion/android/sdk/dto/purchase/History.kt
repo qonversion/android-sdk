@@ -7,5 +7,7 @@ import com.squareup.moshi.JsonClass
 data class History(
     @Json(name = "product") val product: String,
     @Json(name = "purchase_token") val purchaseToken: String,
-    @Json(name = "purchase_time") val purchaseTime: Long
+    @Json(name = "purchase_time") val purchaseTime: Long,
+    @Json(name = "currency") val priceCurrencyCode: String?,
+    @Json(name = "value") val price: String?
 )

@@ -11,4 +11,5 @@ object Constants {
     const val EXPERIMENT_STARTED_EVENT_NAME = "offering_within_experiment_called"
     const val INTERNAL_SERVER_ERROR_MIN = 500
     const val INTERNAL_SERVER_ERROR_MAX = 599
+    const val PRICE_MICROS_DIVIDER: Double = 1000000.0
 }
