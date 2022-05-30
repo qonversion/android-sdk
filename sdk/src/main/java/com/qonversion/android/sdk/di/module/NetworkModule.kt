@@ -47,6 +47,7 @@ internal class NetworkModule {
             .add(QExperimentGroupTypeAdapter())
             .add(QExperimentsAdapter())
             .add(QEligibilityStatusAdapter())
+            .add(QEntitlementRenewStateAdapter())
             .add(QEligibilityAdapter())
             .build()
     }

@@ -1,16 +1,107 @@
 package com.qonversion.android.sdk
 
-internal interface EntitlementsManager {
+import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.storage.EntitlementsCache
+import javax.inject.Inject
+import java.util.concurrent.ConcurrentHashMap
+
+internal class EntitlementsManager @Inject constructor(
+    private val repository: QonversionRepository,
+    private val cache: EntitlementsCache,
+    private val config: QonversionConfig,
+    private val entitlementsCallbacks: ConcurrentHashMap<String, MutableList<QonversionEntitlementsCallbackInternal>> = ConcurrentHashMap()
+): QUserChangedListener {
+
+    private var firstRequestExecuted = false
+
+    init {
+        config.subscribeOnUserChanges(this)
+    }
 
     fun checkEntitlements(
         qonversionUserId: String,
         pendingIdentityUserId: String?,
-        callback: QonversionEntitlementsCallbackInternal
-    )
+        callback: QonversionEntitlementsCallbackInternal,
+        ignoreCache: Boolean = false
+    ) {
+        if (firstRequestExecuted && !ignoreCache) {
+            cache.getActualStoredValue()?.let {
+                callback.onSuccess(it)
+                return
+            }
+        }
+
+        val user = pendingIdentityUserId ?: qonversionUserId
+        val existingCallbackCount = entitlementsCallbacks[user]?.size ?: 0
+        storeCallback(user, callback)
+        if (pendingIdentityUserId != null || existingCallbackCount > 0) {
+            return
+        }
+
+        repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+    }
 
     fun checkEntitlementsAfterIdentity(
         qonversionUserId: String,
-        identityUserId: String,
-        callback: QonversionEntitlementsCallbackInternal
-    )
+        identityUserId: String
+    ) {
+        val callbacks = entitlementsCallbacks[identityUserId]?.toList() ?: return
+
+        entitlementsCallbacks.remove(identityUserId)
+        val isRequestInProgress = !entitlementsCallbacks[qonversionUserId].isNullOrEmpty()
+        storeCallbacks(qonversionUserId, callbacks)
+
+        if (!isRequestInProgress) {
+            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+        }
+    }
+
+    override fun onUserChanged(oldUid: String, newUid: String) {
+        cache.reset()
+    }
+
+    private fun storeCallback(user: String, callback: QonversionEntitlementsCallbackInternal) {
+        storeCallbacks(user, listOf(callback))
+    }
+
+    private fun storeCallbacks(user: String, callbacks: List<QonversionEntitlementsCallbackInternal>) {
+        if (!entitlementsCallbacks.containsKey(user)) {
+            entitlementsCallbacks[user] = mutableListOf()
+        }
+        entitlementsCallbacks[user]?.addAll(callbacks)
+    }
+
+    private fun getResponseHandler(qonversionUserId: String): QonversionEntitlementsCallbackInternal {
+        return object : QonversionEntitlementsCallbackInternal {
+            override fun onSuccess(entitlements: List<QEntitlement>) {
+                firstRequestExecuted = true
+
+                // Store only if the user had not changed
+                if (qonversionUserId == config.uid) {
+                    cache.store(entitlements)
+                }
+
+                fireEntitlementsToListeners(qonversionUserId, entitlements)
+            }
+
+            override fun onError(error: QonversionError, responseCode: Int?) {
+                cache.getActualStoredValue(true)?.let {
+                    fireEntitlementsToListeners(qonversionUserId, it)
+                } ?: run {
+                    val callbacks = entitlementsCallbacks[qonversionUserId]?.toList()
+                    entitlementsCallbacks.remove(qonversionUserId)
+                    callbacks?.forEach { it.onError(error, responseCode) }
+                }
+            }
+        }
+    }
+
+    private fun fireEntitlementsToListeners(
+        qonversionUserId: String,
+        entitlements: List<QEntitlement>
+    ) {
+        val callbacks = entitlementsCallbacks[qonversionUserId]?.toList()
+        entitlementsCallbacks.remove(qonversionUserId)
+        callbacks?.forEach { it.onSuccess(entitlements) }
+    }
 }

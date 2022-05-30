@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk
 
-data class QonversionConfig(
+internal data class QonversionConfig(
     val key: String,
     val sdkVersion: String,
     val isDebugMode: Boolean
@@ -12,6 +12,21 @@ data class QonversionConfig(
 
     @Volatile
     var uid = ""
-        @Synchronized set
+        @Synchronized private set
         @Synchronized get
+
+    private var userChangedListeners: Set<QUserChangedListener> = emptySet()
+
+    fun setUid(uid: String) {
+        if (uid == this.uid) return
+
+        val oldUid = this.uid
+        this.uid = uid
+
+        userChangedListeners.forEach { it.onUserChanged(oldUid, uid) }
+    }
+
+    fun subscribeOnUserChanges(listener: QUserChangedListener) {
+        userChangedListeners.plus(listener)
+    }
 }

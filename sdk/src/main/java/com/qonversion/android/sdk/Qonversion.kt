@@ -92,7 +92,7 @@ object Qonversion : LifecycleDelegate {
 
         val userID = userInfoService.obtainUserID()
 
-        config.uid = userID
+        config.setUid(userID)
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 

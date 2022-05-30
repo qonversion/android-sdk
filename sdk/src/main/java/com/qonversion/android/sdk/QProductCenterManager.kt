@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -148,6 +149,10 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
+        if (identityManager.currentCustomUserId == userID) {
+            return
+        }
+
         unhandledLogoutAvailable = false
         pendingIdentityUserID = userID
         if (!isLaunchingFinished) {
@@ -163,8 +168,9 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
-//                    todo in #15337
-//                    executePermissionsBlock()
+                    pendingIdentityUserID = null
+                    identityInProgress = false
+                    // todo do smth with permissions
                 }
             }
 
@@ -176,30 +182,19 @@ class QProductCenterManager internal constructor(
     }
 
     private fun processIdentity(userID: String) {
-        val currentUserID = userInfoService.obtainUserID()
-
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(qonversionUserId: String) {
                 pendingIdentityUserID = null
                 identityInProgress = false
 
-                if (currentUserID == qonversionUserId) {
-//                    todo in #15337
-//                    executePermissionsBlock()
-                } else {
-                    config.uid = qonversionUserId
-
-                    // todo clear permissions cache
-                    launchResultCache.resetActualCache()
-                }
+                config.setUid(qonversionUserId)
+                entitlementsManager.checkEntitlementsAfterIdentity(qonversionUserId, userID)
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
                 pendingIdentityUserID = null
                 identityInProgress = false
-
-//                todo in #15337
-//                executePermissionsBlock()
+                // todo do smth with permissions
             }
         })
     }
@@ -414,15 +409,21 @@ class QProductCenterManager internal constructor(
         return product
     }
 
-    fun checkPermissions(callback: QonversionPermissionsCallback) {
+    fun checkPermissions(
+        callback: QonversionPermissionsCallback,
+        ignoreCache: Boolean = false
+    ) {
         if (unhandledLogoutAvailable) {
             handleNewUserEntitlements(callback)
         } else {
-            requestEntitlements(callback)
+            requestEntitlements(callback, ignoreCache)
         }
     }
 
-    private fun requestEntitlements(callback: QonversionPermissionsCallback? = null) {
+    private fun requestEntitlements(
+        callback: QonversionPermissionsCallback? = null,
+        ignoreCache: Boolean = false
+    ) {
         entitlementsManager.checkEntitlements(config.uid, pendingIdentityUserID, object : QonversionEntitlementsCallbackInternal {
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 val permissions = entitlements.associate { it.permissionID to it.toPermission() }
@@ -436,14 +437,32 @@ class QProductCenterManager internal constructor(
                     callback?.onError(error)
                 }
             }
-        })
+        }, ignoreCache)
     }
 
     private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
         callback?.onSuccess(emptyMap())
-        // todo clear cache
         if (isLaunchingFinished) {
             handleLogout()
+        }
+    }
+
+    private fun checkPermissionsAfterPurchase(
+        purchaseCallback: QonversionPermissionsCallback?,
+        updatedPurchasesListener: UpdatedPurchasesListener?
+    ) {
+        if (purchaseCallback != null || updatedPurchasesListener != null) {
+            checkPermissions(object : QonversionPermissionsCallback {
+                override fun onSuccess(permissions: Map<String, QPermission>) {
+                    purchaseCallback?.onSuccess(permissions) ?: run {
+                        updatedPurchasesListener?.onPermissionsUpdate(permissions)
+                    }
+                }
+
+                override fun onError(error: QonversionError) {
+                    purchaseCallback?.onError(error)
+                }
+            }, true)
         }
     }
 
@@ -619,10 +638,9 @@ class QProductCenterManager internal constructor(
 
         if (isLogoutNeeded) {
             unhandledLogoutAvailable = true
-            launchResultCache.resetActualCache()
 
             val userID = userInfoService.obtainUserID()
-            config.uid = userID
+            config.setUid(userID)
         }
     }
 
@@ -828,9 +846,7 @@ class QProductCenterManager internal constructor(
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
-                    purchaseCallback?.onSuccess(launchResult.permissions) ?: run {
-                        listener?.onPermissionsUpdate(launchResult.permissions)
-                    }
+                    checkPermissionsAfterPurchase(purchaseCallback, listener)
                     handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 

@@ -8,7 +8,7 @@ import okhttp3.Headers
 import java.util.*
 import javax.inject.Inject
 
-class ApiHeadersProvider @Inject constructor(
+internal class ApiHeadersProvider @Inject constructor(
     private val config: QonversionConfig,
     private val sharedPreferencesCache: SharedPreferencesCache
 ) {

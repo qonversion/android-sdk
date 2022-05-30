@@ -58,15 +58,6 @@ internal class AppModule(
         return PurchasesCache(sharedPreferences)
     }
 
-    @ApplicationScope
-    @Provides
-    fun provideLaunchResultCacheWrapper(
-        moshi: Moshi,
-        sharedPreferencesCache: SharedPreferencesCache
-    ): LaunchResultCacheWrapper {
-        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
-    }
-
     companion object {
         private const val SDK_VERSION = "3.2.7"
     }
