@@ -150,36 +150,25 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
-        Log.d("!EntitlementsManager", "identify start for $userID")
-
         if (identityManager.currentCustomUserId == userID) {
-            Log.d("!EntitlementsManager", "identify for same user, do nothing")
             return
         }
 
         unhandledLogoutAvailable = false
         pendingIdentityUserID = userID
         if (!isLaunchingFinished) {
-            Log.d("!EntitlementsManager", "identify launch is not finished")
-
             return
         }
 
         identityInProgress = true
 
         if (launchError != null) {
-            Log.d("!EntitlementsManager", "identify was launch error, sending launch again")
-
             val callback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
-                    Log.d("!EntitlementsManager", "identify onSuccess after init, processing")
-
                     processIdentity(userID)
                 }
 
                 override fun onError(error: QonversionError) {
-                    Log.d("!EntitlementsManager", "identify onError after init: ${error.description}, processing")
-
                     pendingIdentityUserID = null
                     identityInProgress = false
 
@@ -190,19 +179,13 @@ class QProductCenterManager internal constructor(
             val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
             repository.init(initRequestData)
         } else {
-            Log.d("!EntitlementsManager", "identify processing")
-
             processIdentity(userID)
         }
     }
 
     private fun processIdentity(userID: String) {
-        Log.d("!EntitlementsManager", "processIdentity start")
-
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(qonversionUserId: String) {
-                Log.d("!EntitlementsManager", "processIdentity onSuccess, uid: ${qonversionUserId}")
-
                 pendingIdentityUserID = null
                 identityInProgress = false
 
@@ -211,8 +194,6 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
-                Log.d("!EntitlementsManager", "processIdentity onError: ${error.description}")
-
                 pendingIdentityUserID = null
                 identityInProgress = false
 
@@ -435,7 +416,6 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback,
         ignoreCache: Boolean = false
     ) {
-        Log.d("!EntitlementsManager", "checkPermissions start")
         if (unhandledLogoutAvailable) {
             handleNewUserEntitlements(callback)
         } else {
@@ -447,27 +427,19 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback? = null,
         ignoreCache: Boolean = false
     ) {
-        Log.d("!EntitlementsManager", "requestEntitlements start")
-
         entitlementsManager.checkEntitlements(
             config.uid,
             pendingIdentityUserID,
             object : QonversionEntitlementsCallbackInternal {
                 override fun onSuccess(entitlements: List<QEntitlement>) {
-                    Log.d("!EntitlementsManager", "requestEntitlements onSuccess")
-
                     val permissions = entitlements.associate { it.permissionID to it.toPermission() }
                     callback?.onSuccess(permissions)
                 }
 
                 override fun onError(error: QonversionError, responseCode: Int?) {
-                    Log.d("!EntitlementsManager", "requestEntitlements onError")
-
                     if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                        Log.d("!EntitlementsManager", "requestEntitlements handling 404")
                         handleNewUserEntitlements(callback)
                     } else {
-                        Log.d("!EntitlementsManager", "requestEntitlements firing onError to listeners")
                         callback?.onError(error)
                     }
                 }
@@ -477,12 +449,8 @@ class QProductCenterManager internal constructor(
     }
 
     private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
-        Log.d("!EntitlementsManager", "handleNewUserEntitlements start")
-
         callback?.onSuccess(emptyMap())
         if (isLaunchingFinished) {
-            Log.d("!EntitlementsManager", "handleNewUserEntitlements launch is finished, calling launch")
-
             handleLogout()
         }
     }
@@ -491,23 +459,15 @@ class QProductCenterManager internal constructor(
         purchaseCallback: QonversionPermissionsCallback?,
         updatedPurchasesListener: UpdatedPurchasesListener?
     ) {
-        Log.d("!EntitlementsManager", "checkPermissionsAfterPurchase start")
-
         if (purchaseCallback != null || updatedPurchasesListener != null) {
-            Log.d("!EntitlementsManager", "checkPermissionsAfterPurchase checking permissions")
-
             checkPermissions(object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
-                    Log.d("!EntitlementsManager", "checkPermissionsAfterPurchase onSuccess")
-
                     purchaseCallback?.onSuccess(permissions) ?: run {
                         updatedPurchasesListener?.onPermissionsUpdate(permissions)
                     }
                 }
 
                 override fun onError(error: QonversionError) {
-                    Log.d("!EntitlementsManager", "checkPermissionsAfterPurchase onError: ${error.description}")
-
                     purchaseCallback?.onError(error)
                 }
             }, true)
@@ -515,8 +475,6 @@ class QProductCenterManager internal constructor(
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
-        Log.d("!EntitlementsManager", "restore start")
-
         billingService.queryPurchasesHistory(
             onQueryHistoryCompleted = { historyRecords ->
                 consumer.consumeHistoryRecords(historyRecords)
@@ -526,15 +484,11 @@ class QProductCenterManager internal constructor(
                     purchaseHistoryRecords,
                     object : QonversionLaunchCallback {
                         override fun onSuccess(launchResult: QLaunchResult) {
-                            Log.d("!EntitlementsManager", "restore onSuccess")
-
                             updateLaunchResult(launchResult)
                             requestEntitlements(callback)
                         }
 
                         override fun onError(error: QonversionError) {
-                            Log.d("!EntitlementsManager", "restore onError: ${error.description}")
-
                             forceLaunchRetry = true
                             callback?.onError(error)
                         }
@@ -658,16 +612,11 @@ class QProductCenterManager internal constructor(
                 updateLaunchResult(launchResult)
                 launchError = null
 
-                Log.d("!EntitlementsManager", "getLaunchCallback onSuccess, identity in progress: $identityInProgress, pendingIdentityUserID: $pendingIdentityUserID, unhandledLogoutAvailable: $unhandledLogoutAvailable")
-
                 if (!identityInProgress) {
                     val userID = pendingIdentityUserID
                     if (!userID.isNullOrEmpty()) {
-                        Log.d("!EntitlementsManager", "getLaunchCallback calling identify for $pendingIdentityUserID")
-
                         identify(userID)
                     } else if (unhandledLogoutAvailable) {
-                        Log.d("!EntitlementsManager", "getLaunchCallback calling logout")
                         handleLogout()
                     }
                 }
@@ -681,8 +630,6 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                Log.d("!EntitlementsManager", "getLaunchCallback onError: ${error.description}")
-
                 launchResult = null
                 launchError = error
 
@@ -694,24 +641,18 @@ class QProductCenterManager internal constructor(
     }
 
     fun logout() {
-        Log.d("!EntitlementsManager", "logout start")
-
         pendingIdentityUserID = null
         val isLogoutNeeded = identityManager.logoutIfNeeded()
-        Log.d("!EntitlementsManager", "logout isNeeded - $isLogoutNeeded")
 
         if (isLogoutNeeded) {
             unhandledLogoutAvailable = true
 
             val userID = userInfoService.obtainUserID()
-            Log.d("!EntitlementsManager", "logout resetting id to $userID")
             config.setUid(userID)
         }
     }
 
     private fun handleLogout() {
-        Log.d("!EntitlementsManager", "handleLogout start")
-
         unhandledLogoutAvailable = false
         launch()
     }
