@@ -58,7 +58,7 @@ internal class EntitlementsCache @Inject constructor(
         private const val ENTITLEMENTS_KEY = "qonversion_entitlements"
         private const val SAVING_TIME_KEY = "qonversion_entitlements_save_time"
         private const val DEFAULT_SAVING_TIME = -1L
-        private const val MAX_LIFETIME_SEC = 1 // * 60 * 5
+        private const val MAX_LIFETIME_SEC = 60 * 5
         private const val MAX_LIFETIME_ON_ERROR_SEC = 60 * 60 * 24
     }
 }
