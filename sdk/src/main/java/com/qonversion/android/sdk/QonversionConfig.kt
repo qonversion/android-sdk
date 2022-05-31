@@ -15,7 +15,7 @@ internal data class QonversionConfig(
         @Synchronized private set
         @Synchronized get
 
-    private var userChangedListeners: Set<QUserChangedListener> = emptySet()
+    private var userChangedListeners: MutableSet<QUserChangedListener> = mutableSetOf()
 
     fun setUid(uid: String) {
         if (uid == this.uid) return
@@ -27,6 +27,6 @@ internal data class QonversionConfig(
     }
 
     fun subscribeOnUserChanges(listener: QUserChangedListener) {
-        userChangedListeners.plus(listener)
+        userChangedListeners.add(listener)
     }
 }

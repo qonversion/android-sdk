@@ -60,7 +60,9 @@ internal class EntitlementsManager @Inject constructor(
     }
 
     override fun onUserChanged(oldUid: String, newUid: String) {
-        cache.reset()
+        if (oldUid.isNotEmpty()) {
+            cache.reset()
+        }
     }
 
     private fun isRequestInProgressForId(userId: String): Boolean {

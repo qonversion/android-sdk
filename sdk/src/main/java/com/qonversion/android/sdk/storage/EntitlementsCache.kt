@@ -31,7 +31,7 @@ internal class EntitlementsCache @Inject constructor(
             .takeIf { it != DEFAULT_SAVING_TIME } ?: return null
 
         val lifetime = currentTimestamp - savingTime
-        val availableLifetime = if (isError) MAX_LIFETIME_ON_ERROR_MS else MAX_LIFETIME_MS
+        val availableLifetime = if (isError) MAX_LIFETIME_ON_ERROR_SEC else MAX_LIFETIME_SEC
         if (availableLifetime < lifetime) {
             return null
         }
@@ -58,7 +58,7 @@ internal class EntitlementsCache @Inject constructor(
         private const val ENTITLEMENTS_KEY = "qonversion_entitlements"
         private const val SAVING_TIME_KEY = "qonversion_entitlements_save_time"
         private const val DEFAULT_SAVING_TIME = -1L
-        private const val MAX_LIFETIME_MS = 1000 * 60 * 5
-        private const val MAX_LIFETIME_ON_ERROR_MS = 1000 * 60 * 60 * 24
+        private const val MAX_LIFETIME_SEC = 1 // * 60 * 5
+        private const val MAX_LIFETIME_ON_ERROR_SEC = 60 * 60 * 24
     }
 }

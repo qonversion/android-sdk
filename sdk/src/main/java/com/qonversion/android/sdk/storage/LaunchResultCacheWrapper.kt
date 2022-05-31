@@ -25,8 +25,10 @@ internal class LaunchResultCacheWrapper @Inject constructor(
     }
 
     override fun onUserChanged(oldUid: String, newUid: String) {
-        cache.putLong(CACHE_TIMESTAMP_KEY, 0)
-        cache.remove(LAUNCH_RESULT_KEY)
+        if (oldUid.isNotEmpty()) {
+            cache.putLong(CACHE_TIMESTAMP_KEY, 0)
+            cache.remove(LAUNCH_RESULT_KEY)
+        }
     }
 
     fun getActualLaunchResult(): QLaunchResult? {
