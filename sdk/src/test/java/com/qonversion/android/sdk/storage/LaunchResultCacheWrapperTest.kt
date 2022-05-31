@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.storage
 
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.storage.Util.Companion.buildMoshi
@@ -14,6 +15,7 @@ class LaunchResultCacheWrapperTest {
     private val mockPrefsCache: SharedPreferencesCache = mockk(relaxed = true)
     private val mockMoshi = buildMoshi()
     private val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)
+    private val mockQonversionConfig = mockk<QonversionConfig>(relaxed = true)
 
     private lateinit var cacheWrapper: LaunchResultCacheWrapper
 
@@ -25,7 +27,7 @@ class LaunchResultCacheWrapperTest {
     fun setUp() {
         clearAllMocks()
 
-        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache)
+        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockQonversionConfig)
     }
 
     @Nested

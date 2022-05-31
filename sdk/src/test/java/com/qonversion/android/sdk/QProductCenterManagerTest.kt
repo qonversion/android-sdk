@@ -39,6 +39,7 @@ class QProductCenterManagerTest {
     private val mockIdentityManager = mockk<QIdentityManager>(relaxed = true)
     private val mockBillingService: QonversionBillingService = mockk()
     private val mockConsumer = mockk<Consumer>(relaxed = true)
+    private val mockEntitlementsManager = mockk<EntitlementsManager>(relaxed = true)
     private val mockConfig = mockk<QonversionConfig>(relaxed = true)
 
     private lateinit var productCenterManager: QProductCenterManager
@@ -68,6 +69,7 @@ class QProductCenterManagerTest {
             mockLaunchResultCacheWrapper,
             mockUserInfoService,
             mockIdentityManager,
+            mockEntitlementsManager,
             mockConfig
         )
         productCenterManager.billingService = mockBillingService
