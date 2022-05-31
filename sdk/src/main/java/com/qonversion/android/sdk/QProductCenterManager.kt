@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.app.Application
-import android.util.Log
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
