@@ -46,8 +46,6 @@ class QProductCenterManager internal constructor(
 
     private var loadProductsState = NotStartedYet
 
-    private var forceLaunchRetry: Boolean = false
-
     private var skuDetails = mapOf<String, SkuDetails>()
 
     private var launchResult: QLaunchResult? = null
@@ -488,7 +486,6 @@ class QProductCenterManager internal constructor(
                         }
 
                         override fun onError(error: QonversionError) {
-                            forceLaunchRetry = true
                             callback?.onError(error)
                         }
                     })
@@ -659,7 +656,6 @@ class QProductCenterManager internal constructor(
     private fun updateLaunchResult(launchResult: QLaunchResult) {
         this@QProductCenterManager.launchResult = launchResult
         launchResultCache.save(launchResult)
-        forceLaunchRetry = false
     }
 
     private fun loadStoreProductsIfPossible(
@@ -859,7 +855,6 @@ class QProductCenterManager internal constructor(
 
                 override fun onError(error: QonversionError) {
                     purchaseCallback?.onError(error)
-                    forceLaunchRetry = true
                 }
             })
         }
