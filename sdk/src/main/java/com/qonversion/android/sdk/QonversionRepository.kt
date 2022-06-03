@@ -41,7 +41,7 @@ import retrofit2.Response
 import java.lang.RuntimeException
 
 @SuppressWarnings("LongParameterList")
-class QonversionRepository internal constructor(
+internal class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
     private val config: QonversionConfig,
@@ -80,6 +80,29 @@ class QonversionRepository internal constructor(
         callback: QonversionLaunchCallback
     ) {
         purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
+    }
+
+    fun entitlements(
+        userId: String,
+        callback: QonversionEntitlementsCallbackInternal
+    ) {
+        api.entitlements(userId).enqueue {
+            onResponse = {
+                logger.release("entitlementsRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body != null) {
+                    callback.onSuccess(body.data)
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it), it.code())
+                }
+            }
+            onFailure = {
+                logger.release("entitlementsRequest - failure - ${it?.toQonversionError()}")
+                if (it != null) {
+                    callback.onError(it.toQonversionError(), null)
+                }
+            }
+        }
     }
 
     fun restore(
