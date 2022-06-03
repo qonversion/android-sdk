@@ -136,6 +136,7 @@ class Util {
                 .add(QExperimentGroupTypeAdapter())
                 .add(QExperimentsAdapter())
                 .add(QEligibilityStatusAdapter())
+                .add(QEntitlementRenewStateAdapter())
                 .add(QEligibilityAdapter())
                 .build()
     }

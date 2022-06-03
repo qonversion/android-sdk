@@ -14,6 +14,8 @@ internal class QIdentityManager @Inject constructor(
     private val repository: QonversionRepository,
     private val userInfoService: QUserInfoService
 ) {
+    val currentCustomUserId: String? get() = userInfoService.getCustomUserId()
+
     fun identify(userID: String, callback: IdentityManagerCallback) {
         obtainIdentity(userID, object : IdentityManagerCallback {
             override fun onSuccess(qonversionUserId: String) {

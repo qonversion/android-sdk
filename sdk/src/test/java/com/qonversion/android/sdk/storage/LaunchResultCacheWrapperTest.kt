@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.storage
 
+import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.storage.Util.Companion.buildMoshi

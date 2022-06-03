@@ -19,11 +19,11 @@ interface Api {
     @POST("v1/user/purchase")
     fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
 
-    @GET("v3/user/{userId}/entitlements")
+    @GET("v3/users/{userId}/entitlements")
     fun entitlements(@Path("userId") userId: String): Call<Data<List<QEntitlement>>>
 
     @POST("v1/user/restore")
-    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>
+    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QRestoreResult>>
 
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>
