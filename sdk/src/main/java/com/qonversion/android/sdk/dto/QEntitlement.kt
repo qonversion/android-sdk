@@ -13,6 +13,18 @@ data class QEntitlement(
     @Json(name = "active") internal val active: Boolean,
     @Json(name = "product") val product: Product
 ) {
+    constructor(permission: QPermission) : this(
+        permission.permissionID,
+        permission.startedDate,
+        permission.expirationDate,
+        permission.isActive(),
+        Product(
+            permission.productID,
+            Product.Subscription(
+                QEntitlementRenewState.fromProductRenewState(permission.renewState)
+            )
+        )
+    )
 
     fun toPermission(): QPermission = QPermission(
         permissionID,

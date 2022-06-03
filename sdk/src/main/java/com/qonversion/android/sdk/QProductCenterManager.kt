@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QRestoreResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -481,10 +482,14 @@ class QProductCenterManager internal constructor(
                 repository.restore(
                     installDate,
                     purchaseHistoryRecords,
-                    object : QonversionLaunchCallback {
-                        override fun onSuccess(launchResult: QLaunchResult) {
-                            updateLaunchResult(launchResult)
-                            requestEntitlements(callback)
+                    object : QonversionRestoreCallback {
+                        override fun onSuccess(restoreResult: QRestoreResult) {
+                            updateLaunchResult(restoreResult.toLaunchResult())
+                            callback?.onSuccess(restoreResult.permissions)
+
+                            val entitlements =
+                                restoreResult.permissions.values.map { QEntitlement(it) }
+                            entitlementsManager.onRestore(restoreResult.uid, entitlements)
                         }
 
                         override fun onError(error: QonversionError) {

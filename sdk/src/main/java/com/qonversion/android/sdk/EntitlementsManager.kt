@@ -59,6 +59,10 @@ internal class EntitlementsManager @Inject constructor(
         fireErrorToListeners(identityUserId, error)
     }
 
+    fun onRestore(qonversionUserId: String, entitlements: List<QEntitlement>) {
+        cacheEntitlementsForUser(qonversionUserId, entitlements)
+    }
+
     override fun onUserChanged(oldUid: String, newUid: String) {
         if (oldUid.isNotEmpty()) {
             cache.reset()
@@ -85,10 +89,7 @@ internal class EntitlementsManager @Inject constructor(
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 firstRequestExecuted = true
 
-                // Store only if the user has not changed
-                if (qonversionUserId == config.uid) {
-                    cache.store(entitlements)
-                }
+                cacheEntitlementsForUser(qonversionUserId, entitlements)
 
                 fireEntitlementsToListeners(qonversionUserId, entitlements)
             }
@@ -100,6 +101,13 @@ internal class EntitlementsManager @Inject constructor(
                     fireErrorToListeners(qonversionUserId, error, responseCode)
                 }
             }
+        }
+    }
+
+    private fun cacheEntitlementsForUser(qonversionUserId: String, entitlements: List<QEntitlement>) {
+        // Store only if the user has not changed
+        if (qonversionUserId == config.uid) {
+            cache.store(entitlements)
         }
     }
 

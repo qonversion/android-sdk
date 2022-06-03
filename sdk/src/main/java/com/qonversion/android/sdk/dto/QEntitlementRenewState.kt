@@ -17,6 +17,15 @@ enum class QEntitlementRenewState(val type: String) {
                 else -> Unknown
             }
         }
+
+        fun fromProductRenewState(renewState: QProductRenewState): QEntitlementRenewState {
+            return when (renewState) {
+                QProductRenewState.WillRenew -> WillRenew
+                QProductRenewState.Canceled -> Canceled
+                QProductRenewState.BillingIssue -> BillingIssue
+                else -> Unknown
+            }
+        }
     }
 
     fun toProductRenewState() = when (this) {

@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QRestoreResult
 import com.qonversion.android.sdk.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.dto.automations.Screen
 import com.qonversion.android.sdk.dto.eligibility.StoreProductInfo
@@ -107,7 +107,7 @@ internal class QonversionRepository internal constructor(
     fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionRestoreCallback?
     ) {
         restoreRequest(installDate, historyRecords, callback)
     }
@@ -528,7 +528,7 @@ internal class QonversionRepository internal constructor(
     private fun restoreRequest(
         installDate: Long,
         historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionRestoreCallback?
     ) {
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
@@ -557,8 +557,8 @@ internal class QonversionRepository internal constructor(
     }
 
     private fun handlePermissionsResponse(
-        response: Response<BaseResponse<QLaunchResult>>,
-        callback: QonversionLaunchCallback?
+        response: Response<BaseResponse<QRestoreResult>>,
+        callback: QonversionRestoreCallback?
     ) {
         val body = response.body()
         if (body != null && body.success) {

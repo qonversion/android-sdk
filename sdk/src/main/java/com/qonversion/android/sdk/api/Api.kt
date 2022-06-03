@@ -23,7 +23,7 @@ interface Api {
     fun entitlements(@Path("userId") userId: String): Call<Data<List<QEntitlement>>>
 
     @POST("v1/user/restore")
-    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>
+    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QRestoreResult>>
 
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>
