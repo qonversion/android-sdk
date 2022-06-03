@@ -9,7 +9,7 @@ import okhttp3.ResponseBody
 import java.io.IOException
 import javax.inject.Inject
 
-class NetworkInterceptor @Inject constructor(
+internal class NetworkInterceptor @Inject constructor(
     private val headersProvider: ApiHeadersProvider,
     private val apiHelper: ApiHelper,
     private val config: QonversionConfig

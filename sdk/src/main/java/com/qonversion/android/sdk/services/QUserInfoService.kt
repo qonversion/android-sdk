@@ -43,6 +43,10 @@ class QUserInfoService @Inject constructor(
         preferences.putString(PREFS_CUSTOM_USER_ID_KEY, userID)
     }
 
+    fun getCustomUserId(): String? {
+        return preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null)
+    }
+
     fun logoutIfNeeded(): Boolean {
         preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null) ?: return false
         preferences.remove(PREFS_CUSTOM_USER_ID_KEY)
