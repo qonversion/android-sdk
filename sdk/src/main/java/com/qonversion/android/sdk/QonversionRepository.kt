@@ -2,9 +2,9 @@ package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
 import android.os.Handler
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
@@ -34,6 +34,7 @@ import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
+import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
@@ -106,7 +107,7 @@ internal class QonversionRepository internal constructor(
 
     fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistoryRecord>,
+        historyRecords: List<PurchaseHistory>,
         callback: QonversionRestoreCallback?
     ) {
         restoreRequest(installDate, historyRecords, callback)
@@ -509,17 +510,19 @@ internal class QonversionRepository internal constructor(
         )
     }
 
-    private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
+    private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
         return historyRecords.mapNotNull {
-            val sku = it.sku
+            val sku = it.historyRecord.sku
 
             if (sku == null) {
                 null
             } else {
                 History(
                     sku,
-                    it.purchaseToken,
-                    it.purchaseTime.milliSecondsToSeconds()
+                    it.historyRecord.purchaseToken,
+                    it.historyRecord.purchaseTime.milliSecondsToSeconds(),
+                    it.skuDetails?.priceCurrencyCode,
+                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }.toString()
                 )
             }
         }
@@ -527,7 +530,7 @@ internal class QonversionRepository internal constructor(
 
     private fun restoreRequest(
         installDate: Long,
-        historyRecords: List<PurchaseHistoryRecord>,
+        historyRecords: List<PurchaseHistory>,
         callback: QonversionRestoreCallback?
     ) {
         val history = convertHistory(historyRecords)

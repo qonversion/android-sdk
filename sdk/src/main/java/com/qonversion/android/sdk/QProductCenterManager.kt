@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
+import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.services.QUserInfoService
@@ -475,28 +476,24 @@ class QProductCenterManager internal constructor(
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
-        billingService.queryPurchasesHistory(
-            onQueryHistoryCompleted = { historyRecords ->
-                consumer.consumeHistoryRecords(historyRecords)
-                val purchaseHistoryRecords = historyRecords.map { it.historyRecord }
-                repository.restore(
-                    installDate,
-                    purchaseHistoryRecords,
-                    object : QonversionRestoreCallback {
-                        override fun onSuccess(restoreResult: QRestoreResult) {
-                            updateLaunchResult(restoreResult.toLaunchResult())
-                            callback?.onSuccess(restoreResult.permissions)
+        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
+            consumer.consumeHistoryRecords(historyRecords)
+            val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
+            val loadedSkuDetails = skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
+            val resultSkuIds = (skuIds - loadedSkuDetails.keys).toSet()
 
-                            val entitlements =
-                                restoreResult.permissions.values.map { QEntitlement(it) }
-                            entitlementsManager.onRestore(restoreResult.uid, entitlements)
-                        }
+            if (resultSkuIds.isNotEmpty()) {
+                billingService.loadProducts(resultSkuIds, onLoadCompleted = {
+                    it.forEach { skuDetails -> loadedSkuDetails[skuDetails.sku] = skuDetails }
 
-                        override fun onError(error: QonversionError) {
-                            callback?.onError(error)
-                        }
-                    })
-            },
+                    processRestore(historyRecords, loadedSkuDetails, callback)
+                }, onLoadFailed = {
+                    processRestore(historyRecords, loadedSkuDetails, callback)
+                })
+            } else {
+                processRestore(historyRecords, loadedSkuDetails, callback)
+            }
+        },
             onQueryHistoryFailed = {
                 callback?.onError(it.toQonversionError())
             })
@@ -526,6 +523,35 @@ class QProductCenterManager internal constructor(
     }
 
     // Private functions
+
+    private fun processRestore(
+        purchaseHistoryRecords: List<PurchaseHistory>,
+        loadedSkuDetails: Map<String, SkuDetails>,
+        callback: QonversionPermissionsCallback? = null
+    ) {
+        purchaseHistoryRecords.forEach { purchaseHistory ->
+            val skuDetails = loadedSkuDetails[purchaseHistory.historyRecord.sku]
+            purchaseHistory.skuDetails = skuDetails
+        }
+
+        repository.restore(
+            installDate,
+            purchaseHistoryRecords,
+            object : QonversionRestoreCallback {
+                override fun onSuccess(restoreResult: QRestoreResult) {
+                    updateLaunchResult(restoreResult.toLaunchResult())
+                    callback?.onSuccess(restoreResult.permissions)
+
+                    val entitlements =
+                        restoreResult.permissions.values.map { QEntitlement(it) }
+                    entitlementsManager.onRestore(restoreResult.uid, entitlements)
+                }
+
+                override fun onError(error: QonversionError) {
+                    callback?.onError(error)
+                }
+            })
+    }
 
     private fun configureSkuDetails(skuDetails: List<SkuDetails>): Map<String, SkuDetails> {
         val formattedData = mutableMapOf<String, SkuDetails>()
