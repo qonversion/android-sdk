@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.storage
 
-import com.qonversion.android.sdk.QUserChangedListener
-import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper.CacheConstants.CACHE_TIMESTAMP_KEY
@@ -14,22 +12,10 @@ import java.util.concurrent.TimeUnit
 
 internal class LaunchResultCacheWrapper @Inject constructor(
     moshi: Moshi,
-    private val cache: SharedPreferencesCache,
-    config: QonversionConfig
-) : QUserChangedListener {
+    private val cache: SharedPreferencesCache
+) {
     private val jsonAdapter: JsonAdapter<QLaunchResult> =
         moshi.adapter(QLaunchResult::class.java)
-
-    init {
-        config.subscribeOnUserChanges(this)
-    }
-
-    override fun onUserChanged(oldUid: String, newUid: String) {
-        if (oldUid.isNotEmpty()) {
-            cache.putLong(CACHE_TIMESTAMP_KEY, 0)
-            cache.remove(LAUNCH_RESULT_KEY)
-        }
-    }
 
     fun getActualLaunchResult(): QLaunchResult? {
         return if (isCacheOutdated()) {

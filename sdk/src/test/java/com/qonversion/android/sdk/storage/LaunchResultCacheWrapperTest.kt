@@ -15,7 +15,6 @@ class LaunchResultCacheWrapperTest {
     private val mockPrefsCache: SharedPreferencesCache = mockk(relaxed = true)
     private val mockMoshi = buildMoshi()
     private val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)
-    private val mockQonversionConfig = mockk<QonversionConfig>(relaxed = true)
 
     private lateinit var cacheWrapper: LaunchResultCacheWrapper
 
@@ -27,7 +26,7 @@ class LaunchResultCacheWrapperTest {
     fun setUp() {
         clearAllMocks()
 
-        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockQonversionConfig)
+        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache)
     }
 
     @Nested
