@@ -24,7 +24,7 @@ import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import java.net.HttpURLConnection
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
 
 @SuppressWarnings("LongParameterList")
 class QProductCenterManager internal constructor(
@@ -424,23 +424,24 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback? = null,
         ignoreCache: Boolean = false
     ) {
+        val entitlementsCallback = object : QonversionEntitlementsCallbackInternal {
+            override fun onSuccess(entitlements: List<QEntitlement>) {
+                val permissions = entitlements.associate { it.permissionID to it.toPermission() }
+                callback?.onSuccess(permissions)
+            }
+
+            override fun onError(error: QonversionError, responseCode: Int?) {
+                if (responseCode == HTTP_NOT_FOUND) {
+                    handleNewUserEntitlements(callback)
+                } else {
+                    callback?.onError(error)
+                }
+            }
+        }
         entitlementsManager.checkEntitlements(
             config.uid,
             pendingIdentityUserID,
-            object : QonversionEntitlementsCallbackInternal {
-                override fun onSuccess(entitlements: List<QEntitlement>) {
-                    val permissions = entitlements.associate { it.permissionID to it.toPermission() }
-                    callback?.onSuccess(permissions)
-                }
-
-                override fun onError(error: QonversionError, responseCode: Int?) {
-                    if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                        handleNewUserEntitlements(callback)
-                    } else {
-                        callback?.onError(error)
-                    }
-                }
-            },
+            entitlementsCallback,
             ignoreCache
         )
     }
@@ -457,7 +458,7 @@ class QProductCenterManager internal constructor(
         updatedPurchasesListener: UpdatedPurchasesListener?
     ) {
         if (purchaseCallback != null || updatedPurchasesListener != null) {
-            checkPermissions(object : QonversionPermissionsCallback {
+            val permissionsCallback = object : QonversionPermissionsCallback {
                 override fun onSuccess(permissions: Map<String, QPermission>) {
                     purchaseCallback?.onSuccess(permissions) ?: run {
                         updatedPurchasesListener?.onPermissionsUpdate(permissions)
@@ -467,7 +468,8 @@ class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError) {
                     purchaseCallback?.onError(error)
                 }
-            }, true)
+            }
+            checkPermissions(permissionsCallback, true)
         }
     }
 

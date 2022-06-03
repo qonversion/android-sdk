@@ -7,14 +7,6 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun Int.toBoolean() = this != 0
-
-fun String?.toBoolean() = this == "1"
-
-fun Boolean.toInt() = if (this) 1 else 0
-
-fun Boolean.stringValue() = if (this) "1" else "0"
-
 fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 

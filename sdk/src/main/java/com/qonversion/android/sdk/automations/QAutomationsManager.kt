@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionErrorCode
 import com.qonversion.android.sdk.QonversionRepository
 import com.qonversion.android.sdk.QonversionShowScreenCallback
-import com.qonversion.android.sdk.billing.toBoolean
+import com.qonversion.android.sdk.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import java.lang.Exception

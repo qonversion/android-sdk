@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.dto
 
+import com.qonversion.android.sdk.toInt
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.util.Date
@@ -19,7 +20,7 @@ data class QEntitlement(
         product.subscription.renewState.toProductRenewState(),
         startedDate,
         expirationDate,
-        if (active) 1 else 0
+        active.toInt()
     )
 
     @JsonClass(generateAdapter = true)

@@ -35,7 +35,7 @@ internal class EntitlementsManager @Inject constructor(
         val isRequestInProgress = isRequestInProgressForId(userId)
         storeCallback(userId, callback)
 
-        if (pendingIdentityUserId == null && !isRequestInProgress) {
+        if (pendingIdentityUserId.isNullOrEmpty() && !isRequestInProgress) {
             repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
         }
     }
@@ -70,15 +70,14 @@ internal class EntitlementsManager @Inject constructor(
         return callbackCount > 0
     }
 
-    private fun storeCallback(user: String, callback: QonversionEntitlementsCallbackInternal) {
-        storeCallbacks(user, listOf(callback))
+    private fun storeCallback(userId: String, callback: QonversionEntitlementsCallbackInternal) {
+        storeCallbacks(userId, listOf(callback))
     }
 
-    private fun storeCallbacks(user: String, callbacks: List<QonversionEntitlementsCallbackInternal>) {
-        if (!entitlementsCallbacks.containsKey(user)) {
-            entitlementsCallbacks[user] = mutableListOf()
-        }
-        entitlementsCallbacks[user]?.addAll(callbacks)
+    private fun storeCallbacks(userId: String, callbacks: List<QonversionEntitlementsCallbackInternal>) {
+        val list = entitlementsCallbacks[userId] ?: mutableListOf()
+        list.addAll(callbacks)
+        entitlementsCallbacks[userId] = list
     }
 
     private fun getResponseHandler(qonversionUserId: String): QonversionEntitlementsCallbackInternal {
@@ -86,7 +85,7 @@ internal class EntitlementsManager @Inject constructor(
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 firstRequestExecuted = true
 
-                // Store only if the user had not changed
+                // Store only if the user has not changed
                 if (qonversionUserId == config.uid) {
                     cache.store(entitlements)
                 }
@@ -95,7 +94,7 @@ internal class EntitlementsManager @Inject constructor(
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
-                cache.getActualStoredValue(true)?.let {
+                cache.getActualStoredValue(isError = true)?.let {
                     fireEntitlementsToListeners(qonversionUserId, it)
                 } ?: run {
                     fireErrorToListeners(qonversionUserId, error, responseCode)
@@ -108,9 +107,7 @@ internal class EntitlementsManager @Inject constructor(
         qonversionUserId: String,
         entitlements: List<QEntitlement>
     ) {
-        val callbacks = entitlementsCallbacks[qonversionUserId]?.toList()
-        entitlementsCallbacks.remove(qonversionUserId)
-        callbacks?.forEach { it.onSuccess(entitlements) }
+        fireToListeners(qonversionUserId) { onSuccess(entitlements) }
     }
 
     private fun fireErrorToListeners(
@@ -118,8 +115,15 @@ internal class EntitlementsManager @Inject constructor(
         error: QonversionError,
         responseCode: Int? = null
     ) {
+        fireToListeners(userId) { onError(error, responseCode) }
+    }
+
+    private fun fireToListeners(
+        userId: String,
+        callback: QonversionEntitlementsCallbackInternal.() -> Unit
+    ) {
         val callbacks = entitlementsCallbacks[userId]?.toList()
         entitlementsCallbacks.remove(userId)
-        callbacks?.forEach { it.onError(error, responseCode) }
+        callbacks?.forEach(callback)
     }
 }

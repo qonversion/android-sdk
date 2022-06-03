@@ -159,8 +159,8 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:12</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:155</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
@@ -192,7 +192,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:544</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:709</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:712</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:14</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:83</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
@@ -254,6 +254,7 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:3</ID>
     <ID>NoMultipleSpaces:com.qonversion.android.sdk.QIdentityManagerTest.kt:74</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:3</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
@@ -292,8 +293,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:4</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:6</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.PurchasesCacheTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:13</ID>
@@ -342,6 +343,7 @@
     <ID>TooGenericExceptionThrown:Qonversion.kt$Qonversion$throw RuntimeException("Qonversion initialization error! Key should not be empty!")</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
+    <ID>TooManyFunctions:EntitlementsManager.kt$EntitlementsManager : QUserChangedListener</ID>
     <ID>TooManyFunctions:GooglePurchaseConverter.kt$GooglePurchaseConverter : PurchaseConverter</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
@@ -350,7 +352,6 @@
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : ActivityView</ID>
     <ID>TooManyFunctions:SharedPreferencesCache.kt$SharedPreferencesCache : Cache</ID>
-    <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON), Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
