@@ -418,6 +418,9 @@ class QProductCenterManager internal constructor(
         if (unhandledLogoutAvailable) {
             handleNewUserEntitlements(callback)
         } else {
+            pendingIdentityUserID?.takeIf { !identityInProgress }?.let {
+                identify(it)
+            }
             requestEntitlements(callback, ignoreCache)
         }
     }
