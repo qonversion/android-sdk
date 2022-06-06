@@ -153,7 +153,6 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        unhandledLogoutAvailable = false
         pendingIdentityUserID = userID
         if (!isLaunchingFinished) {
             return
@@ -161,9 +160,10 @@ class QProductCenterManager internal constructor(
 
         identityInProgress = true
 
-        if (launchError != null) {
+        if (launchError != null || unhandledLogoutAvailable) {
             val callback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
+                    unhandledLogoutAvailable = false
                     processIdentity(userID)
                 }
 
