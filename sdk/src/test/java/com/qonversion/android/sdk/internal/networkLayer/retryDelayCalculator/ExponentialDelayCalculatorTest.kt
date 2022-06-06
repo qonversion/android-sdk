@@ -56,7 +56,8 @@ internal class ExponentialDelayCalculatorTest {
         // then
         assertThat(delay1).isGreaterThanOrEqualTo(minDelay)
         assertThat(delay2).isGreaterThan(delay1)
-        assertThat(delay3).isGreaterThan(delay2 - delay1)
+        assertThat(delay3).isGreaterThan(delay2)
+        assertThat(delay3 - delay2).isGreaterThan(delay2 - delay1)
     }
 
     @Test
