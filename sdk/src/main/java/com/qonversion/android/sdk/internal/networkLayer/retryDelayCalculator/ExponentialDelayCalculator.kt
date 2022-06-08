@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.networkLayer.retryDelayCalculator
 
+import com.qonversion.android.sdk.internal.utils.MS_IN_SEC
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToLong
@@ -18,7 +19,7 @@ internal class ExponentialDelayCalculator(
 
     @Throws(IllegalArgumentException::class)
     override fun countDelay(minDelay: Long, retriesCount: Int): Long {
-        var delay: Long = (minDelay + factor.pow(retriesCount)).toLong()
+        var delay: Long = (minDelay + factor.pow(retriesCount) * MS_IN_SEC).toLong()
         val delta: Long = (delay * jitter).roundToLong()
 
         delay += randomizer.nextLong(delta + 1)
