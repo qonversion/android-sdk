@@ -17,7 +17,7 @@ import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.dto.request.UserPurchaseProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
-import java.util.*
+import java.util.Date
 
 class QProductDurationAdapter {
     @ToJson
