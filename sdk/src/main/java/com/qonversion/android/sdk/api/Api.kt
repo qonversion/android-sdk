@@ -16,11 +16,11 @@ interface Api {
     @POST("v1/user/init")
     fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
 
-    @POST("v1/user/purchase")
-    fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
+    @POST("v3/users/{$PARAM_ID}/purchases")
+    fun purchase(@Path(PARAM_ID) userId: String, @Body request: PurchaseRequest): Call<UserPurchase>
 
-    @GET("v3/users/{userId}/entitlements")
-    fun entitlements(@Path("userId") userId: String): Call<Data<List<QEntitlement>>>
+    @GET("v3/users/{$PARAM_ID}/entitlements")
+    fun entitlements(@Path(PARAM_ID) userId: String): Call<Data<List<QEntitlement>>>
 
     @POST("v1/user/restore")
     fun restore(@Body request: RestoreRequest): Call<BaseResponse<QRestoreResult>>

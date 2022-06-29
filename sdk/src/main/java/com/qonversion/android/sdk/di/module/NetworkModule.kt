@@ -49,6 +49,7 @@ internal class NetworkModule {
             .add(QEligibilityStatusAdapter())
             .add(QEntitlementRenewStateAdapter())
             .add(QEligibilityAdapter())
+            .add(UserPurchaseProductTypeAdapter())
             .build()
     }
 
