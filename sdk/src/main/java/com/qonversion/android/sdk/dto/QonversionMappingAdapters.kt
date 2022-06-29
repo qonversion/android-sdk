@@ -14,9 +14,10 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductDuration
 import com.qonversion.android.sdk.dto.products.QProductRenewState
 import com.qonversion.android.sdk.dto.products.QProductType
+import com.qonversion.android.sdk.dto.request.UserPurchaseProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
-import java.util.*
+import java.util.Date
 
 class QProductDurationAdapter {
     @ToJson
@@ -206,5 +207,17 @@ class QEligibilityAdapter {
             result[it.product.qonversionID] = QEligibility(it.eligibilityStatus)
         }
         return result
+    }
+}
+
+class UserPurchaseProductTypeAdapter {
+    @ToJson
+    private fun toJson(type: UserPurchaseProductType): String {
+        return type.apiKey
+    }
+
+    @FromJson
+    fun fromJson(key: String): UserPurchaseProductType {
+        return UserPurchaseProductType.fromKey(key) ?: UserPurchaseProductType.Subscription
     }
 }

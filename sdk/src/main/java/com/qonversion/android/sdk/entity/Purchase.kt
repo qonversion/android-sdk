@@ -14,6 +14,7 @@ data class Purchase(
     val priceCurrencyCode: String,
     val price: String,
     val priceAmountMicros: Long,
+    val subscriptionPeriod: String?,
     val periodUnit: Int?,
     val periodUnitsCount: Int?,
     val freeTrialPeriod: String,
