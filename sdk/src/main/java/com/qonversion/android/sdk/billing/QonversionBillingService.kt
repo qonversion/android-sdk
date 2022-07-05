@@ -121,17 +121,24 @@ class QonversionBillingService internal constructor(
     ) {
         logger.debug("queryPurchases() -> Querying purchases from cache for subs and inapp")
         executeOnMainThread { billingSetupError ->
-            if (billingSetupError == null) {
-                withReadyClient {
-                    val activeSubs = queryPurchases(BillingClient.SkuType.SUBS)
-                    val unconsumedInApp = queryPurchases(BillingClient.SkuType.INAPP)
-                    val purchasesResult = mutableListOf<Purchase>()
+            if (billingSetupError != null) {
+                onQueryFailed(billingSetupError)
+                return@executeOnMainThread
+            }
+            withReadyClient {
+                queryPurchasesAsync(BillingClient.SkuType.SUBS) querySubscriptions@ { subsResult, activeSubs ->
+                    if (subsResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                        handlePurchasesQueryError(subsResult, "subscription", onQueryFailed)
+                        return@querySubscriptions
+                    }
 
-                    if (activeSubs.responseCode == BillingClient.BillingResponseCode.OK &&
-                        unconsumedInApp.responseCode == BillingClient.BillingResponseCode.OK
-                    ) {
-                        purchasesResult.addAll(activeSubs.purchasesList ?: emptyList())
-                        purchasesResult.addAll(unconsumedInApp.purchasesList ?: emptyList())
+                    queryPurchasesAsync(BillingClient.SkuType.INAPP) queryInAppPurchases@ { inAppsResult, unconsumedInApp ->
+                        if (inAppsResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                            handlePurchasesQueryError(subsResult, "in-app", onQueryFailed)
+                            return@queryInAppPurchases
+                        }
+
+                        val purchasesResult = activeSubs + unconsumedInApp
                         onQueryCompleted(purchasesResult)
 
                         purchasesResult
@@ -140,20 +147,8 @@ class QonversionBillingService internal constructor(
                                 logger.debug("queryPurchases() -> purchases cache is retrieved ${it.getDescription()}")
                             }
                             ?: logger.release("queryPurchases() -> purchases cache is empty.")
-                    } else {
-                        val errorMessage =
-                            "Failed to query purchases from cache ${activeSubs.billingResult.getDescription()}"
-                        onQueryFailed(
-                            BillingError(
-                                activeSubs.responseCode,
-                                errorMessage
-                            )
-                        )
-                        logger.release("queryPurchases() -> $errorMessage")
                     }
                 }
-            } else {
-                onQueryFailed(billingSetupError)
             }
         }
     }
@@ -192,6 +187,19 @@ class QonversionBillingService internal constructor(
             )
         }
     }
+
+    private fun handlePurchasesQueryError(billingResult: BillingResult, purchaseType: String, onQueryFailed: (error: BillingError) -> Unit) {
+        val errorMessage =
+            "Failed to query $purchaseType purchases from cache: ${billingResult.getDescription()}"
+        onQueryFailed(
+            BillingError(
+                billingResult.responseCode,
+                errorMessage
+            )
+        )
+        logger.release("queryPurchases() -> $errorMessage")
+    }
+
 
     private fun replaceOldPurchase(
         activity: Activity,
