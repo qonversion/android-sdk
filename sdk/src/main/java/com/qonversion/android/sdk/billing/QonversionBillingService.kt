@@ -125,6 +125,7 @@ class QonversionBillingService internal constructor(
                 onQueryFailed(billingSetupError)
                 return@executeOnMainThread
             }
+
             withReadyClient {
                 queryPurchasesAsync(BillingClient.SkuType.SUBS) querySubscriptions@ { subsResult, activeSubs ->
                     if (subsResult.responseCode != BillingClient.BillingResponseCode.OK) {
