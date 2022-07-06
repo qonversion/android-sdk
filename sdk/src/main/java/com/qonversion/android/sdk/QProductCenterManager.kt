@@ -628,7 +628,6 @@ class QProductCenterManager internal constructor(
 
         if (isLogoutNeeded) {
             unhandledLogoutAvailable = true
-            launchResultCache.resetActualCache()
 
             val userID = userInfoService.obtainUserID()
             config.uid = userID
@@ -824,12 +823,13 @@ class QProductCenterManager internal constructor(
         onError: (QonversionError) -> Unit
     ) {
         if (launchError != null || unhandledLogoutAvailable) {
-            unhandledLogoutAvailable = false
             retryLaunch(
                 onSuccess = { launchResult ->
                     onSuccess(launchResult.permissions)
+                    unhandledLogoutAvailable = false
                 },
                 onError = { error ->
+                    unhandledLogoutAvailable = false
                     if (forceLaunchRetry || pendingIdentityUserID != null) {
                         onError(error)
                     } else {
