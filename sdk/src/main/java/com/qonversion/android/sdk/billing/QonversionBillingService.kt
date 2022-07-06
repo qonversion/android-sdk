@@ -79,7 +79,7 @@ class QonversionBillingService internal constructor(
                     consumeAsync(
                         params
                     ) { billingResult, purchaseToken ->
-                        if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                        if (!billingResult.isOk) {
                             val errorMessage =
                                 "Failed to consume purchase with token $purchaseToken ${billingResult.getDescription()}"
                             logger.debug("consume() -> $errorMessage")
@@ -104,7 +104,7 @@ class QonversionBillingService internal constructor(
                     acknowledgePurchase(
                         params
                     ) { billingResult ->
-                        if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                        if (!billingResult.isOk) {
                             val errorMessage =
                                 "Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"
                             logger.debug("acknowledge() -> $errorMessage")
@@ -127,14 +127,14 @@ class QonversionBillingService internal constructor(
             }
 
             withReadyClient {
-                queryPurchasesAsync(BillingClient.SkuType.SUBS) querySubscriptions@ { subsResult, activeSubs ->
-                    if (subsResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                queryPurchasesAsync(BillingClient.SkuType.SUBS) querySubscriptions@{ subsResult, activeSubs ->
+                    if (!subsResult.isOk) {
                         handlePurchasesQueryError(subsResult, "subscription", onQueryFailed)
                         return@querySubscriptions
                     }
 
-                    queryPurchasesAsync(BillingClient.SkuType.INAPP) queryInAppPurchases@ { inAppsResult, unconsumedInApp ->
-                        if (inAppsResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                    queryPurchasesAsync(BillingClient.SkuType.INAPP) queryInAppPurchases@{ inAppsResult, unconsumedInApp ->
+                        if (!inAppsResult.isOk) {
                             handlePurchasesQueryError(subsResult, "in-app", onQueryFailed)
                             return@queryInAppPurchases
                         }
@@ -189,7 +189,11 @@ class QonversionBillingService internal constructor(
         }
     }
 
-    private fun handlePurchasesQueryError(billingResult: BillingResult, purchaseType: String, onQueryFailed: (error: BillingError) -> Unit) {
+    private fun handlePurchasesQueryError(
+        billingResult: BillingResult,
+        purchaseType: String,
+        onQueryFailed: (error: BillingError) -> Unit
+    ) {
         val errorMessage =
             "Failed to query $purchaseType purchases from cache: ${billingResult.getDescription()}"
         onQueryFailed(
@@ -201,7 +205,6 @@ class QonversionBillingService internal constructor(
         logger.release("queryPurchases() -> $errorMessage")
     }
 
-
     private fun replaceOldPurchase(
         activity: Activity,
         skuDetails: SkuDetails,
@@ -209,9 +212,11 @@ class QonversionBillingService internal constructor(
         @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
         getPurchaseHistoryFromSkuDetails(oldSkuDetails) { billingResult, oldPurchaseHistory ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+            if (billingResult.isOk) {
                 if (oldPurchaseHistory != null) {
-                    logger.debug("replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}")
+                    logger.debug(
+                        "replaceOldPurchase() -> Purchase was found successfully for sku: ${oldSkuDetails.sku}"
+                    )
 
                     makePurchase(
                         activity,
@@ -242,7 +247,10 @@ class QonversionBillingService internal constructor(
         skuDetails: SkuDetails,
         onQueryHistoryCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
     ) = withReadyClient {
-        logger.debug("getPurchaseHistoryFromSkuDetails() -> Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")
+        logger.debug(
+            "getPurchaseHistoryFromSkuDetails() -> " +
+                    "Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}"
+        )
 
         queryPurchaseHistoryAsync(skuDetails.type) { billingResult, purchasesList ->
             onQueryHistoryCompleted(
@@ -271,7 +279,9 @@ class QonversionBillingService internal constructor(
         }
     }
 
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(info: UpdatePurchaseInfo? = null): BillingFlowParams.Builder {
+    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
+        info: UpdatePurchaseInfo? = null
+    ): BillingFlowParams.Builder {
         if (info != null) {
             val updateParams = SubscriptionUpdateParams.newBuilder()
                 .setOldSkuPurchaseToken(info.purchaseToken)
@@ -294,7 +304,7 @@ class QonversionBillingService internal constructor(
         params: BillingFlowParams
     ) = withReadyClient {
         launchBillingFlow(activity, params)
-            .takeIf { billingResult -> billingResult.responseCode != BillingClient.BillingResponseCode.OK }
+            .takeUnless { billingResult -> billingResult.isOk }
             ?.let { billingResult ->
                 logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
             }
@@ -332,7 +342,7 @@ class QonversionBillingService internal constructor(
             if (billingSetupError == null) {
                 withReadyClient {
                     queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistoryRecords ->
-                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchaseHistoryRecords != null) {
+                        if (billingResult.isOk && purchaseHistoryRecords != null) {
                             val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
                                 skuType,
                                 purchaseHistoryRecords
@@ -418,7 +428,7 @@ class QonversionBillingService internal constructor(
 
                 withReadyClient {
                     querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
-                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && skuDetailsList != null) {
+                        if (billingResult.isOk && skuDetailsList != null) {
                             logSkuDetails(skuDetailsList, skuList)
                             onQuerySkuCompleted(skuDetailsList)
                         } else {
@@ -509,7 +519,7 @@ class QonversionBillingService internal constructor(
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+        if (billingResult.isOk && purchases != null) {
             logger.debug("onPurchasesUpdated() -> purchases updated. ${billingResult.getDescription()} ")
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
