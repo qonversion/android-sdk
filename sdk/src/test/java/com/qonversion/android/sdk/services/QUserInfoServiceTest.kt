@@ -14,8 +14,8 @@ class QUserInfoServiceTest {
     private val mockSharedPreferencesCache = mockk<SharedPreferencesCache>(relaxed = true)
     private val mockTokenStorage = mockk<TokenStorage>(relaxed = true)
 
-    private val prefsQonversionUserIdKey = "com.qonversion.keys.storedUserID"
-    private val prefsCustomUserIdKey = "com.qonversion.keys.customUserID"
+    private val prefsOriginalUserIdKey = "com.qonversion.keys.originalUserID"
+    private val prefsUserIdKey = "com.qonversion.keys.storedUserID"
     private val randomUID = "08111735c1a641f085cae9d0ab98a642"
     private val generatedUID = "QON_$randomUID"
 
@@ -137,8 +137,9 @@ class QUserInfoServiceTest {
 
             // then
             verifySequence {
-                mockSharedPreferencesCache.getString(prefsQonversionUserIdKey, null)
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, generatedUID)
+                mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+                mockSharedPreferencesCache.putString(prefsUserIdKey, generatedUID)
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, generatedUID)
             }
         }
 
@@ -156,8 +157,9 @@ class QUserInfoServiceTest {
 
             // then
             verifySequence {
-                mockSharedPreferencesCache.getString(prefsQonversionUserIdKey, null)
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, generatedUID)
+                mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+                mockSharedPreferencesCache.putString(prefsUserIdKey, generatedUID)
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, generatedUID)
             }
         }
 
@@ -174,8 +176,9 @@ class QUserInfoServiceTest {
 
             // then
             verifySequence {
-                mockSharedPreferencesCache.getString(prefsQonversionUserIdKey, null)
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, token)
+                mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+                mockSharedPreferencesCache.putString(prefsUserIdKey, token)
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, token)
             }
         }
 
@@ -192,8 +195,9 @@ class QUserInfoServiceTest {
 
             // then
             verifySequence {
-                mockSharedPreferencesCache.getString(prefsQonversionUserIdKey, null)
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, token)
+                mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+                mockSharedPreferencesCache.putString(prefsUserIdKey, token)
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, token)
             }
         }
 
@@ -208,13 +212,28 @@ class QUserInfoServiceTest {
 
             // then
             verify(exactly = 0) {
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, any())
+                mockSharedPreferencesCache.putString(prefsUserIdKey, any())
+            }
+        }
+
+        @Test
+        fun `should not save UID as originalUserID when UID from preferences is not empty`() {
+            // given
+            val userID = "userID"
+            mockUserIDCache(userID)
+
+            // when
+            userInfoService.obtainUserID()
+
+            // then
+            verify(exactly = 0) {
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, any())
             }
         }
 
         private fun mockUserIDCache(userID: String?) {
             every {
-                mockSharedPreferencesCache.getString(prefsQonversionUserIdKey, null)
+                mockSharedPreferencesCache.getString(prefsUserIdKey, null)
             } returns userID
         }
 
@@ -233,78 +252,70 @@ class QUserInfoServiceTest {
     }
 
     @Test
-    fun storeQonversionUserId() {
+    fun storeIdentity() {
         // given
-        val userID = "qonversionUserID"
+        val userID = "userID"
 
         // when
-        userInfoService.storeQonversionUserId(userID)
+        userInfoService.storeIdentity(userID)
 
         // then
         verify(exactly = 1) {
-            mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, userID)
+            mockSharedPreferencesCache.putString(prefsUserIdKey, userID)
         }
     }
 
     @Test
-    fun storeCustomUserId() {
+    fun `should not logout if logged user ID is same as anon`() {
         // given
-        val userID = "customUserID"
+        val originalUserID = "originalUserID"
 
-        // when
-        userInfoService.storeCustomUserId(userID)
-
-        // then
-        verify(exactly = 1) {
-            mockSharedPreferencesCache.putString(prefsCustomUserIdKey, userID)
-        }
-    }
-
-    @Test
-    fun `should not logout if custom user id was not set`() {
-        // given
         every {
-            mockSharedPreferencesCache.getString(prefsCustomUserIdKey, null)
-        } returns null
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+        } returns originalUserID
+
+        every {
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+        } returns originalUserID
 
         // when
         val isLogoutNeeded = userInfoService.logoutIfNeeded()
 
         // then
-        verify {
-            mockSharedPreferencesCache.getString(prefsCustomUserIdKey, null)
+        verifySequence {
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
         }
 
         verify(exactly = 0) {
             mockSharedPreferencesCache.putString(any(), any())
-            mockSharedPreferencesCache.remove(any())
         }
 
         assertEquals("must be false", false, isLogoutNeeded)
     }
 
     @Test
-    fun `should logout if custom user id was set`() {
+    fun `should logout if logged user ID is not same as anon`() {
         // given
-        userInfoService = spyk(userInfoService)
-        val customUserId = "customUserID"
-        val newQonversionUserId = "newQonversionUserId"
+        val originalUserID = "originalUserID"
+        val userID = "userID"
 
         every {
-            mockSharedPreferencesCache.getString(prefsCustomUserIdKey, null)
-        } returns customUserId
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+        } returns originalUserID
 
-        every { userInfoService.generateRandomUserID() } returns newQonversionUserId
+        every {
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+        } returns userID
 
         // when
         val isLogoutNeeded = userInfoService.logoutIfNeeded()
 
         // then
-        verifyOrder {
-            mockSharedPreferencesCache.getString(prefsCustomUserIdKey, null)
-            mockSharedPreferencesCache.remove(prefsCustomUserIdKey)
-            userInfoService.generateRandomUserID()
-            mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, newQonversionUserId)
+        verifySequence {
+            mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
+            mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+            mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
         }
 
         assertEquals("must be true", true, isLogoutNeeded)
@@ -313,13 +324,34 @@ class QUserInfoServiceTest {
     @Nested
     inner class DeleteUser {
         @Test
-        fun `delete user`() {
+        fun `should empty preferences from originalUserID`() {
             // when
             userInfoService.deleteUser()
 
             // then
             verify(exactly = 1) {
-                mockSharedPreferencesCache.putString(prefsQonversionUserIdKey, null)
+                mockSharedPreferencesCache.putString(prefsOriginalUserIdKey, null)
+            }
+        }
+
+        @Test
+        fun `should empty preferences from storedUserID`() {
+            // when
+            userInfoService.deleteUser()
+
+            // then
+            verify(exactly = 1) {
+                mockSharedPreferencesCache.putString(prefsUserIdKey, null)
+            }
+        }
+
+        @Test
+        fun `should empty token storage`() {
+            // when
+            userInfoService.deleteUser()
+
+            // then
+            verify(exactly = 1) {
                 mockTokenStorage.delete()
             }
         }

@@ -2,6 +2,7 @@ package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.services.QUserInfoService
 import io.mockk.*
+import kotlin.math.exp
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
@@ -167,14 +168,14 @@ class QIdentityManagerTest {
 
             val callback = mockk<IdentityManagerCallback>()
 
-            every { identityManager.handleIdentity(callback, expectedIdentity, newUserID) } just runs
+            every { identityManager.handleIdentity(callback, expectedIdentity) } just runs
 
             // when
             identityManager.obtainIdentity(newUserID, callback)
 
             // then
             verify {
-                identityManager.handleIdentity(callback, expectedIdentity, newUserID)
+                identityManager.handleIdentity(callback, expectedIdentity)
                 mockRepository.obtainIdentity(newUserID, any(), any())
             }
         }
@@ -187,7 +188,7 @@ class QIdentityManagerTest {
             var actualCode: Int? = null
 
             every {
-                mockRepository.createIdentity(currentUserID, newUserID, any(), captureLambda())
+                mockRepository.createIdentity(newUserID, currentUserID, any(), captureLambda())
             } answers {
                 lambda<(QonversionError, Int?) -> Unit>().captured.invoke(mockError, expectedCode)
             }
@@ -207,7 +208,7 @@ class QIdentityManagerTest {
             identityManager.createIdentity(newUserID, callback)
 
             // then
-            verify { mockRepository.createIdentity(currentUserID, newUserID, any(), any()) }
+            verify { mockRepository.createIdentity(newUserID, currentUserID, any(), any()) }
             assertThat(actualError).isEqualTo(mockError)
             assertThat(actualCode).isEqualTo(expectedCode)
         }
@@ -218,14 +219,14 @@ class QIdentityManagerTest {
             val expectedIdentity = "identity"
 
             every {
-                mockRepository.createIdentity(currentUserID, newUserID, captureLambda(), any())
+                mockRepository.createIdentity(newUserID, currentUserID, captureLambda(), any())
             } answers {
                 lambda<(String) -> Unit>().captured.invoke(expectedIdentity)
             }
 
             val callback = mockk<IdentityManagerCallback>()
             every {
-                identityManager.handleIdentity(callback, expectedIdentity, newUserID)
+                identityManager.handleIdentity(callback, expectedIdentity)
             } just runs
 
             // when
@@ -233,47 +234,39 @@ class QIdentityManagerTest {
 
             // then
             verify {
-                identityManager.handleIdentity(callback, expectedIdentity, newUserID)
-                mockRepository.createIdentity(currentUserID, newUserID, any(), any())
+                identityManager.handleIdentity(callback, expectedIdentity)
+                mockRepository.createIdentity(newUserID, currentUserID, any(), any())
             }
         }
 
         @Test
-        fun `handle identity with non empty id`() {
+        fun `handle identity with non empty identity`() {
             // given
             val expectedIdentityId = "identityId"
             val callback = mockk<IdentityManagerCallback>(relaxed = true)
-            every { mockUserInfoService.storeQonversionUserId(expectedIdentityId) } just runs
-            every { mockUserInfoService.storeCustomUserId(newUserID) } just runs
 
             // when
-            identityManager.handleIdentity(callback, expectedIdentityId, newUserID)
+            identityManager.handleIdentity(callback, expectedIdentityId)
 
             // then
             verifyOrder {
-                mockUserInfoService.storeCustomUserId(newUserID)
-                mockUserInfoService.storeQonversionUserId(expectedIdentityId)
+                mockUserInfoService.storeIdentity(expectedIdentityId)
                 callback.onSuccess(expectedIdentityId)
             }
         }
 
         @Test
-        fun `handle identity with empty id`() {
+        fun `handle identity with empty identity`() {
             // given
             val expectedIdentityId = ""
             val callback = mockk<IdentityManagerCallback>(relaxed = true)
-            every { mockUserInfoService.storeQonversionUserId(expectedIdentityId) } just runs
-            every { mockUserInfoService.storeCustomUserId(newUserID) } just runs
 
             // when
-            identityManager.handleIdentity(callback, expectedIdentityId, newUserID)
+            identityManager.handleIdentity(callback, expectedIdentityId)
 
             // then
-            verifyOrder {
-                mockUserInfoService.storeCustomUserId(newUserID)
-                callback.onSuccess(expectedIdentityId)
-            }
-            verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(expectedIdentityId) }
+            verifyOrder { callback.onSuccess(expectedIdentityId) }
+            verify(exactly = 0) { mockUserInfoService.storeIdentity(expectedIdentityId) }
         }
     }
 

@@ -2,13 +2,14 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CommentSpacing:com.qonversion.android.sdk.QIdentityManagerTest.kt:285</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.QIdentityManagerTest.kt:166</ID>
     <ID>ComplexCondition:QonversionRepository.kt$QonversionRepository$(purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &amp;&amp; purchase.introductoryPeriodUnit != null &amp;&amp; purchase.introductoryPeriodUnitsCount != null</ID>
     <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.converter.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.requests.queue.util.kt:1</ID>
@@ -244,7 +245,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoMultipleSpaces:com.qonversion.android.sdk.QIdentityManagerTest.kt:74</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
@@ -332,7 +332,6 @@
     <ID>TooGenericExceptionThrown:BaseResponse.kt$throw RuntimeException("backend exception")</ID>
     <ID>TooGenericExceptionThrown:Qonversion.kt$Qonversion$throw RuntimeException("Qonversion initialization error! Key should not be empty!")</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
-    <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:GooglePurchaseConverter.kt$GooglePurchaseConverter : PurchaseConverter</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
@@ -340,7 +339,6 @@
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : ActivityView</ID>
-    <ID>TooManyFunctions:SharedPreferencesCache.kt$SharedPreferencesCache : Cache</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
