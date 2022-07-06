@@ -25,11 +25,11 @@ import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.PropertiesRequest
+import com.qonversion.android.sdk.dto.request.IdentityRequest
 import com.qonversion.android.sdk.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.request.EventRequest
 import com.qonversion.android.sdk.dto.request.AttributionRequest
-import com.qonversion.android.sdk.dto.request.CreateIdentityRequest
 import com.qonversion.android.sdk.dto.request.RestoreRequest
 import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
@@ -163,53 +163,28 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun createIdentity(
-        qonversionUserID: String,
-        customUserID: String,
-        onSuccess: (newQonversionUserId: String) -> Unit,
-        onError: (error: QonversionError, responseCode: Int?) -> Unit
-    ) {
-        val createIdentityRequest = CreateIdentityRequest(qonversionUserID)
-        api.createIdentity(customUserID, createIdentityRequest).enqueue {
-            onResponse = {
-                logger.release("identityRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.userID)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it), it.code())
-                }
-            }
-            onFailure = {
-                logger.release("identityRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    onError(it.toQonversionError(), null)
-                }
-            }
-        }
-    }
-
-    fun obtainIdentity(
+    fun identify(
         userID: String,
-        onSuccess: (qonversionUserId: String) -> Unit,
-        onError: (error: QonversionError, responseCode: Int?) -> Unit
+        currentUserID: String,
+        onSuccess: (identityID: String) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
-        api.obtainIdentity(userID).enqueue {
+        val identityRequest = IdentityRequest(currentUserID, userID)
+        api.identify(identityRequest).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.userID)
+                    onSuccess(body.data.userID)
                 } else {
-                    onError(errorMapper.getErrorFromResponse(it), it.code())
+                    onError(errorMapper.getErrorFromResponse(it))
                 }
             }
             onFailure = {
                 logger.release("identityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    onError(it.toQonversionError(), null)
+                    onError(it.toQonversionError())
                 }
             }
         }
