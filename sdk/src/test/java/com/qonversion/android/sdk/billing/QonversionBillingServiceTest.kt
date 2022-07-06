@@ -450,11 +450,13 @@ class QonversionBillingServiceTest {
         fun `query purchases completed with empty list`() {
             mockQueryPurchasesResponse(
                 BillingClient.SkuType.SUBS,
-                BillingClient.BillingResponseCode.OK, true
+                BillingClient.BillingResponseCode.OK,
+                true
             )
             mockQueryPurchasesResponse(
                 BillingClient.SkuType.INAPP,
-                BillingClient.BillingResponseCode.OK, true
+                BillingClient.BillingResponseCode.OK,
+                true
             )
 
             var purchases: List<com.android.billingclient.api.Purchase>? = null
@@ -547,11 +549,11 @@ class QonversionBillingServiceTest {
         private fun mockQueryPurchasesResponse(
             @BillingClient.SkuType skuType: String,
             @BillingClient.BillingResponseCode responseCode: Int,
-            isPurchasesListNull: Boolean = false
+            isPurchasesListEmpty: Boolean = false
         ) {
-            var purchases: List<com.android.billingclient.api.Purchase>? = null
+            var purchases: List<com.android.billingclient.api.Purchase> = emptyList()
 
-            if (responseCode == BillingClient.BillingResponseCode.OK && !isPurchasesListNull) {
+            if (responseCode == BillingClient.BillingResponseCode.OK && !isPurchasesListEmpty) {
                 val purchase = mockk<com.android.billingclient.api.Purchase>(relaxed = true)
                 val sku: String =
                     if (skuType == BillingClient.SkuType.INAPP) skuInapp else skuSubs
@@ -559,12 +561,16 @@ class QonversionBillingServiceTest {
 
                 purchases = listOf(purchase)
             }
+
+            val listener = slot<PurchasesResponseListener>()
             every {
-                mockBillingClient.queryPurchases(skuType)
-            } returns com.android.billingclient.api.Purchase.PurchasesResult(
-                buildResult(responseCode),
-                purchases
-            )
+                mockBillingClient.queryPurchasesAsync(skuType, capture(listener))
+            } answers {
+                listener.captured.onQueryPurchasesResponse(
+                    buildResult(responseCode),
+                    purchases
+                )
+            }
         }
     }
 
