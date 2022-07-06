@@ -129,13 +129,10 @@
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$if</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -&gt; Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $skuType is retrieved ${record.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("querySkuDetailsAsync() -&gt; Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("replaceOldPurchase() -&gt; Purchase was found successfully for sku: ${oldSkuDetails.sku}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.release("launchBillingFlow() -&gt; Failed to launch billing flow. ${billingResult.getDescription()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$private</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$queryPurchasesAsync</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.LoadProducts$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
@@ -174,23 +171,19 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:109</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:205</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:236</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:265</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:290</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:326</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:362</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:404</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:412</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:136</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:309</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:381</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:423</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:178</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:181</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:319</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:322</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:541</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:544</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:709</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:712</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:543</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:546</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:715</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:718</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:24</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:83</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
