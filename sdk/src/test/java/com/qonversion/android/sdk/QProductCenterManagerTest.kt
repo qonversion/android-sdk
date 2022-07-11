@@ -130,7 +130,7 @@ class QProductCenterManagerTest {
         }
 
         val installDateSlot = slot<Long>()
-        val callbackSlot = slot<QonversionPurchaseCallback>()
+        val callbackSlot = slot<QonversionLaunchCallback>()
         val entityPurchaseSlot = slot<com.qonversion.android.sdk.entity.Purchase>()
         every {
             mockRepository.purchase(

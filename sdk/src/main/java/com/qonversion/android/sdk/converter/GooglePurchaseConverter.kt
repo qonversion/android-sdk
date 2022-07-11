@@ -57,7 +57,6 @@ class GooglePurchaseConverter(
                 priceCurrencyCode = details.priceCurrencyCode,
                 price = formatPrice(details.priceAmountMicros),
                 priceAmountMicros = details.priceAmountMicros,
-                subscriptionPeriod = details.subscriptionPeriod,
                 periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
                 periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
                 freeTrialPeriod = details.freeTrialPeriod ?: "",

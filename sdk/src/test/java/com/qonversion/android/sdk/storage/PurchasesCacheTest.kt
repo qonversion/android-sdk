@@ -182,7 +182,6 @@ class PurchasesCacheTest {
             priceCurrencyCode = "RUB",
             price = "75.00",
             priceAmountMicros = 75000000,
-            subscriptionPeriod = "",
             periodUnit = 0,
             periodUnitsCount = 0,
             freeTrialPeriod = "",

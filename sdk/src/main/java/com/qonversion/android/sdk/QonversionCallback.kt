@@ -8,7 +8,6 @@ import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
-import com.qonversion.android.sdk.dto.request.UserPurchase
 
 interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -57,10 +56,5 @@ interface QonversionEligibilityCallback {
 
 interface QonversionShowScreenCallback {
    fun onSuccess()
-   fun onError(error: QonversionError)
-}
-
-interface QonversionPurchaseCallback {
-   fun onSuccess(purchase: UserPurchase)
    fun onError(error: QonversionError)
 }
