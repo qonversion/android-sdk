@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.dto.products.QProductRenewState
 import com.qonversion.android.sdk.toInt
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -30,7 +29,7 @@ data class QEntitlement(
     fun toPermission(): QPermission = QPermission(
         permissionID,
         product.productID,
-        product.subscription?.renewState?.toProductRenewState() ?: QProductRenewState.Unknown,
+        product.subscription.renewState.toProductRenewState(),
         startedDate,
         expirationDate,
         active.toInt()
@@ -39,7 +38,7 @@ data class QEntitlement(
     @JsonClass(generateAdapter = true)
     data class Product(
         @Json(name = "product_id") val productID: String,
-        @Json(name = "subscription") val subscription: Subscription?
+        @Json(name = "subscription") val subscription: Subscription
     ) {
         @JsonClass(generateAdapter = true)
         data class Subscription(

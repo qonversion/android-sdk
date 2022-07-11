@@ -19,7 +19,6 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.dto.request.UserPurchase
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.extractor.SkuDetailsTokenExtractor
@@ -748,10 +747,11 @@ class QProductCenterManager internal constructor(
 
     private fun handleCachedPurchases() {
         val cachedPurchases = purchasesCache.loadPurchases()
-        cachedPurchases.forEach { cachedPurchase ->
-            repository.purchase(installDate, cachedPurchase, null, null, object : QonversionPurchaseCallback {
-                override fun onSuccess(purchase: UserPurchase) {
-                    purchasesCache.clearPurchase(cachedPurchase)
+        cachedPurchases.forEach { purchase ->
+            repository.purchase(installDate, purchase, null, null, object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    updateLaunchResult(launchResult)
+                    purchasesCache.clearPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {}
@@ -863,11 +863,11 @@ class QProductCenterManager internal constructor(
     private fun handlePurchases(purchases: List<Purchase>) {
         consumer.consumePurchases(purchases, skuDetails)
 
-        purchases.forEach { purchaseToSend ->
-            val purchaseCallback = purchasingCallbacks[purchaseToSend.sku]
-            purchasingCallbacks.remove(purchaseToSend.sku)
+        purchases.forEach { purchase ->
+            val purchaseCallback = purchasingCallbacks[purchase.sku]
+            purchasingCallbacks.remove(purchase.sku)
 
-            when (purchaseToSend.purchaseState) {
+            when (purchase.purchaseState) {
                 Purchase.PurchaseState.PENDING -> {
                     purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
                     return@forEach
@@ -878,14 +878,16 @@ class QProductCenterManager internal constructor(
                 }
             }
 
-            if (!handledPurchasesCache.shouldHandlePurchase(purchaseToSend)) return@forEach
-            val skuDetail = skuDetails[purchaseToSend.sku] ?: return@forEach
+            if (!handledPurchasesCache.shouldHandlePurchase(purchase)) return@forEach
+            val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
-            val purchaseInfo = Pair.create(skuDetail, purchaseToSend)
-            purchase(purchaseInfo, object : QonversionPurchaseCallback {
-                override fun onSuccess(purchase: UserPurchase) {
+            val purchaseInfo = Pair.create(skuDetail, purchase)
+            purchase(purchaseInfo, object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    updateLaunchResult(launchResult)
+
                     checkPermissionsAfterPurchase(purchaseCallback, listener)
-                    handledPurchasesCache.saveHandledPurchase(purchaseToSend)
+                    handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {
@@ -897,7 +899,7 @@ class QProductCenterManager internal constructor(
 
     private fun purchase(
         purchaseInfo: Pair<SkuDetails, Purchase>,
-        callback: QonversionPurchaseCallback
+        callback: QonversionLaunchCallback
     ) {
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first

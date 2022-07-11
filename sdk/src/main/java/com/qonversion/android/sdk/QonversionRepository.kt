@@ -32,8 +32,6 @@ import com.qonversion.android.sdk.dto.request.CreateIdentityRequest
 import com.qonversion.android.sdk.dto.request.RestoreRequest
 import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
-import com.qonversion.android.sdk.dto.request.PlayStoreData
-import com.qonversion.android.sdk.dto.request.UserPurchaseProductType
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
 import com.qonversion.android.sdk.entity.PurchaseHistory
@@ -79,7 +77,7 @@ internal class QonversionRepository internal constructor(
         purchase: Purchase,
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
-        callback: QonversionPurchaseCallback
+        callback: QonversionLaunchCallback
     ) {
         purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
     }
@@ -359,31 +357,26 @@ internal class QonversionRepository internal constructor(
         purchase: Purchase,
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
-        callback: QonversionPurchaseCallback,
+        callback: QonversionLaunchCallback,
         attemptIndex: Int = 0
     ) {
-        val purchaseType =
-            if (purchase.type === "SUBS") UserPurchaseProductType.Subscription else UserPurchaseProductType.NonRecurring
         val purchaseRequest = PurchaseRequest(
-            purchase.priceCurrencyCode,
-            purchase.price,
-            purchase.purchaseTime.toInt(),
-            PlayStoreData(
-                purchaseType,
-                purchase.orderId,
-                purchase.purchaseToken,
-                purchase.productId,
-                purchase.subscriptionPeriod?.takeIf { it.isNotEmpty() },
-                purchase.freeTrialPeriod.takeIf { it.isNotEmpty() }
-            )
+            installDate,
+            device = environmentProvider.getInfo(advertisingId),
+            version = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            debugMode = isDebugMode.stringValue(),
+            purchase = convertPurchaseDetails(purchase, experimentInfo, qProductId),
+            introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
-        api.purchase(uid, purchaseRequest).enqueue {
+        api.purchase(purchaseRequest).enqueue {
             onResponse = {
                 logger.release("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
-                if (it.isSuccessful && body != null) {
-                    callback.onSuccess(body)
+                if (body != null && body.success) {
+                    callback.onSuccess(body.data)
                 } else {
                     handlePurchaseError(
                         purchase,
@@ -429,7 +422,7 @@ internal class QonversionRepository internal constructor(
 
     private fun handlePurchaseError(
         purchase: Purchase,
-        callback: QonversionPurchaseCallback,
+        callback: QonversionLaunchCallback,
         error: QonversionError,
         errorCode: Int?,
         attemptIndex: Int,

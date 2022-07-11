@@ -57,7 +57,6 @@ class GooglePurchaseConverter(
                 priceCurrencyCode = details.priceCurrencyCode,
                 price = formatPrice(details.priceAmountMicros),
                 priceAmountMicros = details.priceAmountMicros,
-                subscriptionPeriod = details.subscriptionPeriod,
                 periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
                 periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
                 freeTrialPeriod = details.freeTrialPeriod ?: "",
@@ -81,9 +80,7 @@ class GooglePurchaseConverter(
             )
     }
 
-    private fun convertPurchasesFromList(
-        purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>
-    ): List<Purchase> {
+    private fun convertPurchasesFromList(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
         return purchaseInfo.mapNotNull {
             convertPurchase(it)
         }
