@@ -2,9 +2,9 @@ package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
 import android.os.Handler
+import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
-import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
@@ -25,17 +25,16 @@ import com.qonversion.android.sdk.dto.purchase.Inapp
 import com.qonversion.android.sdk.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.dto.request.PropertiesRequest
+import com.qonversion.android.sdk.dto.request.IdentityRequest
 import com.qonversion.android.sdk.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.dto.request.ViewsRequest
 import com.qonversion.android.sdk.dto.request.EventRequest
 import com.qonversion.android.sdk.dto.request.AttributionRequest
-import com.qonversion.android.sdk.dto.request.CreateIdentityRequest
 import com.qonversion.android.sdk.dto.request.RestoreRequest
 import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
-import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
@@ -85,7 +84,7 @@ class QonversionRepository internal constructor(
 
     fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
+        historyRecords: List<PurchaseHistoryRecord>,
         callback: QonversionLaunchCallback?
     ) {
         restoreRequest(installDate, historyRecords, callback)
@@ -164,53 +163,28 @@ class QonversionRepository internal constructor(
         }
     }
 
-    fun createIdentity(
-        qonversionUserID: String,
-        customUserID: String,
-        onSuccess: (newQonversionUserId: String) -> Unit,
-        onError: (error: QonversionError, responseCode: Int?) -> Unit
-    ) {
-        val createIdentityRequest = CreateIdentityRequest(qonversionUserID)
-        api.createIdentity(customUserID, createIdentityRequest).enqueue {
-            onResponse = {
-                logger.release("identityRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.userID)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it), it.code())
-                }
-            }
-            onFailure = {
-                logger.release("identityRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    onError(it.toQonversionError(), null)
-                }
-            }
-        }
-    }
-
-    fun obtainIdentity(
+    fun identify(
         userID: String,
-        onSuccess: (qonversionUserId: String) -> Unit,
-        onError: (error: QonversionError, responseCode: Int?) -> Unit
+        currentUserID: String,
+        onSuccess: (identityID: String) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
-        api.obtainIdentity(userID).enqueue {
+        val identityRequest = IdentityRequest(currentUserID, userID)
+        api.identify(identityRequest).enqueue {
             onResponse = {
                 logger.release("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.userID)
+                    onSuccess(body.data.userID)
                 } else {
-                    onError(errorMapper.getErrorFromResponse(it), it.code())
+                    onError(errorMapper.getErrorFromResponse(it))
                 }
             }
             onFailure = {
                 logger.release("identityRequest - failure - ${it?.toQonversionError()}")
                 if (it != null) {
-                    onError(it.toQonversionError(), null)
+                    onError(it.toQonversionError())
                 }
             }
         }
@@ -488,19 +462,17 @@ class QonversionRepository internal constructor(
         )
     }
 
-    private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
+    private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
         return historyRecords.mapNotNull {
-            val sku = it.historyRecord.sku
+            val sku = it.sku
 
             if (sku == null) {
                 null
             } else {
                 History(
                     sku,
-                    it.historyRecord.purchaseToken,
-                    it.historyRecord.purchaseTime.milliSecondsToSeconds(),
-                    it.skuDetails?.priceCurrencyCode,
-                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }.toString()
+                    it.purchaseToken,
+                    it.purchaseTime.milliSecondsToSeconds()
                 )
             }
         }
@@ -508,7 +480,7 @@ class QonversionRepository internal constructor(
 
     private fun restoreRequest(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
+        historyRecords: List<PurchaseHistoryRecord>,
         callback: QonversionLaunchCallback?
     ) {
         val history = convertHistory(historyRecords)

@@ -30,8 +30,6 @@ class SharedPreferencesCache(
     override fun getString(key: String, defValue: String?): String? =
         preferences.getString(key, defValue)
 
-    override fun remove(key: String) = preferences.edit().remove(key).apply()
-
     override fun <T> putObject(key: String, value: T, adapter: JsonAdapter<T>) {
         val jsonStr: String = adapter.toJson(value)
         putString(key, jsonStr)

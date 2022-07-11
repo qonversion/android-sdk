@@ -16,11 +16,6 @@ class LaunchResultCacheWrapper(
     private val jsonAdapter: JsonAdapter<QLaunchResult> =
         moshi.adapter(QLaunchResult::class.java)
 
-    fun resetActualCache() {
-        cache.putLong(CACHE_TIMESTAMP_KEY, 0)
-        cache.remove(LAUNCH_RESULT_KEY)
-    }
-
     fun getActualLaunchResult(): QLaunchResult? {
         return if (isCacheOutdated()) {
             null

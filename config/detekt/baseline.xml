@@ -2,13 +2,14 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CommentSpacing:com.qonversion.android.sdk.QIdentityManagerTest.kt:285</ID>
+    <ID>CommentSpacing:com.qonversion.android.sdk.QIdentityManagerTest.kt:166</ID>
     <ID>ComplexCondition:QonversionRepository.kt$QonversionRepository$(purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &amp;&amp; purchase.introductoryPeriodUnit != null &amp;&amp; purchase.introductoryPeriodUnitsCount != null</ID>
     <ID>ComplexMethod:errors.kt$fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.converter.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.requests.queue.util.kt:1</ID>
@@ -129,13 +130,10 @@
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$if</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("getPurchaseHistoryFromSkuDetails() -&gt; Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $skuType is retrieved ${record.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("querySkuDetailsAsync() -&gt; Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("replaceOldPurchase() -&gt; Purchase was found successfully for sku: ${oldSkuDetails.sku}")</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.release("launchBillingFlow() -&gt; Failed to launch billing flow. ${billingResult.getDescription()}")</ID>
-    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$private</ID>
+    <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$queryPurchasesAsync</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.GetSkuDetailsFromPurchases$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.LoadProducts$assertThat(billingError!!.billingResponseCode).isEqualTo(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)</ID>
@@ -174,23 +172,19 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:109</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:205</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:236</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:265</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:290</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:326</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:362</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:404</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:412</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:136</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:309</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:381</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingService.kt:423</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:178</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:181</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:319</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:322</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:541</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:544</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:709</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:712</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:22</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:543</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:546</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:715</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:718</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:24</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.converter.GooglePurchaseConverter.kt:83</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
@@ -251,7 +245,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoMultipleSpaces:com.qonversion.android.sdk.QIdentityManagerTest.kt:74</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
@@ -339,7 +332,6 @@
     <ID>TooGenericExceptionThrown:BaseResponse.kt$throw RuntimeException("backend exception")</ID>
     <ID>TooGenericExceptionThrown:Qonversion.kt$Qonversion$throw RuntimeException("Qonversion initialization error! Key should not be empty!")</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
-    <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:GooglePurchaseConverter.kt$GooglePurchaseConverter : PurchaseConverter</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
@@ -347,7 +339,6 @@
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : ActivityView</ID>
-    <ID>TooManyFunctions:SharedPreferencesCache.kt$SharedPreferencesCache : Cache</ID>
     <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
