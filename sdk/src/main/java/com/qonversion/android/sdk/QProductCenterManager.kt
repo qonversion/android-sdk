@@ -44,13 +44,13 @@ class QProductCenterManager internal constructor(
 
     private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
-        get() = launchError != null || launchResult != null
+        get() = launchError != null || sessionLoadedLaunchResult != null
 
     private var loadProductsState = NotStartedYet
 
     private var skuDetails = mapOf<String, SkuDetails>()
 
-    private var launchResult: QLaunchResult? = null
+    private var sessionLoadedLaunchResult: QLaunchResult? = null
     private var launchError: QonversionError? = null
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
@@ -211,7 +211,7 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        if (launchResult != null) {
+        if (sessionLoadedLaunchResult != null) {
             executeExperimentsBlocks()
         } else {
             launch()
@@ -244,7 +244,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun executeOfferingCallback(callback: QonversionOfferingsCallback) {
-        val offerings = getActualOfferings()
+        val offerings = getOfferings()
 
         if (offerings != null) {
             offerings.availableOfferings.forEach { offering ->
@@ -259,13 +259,8 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun getActualOfferings(): QOfferings? {
-        var offerings = launchResult?.offerings
-        if (launchResult == null) {
-            val cachedLaunchResult = launchResultCache.getActualLaunchResult()
-            cachedLaunchResult?.let { offerings = it.offerings }
-        }
-        return offerings
+    private fun getOfferings(): QOfferings? {
+        return getLaunchResult()?.offerings
     }
 
     private fun addSkuDetailForProducts(products: Collection<QProduct>) {
@@ -337,14 +332,13 @@ class QProductCenterManager internal constructor(
         offeringId: String?,
         callback: QonversionPermissionsCallback
     ) {
-        val actualLaunchResult = getActualLaunchResult()
-        if (actualLaunchResult == null) {
+        val launchResult = getLaunchResult() ?: run {
             callback.onError(launchError ?: QonversionError(QonversionErrorCode.LaunchError))
             return
         }
 
-        val product: QProduct? = getProductForPurchase(productId, offeringId, actualLaunchResult)
-        val oldProduct: QProduct? = actualLaunchResult.products[oldProductId]
+        val product: QProduct? = getProductForPurchase(productId, offeringId, launchResult)
+        val oldProduct: QProduct? = launchResult.products[oldProductId]
 
         if (product?.storeID == null) {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
@@ -390,7 +384,7 @@ class QProductCenterManager internal constructor(
     private fun getProductForPurchase(
         productId: String?,
         offeringId: String?,
-        actualLaunchResult: QLaunchResult
+        launchResult: QLaunchResult
     ): QProduct? {
         if (productId == null) {
             return null
@@ -398,7 +392,7 @@ class QProductCenterManager internal constructor(
 
         val product: QProduct?
         if (offeringId != null) {
-            val offering = getActualOfferings()?.offeringForID(offeringId)
+            val offering = getOfferings()?.offeringForID(offeringId)
             product = offering?.productForID(productId)
             if (product != null && offering != null) {
                 product.storeID?.let {
@@ -406,7 +400,7 @@ class QProductCenterManager internal constructor(
                 }
             }
         } else {
-            product = actualLaunchResult.products[productId]
+            product = launchResult.products[productId]
         }
 
         return product
@@ -663,7 +657,7 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                launchResult = null
+                sessionLoadedLaunchResult = null
                 launchError = error
 
                 loadStoreProductsIfPossible()
@@ -691,7 +685,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun updateLaunchResult(launchResult: QLaunchResult) {
-        this@QProductCenterManager.launchResult = launchResult
+        this@QProductCenterManager.sessionLoadedLaunchResult = launchResult
         launchResultCache.save(launchResult)
     }
 
@@ -709,7 +703,7 @@ class QProductCenterManager internal constructor(
             else -> Unit
         }
 
-        val actualLaunchResult = getActualLaunchResult() ?: run {
+        val launchResult = getLaunchResult() ?: run {
             loadProductsState = Failed
             val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             executeProductsBlocks(error)
@@ -717,7 +711,7 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val productStoreIds = actualLaunchResult.products.values.mapNotNull {
+        val productStoreIds = launchResult.products.values.mapNotNull {
             it.storeID
         }.toSet()
 
@@ -768,7 +762,7 @@ class QProductCenterManager internal constructor(
         val callbacks = experimentsCallbacks.toList()
         experimentsCallbacks.clear()
 
-        launchResult?.experiments?.let { experiments ->
+        sessionLoadedLaunchResult?.experiments?.let { experiments ->
             callbacks.forEach {
                 it.onSuccess(experiments)
             }
@@ -794,21 +788,20 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val actualLaunchResult = getActualLaunchResult()
-
-        if (actualLaunchResult == null) {
+        val launchResult = getLaunchResult() ?: run {
             handleFailureProducts(callbacks, launchError)
-        } else {
-            addSkuDetailForProducts(actualLaunchResult.products.values)
+            return
+        }
 
-            callbacks.forEach {
-                it.onSuccess(actualLaunchResult.products)
-            }
+        addSkuDetailForProducts(launchResult.products.values)
+
+        callbacks.forEach {
+            it.onSuccess(launchResult.products)
         }
     }
 
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
-        launchResult?.let {
+        sessionLoadedLaunchResult?.let {
             handleLoadStateForProducts(onCompleted)
         } ?: retryLaunch(
             onSuccess = {
@@ -846,8 +839,8 @@ class QProductCenterManager internal constructor(
         }
     }
 
-    private fun getActualLaunchResult(): QLaunchResult? =
-        this@QProductCenterManager.launchResult ?: launchResultCache.getActualLaunchResult()
+    private fun getLaunchResult(): QLaunchResult? =
+        sessionLoadedLaunchResult ?: launchResultCache.getLaunchResult()
 
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
