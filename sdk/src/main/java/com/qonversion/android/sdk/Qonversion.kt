@@ -10,6 +10,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
@@ -445,6 +446,14 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setDebugMode() {
         isDebugMode = true
+    }
+
+    /**
+     * todo
+     */
+    @JvmStatic
+    fun setEntitlementsCacheLifetime(lifetime: QEntitlementCacheLifetime) {
+        productCenterManager?.setEntitlementsCacheLifetime(lifetime)
     }
 
     /**

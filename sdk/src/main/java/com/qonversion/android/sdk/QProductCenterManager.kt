@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.billing.*
 import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QRestoreResult
 import com.qonversion.android.sdk.dto.QPermission
@@ -101,6 +102,10 @@ class QProductCenterManager internal constructor(
         handlePendingPurchases()
 
         processPendingInitIfAvailable()
+    }
+
+    fun setEntitlementsCacheLifetime(lifetime: QEntitlementCacheLifetime) {
+        entitlementsManager.setCacheLifetime(lifetime)
     }
 
     fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
