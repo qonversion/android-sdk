@@ -449,7 +449,12 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
-     * todo
+     * Entitlements cache is used when there are problems with the Qonversion API
+     * or internet connection. If so, Qonversion will actualize the entitlements locally
+     * using the last successfully loaded data. The current method allows you to configure
+     * how long that cache may be used. The default value is [QEntitlementCacheLifetime.MONTH].
+     *
+     * @param lifetime desired entitlements cache lifetime duration
      */
     @JvmStatic
     fun setEntitlementsCacheLifetime(lifetime: QEntitlementCacheLifetime) {
