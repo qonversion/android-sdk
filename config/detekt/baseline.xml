@@ -91,7 +91,7 @@
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.THREE_MONTHS$90</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_WEEKS$14</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.WEEK$7</ID>
-    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.YEAR$360</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.YEAR$365</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
