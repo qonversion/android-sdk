@@ -27,7 +27,9 @@ data class QEntitlement(
         )
     )
 
-    fun toPermission(): QPermission = QPermission(
+    val isActive get() = active
+
+    internal fun toPermission(): QPermission = QPermission(
         permissionID,
         product.productID,
         product.subscription?.renewState?.toProductRenewState() ?: QProductRenewState.Unknown,

@@ -86,6 +86,12 @@
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$30</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$365</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$7</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.MONTH$30</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.SIX_MONTHS$180</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.THREE_MONTHS$90</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_WEEKS$14</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.WEEK$7</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.YEAR$365</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
@@ -107,6 +113,8 @@
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.TwoWeeks$3</ID>
     <ID>MagicNumber:QTrialDuration.kt$QTrialDuration.Year$8</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
+    <ID>MagicNumber:utils.kt$24L</ID>
+    <ID>MagicNumber:utils.kt$60</ID>
     <ID>MatchingDeclarationName:util.kt$Util</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
@@ -155,7 +163,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:12</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:13</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>

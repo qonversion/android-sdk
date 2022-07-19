@@ -10,6 +10,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.di.QDependencyInjector
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
@@ -445,6 +446,19 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setDebugMode() {
         isDebugMode = true
+    }
+
+    /**
+     * Entitlements cache is used when there are problems with the Qonversion API
+     * or internet connection. If so, Qonversion will return the last successfully loaded
+     * entitlements. The current method allows you to configure how long that cache may be used.
+     * The default value is [QEntitlementCacheLifetime.MONTH].
+     *
+     * @param lifetime desired entitlements cache lifetime duration
+     */
+    @JvmStatic
+    fun setEntitlementsCacheLifetime(lifetime: QEntitlementCacheLifetime) {
+        productCenterManager?.setEntitlementsCacheLifetime(lifetime)
     }
 
     /**

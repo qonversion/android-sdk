@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.storage.EntitlementsCache
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
@@ -16,6 +17,10 @@ internal class EntitlementsManager @Inject constructor(
 
     init {
         config.subscribeOnUserChanges(this)
+    }
+
+    fun setCacheLifetime(lifetime: QEntitlementCacheLifetime) {
+        cache.setCacheLifetime(lifetime)
     }
 
     fun checkEntitlements(
@@ -78,7 +83,10 @@ internal class EntitlementsManager @Inject constructor(
         storeCallbacks(userId, listOf(callback))
     }
 
-    private fun storeCallbacks(userId: String, callbacks: List<QonversionEntitlementsCallbackInternal>) {
+    private fun storeCallbacks(
+        userId: String,
+        callbacks: List<QonversionEntitlementsCallbackInternal>
+    ) {
         val list = entitlementsCallbacks[userId] ?: mutableListOf()
         list.addAll(callbacks)
         entitlementsCallbacks[userId] = list
@@ -104,7 +112,10 @@ internal class EntitlementsManager @Inject constructor(
         }
     }
 
-    private fun cacheEntitlementsForUser(qonversionUserId: String, entitlements: List<QEntitlement>) {
+    private fun cacheEntitlementsForUser(
+        qonversionUserId: String,
+        entitlements: List<QEntitlement>
+    ) {
         // Store only if the user has not changed
         if (qonversionUserId == config.uid) {
             cache.store(entitlements)

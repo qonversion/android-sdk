@@ -7,3 +7,5 @@ fun String?.toBoolean() = this == "1"
 fun Boolean.toInt() = if (this) 1 else 0
 
 fun Boolean.stringValue() = if (this) "1" else "0"
+
+internal val Int.daysToSeconds get() = this * 24L * 60 * 60
