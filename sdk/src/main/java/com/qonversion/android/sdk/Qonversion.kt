@@ -455,6 +455,7 @@ object Qonversion : LifecycleDelegate {
      * The default value is [QEntitlementCacheLifetime.MONTH].
      *
      * @param lifetime desired entitlements cache lifetime duration
+     * @see [More details about Qonversion fault tolerance](https://documentation.qonversion.io/docs/fault-tolerance)
      */
     @JvmStatic
     fun setEntitlementsCacheLifetime(lifetime: QEntitlementCacheLifetime) {
