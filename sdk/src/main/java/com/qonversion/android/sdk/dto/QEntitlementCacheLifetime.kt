@@ -6,6 +6,6 @@ enum class QEntitlementCacheLifetime(val days: Int) {
     MONTH(30),
     THREE_MONTHS(90),
     SIX_MONTHS(180),
-    YEAR(360),
-    PERMANENT(Int.MAX_VALUE)
+    YEAR(365),
+    UNLIMITED(Int.MAX_VALUE)
 }
