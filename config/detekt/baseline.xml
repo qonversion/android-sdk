@@ -163,7 +163,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:14</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:13</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
