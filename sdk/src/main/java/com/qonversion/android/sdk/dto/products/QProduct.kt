@@ -9,7 +9,8 @@ data class QProduct(
     @Json(name = "id") val qonversionID: String,
     @Json(name = "store_id") val storeID: String?,
     @Json(name = "type") val type: QProductType,
-    @Json(name = "duration") val duration: QProductDuration?
+    @Json(name = "duration") val duration: QProductDuration?,
+    @Json(name = "permissions_ids") val permissionIds: List<String>
 ) {
     @Transient
     var skuDetail: SkuDetails? = null

@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QRestoreResult
-import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -411,8 +410,13 @@ class QProductCenterManager internal constructor(
         return product
     }
 
-    fun checkPermissions(
-        callback: QonversionPermissionsCallback,
+    fun checkPermissions(callback: QonversionPermissionsCallback) {
+        val internalCallback = callback.toEntitlementsInternalCallback()
+        checkEntitlements(internalCallback)
+    }
+
+    private fun checkEntitlements(
+        callback: QonversionEntitlementsCallbackInternal,
         ignoreCache: Boolean = false
     ) {
         if (unhandledLogoutAvailable) {
@@ -426,20 +430,19 @@ class QProductCenterManager internal constructor(
     }
 
     private fun requestEntitlements(
-        callback: QonversionPermissionsCallback? = null,
+        callback: QonversionEntitlementsCallbackInternal? = null,
         ignoreCache: Boolean = false
     ) {
         val entitlementsCallback = object : QonversionEntitlementsCallbackInternal {
             override fun onSuccess(entitlements: List<QEntitlement>) {
-                val permissions = entitlements.associate { it.permissionID to it.toPermission() }
-                callback?.onSuccess(permissions)
+                callback?.onSuccess(entitlements)
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
                 if (responseCode == HTTP_NOT_FOUND) {
                     handleNewUserEntitlements(callback)
                 } else {
-                    callback?.onError(error)
+                    callback?.onError(error, responseCode)
                 }
             }
         }
@@ -451,31 +454,60 @@ class QProductCenterManager internal constructor(
         )
     }
 
-    private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
-        callback?.onSuccess(emptyMap())
+    private fun handleNewUserEntitlements(callback: QonversionEntitlementsCallbackInternal? = null) {
+        callback?.onSuccess(emptyList())
         if (isLaunchingFinished) {
             handleLogout()
         }
     }
 
     private fun checkPermissionsAfterPurchase(
+        purchase: Purchase,
         purchaseCallback: QonversionPermissionsCallback?,
         updatedPurchasesListener: UpdatedPurchasesListener?
     ) {
         if (purchaseCallback != null || updatedPurchasesListener != null) {
-            val permissionsCallback = object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
+            val permissionsCallback = object : QonversionEntitlementsCallbackInternal {
+                override fun onSuccess(entitlements: List<QEntitlement>) {
+                    val permissions = entitlements.toPermissionsMap()
                     purchaseCallback?.onSuccess(permissions) ?: run {
                         updatedPurchasesListener?.onPermissionsUpdate(permissions)
                     }
                 }
 
-                override fun onError(error: QonversionError) {
-                    purchaseCallback?.onError(error)
+                override fun onLoadedFromCache(entitlements: List<QEntitlement>, requestError: QonversionError) {
+                    onError(requestError, null)
+                }
+
+                override fun onError(error: QonversionError, responseCode: Int?) {
+                    calculatePurchasePermissionsLocally(purchase, purchaseCallback, error)
                 }
             }
-            checkPermissions(permissionsCallback, true)
+            checkEntitlements(permissionsCallback, true)
         }
+    }
+
+    private fun calculatePurchasePermissionsLocally(
+        purchase: Purchase,
+        purchaseCallback: QonversionPermissionsCallback?,
+        happenedError: QonversionError
+    ) {
+        val launchResult = getLaunchResult() ?: run {
+            purchaseCallback?.onError(launchError ?: QonversionError(QonversionErrorCode.LaunchError))
+            return
+        }
+
+        val purchasedProduct = launchResult.products.values.find { it.skuDetail?.sku == purchase.sku } ?: run {
+            purchaseCallback?.onError(happenedError)
+            return
+        }
+
+        val entitlements = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
+            config.uid,
+            purchase,
+            purchasedProduct
+        )
+        purchaseCallback?.onSuccess(entitlements.toPermissionsMap())
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
@@ -884,12 +916,12 @@ class QProductCenterManager internal constructor(
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
-                    checkPermissionsAfterPurchase(purchaseCallback, listener)
+                    checkPermissionsAfterPurchase(purchase, purchaseCallback, listener)
                     handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {
-                    purchaseCallback?.onError(error)
+                    calculatePurchasePermissionsLocally(purchase, purchaseCallback, error)
                 }
             })
         }

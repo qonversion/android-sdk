@@ -10,43 +10,46 @@ import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 
 interface QonversionLaunchCallback {
-   fun onSuccess(launchResult: QLaunchResult)
-   fun onError(error: QonversionError)
+    fun onSuccess(launchResult: QLaunchResult)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionRestoreCallback {
-   fun onSuccess(restoreResult: QRestoreResult)
-   fun onError(error: QonversionError)
+    fun onSuccess(restoreResult: QRestoreResult)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionProductsCallback {
-   fun onSuccess(products: Map<String, QProduct>)
-   fun onError(error: QonversionError)
+    fun onSuccess(products: Map<String, QProduct>)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionEntitlementsCallback {
-   fun onSuccess(entitlements: List<QEntitlement>)
-   fun onError(error: QonversionError)
+    fun onSuccess(entitlements: List<QEntitlement>)
+    fun onError(error: QonversionError)
 }
 
 internal interface QonversionEntitlementsCallbackInternal {
-   fun onSuccess(entitlements: List<QEntitlement>)
-   fun onError(error: QonversionError, responseCode: Int?)
+    fun onSuccess(entitlements: List<QEntitlement>)
+    fun onLoadedFromCache(entitlements: List<QEntitlement>, requestError: QonversionError) =
+        onSuccess(entitlements)
+
+    fun onError(error: QonversionError, responseCode: Int?)
 }
 
 interface QonversionOfferingsCallback {
-   fun onSuccess(offerings: QOfferings)
-   fun onError(error: QonversionError)
+    fun onSuccess(offerings: QOfferings)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionExperimentsCallback {
-   fun onSuccess(experiments: Map<String, QExperimentInfo>)
-   fun onError(error: QonversionError)
+    fun onSuccess(experiments: Map<String, QExperimentInfo>)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionPermissionsCallback {
-   fun onSuccess(permissions: Map<String, QPermission>)
-   fun onError(error: QonversionError)
+    fun onSuccess(permissions: Map<String, QPermission>)
+    fun onError(error: QonversionError)
 }
 
 interface QonversionEligibilityCallback {
@@ -55,6 +58,6 @@ interface QonversionEligibilityCallback {
 }
 
 interface QonversionShowScreenCallback {
-   fun onSuccess()
-   fun onError(error: QonversionError)
+    fun onSuccess()
+    fun onError(error: QonversionError)
 }

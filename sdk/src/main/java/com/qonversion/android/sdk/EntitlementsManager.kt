@@ -1,9 +1,14 @@
 package com.qonversion.android.sdk
 
+import androidx.annotation.VisibleForTesting
+import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
+import com.qonversion.android.sdk.dto.QEntitlementRenewState
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.storage.EntitlementsCache
 import javax.inject.Inject
+import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
 internal class EntitlementsManager @Inject constructor(
@@ -41,7 +46,7 @@ internal class EntitlementsManager @Inject constructor(
         storeCallback(userId, callback)
 
         if (pendingIdentityUserId.isNullOrEmpty() && !isRequestInProgress) {
-            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId, ignoreCache))
         }
     }
 
@@ -56,7 +61,7 @@ internal class EntitlementsManager @Inject constructor(
         storeCallbacks(qonversionUserId, callbacks)
 
         if (!isRequestInProgress) {
-            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId))
+            repository.entitlements(qonversionUserId, getResponseHandler(qonversionUserId, ignoreCache = false))
         }
     }
 
@@ -68,10 +73,53 @@ internal class EntitlementsManager @Inject constructor(
         cacheEntitlementsForUser(qonversionUserId, entitlements)
     }
 
+    fun grantEntitlementsAfterFailedPurchaseTracking(
+        qonversionUserId: String,
+        purchase: Purchase,
+        purchasedProduct: QProduct
+    ): List<QEntitlement> {
+        val newEntitlements = purchasedProduct.permissionIds.map {
+            createEntitlement(it, purchase, purchasedProduct)
+        }
+
+        val existingEntitlements = cache.getActualStoredValue(true) ?: emptyList()
+        val resultEntitlements = (newEntitlements + existingEntitlements)
+            .groupBy { it.permissionID }
+            .values
+            .map { entitlementsWithSameId ->
+                if (entitlementsWithSameId.size == 1) return@map entitlementsWithSameId.first()
+
+                return@map entitlementsWithSameId
+                    .filter { it.isActive }
+                    .maxBy { it.expirationDate?.time ?: 0 }
+                    ?: entitlementsWithSameId.first()
+            }
+
+        cacheEntitlementsForUser(qonversionUserId, resultEntitlements)
+
+        return resultEntitlements
+    }
+
     override fun onUserChanged(oldUid: String, newUid: String) {
         if (oldUid.isNotEmpty()) {
             cache.reset()
         }
+    }
+
+    @VisibleForTesting
+    internal fun createEntitlement(id: String, purchase: Purchase, purchasedProduct: QProduct): QEntitlement {
+        return QEntitlement(
+            id,
+            Date(purchase.purchaseTime),
+            purchasedProduct.duration?.let { duration -> Date(purchase.purchaseTime + duration.toMs()) },
+            true,
+            QEntitlement.Product(
+                purchasedProduct.qonversionID,
+                QEntitlement.Product.Subscription(
+                    QEntitlementRenewState.Unknown // todo
+                )
+            )
+        )
     }
 
     private fun isRequestInProgressForId(userId: String): Boolean {
@@ -92,19 +140,19 @@ internal class EntitlementsManager @Inject constructor(
         entitlementsCallbacks[userId] = list
     }
 
-    private fun getResponseHandler(qonversionUserId: String): QonversionEntitlementsCallbackInternal {
+    private fun getResponseHandler(qonversionUserId: String, ignoreCache: Boolean): QonversionEntitlementsCallbackInternal {
         return object : QonversionEntitlementsCallbackInternal {
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 firstRequestExecuted = true
 
                 cacheEntitlementsForUser(qonversionUserId, entitlements)
 
-                fireEntitlementsToListeners(qonversionUserId, entitlements)
+                fireToListeners(qonversionUserId) { onSuccess(entitlements) }
             }
 
             override fun onError(error: QonversionError, responseCode: Int?) {
-                cache.getActualStoredValue(isError = true)?.let {
-                    fireEntitlementsToListeners(qonversionUserId, it)
+                cache.takeUnless { ignoreCache }?.getActualStoredValue(isError = true)?.let {
+                    fireToListeners(qonversionUserId) { onLoadedFromCache(it, error) }
                 } ?: run {
                     fireErrorToListeners(qonversionUserId, error, responseCode)
                 }
@@ -112,7 +160,8 @@ internal class EntitlementsManager @Inject constructor(
         }
     }
 
-    private fun cacheEntitlementsForUser(
+    @VisibleForTesting
+    internal fun cacheEntitlementsForUser(
         qonversionUserId: String,
         entitlements: List<QEntitlement>
     ) {
@@ -120,13 +169,6 @@ internal class EntitlementsManager @Inject constructor(
         if (qonversionUserId == config.uid) {
             cache.store(entitlements)
         }
-    }
-
-    private fun fireEntitlementsToListeners(
-        qonversionUserId: String,
-        entitlements: List<QEntitlement>
-    ) {
-        fireToListeners(qonversionUserId) { onSuccess(entitlements) }
     }
 
     private fun fireErrorToListeners(

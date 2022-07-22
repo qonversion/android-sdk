@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk
 
+import com.qonversion.android.sdk.dto.QEntitlement
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -25,3 +26,15 @@ class CallBackKt<T> : Callback<T> {
 }
 
 fun Int.isInternalServerError() = this in Constants.INTERNAL_SERVER_ERROR_MIN..Constants.INTERNAL_SERVER_ERROR_MAX
+
+internal fun QonversionPermissionsCallback?.toEntitlementsInternalCallback() = object : QonversionEntitlementsCallbackInternal {
+    override fun onSuccess(entitlements: List<QEntitlement>) {
+        this@toEntitlementsInternalCallback?.onSuccess(entitlements.toPermissionsMap())
+    }
+
+    override fun onError(error: QonversionError, responseCode: Int?) {
+        this@toEntitlementsInternalCallback?.onError(error)
+    }
+}
+
+internal fun List<QEntitlement>.toPermissionsMap() = associate { it.permissionID to it.toPermission() }
