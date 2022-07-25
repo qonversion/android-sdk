@@ -2,6 +2,7 @@ package com.qonversion.android.sdk
 
 import androidx.annotation.VisibleForTesting
 import com.android.billingclient.api.Purchase
+import com.qonversion.android.sdk.converter.GoogleBillingPeriodConverter
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.QEntitlementRenewState
@@ -108,10 +109,14 @@ internal class EntitlementsManager @Inject constructor(
 
     @VisibleForTesting
     internal fun createEntitlement(id: String, purchase: Purchase, purchasedProduct: QProduct): QEntitlement {
+        val purchaseDuration = GoogleBillingPeriodConverter.convertSubscriptionPeriod(
+            purchasedProduct.skuDetail?.subscriptionPeriod
+        )
+
         return QEntitlement(
             id,
             Date(purchase.purchaseTime),
-            purchasedProduct.duration?.let { duration -> Date(purchase.purchaseTime + duration.toMs()) },
+            purchaseDuration?.let { Date(purchase.purchaseTime + it.toMs()) },
             true,
             QEntitlement.Product(
                 purchasedProduct.qonversionID,
