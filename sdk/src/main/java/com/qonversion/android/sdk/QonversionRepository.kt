@@ -98,7 +98,7 @@ class QonversionRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("AttributionRequest - failure - ${it?.toQonversionError()}")
+                logger.release("AttributionRequest - failure - ${it.toQonversionError()}")
             }
         }
     }
@@ -106,7 +106,7 @@ class QonversionRepository internal constructor(
     fun sendProperties(
         properties: Map<String, String>,
         onSuccess: () -> Unit,
-        onError: () -> Unit
+        onError: (error: QonversionError?) -> Unit
     ) {
         val propertiesRequest = PropertiesRequest(
             accessToken = key,
@@ -118,11 +118,11 @@ class QonversionRepository internal constructor(
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
 
-                if (it.isSuccessful) onSuccess() else onError()
+                if (it.isSuccessful) onSuccess() else onError(errorMapper.getErrorFromResponse(it))
             }
             onFailure = {
-                logger.debug("propertiesRequest - failure - ${it?.toQonversionError()}")
-                onError()
+                logger.debug("propertiesRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
             }
         }
     }
@@ -155,10 +155,8 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("eligibilityRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    callback.onError(it.toQonversionError())
-                }
+                logger.release("eligibilityRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
             }
         }
     }
@@ -182,10 +180,8 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("identityRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    onError(it.toQonversionError())
-                }
+                logger.release("identityRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
             }
         }
     }
@@ -211,10 +207,8 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("screensRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    onError(it.toQonversionError())
-                }
+                logger.release("screensRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
             }
         }
     }
@@ -227,7 +221,7 @@ class QonversionRepository internal constructor(
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
             onFailure = {
-                logger.debug("viewsRequest - failure - ${it?.toQonversionError()}")
+                logger.debug("viewsRequest - failure - ${it.toQonversionError()}")
             }
         }
     }
@@ -248,10 +242,8 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("actionPointsRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    onError(it.toQonversionError())
-                }
+                logger.release("actionPointsRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
             }
         }
     }
@@ -281,7 +273,7 @@ class QonversionRepository internal constructor(
                 logger.debug("eventRequest - ${it.getLogMessage()}")
             }
             onFailure = {
-                logger.debug("eventRequest - failure - ${it?.toQonversionError()}")
+                logger.debug("eventRequest - failure - ${it.toQonversionError()}")
             }
         }
     }
@@ -349,24 +341,22 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("purchaseRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    handlePurchaseError(
+                logger.release("purchaseRequest - failure - ${it.toQonversionError()}")
+                handlePurchaseError(
+                    purchase,
+                    callback,
+                    it.toQonversionError(),
+                    null,
+                    attemptIndex
+                ) { nextAttemptIndex ->
+                    purchaseRequest(
+                        installDate,
                         purchase,
+                        experimentInfo,
+                        qProductId,
                         callback,
-                        it.toQonversionError(),
-                        null,
-                        attemptIndex
-                    ) { nextAttemptIndex ->
-                        purchaseRequest(
-                            installDate,
-                            purchase,
-                            experimentInfo,
-                            qProductId,
-                            callback,
-                            nextAttemptIndex
-                        )
-                    }
+                        nextAttemptIndex
+                    )
                 }
             }
         }
@@ -501,10 +491,8 @@ class QonversionRepository internal constructor(
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.release("restoreRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    callback?.onError(it.toQonversionError())
-                }
+                logger.release("restoreRequest - failure - ${it.toQonversionError()}")
+                callback?.onError(it.toQonversionError())
             }
         }
     }
@@ -554,10 +542,8 @@ class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("initRequest - failure - ${it?.toQonversionError()}")
-                if (it != null) {
-                    callback?.onError(it.toQonversionError())
-                }
+                logger.release("initRequest - failure - ${it.toQonversionError()}")
+                callback?.onError(it.toQonversionError())
             }
         }
     }
