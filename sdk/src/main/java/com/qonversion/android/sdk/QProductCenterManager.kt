@@ -462,6 +462,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun checkPermissionsAfterPurchase(
+        qonversionUserId: String,
         purchase: Purchase,
         purchaseCallback: QonversionPermissionsCallback?,
         updatedPurchasesListener: UpdatedPurchasesListener?
@@ -480,7 +481,7 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError, responseCode: Int?) {
-                    calculatePurchasePermissionsLocally(purchase, purchaseCallback, error)
+                    calculatePurchasePermissionsLocally(qonversionUserId, purchase, purchaseCallback, error)
                 }
             }
             checkEntitlements(permissionsCallback, true)
@@ -488,6 +489,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun calculatePurchasePermissionsLocally(
+        qonversionUserId: String,
         purchase: Purchase,
         purchaseCallback: QonversionPermissionsCallback?,
         happenedError: QonversionError
@@ -497,13 +499,16 @@ class QProductCenterManager internal constructor(
             return
         }
 
+        if (launchResult.products.values.all { it.skuDetail == null }) {
+            addSkuDetailForProducts(launchResult.products.values)
+        }
         val purchasedProduct = launchResult.products.values.find { it.skuDetail?.sku == purchase.sku } ?: run {
             purchaseCallback?.onError(happenedError)
             return
         }
 
         val entitlements = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-            config.uid,
+            qonversionUserId,
             purchase,
             purchasedProduct
         )
@@ -892,6 +897,7 @@ class QProductCenterManager internal constructor(
 
     private fun handlePurchases(purchases: List<Purchase>) {
         consumer.consumePurchases(purchases, skuDetails)
+        val qonversionUserId = config.uid
 
         purchases.forEach { purchase ->
             val purchaseCallback = purchasingCallbacks[purchase.sku]
@@ -916,12 +922,22 @@ class QProductCenterManager internal constructor(
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
-                    checkPermissionsAfterPurchase(purchase, purchaseCallback, listener)
+                    checkPermissionsAfterPurchase(
+                        qonversionUserId,
+                        purchase,
+                        purchaseCallback,
+                        listener
+                    )
                     handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 
                 override fun onError(error: QonversionError) {
-                    calculatePurchasePermissionsLocally(purchase, purchaseCallback, error)
+                    calculatePurchasePermissionsLocally(
+                        qonversionUserId,
+                        purchase,
+                        purchaseCallback,
+                        error
+                    )
                 }
             })
         }

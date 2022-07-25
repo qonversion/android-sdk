@@ -116,7 +116,7 @@ internal class EntitlementsManager @Inject constructor(
             QEntitlement.Product(
                 purchasedProduct.qonversionID,
                 QEntitlement.Product.Subscription(
-                    QEntitlementRenewState.Unknown // todo
+                    QEntitlementRenewState.Unknown
                 )
             )
         )
