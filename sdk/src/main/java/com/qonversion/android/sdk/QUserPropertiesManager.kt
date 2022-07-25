@@ -81,7 +81,7 @@ class QUserPropertiesManager @Inject internal constructor(
                     isRequestInProgress = false
 
                     if (it?.code === QonversionErrorCode.InvalidClientUid) {
-                        productCenterManager?.launch(callback = object: QonversionLaunchCallback {
+                        productCenterManager?.launch(callback = object : QonversionLaunchCallback {
                             override fun onSuccess(launchResult: QLaunchResult) {
                                 retryPropertiesRequest()
                             }
