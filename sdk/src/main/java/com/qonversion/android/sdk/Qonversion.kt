@@ -96,7 +96,6 @@ object Qonversion : LifecycleDelegate {
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
-        userPropertiesManager?.sendFacebookAttribution()
 
         attributionManager = QAttributionManager(repository)
 
@@ -112,6 +111,9 @@ object Qonversion : LifecycleDelegate {
             identityManager,
             config
         )
+
+        userPropertiesManager?.productCenterManager = productCenterManager
+        userPropertiesManager?.sendFacebookAttribution()
 
         when (appState) {
             AppState.PendingForeground -> onAppForeground()
