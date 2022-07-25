@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PropertiesStorage
 import javax.inject.Inject
@@ -16,6 +17,7 @@ class QUserPropertiesManager @Inject internal constructor(
     private val delayCalculator: IncrementalDelayCalculator,
     private val logger: Logger
 ) {
+    internal var productCenterManager: QProductCenterManager? = null
     private var handler: Handler? = null
     private var isRequestInProgress = false
     private var isSendingScheduled = false
@@ -77,15 +79,32 @@ class QUserPropertiesManager @Inject internal constructor(
                 },
                 onError = {
                     isRequestInProgress = false
-                    retriesCounter++
-                    try {
-                        retryDelay =
-                            delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
-                        sendPropertiesWithDelay(retryDelay)
-                    } catch (e: IllegalArgumentException) {
-                        logger.debug("The error occurred during send properties. $e")
+
+                    if (it?.code === QonversionErrorCode.InvalidClientUid) {
+                        productCenterManager?.launch(callback = object: QonversionLaunchCallback {
+                            override fun onSuccess(launchResult: QLaunchResult) {
+                                retryPropertiesRequest()
+                            }
+
+                            override fun onError(error: QonversionError) {
+                                retryPropertiesRequest()
+                            }
+                        })
+                    } else {
+                        retryPropertiesRequest()
                     }
                 })
+        }
+    }
+
+    private fun retryPropertiesRequest() {
+        retriesCounter++
+        try {
+            retryDelay =
+                delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
+            sendPropertiesWithDelay(retryDelay)
+        } catch (e: IllegalArgumentException) {
+            logger.debug("The error occurred during send properties. $e")
         }
     }
 
