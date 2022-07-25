@@ -516,6 +516,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
+        val qonversionUserId = config.uid
         billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
             consumer.consumeHistoryRecords(historyRecords)
             val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
@@ -526,12 +527,12 @@ class QProductCenterManager internal constructor(
                 billingService.loadProducts(resultSkuIds, onLoadCompleted = {
                     it.forEach { skuDetails -> loadedSkuDetails[skuDetails.sku] = skuDetails }
 
-                    processRestore(historyRecords, loadedSkuDetails, callback)
+                    processRestore(qonversionUserId, historyRecords, loadedSkuDetails, callback)
                 }, onLoadFailed = {
-                    processRestore(historyRecords, loadedSkuDetails, callback)
+                    processRestore(qonversionUserId, historyRecords, loadedSkuDetails, callback)
                 })
             } else {
-                processRestore(historyRecords, loadedSkuDetails, callback)
+                processRestore(qonversionUserId, historyRecords, loadedSkuDetails, callback)
             }
         },
             onQueryHistoryFailed = {
@@ -565,6 +566,7 @@ class QProductCenterManager internal constructor(
     // Private functions
 
     private fun processRestore(
+        qonversionUserId: String,
         purchaseHistoryRecords: List<PurchaseHistory>,
         loadedSkuDetails: Map<String, SkuDetails>,
         callback: QonversionPermissionsCallback? = null
@@ -588,7 +590,22 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
-                    callback?.onError(error)
+                    val launchResult = getLaunchResult() ?: run {
+                        callback?.onError(error)
+                        return
+                    }
+
+                    if (launchResult.products.values.all { it.skuDetail == null }) {
+                        addSkuDetailForProducts(launchResult.products.values)
+                    }
+
+                    val entitlements = entitlementsManager.grantEntitlementsAfterFailedRestore(
+                        qonversionUserId,
+                        purchaseHistoryRecords,
+                        launchResult.products.values
+                    )
+
+                    callback?.onSuccess(entitlements.toPermissionsMap())
                 }
             })
     }

@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QEntitlementCacheLifetime
 import com.qonversion.android.sdk.dto.QEntitlementRenewState
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.storage.EntitlementsCache
 import javax.inject.Inject
 import java.util.Date
@@ -80,9 +81,35 @@ internal class EntitlementsManager @Inject constructor(
         purchasedProduct: QProduct
     ): List<QEntitlement> {
         val newEntitlements = purchasedProduct.permissionIds.map {
-            createEntitlement(it, purchase, purchasedProduct)
+            createEntitlement(it, purchase.purchaseTime, purchasedProduct)
         }
 
+        return mergeManuallyCreatedEntitlements(qonversionUserId, newEntitlements)
+    }
+
+    fun grantEntitlementsAfterFailedRestore(
+        qonversionUserId: String,
+        historyRecords: List<PurchaseHistory>,
+        products: Collection<QProduct>
+    ): List<QEntitlement> {
+        val newEntitlements = historyRecords
+            .filter { it.skuDetails != null }
+            .map { record ->
+                val product = products.find { it.skuDetail?.sku === record.skuDetails?.sku }
+                    ?: return@map emptyList<QEntitlement>()
+                product.permissionIds.map {
+                    createEntitlement(it, record.historyRecord.purchaseTime, product)
+                }
+            }
+            .flatten()
+
+        return mergeManuallyCreatedEntitlements(qonversionUserId, newEntitlements)
+    }
+
+    private fun mergeManuallyCreatedEntitlements(
+        qonversionUserId: String,
+        newEntitlements: List<QEntitlement>
+    ): List<QEntitlement> {
         val existingEntitlements = cache.getActualStoredValue(true) ?: emptyList()
         val resultEntitlements = (newEntitlements + existingEntitlements)
             .groupBy { it.permissionID }
@@ -108,16 +135,19 @@ internal class EntitlementsManager @Inject constructor(
     }
 
     @VisibleForTesting
-    internal fun createEntitlement(id: String, purchase: Purchase, purchasedProduct: QProduct): QEntitlement {
+    internal fun createEntitlement(id: String, purchaseTime: Long, purchasedProduct: QProduct): QEntitlement {
         val purchaseDuration = GoogleBillingPeriodConverter.convertSubscriptionPeriod(
             purchasedProduct.skuDetail?.subscriptionPeriod
         )
 
+        val expirationDate = purchaseDuration?.let { Date(purchaseTime + it.toMs()) }
+        val isActive = expirationDate == null || Date() < expirationDate
+
         return QEntitlement(
             id,
-            Date(purchase.purchaseTime),
-            purchaseDuration?.let { Date(purchase.purchaseTime + it.toMs()) },
-            true,
+            Date(purchaseTime),
+            expirationDate,
+            isActive,
             QEntitlement.Product(
                 purchasedProduct.qonversionID,
                 QEntitlement.Product.Subscription(

@@ -38,6 +38,7 @@ internal class EntitlementsManagerTest {
         private val testEntitlementId2 = "2"
         private val testEntitlementId3 = "3"
         private val testEntitlementId4 = "4"
+        private val testPurchaseTime = 59354809L
         private val testEntitlement1 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId1
         }
@@ -50,7 +51,9 @@ internal class EntitlementsManagerTest {
         private val testEntitlement4 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId4
         }
-        private val mockPurchase = mockk<Purchase>()
+        private val mockPurchase = mockk<Purchase> {
+            every { purchaseTime } returns testPurchaseTime
+        }
         private val mockPurchasedProduct = mockk<QProduct>()
 
         @BeforeEach
@@ -58,22 +61,22 @@ internal class EntitlementsManagerTest {
             every { entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, any()) } just runs
             every { entitlementsManager.createEntitlement(
                 testEntitlementId1,
-                mockPurchase,
+                testPurchaseTime,
                 mockPurchasedProduct
             ) } returns testEntitlement1
             every { entitlementsManager.createEntitlement(
                 testEntitlementId2,
-                mockPurchase,
+                testPurchaseTime,
                 mockPurchasedProduct
             ) } returns testEntitlement2
             every { entitlementsManager.createEntitlement(
                 testEntitlementId3,
-                mockPurchase,
+                testPurchaseTime,
                 mockPurchasedProduct
             ) } returns testEntitlement3
             every { entitlementsManager.createEntitlement(
                 testEntitlementId4,
-                mockPurchase,
+                testPurchaseTime,
                 mockPurchasedProduct
             ) } returns testEntitlement4
         }
@@ -96,8 +99,8 @@ internal class EntitlementsManagerTest {
 
             // then
             verifyOrder {
-                entitlementsManager.createEntitlement(testEntitlementId1, mockPurchase, mockPurchasedProduct)
-                entitlementsManager.createEntitlement(testEntitlementId2, mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId1, testPurchaseTime, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId2, testPurchaseTime, mockPurchasedProduct)
                 mockEntitlementsCache.getActualStoredValue(true)
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
@@ -127,8 +130,8 @@ internal class EntitlementsManagerTest {
 
             // then
             verifyOrder {
-                entitlementsManager.createEntitlement(testEntitlementId1, mockPurchase, mockPurchasedProduct)
-                entitlementsManager.createEntitlement(testEntitlementId2, mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId1, testPurchaseTime, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId2, testPurchaseTime, mockPurchasedProduct)
                 mockEntitlementsCache.getActualStoredValue(true)
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
@@ -157,7 +160,7 @@ internal class EntitlementsManagerTest {
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
             verify(exactly = 0) {
-                entitlementsManager.createEntitlement(any(), mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(any(), testPurchaseTime, mockPurchasedProduct)
             }
             assertThat(result).isEqualTo(listOf(
                 testEntitlement3,
@@ -188,8 +191,8 @@ internal class EntitlementsManagerTest {
 
             // then
             verifyOrder {
-                entitlementsManager.createEntitlement(testEntitlementId1, mockPurchase, mockPurchasedProduct)
-                entitlementsManager.createEntitlement(testEntitlementId2, mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId1, testPurchaseTime, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId2, testPurchaseTime, mockPurchasedProduct)
                 mockEntitlementsCache.getActualStoredValue(true)
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
@@ -225,8 +228,8 @@ internal class EntitlementsManagerTest {
 
             // then
             verifyOrder {
-                entitlementsManager.createEntitlement(testEntitlementId1, mockPurchase, mockPurchasedProduct)
-                entitlementsManager.createEntitlement(testEntitlementId2, mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId1, testPurchaseTime, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId2, testPurchaseTime, mockPurchasedProduct)
                 mockEntitlementsCache.getActualStoredValue(true)
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
@@ -262,8 +265,8 @@ internal class EntitlementsManagerTest {
 
             // then
             verifyOrder {
-                entitlementsManager.createEntitlement(testEntitlementId1, mockPurchase, mockPurchasedProduct)
-                entitlementsManager.createEntitlement(testEntitlementId2, mockPurchase, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId1, testPurchaseTime, mockPurchasedProduct)
+                entitlementsManager.createEntitlement(testEntitlementId2, testPurchaseTime, mockPurchasedProduct)
                 mockEntitlementsCache.getActualStoredValue(true)
                 entitlementsManager.cacheEntitlementsForUser(testQonversionUserId, result)
             }
