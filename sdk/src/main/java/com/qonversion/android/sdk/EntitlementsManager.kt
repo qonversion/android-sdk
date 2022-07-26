@@ -115,8 +115,6 @@ internal class EntitlementsManager @Inject constructor(
             .groupBy { it.permissionID }
             .values
             .map { entitlementsWithSameId ->
-                if (entitlementsWithSameId.size == 1) return@map entitlementsWithSameId.first()
-
                 return@map entitlementsWithSameId
                     .filter { it.isActive }
                     .maxBy { it.expirationDate?.time ?: 0 }

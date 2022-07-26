@@ -41,15 +41,19 @@ internal class EntitlementsManagerTest {
         private val testPurchaseTime = 59354809L
         private val testEntitlement1 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId1
+            every { isActive } returns true
         }
         private val testEntitlement2 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId2
+            every { isActive } returns true
         }
         private val testEntitlement3 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId3
+            every { isActive } returns true
         }
         private val testEntitlement4 = mockk<QEntitlement> {
             every { permissionID } returns testEntitlementId4
+            every { isActive } returns false
         }
         private val mockPurchase = mockk<Purchase> {
             every { purchaseTime } returns testPurchaseTime
@@ -210,7 +214,6 @@ internal class EntitlementsManagerTest {
                 testEntitlementId1,
                 testEntitlementId2
             )
-            every { testEntitlement2.isActive } returns true
             every { testEntitlement2.expirationDate } returns Date(20)
             val cachedEntitlement2 = mockk<QEntitlement> {
                 every { permissionID } returns testEntitlementId2
@@ -247,7 +250,6 @@ internal class EntitlementsManagerTest {
                 testEntitlementId1,
                 testEntitlementId2
             )
-            every { testEntitlement2.isActive } returns true
             every { testEntitlement2.expirationDate } returns Date(20)
             val cachedEntitlement2 = mockk<QEntitlement> {
                 every { permissionID } returns testEntitlementId2
