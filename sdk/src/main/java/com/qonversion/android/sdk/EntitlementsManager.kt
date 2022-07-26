@@ -173,7 +173,10 @@ internal class EntitlementsManager @Inject constructor(
         entitlementsCallbacks[userId] = list
     }
 
-    private fun getResponseHandler(qonversionUserId: String, ignoreCache: Boolean): QonversionEntitlementsCallbackInternal {
+    private fun getResponseHandler(
+        qonversionUserId: String,
+        ignoreCache: Boolean
+    ): QonversionEntitlementsCallbackInternal {
         return object : QonversionEntitlementsCallbackInternal {
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 firstRequestExecuted = true

@@ -15,6 +15,7 @@
     <ID>Filename:com.qonversion.android.sdk.storage.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.validator.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.ConsumerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.EntitlementsManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.QHandledPurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.QProductCenterManagerTest.kt:1</ID>
@@ -89,9 +90,11 @@
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.MONTH$30</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.SIX_MONTHS$180</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.THREE_MONTHS$90</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_MONTHS$60</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_WEEKS$14</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.WEEK$7</ID>
     <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.YEAR$365</ID>
+    <ID>MagicNumber:QProductDuration.kt$QProductDuration$1000</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
@@ -163,7 +166,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:13</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.EntitlementsManager.kt:20</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
@@ -206,14 +209,15 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:226</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.storage.SharedPreferencesCacheTest.kt:227</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:121</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:122</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:129</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.storage.util.kt:130</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.requests.AttributionRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ConsumerTest.kt$com.qonversion.android.sdk.ConsumerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:EntitlementsManagerTest.kt$com.qonversion.android.sdk.EntitlementsManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.requests.EnvironmentRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:GooglePurchaseConverterTest.kt$com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt</ID>
     <ID>NewLineAtEndOfFile:InAppRequestTest.kt$com.qonversion.android.sdk.requests.InAppRequestTest.kt</ID>
@@ -257,6 +261,7 @@
     <ID>NoUnusedImports:com.qonversion.android.sdk.storage.LaunchResultCacheWrapperTest.kt:3</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.validator.RequestValidatorTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.ConsumerTest.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.EntitlementsManagerTest.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.EnvironmentProvider.kt:10</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculator.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.IncrementalDelayCalculatorTest.kt:3</ID>

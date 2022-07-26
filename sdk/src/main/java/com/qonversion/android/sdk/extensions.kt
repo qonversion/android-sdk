@@ -25,16 +25,19 @@ class CallBackKt<T> : Callback<T> {
     }
 }
 
-fun Int.isInternalServerError() = this in Constants.INTERNAL_SERVER_ERROR_MIN..Constants.INTERNAL_SERVER_ERROR_MAX
+fun Int.isInternalServerError() =
+    this in Constants.INTERNAL_SERVER_ERROR_MIN..Constants.INTERNAL_SERVER_ERROR_MAX
 
-internal fun QonversionPermissionsCallback?.toEntitlementsInternalCallback() = object : QonversionEntitlementsCallbackInternal {
-    override fun onSuccess(entitlements: List<QEntitlement>) {
-        this@toEntitlementsInternalCallback?.onSuccess(entitlements.toPermissionsMap())
+internal fun QonversionPermissionsCallback?.toEntitlementsInternalCallback() =
+    object : QonversionEntitlementsCallbackInternal {
+        override fun onSuccess(entitlements: List<QEntitlement>) {
+            this@toEntitlementsInternalCallback?.onSuccess(entitlements.toPermissionsMap())
+        }
+
+        override fun onError(error: QonversionError, responseCode: Int?) {
+            this@toEntitlementsInternalCallback?.onError(error)
+        }
     }
 
-    override fun onError(error: QonversionError, responseCode: Int?) {
-        this@toEntitlementsInternalCallback?.onError(error)
-    }
-}
-
-internal fun List<QEntitlement>.toPermissionsMap() = associate { it.permissionID to it.toPermission() }
+internal fun List<QEntitlement>.toPermissionsMap() =
+    associate { it.permissionID to it.toPermission() }
