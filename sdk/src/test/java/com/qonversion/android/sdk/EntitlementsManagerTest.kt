@@ -58,7 +58,9 @@ internal class EntitlementsManagerTest {
         private val mockPurchase = mockk<Purchase> {
             every { purchaseTime } returns testPurchaseTime
         }
-        private val mockPurchasedProduct = mockk<QProduct>()
+        private val mockPurchasedProduct = mockk<QProduct> {
+            every { qonversionID } returns "test id"
+        }
 
         @BeforeEach
         fun setUp() {
@@ -88,17 +90,17 @@ internal class EntitlementsManagerTest {
         @Test
         fun `mixing different entitlements`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns listOf(
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to listOf(
                 testEntitlementId1,
                 testEntitlementId2
-            )
+            ))
             every {
                 mockEntitlementsCache.getActualStoredValue(true)
             } returns listOf(testEntitlement3, testEntitlement4)
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then
@@ -119,17 +121,17 @@ internal class EntitlementsManagerTest {
         @Test
         fun `no existing entitlements cache`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns listOf(
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to listOf(
                 testEntitlementId1,
                 testEntitlementId2
-            )
+            ))
             every {
                 mockEntitlementsCache.getActualStoredValue(true)
             } returns null
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then
@@ -148,14 +150,14 @@ internal class EntitlementsManagerTest {
         @Test
         fun `no new granting entitlements`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns emptyList()
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to emptyList<String>())
             every {
                 mockEntitlementsCache.getActualStoredValue(true)
             } returns listOf(testEntitlement3, testEntitlement4)
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then
@@ -175,10 +177,10 @@ internal class EntitlementsManagerTest {
         @Test
         fun `entitlement with the same id is cached but not active`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns listOf(
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to listOf(
                 testEntitlementId1,
                 testEntitlementId2
-            )
+            ))
             every { testEntitlement2.isActive } returns true
             val cachedEntitlement2 = mockk<QEntitlement> {
                 every { permissionID } returns testEntitlementId2
@@ -190,7 +192,7 @@ internal class EntitlementsManagerTest {
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then
@@ -210,10 +212,10 @@ internal class EntitlementsManagerTest {
         @Test
         fun `entitlement with the same id is cached and is active but expires earlier`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns listOf(
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to listOf(
                 testEntitlementId1,
                 testEntitlementId2
-            )
+            ))
             every { testEntitlement2.expirationDate } returns Date(20)
             val cachedEntitlement2 = mockk<QEntitlement> {
                 every { permissionID } returns testEntitlementId2
@@ -226,7 +228,7 @@ internal class EntitlementsManagerTest {
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then
@@ -246,10 +248,10 @@ internal class EntitlementsManagerTest {
         @Test
         fun `entitlement with the same id is cached and is active and expires later`() {
             // given
-            every { mockPurchasedProduct.permissionIds } returns listOf(
+            val productPermissions = mapOf(mockPurchasedProduct.qonversionID to listOf(
                 testEntitlementId1,
                 testEntitlementId2
-            )
+            ))
             every { testEntitlement2.expirationDate } returns Date(20)
             val cachedEntitlement2 = mockk<QEntitlement> {
                 every { permissionID } returns testEntitlementId2
@@ -262,7 +264,7 @@ internal class EntitlementsManagerTest {
 
             // when
             val result = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-                testQonversionUserId, mockPurchase, mockPurchasedProduct
+                testQonversionUserId, mockPurchase, mockPurchasedProduct, productPermissions
             )
 
             // then

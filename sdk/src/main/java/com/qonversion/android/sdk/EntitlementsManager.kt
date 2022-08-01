@@ -78,11 +78,12 @@ internal class EntitlementsManager @Inject constructor(
     fun grantEntitlementsAfterFailedPurchaseTracking(
         qonversionUserId: String,
         purchase: Purchase,
-        purchasedProduct: QProduct
+        purchasedProduct: QProduct,
+        productPermissions: Map<String, List<String>>
     ): List<QEntitlement> {
-        val newEntitlements = purchasedProduct.permissionIds.map {
+        val newEntitlements = productPermissions[purchasedProduct.qonversionID]?.map {
             createEntitlement(it, purchase.purchaseTime, purchasedProduct)
-        }
+        } ?: emptyList()
 
         return mergeManuallyCreatedEntitlements(qonversionUserId, newEntitlements)
     }
@@ -90,16 +91,17 @@ internal class EntitlementsManager @Inject constructor(
     fun grantEntitlementsAfterFailedRestore(
         qonversionUserId: String,
         historyRecords: List<PurchaseHistory>,
-        products: Collection<QProduct>
+        products: Collection<QProduct>,
+        productPermissions: Map<String, List<String>>
     ): List<QEntitlement> {
         val newEntitlements = historyRecords
             .filter { it.skuDetails != null }
             .map { record ->
                 val product = products.find { it.skuDetail?.sku === record.skuDetails?.sku }
                     ?: return@map emptyList<QEntitlement>()
-                product.permissionIds.map {
+                productPermissions[product.qonversionID]?.map {
                     createEntitlement(it, record.historyRecord.purchaseTime, product)
-                }
+                } ?: emptyList()
             }
             .flatten()
 

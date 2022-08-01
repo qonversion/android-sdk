@@ -70,6 +70,8 @@ class QProductCenterManager internal constructor(
 
     private var productPurchaseModel = mutableMapOf<String, Pair<QProduct, QOffering>>()
 
+    private var productPermissions: Map<String, List<String>>? = null
+
     @Volatile
     lateinit var billingService: BillingService
         @Synchronized set
@@ -507,12 +509,15 @@ class QProductCenterManager internal constructor(
             return
         }
 
-        val entitlements = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
-            qonversionUserId,
-            purchase,
-            purchasedProduct
-        )
-        purchaseCallback?.onSuccess(entitlements.toPermissionsMap())
+        productPermissions?.let {
+            val entitlements = entitlementsManager.grantEntitlementsAfterFailedPurchaseTracking(
+                qonversionUserId,
+                purchase,
+                purchasedProduct,
+                it
+            )
+            purchaseCallback?.onSuccess(entitlements.toPermissionsMap())
+        } ?: purchaseCallback?.onError(happenedError)
     }
 
     fun restore(callback: QonversionPermissionsCallback? = null) {
@@ -595,17 +600,20 @@ class QProductCenterManager internal constructor(
                         return
                     }
 
-                    if (launchResult.products.values.all { it.skuDetail == null }) {
-                        addSkuDetailForProducts(launchResult.products.values)
-                    }
+                    productPermissions?.let {
+                        if (launchResult.products.values.all { it.skuDetail == null }) {
+                            addSkuDetailForProducts(launchResult.products.values)
+                        }
 
-                    val entitlements = entitlementsManager.grantEntitlementsAfterFailedRestore(
-                        qonversionUserId,
-                        purchaseHistoryRecords,
-                        launchResult.products.values
-                    )
+                        val entitlements = entitlementsManager.grantEntitlementsAfterFailedRestore(
+                            qonversionUserId,
+                            purchaseHistoryRecords,
+                            launchResult.products.values,
+                            it
+                        )
 
-                    callback?.onSuccess(entitlements.toPermissionsMap())
+                        callback?.onSuccess(entitlements.toPermissionsMap())
+                    } ?: callback?.onError(error)
                 }
             })
     }
@@ -696,6 +704,11 @@ class QProductCenterManager internal constructor(
         return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 updateLaunchResult(launchResult)
+
+                launchResult.productPermissions?.let {
+                    productPermissions = it
+                }
+
                 launchError = null
 
                 if (!identityInProgress) {

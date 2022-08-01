@@ -27,22 +27,19 @@ class Util {
                     qonversionID = "main",
                     storeID = "qonversion_subs_weekly",
                     type = QProductType.Trial,
-                    duration = QProductDuration.Weekly,
-                    permissionIds = listOf("plus")
+                    duration = QProductDuration.Weekly
                 ),
                 "in_app" to QProduct(
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
                     type = QProductType.InApp,
-                    duration = null,
-                    permissionIds = listOf("standart", "Test Permission")
+                    duration = null
                 ),
                 "annual" to QProduct(
                     qonversionID = "annual",
                     storeID = "qonversion_subs_annual",
                     type = QProductType.Trial,
-                    duration = QProductDuration.Annual,
-                    permissionIds = listOf("plus")
+                    duration = QProductDuration.Annual
                 )
             ),
             permissions = mapOf(
@@ -68,8 +65,7 @@ class Util {
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
                     type = QProductType.InApp,
-                    duration = null,
-                    permissionIds = listOf("standart", "Test Permission")
+                    duration = null
                 )
             ),
             experiments = mapOf(),
@@ -82,15 +78,13 @@ class Util {
                             qonversionID = "in_app",
                             storeID = "qonversion_inapp_consumable",
                             type = QProductType.InApp,
-                            duration = null,
-                            permissionIds = listOf("standart", "Test Permission")
+                            duration = null
                         ),
                         QProduct(
                             qonversionID = "main",
                             storeID = "qonversion_subs_weekly",
                             type = QProductType.Trial,
-                            duration = QProductDuration.Weekly,
-                            permissionIds = listOf("plus")
+                            duration = QProductDuration.Weekly
                         )
                     ),
                     experimentInfo = QExperimentInfo("secondary")
@@ -104,15 +98,13 @@ class Util {
                                 qonversionID = "in_app",
                                 storeID = "qonversion_inapp_consumable",
                                 type = QProductType.InApp,
-                                duration = null,
-                                permissionIds = listOf("standart", "Test Permission")
+                                duration = null
                             ),
                             QProduct(
                                 qonversionID = "main",
                                 storeID = "qonversion_subs_weekly",
                                 type = QProductType.Trial,
-                                duration = QProductDuration.Weekly,
-                                permissionIds = listOf("plus")
+                                duration = QProductDuration.Weekly
                             )
                         ),
                         experimentInfo = QExperimentInfo("secondary")
