@@ -499,7 +499,7 @@ class QUserPropertiesManagerTest {
         every {
             mockRepository.sendProperties(properties, any(), captureLambda())
         } answers {
-            lambda<() -> Unit>().captured.invoke()
+            lambda<(QonversionError?) -> Unit>().captured.invoke(null)
         }
     }
 

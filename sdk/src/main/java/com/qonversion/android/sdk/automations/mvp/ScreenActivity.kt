@@ -19,7 +19,7 @@ import com.qonversion.android.sdk.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.logger.ConsoleLogger
-import kotlinx.android.synthetic.main.activity_screen.*
+import kotlinx.android.synthetic.main.q_activity_screen.*
 import javax.inject.Inject
 
 class ScreenActivity : Activity(), ScreenContract.View {
@@ -36,7 +36,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_screen)
+        setContentView(R.layout.q_activity_screen)
 
         injectDependencies()
 

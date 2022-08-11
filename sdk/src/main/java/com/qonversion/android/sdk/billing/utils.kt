@@ -15,6 +15,8 @@ fun Boolean.toInt() = if (this) 1 else 0
 
 fun Boolean.stringValue() = if (this) "1" else "0"
 
+val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
+
 fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
