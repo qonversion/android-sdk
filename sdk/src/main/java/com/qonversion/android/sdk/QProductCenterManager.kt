@@ -813,7 +813,7 @@ class QProductCenterManager internal constructor(
     }
 
     private fun getLaunchResult(): QLaunchResult? =
-        this@QProductCenterManager.sessionLoadedLaunchResult ?: launchResultCache.getLaunchResult()
+        sessionLoadedLaunchResult ?: launchResultCache.getLaunchResult()
 
     private fun handlePendingPurchases() {
         if (!isLaunchingFinished) return
