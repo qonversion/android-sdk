@@ -291,6 +291,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:13</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
