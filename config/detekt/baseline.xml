@@ -89,6 +89,7 @@
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.MONTH$30</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.SIX_MONTHS$180</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.THREE_MONTHS$90</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TWO_MONTHS$60</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TWO_WEEKS$14</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.WEEK$7</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.YEAR$365</ID>
