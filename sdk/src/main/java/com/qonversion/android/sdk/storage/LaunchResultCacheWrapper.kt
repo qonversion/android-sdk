@@ -11,7 +11,8 @@ import com.squareup.moshi.Types
 
 private const val LAUNCH_RESULT_KEY = "launchResult"
 private const val PERMISSIONS_KEY = "last_loaded_permissions"
-private const val CACHE_TIMESTAMP_KEY = "timestamp"
+private const val LAUNCH_RESULT_CACHE_TIMESTAMP_KEY = "timestamp"
+private const val PERMISSIONS_CACHE_TIMESTAMP_KEY = "permissions_timestamp"
 
 class LaunchResultCacheWrapper(
     moshi: Moshi,
@@ -59,11 +60,18 @@ class LaunchResultCacheWrapper(
         cache.putObject(LAUNCH_RESULT_KEY, launchResult, launchResultAdapter)
         cache.putObject(PERMISSIONS_KEY, launchResult.permissions, permissionsAdapter)
         val currentTime = getCurrentTimeInSec()
-        cache.putLong(CACHE_TIMESTAMP_KEY, currentTime)
+        cache.putLong(LAUNCH_RESULT_CACHE_TIMESTAMP_KEY, currentTime)
+        cache.putLong(PERMISSIONS_CACHE_TIMESTAMP_KEY, currentTime)
+    }
+
+    fun updatePermissions(permissions: Map<String, QPermission>) {
+        cache.putObject(PERMISSIONS_KEY, permissions, permissionsAdapter)
+        val currentTime = getCurrentTimeInSec()
+        cache.putLong(PERMISSIONS_CACHE_TIMESTAMP_KEY, currentTime)
     }
 
     private fun isCacheOutdated(timeIsSec: Long): Boolean {
-        val cachedTime = cache.getLong(CACHE_TIMESTAMP_KEY, 0)
+        val cachedTime = cache.getLong(LAUNCH_RESULT_CACHE_TIMESTAMP_KEY, 0)
         val currentTime = getCurrentTimeInSec()
 
         return currentTime - cachedTime >= timeIsSec
