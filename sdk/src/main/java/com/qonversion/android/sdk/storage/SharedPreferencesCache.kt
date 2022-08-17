@@ -46,4 +46,8 @@ class SharedPreferencesCache(
             null
         }
     }
+
+    override fun remove(key: String) {
+        preferences.edit().remove(key).apply()
+    }
 }

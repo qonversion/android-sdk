@@ -31,4 +31,6 @@ interface Cache {
     fun <T> putObject(key: String, value: T, adapter: JsonAdapter<T>)
 
     fun <T> getObject(key: String, adapter: JsonAdapter<T>): T?
+
+    fun remove(key: String)
 }

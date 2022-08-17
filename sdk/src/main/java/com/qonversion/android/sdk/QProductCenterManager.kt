@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -55,8 +56,8 @@ class QProductCenterManager internal constructor(
     private var experimentsCallbacks = mutableListOf<QonversionExperimentsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
-    private var identityInProgress: Boolean = false
-    private var pendingIdentityUserID: String? = null
+    private var processingPartnersIdentityId: String? = null
+    private var pendingPartnersIdentityId: String? = null
     private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
@@ -147,13 +148,19 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
-        unhandledLogoutAvailable = false
-        if (!isLaunchingFinished) {
-            pendingIdentityUserID = userID
+        if (processingPartnersIdentityId == userID || identityManager.currentPartnersIdentityId == userID) {
             return
         }
 
-        identityInProgress = true
+        launchResultCache.clearPermissionsCache()
+        unhandledLogoutAvailable = false
+
+        pendingPartnersIdentityId = userID
+        if (!isLaunchingFinished) {
+            return
+        }
+
+        processingPartnersIdentityId = userID
 
         if (launchError != null) {
             val callback = object : QonversionLaunchCallback {
@@ -162,6 +169,7 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
+                    processingPartnersIdentityId = null
                     executePermissionsBlock()
                 }
             }
@@ -178,8 +186,8 @@ class QProductCenterManager internal constructor(
 
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
-                pendingIdentityUserID = null
-                identityInProgress = false
+                pendingPartnersIdentityId = null
+                processingPartnersIdentityId = null
 
                 if (currentUserID == identityID) {
                     executePermissionsBlock()
@@ -191,8 +199,7 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                pendingIdentityUserID = null
-                identityInProgress = false
+                processingPartnersIdentityId = null
 
                 executePermissionsBlock()
             }
@@ -408,13 +415,13 @@ class QProductCenterManager internal constructor(
     ) {
         permissionsCallbacks.add(callback)
 
-        if (!isLaunchingFinished || identityInProgress) {
+        if (!isLaunchingFinished || processingPartnersIdentityId != null) {
             return
         }
 
-        val pendingUserID = pendingIdentityUserID
-        if (!pendingUserID.isNullOrEmpty()) {
-            identify(pendingUserID)
+        val pendingIdentityID = pendingPartnersIdentityId
+        if (!pendingIdentityID.isNullOrEmpty()) {
+            identify(pendingIdentityID)
             return
         }
 
@@ -447,6 +454,10 @@ class QProductCenterManager internal constructor(
 
     fun syncPurchases() {
         restore()
+    }
+
+    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
+        launchResultCache.setPermissionsCacheLifetime(lifetime)
     }
 
     override fun onPurchasesCompleted(purchases: List<Purchase>) {
@@ -558,10 +569,10 @@ class QProductCenterManager internal constructor(
                 updateLaunchResult(launchResult)
                 launchError = null
 
-                if (!identityInProgress) {
-                    val userID = pendingIdentityUserID
-                    if (!userID.isNullOrEmpty()) {
-                        identify(userID)
+                if (processingPartnersIdentityId == null) {
+                    val pendingIdentityId = pendingPartnersIdentityId
+                    if (!pendingIdentityId.isNullOrEmpty()) {
+                        identify(pendingIdentityId)
                     } else if (unhandledLogoutAvailable) {
                         handleLogout()
                     } else {
@@ -590,10 +601,12 @@ class QProductCenterManager internal constructor(
     }
 
     fun logout() {
-        pendingIdentityUserID = null
+        pendingPartnersIdentityId = null
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
+            launchResultCache.clearPermissionsCache()
+
             unhandledLogoutAvailable = true
 
             val userID = userInfoService.obtainUserID()
@@ -795,14 +808,13 @@ class QProductCenterManager internal constructor(
                     unhandledLogoutAvailable = false
                 },
                 onError = { error ->
-                    unhandledLogoutAvailable = false
-                    if (forceLaunchRetry || pendingIdentityUserID != null) {
+                    if (forceLaunchRetry) {
                         onError(error)
                     } else {
-                        val cachedLaunchResult = launchResultCache.getActualLaunchResult()
+                        val cachedPermissions = launchResultCache.getActualPermissions()
 
-                        cachedLaunchResult?.let {
-                            onSuccess(it.permissions)
+                        cachedPermissions?.let {
+                            onSuccess(it)
                         } ?: onError(error)
                     }
                 })
