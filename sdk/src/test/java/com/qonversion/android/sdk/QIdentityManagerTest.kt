@@ -89,7 +89,7 @@ class QIdentityManagerTest {
             verifySequence {
                 mockUserInfoService.obtainUserID()
                 mockRepository.identify(newUserID, currentUserID, any(), any())
-                mockUserInfoService.storeIdentity(identityID)
+                mockUserInfoService.storeQonversionUserId(identityID)
             }
         }
 

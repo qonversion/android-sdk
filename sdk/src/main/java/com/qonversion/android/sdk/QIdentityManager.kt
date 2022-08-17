@@ -12,12 +12,15 @@ class QIdentityManager @Inject constructor(
     private val repository: QonversionRepository,
     private val userInfoService: QUserInfoService
 ) {
+    val currentPartnersIdentityId: String? get() = userInfoService.getPartnersIdentityId()
+
     fun identify(userID: String, callback: IdentityManagerCallback) {
         val currentUserID = userInfoService.obtainUserID()
         repository.identify(userID, currentUserID,
             onSuccess = { resultUserID ->
+                userInfoService.storePartnersIdentityId(userID)
                 if (resultUserID.isNotEmpty()) {
-                    userInfoService.storeIdentity(resultUserID)
+                    userInfoService.storeQonversionUserId(resultUserID)
                 }
 
                 callback.onSuccess(resultUserID)

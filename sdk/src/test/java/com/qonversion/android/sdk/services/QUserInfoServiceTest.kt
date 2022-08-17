@@ -257,7 +257,7 @@ class QUserInfoServiceTest {
         val userID = "userID"
 
         // when
-        userInfoService.storeIdentity(userID)
+        userInfoService.storeQonversionUserId(userID)
 
         // then
         verify(exactly = 1) {
