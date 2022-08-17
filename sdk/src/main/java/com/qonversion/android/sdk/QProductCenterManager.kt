@@ -148,7 +148,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
-        if (processingIdentityUserID == userID) {
+        if (processingIdentityUserID == userID || identityManager.currentCustomUserId == userID) {
             return
         }
 
