@@ -594,7 +594,7 @@ class QProductCenterManager internal constructor(
                 launchError = error
 
                 loadStoreProductsIfPossible()
-                executePermissionsBlock()
+                executePermissionsBlock(error.takeIf { pendingPartnersIdentityId != null })
 
                 callback?.onError(error)
             }
