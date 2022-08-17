@@ -56,8 +56,8 @@ class QProductCenterManager internal constructor(
     private var experimentsCallbacks = mutableListOf<QonversionExperimentsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
-    private var processingIdentityUserID: String? = null
-    private var pendingIdentityUserID: String? = null
+    private var processingPartnersIdentityId: String? = null
+    private var pendingPartnersIdentityId: String? = null
     private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
@@ -148,19 +148,19 @@ class QProductCenterManager internal constructor(
     }
 
     fun identify(userID: String) {
-        if (processingIdentityUserID == userID || identityManager.currentCustomUserId == userID) {
+        if (processingPartnersIdentityId == userID || identityManager.currentPartnersIdentityId == userID) {
             return
         }
 
         launchResultCache.clearPermissionsCache()
         unhandledLogoutAvailable = false
 
-        pendingIdentityUserID = userID
+        pendingPartnersIdentityId = userID
         if (!isLaunchingFinished) {
             return
         }
 
-        processingIdentityUserID = userID
+        processingPartnersIdentityId = userID
 
         if (launchError != null) {
             val callback = object : QonversionLaunchCallback {
@@ -169,7 +169,7 @@ class QProductCenterManager internal constructor(
                 }
 
                 override fun onError(error: QonversionError) {
-                    processingIdentityUserID = null
+                    processingPartnersIdentityId = null
                     executePermissionsBlock()
                 }
             }
@@ -186,8 +186,8 @@ class QProductCenterManager internal constructor(
 
         identityManager.identify(userID, object : IdentityManagerCallback {
             override fun onSuccess(identityID: String) {
-                pendingIdentityUserID = null
-                processingIdentityUserID = null
+                pendingPartnersIdentityId = null
+                processingPartnersIdentityId = null
 
                 if (currentUserID == identityID) {
                     executePermissionsBlock()
@@ -199,7 +199,7 @@ class QProductCenterManager internal constructor(
             }
 
             override fun onError(error: QonversionError) {
-                processingIdentityUserID = null
+                processingPartnersIdentityId = null
 
                 executePermissionsBlock()
             }
@@ -415,13 +415,13 @@ class QProductCenterManager internal constructor(
     ) {
         permissionsCallbacks.add(callback)
 
-        if (!isLaunchingFinished || processingIdentityUserID != null) {
+        if (!isLaunchingFinished || processingPartnersIdentityId != null) {
             return
         }
 
-        val pendingUserID = pendingIdentityUserID
-        if (!pendingUserID.isNullOrEmpty()) {
-            identify(pendingUserID)
+        val pendingIdentityID = pendingPartnersIdentityId
+        if (!pendingIdentityID.isNullOrEmpty()) {
+            identify(pendingIdentityID)
             return
         }
 
@@ -569,10 +569,10 @@ class QProductCenterManager internal constructor(
                 updateLaunchResult(launchResult)
                 launchError = null
 
-                if (processingIdentityUserID == null) {
-                    val userID = pendingIdentityUserID
-                    if (!userID.isNullOrEmpty()) {
-                        identify(userID)
+                if (processingPartnersIdentityId == null) {
+                    val pendingIdentityId = pendingPartnersIdentityId
+                    if (!pendingIdentityId.isNullOrEmpty()) {
+                        identify(pendingIdentityId)
                     } else if (unhandledLogoutAvailable) {
                         handleLogout()
                     } else {
@@ -601,7 +601,7 @@ class QProductCenterManager internal constructor(
     }
 
     fun logout() {
-        pendingIdentityUserID = null
+        pendingPartnersIdentityId = null
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.services
 
-import com.qonversion.android.sdk.Constants.PREFS_CUSTOM_USER_ID_KEY
+import com.qonversion.android.sdk.Constants.PREFS_PARTNER_IDENTITY_ID_KEY
 import com.qonversion.android.sdk.Constants.PREFS_ORIGINAL_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.PREFS_QONVERSION_USER_ID_KEY
 import com.qonversion.android.sdk.Constants.USER_ID_PREFIX
@@ -40,21 +40,21 @@ class QUserInfoService @Inject constructor(
         preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
     }
 
-    fun storeCustomUserId(userID: String) {
-        preferences.putString(PREFS_CUSTOM_USER_ID_KEY, userID)
+    fun storePartnersIdentityId(userID: String) {
+        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, userID)
     }
 
-    fun getCustomUserId(): String? {
-        return preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null)
+    fun getPartnersIdentityId(): String? {
+        return preferences.getString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
     }
 
     fun logoutIfNeeded(): Boolean {
-        preferences.getString(PREFS_CUSTOM_USER_ID_KEY, null) ?: return false
+        preferences.getString(PREFS_PARTNER_IDENTITY_ID_KEY, null) ?: return false
 
         val originalUserID = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
 
         preferences.putString(PREFS_QONVERSION_USER_ID_KEY, originalUserID)
-        preferences.putString(PREFS_CUSTOM_USER_ID_KEY, null)
+        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
 
         return true
     }
@@ -62,7 +62,7 @@ class QUserInfoService @Inject constructor(
     fun deleteUser() {
         preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, null)
         preferences.putString(PREFS_QONVERSION_USER_ID_KEY, null)
-        preferences.putString(PREFS_CUSTOM_USER_ID_KEY, null)
+        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
         tokenStorage.delete()
     }
 
