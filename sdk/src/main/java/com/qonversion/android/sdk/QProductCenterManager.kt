@@ -27,7 +27,7 @@ import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.services.QUserInfoService
 import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
-import java.util.*
+import java.util.Date
 
 @SuppressWarnings("LongParameterList")
 class QProductCenterManager internal constructor(
@@ -608,8 +608,8 @@ class QProductCenterManager internal constructor(
             .associateBy { it.permissionID }
 
         return mergeManuallyCreatedPermissions(newPermissions)
-    } 
-    
+    }
+
     private fun createPermission(id: String, purchaseTime: Long, purchasedProduct: QProduct): QPermission {
         val purchaseDuration = GoogleBillingPeriodConverter.convertSubscriptionPeriod(
             purchasedProduct.skuDetail?.subscriptionPeriod

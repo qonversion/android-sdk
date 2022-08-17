@@ -2,7 +2,6 @@ package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
 import android.os.Handler
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
