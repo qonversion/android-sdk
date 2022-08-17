@@ -824,7 +824,7 @@ class QProductCenterManager internal constructor(
                     }
                 })
         } else {
-            val permissions = sessionLoadedLaunchResult?.permissions ?: mapOf()
+            val permissions = sessionLoadedLaunchResult?.permissions ?: emptyMap()
             onSuccess(permissions)
         }
     }
