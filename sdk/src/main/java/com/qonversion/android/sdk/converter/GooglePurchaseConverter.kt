@@ -15,13 +15,6 @@ class GooglePurchaseConverter(
         private const val daysPeriodUnit = 0
     }
 
-    private val multipliers = mapOf<String, Int>(
-        "Y" to 365,
-        "M" to 30,
-        "W" to 7,
-        "D" to 1
-    )
-
     override fun convertPurchases(
         skuDetails: Map<String, SkuDetails>,
         purchases: List<com.android.billingclient.api.Purchase>
@@ -65,7 +58,7 @@ class GooglePurchaseConverter(
                 introductoryPrice = getIntroductoryPrice(details),
                 introductoryPriceCycles = getIntroductoryPriceCycles(details),
                 introductoryPeriodUnit = daysPeriodUnit,
-                introductoryPeriodUnitsCount = getIntroductoryUnitsCountFromPeriod(
+                introductoryPeriodUnitsCount = GoogleBillingPeriodConverter.convertPeriodToDays(
                     details.freeTrialPeriod ?: details.introductoryPricePeriod
                 ),
                 orderId = purchase.orderId,
@@ -142,27 +135,5 @@ class GooglePurchaseConverter(
         val unitsCount = period.substring(1..period.length - 2)
 
         return unitsCount.toInt()
-    }
-
-    private fun getIntroductoryUnitsCountFromPeriod(period: String?): Int? {
-        if (period.isNullOrEmpty()) {
-            return null
-        }
-
-        var totalCount = 0
-        val regex = Regex("\\d+[a-zA-Z]")
-        val results = regex.findAll(period, 0)
-        results.forEach { result ->
-            val value = result.groupValues.first()
-            val digits = value.filter { it -> it.isDigit() }.toInt()
-            val letter = value.filter { it -> it.isLetter() }
-
-            val multiplier = multipliers[letter]
-            multiplier?.let {
-                totalCount += it * digits
-            }
-        }
-
-        return totalCount
     }
 }

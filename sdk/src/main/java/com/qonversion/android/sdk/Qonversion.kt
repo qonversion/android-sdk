@@ -76,7 +76,7 @@ object Qonversion : LifecycleDelegate {
         observeMode: Boolean,
         callback: QonversionLaunchCallback? = null
     ) {
-        QDependencyInjector.buildAppComponent(context, key, isDebugMode)
+        QDependencyInjector.buildAppComponent(context, key, isDebugMode, observeMode)
 
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
