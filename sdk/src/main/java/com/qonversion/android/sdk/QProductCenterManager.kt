@@ -171,7 +171,8 @@ class QProductCenterManager internal constructor(
 
                 override fun onError(error: QonversionError) {
                     processingPartnersIdentityId = null
-                    executePermissionsBlock()
+
+                    executePermissionsBlock(error)
                 }
             }
 
@@ -202,7 +203,7 @@ class QProductCenterManager internal constructor(
             override fun onError(error: QonversionError) {
                 processingPartnersIdentityId = null
 
-                executePermissionsBlock()
+                executePermissionsBlock(error)
             }
         })
     }
@@ -771,7 +772,7 @@ class QProductCenterManager internal constructor(
                 launchError = error
 
                 loadStoreProductsIfPossible()
-                executePermissionsBlock()
+                executePermissionsBlock(error.takeIf { pendingPartnersIdentityId != null })
 
                 callback?.onError(error)
             }
@@ -913,7 +914,7 @@ class QProductCenterManager internal constructor(
     }
 
     @Synchronized
-    private fun executePermissionsBlock() {
+    private fun executePermissionsBlock(error: QonversionError? = null) {
         if (permissionsCallbacks.isEmpty()) {
             return
         }
@@ -921,17 +922,21 @@ class QProductCenterManager internal constructor(
         val callbacks = permissionsCallbacks.toList()
         permissionsCallbacks.clear()
 
-        preparePermissionsResult(
-            { permissions ->
-                callbacks.forEach {
-                    it.onSuccess(permissions)
-                }
-            },
-            { error ->
-                callbacks.forEach {
-                    it.onError(error)
-                }
-            })
+        error?.let {
+            callbacks.forEach { it.onError(error) }
+        } ?: run {
+            preparePermissionsResult(
+                { permissions ->
+                    callbacks.forEach {
+                        it.onSuccess(permissions)
+                    }
+                },
+                { error ->
+                    callbacks.forEach {
+                        it.onError(error)
+                    }
+                })
+        }
     }
 
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
@@ -991,7 +996,7 @@ class QProductCenterManager internal constructor(
                     } ?: onError(error)
                 })
         } else {
-            val permissions = launchResultCache.getActualPermissions() ?: mapOf()
+            val permissions = launchResultCache.getActualPermissions() ?: emptyMap()
             onSuccess(permissions)
         }
     }
