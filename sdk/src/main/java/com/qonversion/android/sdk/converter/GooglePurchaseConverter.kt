@@ -73,7 +73,9 @@ class GooglePurchaseConverter(
             )
     }
 
-    private fun convertPurchasesFromList(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
+    private fun convertPurchasesFromList(
+        purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>
+    ): List<Purchase> {
         return purchaseInfo.mapNotNull {
             convertPurchase(it)
         }

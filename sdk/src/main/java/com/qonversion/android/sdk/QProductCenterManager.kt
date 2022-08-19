@@ -649,7 +649,10 @@ class QProductCenterManager internal constructor(
         return resultPermissions
     }
 
-    private fun choosePermissionToSave(existingPermission: QPermission?, localCreatedPermission: QPermission): QPermission {
+    private fun choosePermissionToSave(
+        existingPermission: QPermission?,
+        localCreatedPermission: QPermission
+    ): QPermission {
         existingPermission ?: return localCreatedPermission
 
         // If expiration date is null then it's permanent permissions and thus should take precedence over expiring one.
