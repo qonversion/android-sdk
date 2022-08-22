@@ -142,7 +142,7 @@ class GooglePurchaseConverterTest {
             { assertEquals("85.00", result!!.introductoryPrice) },
             { assertEquals(1, result!!.introductoryPriceCycles, "introductoryPriceCycles is incorrect") },
             { assertEquals(0, result!!.introductoryPeriodUnit, "introductoryPeriodUnit is incorrect") },
-            { assertEquals(null, result!!.introductoryPeriodUnitsCount, "introductoryPeriodUnitsCount should be null")},
+            { assertEquals(3, result!!.introductoryPeriodUnitsCount, "introductoryPeriodUnitsCount should be null")},
             { assertEquals(0, result!!.paymentMode,"paymentMode is incorrect") }
         )
     }
