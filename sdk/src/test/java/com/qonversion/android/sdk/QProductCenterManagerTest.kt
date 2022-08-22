@@ -43,7 +43,6 @@ class QProductCenterManagerTest {
 
     private lateinit var productCenterManager: QProductCenterManager
 
-    private val fieldSessionLoadedLaunchResult = "sessionLoadedLaunchResult"
     private val fieldSkuDetails = "skuDetails"
 
     private val skuTypeInApp = BillingClient.SkuType.INAPP
@@ -77,12 +76,12 @@ class QProductCenterManagerTest {
 
     private fun mockLaunchResult() {
         val launchResult = QLaunchResult("uid", Date(), offerings = null)
-        productCenterManager.mockPrivateField(fieldSessionLoadedLaunchResult, launchResult)
+        every { mockLaunchResultCacheWrapper.sessionLaunchResult } returns launchResult
     }
 
     @Test
     fun `handle pending purchases when launching is not finished`() {
-        productCenterManager.mockPrivateField(fieldSessionLoadedLaunchResult, null)
+        every { mockLaunchResultCacheWrapper.sessionLaunchResult } returns null
 
         productCenterManager.onAppForeground()
         verify(exactly = 0) {
