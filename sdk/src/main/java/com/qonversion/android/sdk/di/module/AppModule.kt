@@ -18,7 +18,8 @@ import dagger.Provides
 class AppModule(
     private val application: Application,
     private val projectKey: String,
-    private val isDebugMode: Boolean
+    private val isDebugMode: Boolean,
+    private val isObserveMode: Boolean
 ) {
     @ApplicationScope
     @Provides
@@ -29,7 +30,7 @@ class AppModule(
     @ApplicationScope
     @Provides
     fun provideConfig(): QonversionConfig {
-        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode)
+        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode, isObserveMode)
     }
 
     @ApplicationScope

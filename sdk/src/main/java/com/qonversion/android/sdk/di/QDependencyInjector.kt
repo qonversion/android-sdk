@@ -14,11 +14,12 @@ object QDependencyInjector {
     internal fun buildAppComponent(
         context: Application,
         projectKey: String,
-        isDebugMode: Boolean
+        isDebugMode: Boolean,
+        isObserveMode: Boolean
     ): AppComponent {
         appComponent = DaggerAppComponent
             .builder()
-            .appModule(AppModule(context, projectKey, isDebugMode))
+            .appModule(AppModule(context, projectKey, isDebugMode, isObserveMode))
             .repositoryModule(RepositoryModule())
             .managersModule(ManagersModule())
             .build()

@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -75,7 +76,7 @@ object Qonversion : LifecycleDelegate {
         observeMode: Boolean,
         callback: QonversionLaunchCallback? = null
     ) {
-        QDependencyInjector.buildAppComponent(context, key, isDebugMode)
+        QDependencyInjector.buildAppComponent(context, key, isDebugMode, observeMode)
 
         if (key.isEmpty()) {
             throw RuntimeException("Qonversion initialization error! Key should not be empty!")
@@ -445,6 +446,19 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setDebugMode() {
         isDebugMode = true
+    }
+
+    /**
+     * Permissions cache is used when there are problems with the Qonversion API
+     * or internet connection. If so, Qonversion will return the last successfully loaded
+     * permissions. The current method allows you to configure how long that cache may be used.
+     * The default value is [QPermissionsCacheLifetime.MONTH].
+     *
+     * @param lifetime desired permissions cache lifetime duration
+     */
+    @JvmStatic
+    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
+        productCenterManager?.setPermissionsCacheLifetime(lifetime)
     }
 
     /**
