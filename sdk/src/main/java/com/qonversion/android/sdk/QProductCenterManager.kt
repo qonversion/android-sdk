@@ -499,17 +499,17 @@ class QProductCenterManager internal constructor(
         repository.restore(
             installDate,
             purchaseHistoryRecords,
-            object : QonversionLaunchCallback {
+            object : QonversionLaunchCallbackInternal {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
                     callback?.onSuccess(launchResult.permissions)
                 }
 
-                override fun onError(error: QonversionError) {
-                    if (config.isObserveMode) {
-                        callback?.onError(error)
-                    } else {
+                override fun onError(error: QonversionError, httpCode: Int?) {
+                    if (shouldCalculatePermissionsLocally(error, httpCode)) {
                         calculateRestorePermissionsLocally(purchaseHistoryRecords, callback, error)
+                    } else {
+                        callback?.onError(error)
                     }
                 }
             })
@@ -855,13 +855,13 @@ class QProductCenterManager internal constructor(
     private fun handleCachedPurchases() {
         val cachedPurchases = purchasesCache.loadPurchases()
         cachedPurchases.forEach { purchase ->
-            repository.purchase(installDate, purchase, null, null, object : QonversionLaunchCallback {
+            repository.purchase(installDate, purchase, null, null, object : QonversionLaunchCallbackInternal {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
                     purchasesCache.clearPurchase(purchase)
                 }
 
-                override fun onError(error: QonversionError) {}
+                override fun onError(error: QonversionError, httpCode: Int?) {}
             })
         }
     }
@@ -1034,7 +1034,7 @@ class QProductCenterManager internal constructor(
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
-            purchase(purchaseInfo, object : QonversionLaunchCallback {
+            purchase(purchaseInfo, object : QonversionLaunchCallbackInternal {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
@@ -1044,15 +1044,15 @@ class QProductCenterManager internal constructor(
                     handledPurchasesCache.saveHandledPurchase(purchase)
                 }
 
-                override fun onError(error: QonversionError) {
-                    if (config.isObserveMode) {
-                        purchaseCallback?.onError(error)
-                    } else {
+                override fun onError(error: QonversionError, httpCode: Int?) {
+                    if (shouldCalculatePermissionsLocally(error, httpCode)) {
                         calculatePurchasePermissionsLocally(
                             purchase,
                             purchaseCallback,
                             error
                         )
+                    } else {
+                        purchaseCallback?.onError(error)
                     }
                 }
             })
@@ -1061,7 +1061,7 @@ class QProductCenterManager internal constructor(
 
     private fun purchase(
         purchaseInfo: Pair<SkuDetails, Purchase>,
-        callback: QonversionLaunchCallback
+        callback: QonversionLaunchCallbackInternal
     ) {
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first
@@ -1072,7 +1072,8 @@ class QProductCenterManager internal constructor(
                 QonversionError(
                     QonversionErrorCode.ProductUnavailable,
                     "There is no SKU for the qonversion product ${product?.qonversionID ?: ""}"
-                )
+                ),
+                null
             )
             return
         }
@@ -1083,5 +1084,12 @@ class QProductCenterManager internal constructor(
         } else {
             repository.purchase(installDate, purchase, null, product?.qonversionID, callback)
         }
+    }
+
+    private fun shouldCalculatePermissionsLocally(error: QonversionError, httpCode: Int?): Boolean {
+        return !config.isObserveMode && (
+                error.code == QonversionErrorCode.NetworkConnectionFailed ||
+                        httpCode?.isInternalServerError() == true
+                )
     }
 }
