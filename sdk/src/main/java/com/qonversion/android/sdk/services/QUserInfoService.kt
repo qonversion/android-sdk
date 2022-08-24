@@ -49,11 +49,14 @@ class QUserInfoService @Inject constructor(
     }
 
     fun logoutIfNeeded(): Boolean {
-        preferences.getString(PREFS_PARTNER_IDENTITY_ID_KEY, null) ?: return false
+        val originalUserId = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
+        val currentUserId = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
 
-        val originalUserID = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
+        if (originalUserId == currentUserId) {
+            return false
+        }
 
-        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, originalUserID)
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, originalUserId)
         preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
 
         return true
