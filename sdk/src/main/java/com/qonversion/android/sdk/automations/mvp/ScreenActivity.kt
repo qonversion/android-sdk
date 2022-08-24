@@ -35,7 +35,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     private val logger = ConsoleLogger()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.q_activity_screen)
 
         injectDependencies()
