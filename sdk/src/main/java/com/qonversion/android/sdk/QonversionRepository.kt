@@ -42,7 +42,7 @@ import retrofit2.Response
 import java.lang.RuntimeException
 
 @SuppressWarnings("LongParameterList")
-class QonversionRepository internal constructor(
+internal class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
     private val config: QonversionConfig,
