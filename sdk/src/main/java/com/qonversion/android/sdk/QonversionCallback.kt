@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 
-interface QonversionLaunchCallbackInternal {
+internal interface QonversionLaunchCallbackInternal {
    fun onSuccess(launchResult: QLaunchResult)
    fun onError(error: QonversionError, httpCode: Int?)
 }
