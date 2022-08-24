@@ -17,7 +17,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 @Module
-class NetworkModule {
+internal class NetworkModule {
     @ApplicationScope
     @Provides
     fun provideRetrofit(

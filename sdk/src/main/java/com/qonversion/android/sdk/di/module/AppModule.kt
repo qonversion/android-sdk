@@ -15,10 +15,11 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-class AppModule(
+internal class AppModule(
     private val application: Application,
     private val projectKey: String,
-    private val isDebugMode: Boolean
+    private val isDebugMode: Boolean,
+    private val isObserveMode: Boolean
 ) {
     @ApplicationScope
     @Provides
@@ -29,7 +30,7 @@ class AppModule(
     @ApplicationScope
     @Provides
     fun provideConfig(): QonversionConfig {
-        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode)
+        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode, isObserveMode)
     }
 
     @ApplicationScope
@@ -68,6 +69,6 @@ class AppModule(
     }
 
     companion object {
-        private const val SDK_VERSION = "3.2.9"
+        private const val SDK_VERSION = "3.3.0"
     }
 }

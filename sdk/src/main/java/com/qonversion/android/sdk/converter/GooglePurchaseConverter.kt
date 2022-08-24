@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.converter
 
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
+import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.entity.Purchase
@@ -11,16 +12,8 @@ class GooglePurchaseConverter(
     private val extractor: Extractor<String>
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
     companion object {
-        private const val priceMicrosDivider: Double = 1000000.0
         private const val daysPeriodUnit = 0
     }
-
-    private val multipliers = mapOf<String, Int>(
-        "Y" to 365,
-        "M" to 30,
-        "W" to 7,
-        "D" to 1
-    )
 
     override fun convertPurchases(
         skuDetails: Map<String, SkuDetails>,
@@ -52,21 +45,21 @@ class GooglePurchaseConverter(
                 description = details.description,
                 productId = sku,
                 type = details.type,
-                originalPrice = details.originalPrice ?: "",
+                originalPrice = details.originalPrice,
                 originalPriceAmountMicros = details.originalPriceAmountMicros,
                 priceCurrencyCode = details.priceCurrencyCode,
                 price = formatPrice(details.priceAmountMicros),
                 priceAmountMicros = details.priceAmountMicros,
                 periodUnit = getUnitsTypeFromPeriod(details.subscriptionPeriod),
                 periodUnitsCount = getUnitsCountFromPeriod(details.subscriptionPeriod),
-                freeTrialPeriod = details.freeTrialPeriod ?: "",
+                freeTrialPeriod = details.freeTrialPeriod,
                 introductoryAvailable = details.introductoryPrice.isNotEmpty(),
                 introductoryPriceAmountMicros = details.introductoryPriceAmountMicros,
                 introductoryPrice = getIntroductoryPrice(details),
                 introductoryPriceCycles = getIntroductoryPriceCycles(details),
                 introductoryPeriodUnit = daysPeriodUnit,
-                introductoryPeriodUnitsCount = getIntroductoryUnitsCountFromPeriod(
-                    details.freeTrialPeriod ?: details.introductoryPricePeriod
+                introductoryPeriodUnitsCount = GoogleBillingPeriodConverter.convertPeriodToDays(
+                    details.freeTrialPeriod.takeIf { it.isNotEmpty() } ?: details.introductoryPricePeriod
                 ),
                 orderId = purchase.orderId,
                 originalOrderId = formatOriginalTransactionId(purchase.orderId),
@@ -80,18 +73,20 @@ class GooglePurchaseConverter(
             )
     }
 
-    private fun convertPurchasesFromList(purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>): List<Purchase> {
+    private fun convertPurchasesFromList(
+        purchaseInfo: List<Pair<SkuDetails, com.android.billingclient.api.Purchase>>
+    ): List<Purchase> {
         return purchaseInfo.mapNotNull {
             convertPurchase(it)
         }
     }
 
     private fun getIntroductoryPriceCycles(details: SkuDetails): Int {
-        return if (details.freeTrialPeriod.isNullOrEmpty()) details.introductoryPriceCycles else 0
+        return if (details.freeTrialPeriod.isEmpty()) details.introductoryPriceCycles else 0
     }
 
     private fun getIntroductoryPrice(details: SkuDetails): String {
-        if (details.freeTrialPeriod.isNullOrEmpty()) {
+        if (details.freeTrialPeriod.isEmpty()) {
             return formatPrice(details.introductoryPriceAmountMicros)
         }
 
@@ -103,7 +98,7 @@ class GooglePurchaseConverter(
     }
 
     private fun formatPrice(price: Long): String {
-        val divideResult = price.toDouble() / (priceMicrosDivider)
+        val divideResult = price.toDouble() / PRICE_MICROS_DIVIDER
         val result = String.format("%.2f", divideResult)
 
         return result
@@ -142,27 +137,5 @@ class GooglePurchaseConverter(
         val unitsCount = period.substring(1..period.length - 2)
 
         return unitsCount.toInt()
-    }
-
-    private fun getIntroductoryUnitsCountFromPeriod(period: String?): Int? {
-        if (period.isNullOrEmpty()) {
-            return null
-        }
-
-        var totalCount = 0
-        val regex = Regex("\\d+[a-zA-Z]")
-        val results = regex.findAll(period, 0)
-        results.forEach { result ->
-            val value = result.groupValues.first()
-            val digits = value.filter { it -> it.isDigit() }.toInt()
-            val letter = value.filter { it -> it.isLetter() }
-
-            val multiplier = multipliers[letter]
-            multiplier?.let {
-                totalCount += it * digits
-            }
-        }
-
-        return totalCount
     }
 }

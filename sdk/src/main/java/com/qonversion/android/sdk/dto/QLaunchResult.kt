@@ -15,5 +15,6 @@ data class QLaunchResult(
     @Json(name = "permissions") var permissions: Map<String, QPermission> = mapOf(),
     @Json(name = "user_products") val userProducts: Map<String, QProduct> = mapOf(),
     @Json(name = "experiments") val experiments: Map<String, QExperimentInfo> = mapOf(),
-    @Json(name = "offerings") val offerings: QOfferings?
+    @Json(name = "offerings") val offerings: QOfferings?,
+    @Json(name = "products_permissions") internal val productPermissions: Map<String, List<String>>? = null
 )

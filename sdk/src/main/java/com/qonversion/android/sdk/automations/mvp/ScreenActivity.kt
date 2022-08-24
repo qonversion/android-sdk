@@ -24,10 +24,10 @@ import javax.inject.Inject
 
 class ScreenActivity : Activity(), ScreenContract.View {
     @Inject
-    lateinit var automationsManager: QAutomationsManager
+    internal lateinit var automationsManager: QAutomationsManager
 
     @Inject
-    lateinit var presenter: ScreenPresenter
+    internal lateinit var presenter: ScreenPresenter
 
     @Inject
     lateinit var screenProcessor: ScreenProcessor

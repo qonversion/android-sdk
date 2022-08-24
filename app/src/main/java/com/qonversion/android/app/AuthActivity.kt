@@ -41,6 +41,11 @@ class AuthActivity : AppCompatActivity() {
             val signInIntent = googleSignInClient.signInIntent
             startActivityForResult(signInIntent, CODE_GOOGLE_AUTH)
         }
+
+        val skipButton = findViewById<MaterialButton>(R.id.buttonSkip)
+        skipButton.setOnClickListener {
+            goToMainFlow()
+        }
     }
 
     override fun onStart() {
@@ -86,8 +91,8 @@ class AuthActivity : AppCompatActivity() {
         Toast.makeText(this, "Google login failed", Toast.LENGTH_SHORT).show()
     }
 
-    private fun goToMainFlow(userId: String) {
-        Qonversion.identify(userId)
+    private fun goToMainFlow(userId: String? = null) {
+        userId?.let { Qonversion.identify(userId) }
         val intent = MainActivity.getCallingIntent(this)
         startActivity(intent)
     }

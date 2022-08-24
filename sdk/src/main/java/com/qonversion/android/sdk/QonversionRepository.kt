@@ -2,9 +2,9 @@ package com.qonversion.android.sdk
 
 import android.content.SharedPreferences
 import android.os.Handler
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.qonversion.android.sdk.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.Constants.PENDING_PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.api.Api
 import com.qonversion.android.sdk.api.ApiErrorMapper
@@ -35,13 +35,14 @@ import com.qonversion.android.sdk.dto.request.InitRequest
 import com.qonversion.android.sdk.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.entity.Purchase
+import com.qonversion.android.sdk.entity.PurchaseHistory
 import com.qonversion.android.sdk.logger.Logger
 import com.qonversion.android.sdk.storage.PurchasesCache
 import retrofit2.Response
 import java.lang.RuntimeException
 
 @SuppressWarnings("LongParameterList")
-class QonversionRepository internal constructor(
+internal class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
     private val config: QonversionConfig,
@@ -77,15 +78,15 @@ class QonversionRepository internal constructor(
         purchase: Purchase,
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
-        callback: QonversionLaunchCallback
+        callback: QonversionLaunchCallbackInternal
     ) {
         purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
     }
 
     fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionLaunchCallback?
+        historyRecords: List<PurchaseHistory>,
+        callback: QonversionLaunchCallbackInternal?
     ) {
         restoreRequest(installDate, historyRecords, callback)
     }
@@ -301,7 +302,7 @@ class QonversionRepository internal constructor(
         purchase: Purchase,
         experimentInfo: QExperimentInfo?,
         qProductId: String?,
-        callback: QonversionLaunchCallback,
+        callback: QonversionLaunchCallbackInternal,
         attemptIndex: Int = 0
     ) {
         val purchaseRequest = PurchaseRequest(
@@ -364,7 +365,7 @@ class QonversionRepository internal constructor(
 
     private fun handlePurchaseError(
         purchase: Purchase,
-        callback: QonversionLaunchCallback,
+        callback: QonversionLaunchCallbackInternal,
         error: QonversionError,
         errorCode: Int?,
         attemptIndex: Int,
@@ -388,7 +389,7 @@ class QonversionRepository internal constructor(
                 }
             }
         } else {
-            callback.onError(error)
+            callback.onError(error, errorCode)
             purchasesCache.savePurchase(purchase)
         }
     }
@@ -452,17 +453,19 @@ class QonversionRepository internal constructor(
         )
     }
 
-    private fun convertHistory(historyRecords: List<PurchaseHistoryRecord>): List<History> {
+    private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
         return historyRecords.mapNotNull {
-            val sku = it.sku
+            val sku = it.historyRecord.sku
 
             if (sku == null) {
                 null
             } else {
                 History(
                     sku,
-                    it.purchaseToken,
-                    it.purchaseTime.milliSecondsToSeconds()
+                    it.historyRecord.purchaseToken,
+                    it.historyRecord.purchaseTime.milliSecondsToSeconds(),
+                    it.skuDetails?.priceCurrencyCode,
+                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }.toString()
                 )
             }
         }
@@ -470,8 +473,8 @@ class QonversionRepository internal constructor(
 
     private fun restoreRequest(
         installDate: Long,
-        historyRecords: List<PurchaseHistoryRecord>,
-        callback: QonversionLaunchCallback?
+        historyRecords: List<PurchaseHistory>,
+        callback: QonversionLaunchCallbackInternal?
     ) {
         val history = convertHistory(historyRecords)
         val request = RestoreRequest(
@@ -492,20 +495,20 @@ class QonversionRepository internal constructor(
             }
             onFailure = {
                 logger.release("restoreRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError())
+                callback?.onError(it.toQonversionError(), null)
             }
         }
     }
 
     private fun handlePermissionsResponse(
         response: Response<BaseResponse<QLaunchResult>>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallbackInternal?
     ) {
         val body = response.body()
         if (body != null && body.success) {
             callback?.onSuccess(body.data)
         } else {
-            callback?.onError(errorMapper.getErrorFromResponse(response))
+            callback?.onError(errorMapper.getErrorFromResponse(response), response.code())
         }
     }
 
