@@ -8,7 +8,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-class ServicesModule {
+internal class ServicesModule {
 
     @ApplicationScope
     @Provides

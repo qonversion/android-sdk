@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.storage.PurchasesCache
 
 @SuppressWarnings("LongParameterList")
-class QonversionFactory internal constructor(
+internal class QonversionFactory(
     private val context: Application,
     private val logger: Logger
 ) {
