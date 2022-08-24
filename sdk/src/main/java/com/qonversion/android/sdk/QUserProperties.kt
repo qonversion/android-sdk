@@ -7,5 +7,6 @@ enum class QUserProperties(val userPropertyCode: String) {
     AppsFlyerUserId("_q_appsflyer_user_id"),
     AdjustAdId("_q_adjust_adid"),
     CustomUserId("_q_custom_user_id"),
-    FacebookAttribution("_q_fb_attribution");
+    FacebookAttribution("_q_fb_attribution"),
+    FirebaseAppInstanceId("_q_firebase_instance_id");
 }
