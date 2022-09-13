@@ -11,7 +11,6 @@ import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData
 import com.qonversion.android.sdk.dto.QLaunchResult

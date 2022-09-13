@@ -148,7 +148,8 @@ internal class EntitlementsManager @Inject constructor(
     ): QEntitlement {
         existingEntitlement ?: return localCreatedEntitlement
 
-        // If expiration date is null then it's permanent entitlements and thus should take precedence over expiring one.
+        // If expiration date is null then it's permanent entitlements and thus
+        // should take precedence over expiring one.
         val newPermissionExpirationTime =
             localCreatedEntitlement.expirationDate?.time ?: Long.MAX_VALUE
         val existingPermissionExpirationTime =
@@ -237,7 +238,9 @@ internal class EntitlementsManager @Inject constructor(
         }
     }
 
-    private fun QonversionEntitlementsCallbackInternal.wrapWithCacheHandling(ignoreCache: Boolean): QonversionEntitlementsCallbackInternal =
+    private fun QonversionEntitlementsCallbackInternal.wrapWithCacheHandling(
+        ignoreCache: Boolean
+    ): QonversionEntitlementsCallbackInternal =
         object : QonversionEntitlementsCallbackInternal {
             override fun onSuccess(entitlements: List<QEntitlement>) {
                 this@wrapWithCacheHandling.onSuccess(entitlements)

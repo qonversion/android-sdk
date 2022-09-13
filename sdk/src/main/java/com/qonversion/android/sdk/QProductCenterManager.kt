@@ -169,8 +169,6 @@ class QProductCenterManager internal constructor(
 
                 override fun onError(error: QonversionError) {
                     processingPartnersIdentityId = null
-                    pendingPartnersIdentityId = null
-
 
                     entitlementsManager.onIdentityFailedWithError(userID, error)
                 }
@@ -412,6 +410,9 @@ class QProductCenterManager internal constructor(
         if (unhandledLogoutAvailable) {
             handleNewUserEntitlements(callback)
         } else {
+            pendingPartnersIdentityId?.let {
+                identify(it)
+            }
             requestEntitlements(callback, ignoreCache)
         }
     }
@@ -1012,8 +1013,6 @@ class QProductCenterManager internal constructor(
             val purchaseInfo = Pair.create(skuDetail, purchase)
             purchase(purchaseInfo, object : QonversionLaunchCallbackInternal {
                 override fun onSuccess(launchResult: QLaunchResult) {
-                    onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed), 500)
-                    return
                     updateLaunchResult(launchResult)
 
                     checkPermissionsAfterPurchase(

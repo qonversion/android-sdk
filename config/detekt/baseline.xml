@@ -86,6 +86,13 @@
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$365</ID>
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$7</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.MONTH$30</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.SIX_MONTHS$180</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.THREE_MONTHS$90</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_MONTHS$60</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.TWO_WEEKS$14</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.WEEK$7</ID>
+    <ID>MagicNumber:QEntitlementCacheLifetime.kt$QEntitlementCacheLifetime.YEAR$365</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.MONTH$30</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.SIX_MONTHS$180</ID>
     <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.THREE_MONTHS$90</ID>
@@ -133,6 +140,7 @@
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
+    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$grantEntitlements: (productPermissions: Map&lt;String, List&lt;String&gt;&gt;, products: Collection&lt;QProduct&gt;) -&gt; List&lt;QEntitlement&gt;?</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
@@ -163,8 +171,9 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:155</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:157</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManager.kt:669</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:156</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QProductCenterManagerTest.kt:158</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QUserPropertiesManagerTest.kt:169</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.api.ApiErrorMapper.kt:118</ID>
@@ -192,7 +201,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:546</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:715</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.billing.QonversionBillingServiceTest.kt:718</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:24</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.billing.utils.kt:16</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:28</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:29</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.errors.kt:30</ID>
@@ -288,7 +297,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.billing.utils.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.converter.GooglePurchaseConverterTest.kt:7</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.ManagersModule.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.di.module.NetworkModule.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.QonversionMappingAdapters.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.services.QUserInfoServiceTest.kt:11</ID>
@@ -300,6 +308,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:13</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
+    <ID>ReturnCount:EntitlementsCache.kt$EntitlementsCache$fun getActualStoredValue(isError: Boolean = false): List&lt;QEntitlement&gt;?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionPermissionsCallback )</ID>
@@ -343,7 +352,7 @@
     <ID>TooGenericExceptionThrown:Qonversion.kt$Qonversion$throw RuntimeException("Qonversion initialization error! Key should not be empty!")</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
-    <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
+    <ID>TooManyFunctions:EntitlementsManager.kt$EntitlementsManager : QUserChangedListener</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion$Qonversion</ID>
@@ -351,7 +360,6 @@
     <ID>TooManyFunctions:QonversionRepository.kt$QonversionRepository</ID>
     <ID>TooManyFunctions:ScreenActivity.kt$ScreenActivity : ActivityView</ID>
     <ID>TooManyFunctions:SharedPreferencesCache.kt$SharedPreferencesCache : Cache</ID>
-    <ID>TooManyFunctions:utils.kt$com.qonversion.android.sdk.billing.utils.kt</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_INAPP_JSON), Purchase(Util.CORRECT_PURCHASE_INAPP_JSON, "SKU") ) )</ID>
     <ID>UnusedPrivateMember:PurchaseRequestTest.kt$PurchaseRequestTest$val purchase = converter.convertPurchase( Pair( SkuDetails(Util.CORRECT_SKU_DETAILS_SUB_JSON), Purchase(Util.CORRECT_PURCHASE_SUB_JSON, "SKU") ) )</ID>
@@ -360,6 +368,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson(eligibilities: Map&lt;String, QEligibility&gt;): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$eligibilities: Map&lt;String, QEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEntitlementRenewStateAdapter$@ToJson private fun toJson(enum: QEntitlementRenewState): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
