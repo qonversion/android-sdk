@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.di.component
 
+import com.qonversion.android.sdk.EntitlementsManager
 import com.qonversion.android.sdk.QIdentityManager
 
 import com.qonversion.android.sdk.QHandledPurchasesCache
@@ -33,6 +34,7 @@ internal interface AppComponent {
     fun launchResultCacheWrapper(): LaunchResultCacheWrapper
     fun automationsManager(): QAutomationsManager
     fun identityManager(): QIdentityManager
+    fun entitlementsManager(): EntitlementsManager
     fun userInfoService(): QUserInfoService
     fun userPropertiesManager(): QUserPropertiesManager
     fun qonversionConfig(): QonversionConfig

@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.api.ApiErrorMapper
 import com.qonversion.android.sdk.billing.sku
 import com.qonversion.android.sdk.billing.milliSecondsToSeconds
 import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.billing.stringValue
+import com.qonversion.android.sdk.stringValue
 import com.qonversion.android.sdk.dto.BaseResponse
 import com.qonversion.android.sdk.dto.ProviderData
 import com.qonversion.android.sdk.dto.QLaunchResult
@@ -81,6 +81,27 @@ internal class QonversionRepository internal constructor(
         callback: QonversionLaunchCallbackInternal
     ) {
         purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
+    }
+
+    fun entitlements(
+        userId: String,
+        callback: QonversionEntitlementsCallbackInternal
+    ) {
+        api.entitlements(userId).enqueue {
+            onResponse = {
+                logger.release("entitlementsRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body != null) {
+                    callback.onSuccess(body.data)
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it), it.code())
+                }
+            }
+            onFailure = {
+                logger.release("entitlementsRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError(), null)
+            }
+        }
     }
 
     fun restore(

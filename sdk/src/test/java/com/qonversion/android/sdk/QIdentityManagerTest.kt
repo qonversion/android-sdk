@@ -36,8 +36,8 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
-                    resultUserID = identityID
+                override fun onSuccess(qonversionUserId: String) {
+                    resultUserID = qonversionUserId
                 }
                 override fun onError(error: QonversionError) {}
             })
@@ -59,8 +59,8 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
-                    resultUserID = identityID
+                override fun onSuccess(qonversionUserId: String) {
+                    resultUserID = qonversionUserId
                 }
                 override fun onError(error: QonversionError) {}
             })
@@ -81,7 +81,7 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUserId: String) {}
                 override fun onError(error: QonversionError) {}
             })
 
@@ -105,7 +105,7 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUserId: String) {}
                 override fun onError(error: QonversionError) {}
             })
 
@@ -135,7 +135,7 @@ class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUserId: String) {}
                 override fun onError(error: QonversionError) {
                     qError = error
                 }

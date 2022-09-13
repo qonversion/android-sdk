@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.billing.toBoolean
+import com.qonversion.android.sdk.toBoolean
 import com.qonversion.android.sdk.dto.products.QProductRenewState
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

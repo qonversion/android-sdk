@@ -8,13 +8,16 @@ import com.qonversion.android.sdk.dto.request.*
 import retrofit2.Call
 import retrofit2.http.*
 
-interface Api {
+internal interface Api {
 
     @POST("v1/user/init")
     fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/purchase")
     fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
+
+    @GET("v3/users/{userId}/entitlements")
+    fun entitlements(@Path("userId") userId: String): Call<Data<List<QEntitlement>>>
 
     @POST("v1/user/restore")
     fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>

@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.services.QUserInfoService
 import javax.inject.Inject
 
 interface IdentityManagerCallback {
-    fun onSuccess(identityID: String)
+    fun onSuccess(qonversionUserId: String)
     fun onError(error: QonversionError)
 }
 

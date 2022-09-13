@@ -181,6 +181,18 @@ class QEligibilityStatusAdapter {
     }
 }
 
+internal class QEntitlementRenewStateAdapter {
+    @ToJson
+    private fun toJson(enum: QEntitlementRenewState): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QEntitlementRenewState {
+        return QEntitlementRenewState.fromType(type)
+    }
+}
+
 class QEligibilityAdapter {
     @ToJson
     private fun toJson(eligibilities: Map<String, QEligibility>): List<ProductEligibility> {

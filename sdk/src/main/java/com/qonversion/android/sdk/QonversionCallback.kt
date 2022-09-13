@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk
 
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.QPermission
@@ -20,6 +21,15 @@ interface QonversionLaunchCallback {
 interface QonversionProductsCallback {
    fun onSuccess(products: Map<String, QProduct>)
    fun onError(error: QonversionError)
+}
+
+internal interface QonversionEntitlementsCallbackInternal {
+   fun onSuccess(entitlements: List<QEntitlement>)
+
+   fun onLoadedFromCache(entitlements: List<QEntitlement>, requestError: QonversionError) =
+      onSuccess(entitlements)
+
+   fun onError(error: QonversionError, responseCode: Int?)
 }
 
 interface QonversionOfferingsCallback {
