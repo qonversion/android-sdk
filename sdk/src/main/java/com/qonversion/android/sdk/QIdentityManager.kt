@@ -18,11 +18,6 @@ internal class QIdentityManager @Inject constructor(
         val currentUserID = userInfoService.obtainUserID()
         repository.identify(userID, currentUserID,
             onSuccess = { resultUserID ->
-                userInfoService.storePartnersIdentityId(userID)
-                if (resultUserID.isNotEmpty()) {
-                    userInfoService.storeQonversionUserId(resultUserID)
-                }
-
                 callback.onSuccess(resultUserID)
             },
             onError = {

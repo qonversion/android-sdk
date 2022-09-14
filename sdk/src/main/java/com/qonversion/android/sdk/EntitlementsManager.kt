@@ -13,6 +13,8 @@ import javax.inject.Inject
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
+private typealias CallbackStorage = ConcurrentHashMap<String, MutableList<QonversionEntitlementsCallbackInternal>>;
+
 internal class EntitlementsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val cache: EntitlementsCache,
@@ -20,7 +22,9 @@ internal class EntitlementsManager @Inject constructor(
 ) : QUserChangedListener {
 
     private var firstRequestExecuted = false
-    private val entitlementsCallbacks: ConcurrentHashMap<String, MutableList<QonversionEntitlementsCallbackInternal>> =
+    private val entitlementsCallbacks: CallbackStorage =
+        ConcurrentHashMap()
+    private val awaitingIdentityCallbacks: CallbackStorage =
         ConcurrentHashMap()
     private val requestsInProgress: ConcurrentHashMap<String, Boolean> = ConcurrentHashMap()
 
@@ -39,6 +43,12 @@ internal class EntitlementsManager @Inject constructor(
         isLaunchInProgress: Boolean,
         ignoreCache: Boolean = false
     ) {
+        val wrappedCallback = callback.wrapWithCacheHandling(ignoreCache)
+        if (!pendingIdentityUserId.isNullOrEmpty()) {
+            storeAwaitingIdentityCallback(pendingIdentityUserId, wrappedCallback)
+            return
+        }
+
         if (firstRequestExecuted && !ignoreCache) {
             cache.getActualStoredValue()?.let {
                 callback.onSuccess(it)
@@ -46,16 +56,19 @@ internal class EntitlementsManager @Inject constructor(
             }
         }
 
-        val userId = pendingIdentityUserId ?: qonversionUserId
-        storeCallback(userId, callback.wrapWithCacheHandling(ignoreCache))
+        storeCallback(qonversionUserId, wrappedCallback)
 
-        if (!isLaunchInProgress && pendingIdentityUserId.isNullOrEmpty()) {
+        if (!isLaunchInProgress) {
             requestEntitlements(qonversionUserId)
         }
     }
 
-    fun onLaunchSucceeded(qonversionUserId: String) {
-        requestEntitlements(qonversionUserId)
+    fun onLaunchSucceeded() {
+        entitlementsCallbacks.forEach { (qonversionUserId, callbacks) ->
+            if (callbacks.isNotEmpty()) {
+                requestEntitlements(qonversionUserId)
+            }
+        }
     }
 
     fun onIdentitySucceeded(
@@ -63,9 +76,8 @@ internal class EntitlementsManager @Inject constructor(
         identityUserId: String,
         isLaunchInProgress: Boolean
     ) {
-        val callbacks = entitlementsCallbacks[identityUserId]?.toList() ?: return
+        val callbacks = awaitingIdentityCallbacks.remove(identityUserId)?.toList() ?: return
 
-        entitlementsCallbacks.remove(identityUserId)
         storeCallbacks(qonversionUserId, callbacks)
 
         if (!isLaunchInProgress) {
@@ -214,9 +226,28 @@ internal class EntitlementsManager @Inject constructor(
         userId: String,
         callbacks: List<QonversionEntitlementsCallbackInternal>
     ) {
-        val list = entitlementsCallbacks[userId] ?: mutableListOf()
+        storeCallbacks(entitlementsCallbacks, userId, callbacks)
+    }
+
+    private fun storeAwaitingIdentityCallback(userId: String, callback: QonversionEntitlementsCallbackInternal) {
+        storeAwaitingIdentityCallbacks(userId, listOf(callback))
+    }
+
+    private fun storeAwaitingIdentityCallbacks(
+        userId: String,
+        callbacks: List<QonversionEntitlementsCallbackInternal>
+    ) {
+        storeCallbacks(awaitingIdentityCallbacks, userId, callbacks)
+    }
+
+    private fun storeCallbacks(
+        storage: CallbackStorage,
+        userId: String,
+        callbacks: List<QonversionEntitlementsCallbackInternal>
+    ) {
+        val list = storage[userId] ?: mutableListOf()
         list.addAll(callbacks)
-        entitlementsCallbacks[userId] = list
+        storage[userId] = list
     }
 
     private fun getResponseHandler(qonversionUserId: String): QonversionEntitlementsCallbackInternal {

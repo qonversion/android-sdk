@@ -57,8 +57,9 @@ class QProductCenterManager internal constructor(
     private var purchasingCallbacks = mutableMapOf<String, QonversionPermissionsCallback>()
 
     private var processingPartnersIdentityId: String? = null
+    private val isIdentityInProgress get() = !processingPartnersIdentityId.isNullOrEmpty()
     private var pendingPartnersIdentityId: String? = null
-    private var unhandledLogoutAvailable: Boolean = false
+    private var ignoreNextIdentityResult: Boolean = false
 
     private var installDate: Long = 0
     private var advertisingID: String? = null
@@ -147,37 +148,33 @@ class QProductCenterManager internal constructor(
         })
     }
 
-    fun identify(userID: String) {
-        if (processingPartnersIdentityId == userID || identityManager.currentPartnersIdentityId == userID) {
+    fun identify(userId: String) {
+        if (processingPartnersIdentityId == userId || identityManager.currentPartnersIdentityId == userId) {
             return
         }
 
-        unhandledLogoutAvailable = false
-
-        pendingPartnersIdentityId = userID
+        pendingPartnersIdentityId = userId
         if (!isLaunchingFinished) {
             return
         }
 
-        processingPartnersIdentityId = userID
+        processingPartnersIdentityId = userId
 
         if (launchError != null) {
             val callback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
-                    processIdentity(userID)
+                    processIdentity(userId)
                 }
 
                 override fun onError(error: QonversionError) {
-                    processingPartnersIdentityId = null
-
-                    entitlementsManager.onIdentityFailedWithError(userID, error)
+                    onIdentityError(userId, error)
                 }
             }
 
             val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
             repository.init(initRequestData)
         } else {
-            processIdentity(userID)
+            processIdentity(userId)
         }
     }
 
@@ -186,17 +183,31 @@ class QProductCenterManager internal constructor(
             override fun onSuccess(qonversionUserId: String) {
                 pendingPartnersIdentityId = null
                 processingPartnersIdentityId = null
-
-                config.setUid(qonversionUserId)
                 entitlementsManager.onIdentitySucceeded(qonversionUserId, userId, !isLaunchingFinished)
+
+                if (!ignoreNextIdentityResult) {
+                    userInfoService.storePartnersIdentityId(userId)
+                    if (qonversionUserId.isNotEmpty()) {
+                        userInfoService.storeQonversionUserId(qonversionUserId)
+                    }
+
+                    config.setUid(qonversionUserId)
+                }
+                ignoreNextIdentityResult = false
             }
 
             override fun onError(error: QonversionError) {
-                processingPartnersIdentityId = null
-
-                entitlementsManager.onIdentityFailedWithError(userId, error)
+                onIdentityError(userId, error)
             }
         })
+    }
+
+    private fun onIdentityError(userId: String, error: QonversionError) {
+        processingPartnersIdentityId = null
+
+        entitlementsManager.onIdentityFailedWithError(userId, error)
+
+        ignoreNextIdentityResult = false
     }
 
     fun experiments(
@@ -407,14 +418,10 @@ class QProductCenterManager internal constructor(
         callback: QonversionPermissionsCallback,
         ignoreCache: Boolean = false
     ) {
-        if (unhandledLogoutAvailable) {
-            handleNewUserEntitlements(callback)
-        } else {
-            pendingPartnersIdentityId?.let {
-                identify(it)
-            }
-            requestEntitlements(callback, ignoreCache)
+        pendingPartnersIdentityId?.let {
+            identify(it)
         }
+        requestEntitlements(callback, ignoreCache)
     }
 
     private fun requestEntitlements(
@@ -454,7 +461,7 @@ class QProductCenterManager internal constructor(
     private fun handleNewUserEntitlements(callback: QonversionPermissionsCallback? = null) {
         callback?.onSuccess(emptyMap())
         if (isLaunchingFinished) {
-            handleLogout()
+            launch()
         }
     }
 
@@ -777,14 +784,11 @@ class QProductCenterManager internal constructor(
 
                 launchError = null
 
-                if (processingPartnersIdentityId == null) {
+                entitlementsManager.onLaunchSucceeded()
+                if (!isIdentityInProgress) {
                     val pendingIdentityId = pendingPartnersIdentityId
                     if (!pendingIdentityId.isNullOrEmpty()) {
                         identify(pendingIdentityId)
-                    } else if (unhandledLogoutAvailable) {
-                        handleLogout()
-                    } else {
-                        entitlementsManager.onLaunchSucceeded(launchResult.uid)
                     }
                 }
 
@@ -807,20 +811,15 @@ class QProductCenterManager internal constructor(
     }
 
     fun logout() {
+        ignoreNextIdentityResult = isIdentityInProgress
+
         pendingPartnersIdentityId = null
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
-            unhandledLogoutAvailable = true
-
             val userID = userInfoService.obtainUserID()
             config.setUid(userID)
         }
-    }
-
-    private fun handleLogout() {
-        unhandledLogoutAvailable = false
-        launch()
     }
 
     private fun updateLaunchResult(launchResult: QLaunchResult) {
