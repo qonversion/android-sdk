@@ -69,6 +69,6 @@ internal class AppModule(
     }
 
     companion object {
-        private const val SDK_VERSION = "3.3.0"
+        private const val SDK_VERSION = "3.3.1"
     }
 }
