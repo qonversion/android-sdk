@@ -4,5 +4,6 @@ import java.util.*
 
 data class AutomationsEvent(
     val type: AutomationsEventType,
-    val date: Date
+    val date: Date,
+    val productId: String?
 )
