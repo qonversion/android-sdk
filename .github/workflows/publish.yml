@@ -23,7 +23,7 @@ jobs:
           echo "sonatypeStagingProfileId=${{ secrets.SONATYPE_STAGING_PROFILE_ID }}" >> ~/.gradle/gradle.properties
 
       - name: Publish to MavenCentral
-        run: ./gradlew publishToSonatype closeSonatypeStagingRepository
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
