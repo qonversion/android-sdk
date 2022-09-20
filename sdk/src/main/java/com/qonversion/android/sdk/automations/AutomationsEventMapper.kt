@@ -25,9 +25,12 @@ class AutomationsEventMapper(private val logger: Logger) {
                 Date(jsonDate.secondsToMilliSeconds())
             }
 
+            val productId = eventJsonObj.optString(EVENT_PRODUCT_ID)
+                .takeIf { it.isNotEmpty() }
+
             val eventType = AutomationsEventType.fromType(eventName)
             return if (eventType != AutomationsEventType.Unknown) {
-                AutomationsEvent(eventType, eventDate)
+                AutomationsEvent(eventType, eventDate, productId)
             } else {
                 null
             }
@@ -43,5 +46,6 @@ class AutomationsEventMapper(private val logger: Logger) {
         private const val EVENT = "qonv.event"
         private const val EVENT_NAME = "name"
         private const val EVENT_DATE = "happened"
+        private const val EVENT_PRODUCT_ID = "product_id"
     }
 }

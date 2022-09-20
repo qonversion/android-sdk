@@ -15,9 +15,12 @@ import com.qonversion.android.sdk.QonversionShowScreenCallback
 import com.qonversion.android.sdk.billing.toBoolean
 import com.qonversion.android.sdk.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.toMap
 import java.lang.Exception
 import java.lang.ref.WeakReference
 import javax.inject.Inject
+import org.json.JSONException
+import org.json.JSONObject
 
 internal class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
@@ -57,6 +60,16 @@ internal class QAutomationsManager @Inject constructor(
                 if (shouldShowScreen) {
                     loadScreenIfPossible()
                 }
+            }
+        }
+    }
+
+    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
+        return messageData[KEY_CUSTOM_PAYLOAD]?.let {
+            try {
+                JSONObject(it).toMap()
+            } catch (e: JSONException) {
+                null
             }
         }
     }
@@ -175,6 +188,7 @@ internal class QAutomationsManager @Inject constructor(
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
+        private const val KEY_CUSTOM_PAYLOAD = "qonv.custom_payload"
         private const val QUERY_PARAM_TYPE = "type"
         private const val QUERY_PARAM_ACTIVE = "active"
         private const val QUERY_PARAM_TYPE_VALUE = "screen_view"

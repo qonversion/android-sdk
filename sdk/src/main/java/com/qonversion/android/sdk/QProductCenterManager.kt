@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QPermissionSource
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -629,6 +630,7 @@ class QProductCenterManager internal constructor(
                 QProductRenewState.Unknown,
                 Date(purchaseTime),
                 expirationDate,
+                QPermissionSource.PlayStore,
                 1
             )
         } else null
