@@ -498,6 +498,16 @@ object Qonversion : LifecycleDelegate {
         return handleNotification(remoteMessage.data)
     }
 
+    /**
+     * Get parsed custom payload, which you added to the notification in the dashboard
+     * @param messageData RemoteMessage payload data
+     * @return a map with custom payload from the notification or null if it's not provided.
+     */
+    @JvmStatic
+    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
+        return automationsManager?.getNotificationCustomPayload(messageData)
+    }
+
     // Internal functions
     internal fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
