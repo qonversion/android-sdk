@@ -49,6 +49,7 @@ class Util {
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
+                    source = QPermissionSource.PlayStore,
                     active = 1
                 ),
                 "Test Permission" to QPermission(
@@ -57,6 +58,7 @@ class Util {
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
+                    source = QPermissionSource.PlayStore,
                     active = 1
                 )
             ),
@@ -130,6 +132,7 @@ class Util {
                 .add(QPermissionsAdapter())
                 .add(QProductTypeAdapter())
                 .add(QProductRenewStateAdapter())
+                .add(QPermissionSourceAdapter())
                 .add(QOfferingsAdapter())
                 .add(QOfferingAdapter())
                 .add(QOfferingTagAdapter())

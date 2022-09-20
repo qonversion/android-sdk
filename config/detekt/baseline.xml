@@ -366,6 +366,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionSourceAdapter$@ToJson private fun toJson(enum: QPermissionSource): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductDurationAdapter$@ToJson private fun toJson(enum: QProductDuration): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
