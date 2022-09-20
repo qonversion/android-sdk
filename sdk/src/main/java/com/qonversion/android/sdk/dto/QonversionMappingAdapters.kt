@@ -54,6 +54,18 @@ class QProductRenewStateAdapter {
     }
 }
 
+class QPermissionSourceAdapter {
+    @ToJson
+    private fun toJson(enum: QPermissionSource): String {
+        return enum.key
+    }
+
+    @FromJson
+    fun fromJson(key: String): QPermissionSource {
+        return QPermissionSource.fromKey(key)
+    }
+}
+
 class QDateAdapter {
     @ToJson
     private fun toJson(date: Date): Long {

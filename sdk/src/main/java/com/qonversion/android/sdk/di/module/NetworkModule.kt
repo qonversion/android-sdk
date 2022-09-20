@@ -41,6 +41,7 @@ internal class NetworkModule {
             .add(QPermissionsAdapter())
             .add(QProductTypeAdapter())
             .add(QProductRenewStateAdapter())
+            .add(QPermissionSourceAdapter())
             .add(QOfferingsAdapter())
             .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())
