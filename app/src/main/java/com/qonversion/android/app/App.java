@@ -9,11 +9,11 @@ import androidx.multidex.MultiDexApplication;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.google.firebase.*;
-import com.qonversion.android.sdk.AttributionSource;
-import com.qonversion.android.sdk.QUserProperties;
+import com.qonversion.android.sdk.dto.QAttributionSource;
+import com.qonversion.android.sdk.dto.QUserProperties;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionError;
-import com.qonversion.android.sdk.QonversionLaunchCallback;
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public class App extends MultiDexApplication {
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
                 Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
-                Qonversion.attribution(conversionData, AttributionSource.AppsFlyer);
+                Qonversion.attribution(conversionData, QAttributionSource.AppsFlyer);
             }
 
             @Override

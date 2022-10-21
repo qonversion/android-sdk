@@ -10,10 +10,12 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -24,6 +26,13 @@ import com.qonversion.android.sdk.internal.QAttributionManager
 import com.qonversion.android.sdk.internal.QProductCenterManager
 import com.qonversion.android.sdk.internal.QUserPropertiesManager
 import com.qonversion.android.sdk.internal.QonversionFactory
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 object Qonversion : LifecycleDelegate {
 
@@ -387,7 +396,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource
+        from: QAttributionSource
     ) {
         attributionManager?.attribution(conversionInfo, from)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
@@ -424,7 +433,7 @@ object Qonversion : LifecycleDelegate {
         "Will be removed in a future major release. Use setProperty instead.",
         replaceWith = ReplaceWith(
             "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
-            "com.qonversion.android.sdk.QUserProperties"
+            "com.qonversion.android.sdk.dto.QUserProperties"
         )
     )
     fun setUserID(value: String) {
@@ -459,7 +468,7 @@ object Qonversion : LifecycleDelegate {
      * Permissions cache is used when there are problems with the Qonversion API
      * or internet connection. If so, Qonversion will return the last successfully loaded
      * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.Month].
+     * The default value is [QPermissionsCacheLifetime.MONTH].
      *
      * @param lifetime desired permissions cache lifetime duration
      */

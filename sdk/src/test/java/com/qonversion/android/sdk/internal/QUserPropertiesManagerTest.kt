@@ -5,7 +5,7 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.getPrivateField
