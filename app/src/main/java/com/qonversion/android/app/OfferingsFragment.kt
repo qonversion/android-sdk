@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentOfferingsBinding
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionOfferingsCallback
-import com.qonversion.android.sdk.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct

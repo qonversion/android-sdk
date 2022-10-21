@@ -2,13 +2,13 @@ package com.qonversion.android.sdk.automations.macros
 
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import org.json.JSONException
 import org.json.JSONObject
 
-class ScreenProcessor {
+internal class ScreenProcessor {
 
     private val logger = ConsoleLogger()
 

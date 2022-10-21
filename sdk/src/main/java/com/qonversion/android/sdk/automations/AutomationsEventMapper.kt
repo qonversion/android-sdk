@@ -1,13 +1,13 @@
 package com.qonversion.android.sdk.automations
 
-import com.qonversion.android.sdk.billing.getCurrentTimeInMillis
-import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.internal.billing.getCurrentTimeInMillis
+import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.internal.logger.Logger
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Date
 
-class AutomationsEventMapper(private val logger: Logger) {
+internal class AutomationsEventMapper(private val logger: Logger) {
     fun getEventFromRemoteMessage(messageData: Map<String, String>): AutomationsEvent? {
         try {
             val eventJsonStr = messageData[EVENT] ?: return null

@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
 
-class ScreenContract {
+internal class ScreenContract {
     interface View {
         fun openScreen(screenId: String, htmlPage: String)
 

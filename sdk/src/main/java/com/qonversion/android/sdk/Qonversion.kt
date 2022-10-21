@@ -7,16 +7,32 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.di.QDependencyInjector
-import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.internal.AppLifecycleHandler
+import com.qonversion.android.sdk.internal.AppState
+import com.qonversion.android.sdk.internal.LifecycleDelegate
+import com.qonversion.android.sdk.internal.QAttributionManager
+import com.qonversion.android.sdk.internal.QProductCenterManager
+import com.qonversion.android.sdk.internal.QUserPropertiesManager
+import com.qonversion.android.sdk.internal.QonversionFactory
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 object Qonversion : LifecycleDelegate {
 
@@ -380,7 +396,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource
+        from: QAttributionSource
     ) {
         attributionManager?.attribution(conversionInfo, from)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
@@ -417,7 +433,7 @@ object Qonversion : LifecycleDelegate {
         "Will be removed in a future major release. Use setProperty instead.",
         replaceWith = ReplaceWith(
             "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
-            "com.qonversion.android.sdk.QUserProperties"
+            "com.qonversion.android.sdk.dto.QUserProperties"
         )
     )
     fun setUserID(value: String) {
