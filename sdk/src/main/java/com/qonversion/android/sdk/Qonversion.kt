@@ -10,10 +10,12 @@ import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -387,7 +389,7 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource
+        from: QAttributionSource
     ) {
         attributionManager?.attribution(conversionInfo, from)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
@@ -424,7 +426,7 @@ object Qonversion : LifecycleDelegate {
         "Will be removed in a future major release. Use setProperty instead.",
         replaceWith = ReplaceWith(
             "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
-            "com.qonversion.android.sdk.QUserProperties"
+            "com.qonversion.android.sdk.dto.QUserProperties"
         )
     )
     fun setUserID(value: String) {

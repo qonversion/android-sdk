@@ -1,12 +1,12 @@
 package com.qonversion.android.sdk.internal
 
-import com.qonversion.android.sdk.AttributionSource
+import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.Qonversion
 
 internal class QAttributionManager internal constructor(
     private val repository: QonversionRepository
 ) {
-    private var pendingAttributionSource: AttributionSource? = null
+    private var pendingAttributionSource: QAttributionSource? = null
     private var pendingConversionInfo: Map<String, Any>? = null
 
     fun onAppForeground() {
@@ -22,7 +22,7 @@ internal class QAttributionManager internal constructor(
 
     fun attribution(
         conversionInfo: Map<String, Any>,
-        from: AttributionSource
+        from: QAttributionSource
     ) {
         if (Qonversion.appState.isBackground()) {
             pendingAttributionSource = from
