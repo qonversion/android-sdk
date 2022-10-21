@@ -459,7 +459,7 @@ object Qonversion : LifecycleDelegate {
      * Permissions cache is used when there are problems with the Qonversion API
      * or internet connection. If so, Qonversion will return the last successfully loaded
      * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.MONTH].
+     * The default value is [QPermissionsCacheLifetime.Month].
      *
      * @param lifetime desired permissions cache lifetime duration
      */
