@@ -20,6 +20,9 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
 
+    - name: Detekt
+      run: ./gradlew detektAll
+
     - name: Set up Ruby 2.6
       uses: ruby/setup-ruby@v1
       with:
