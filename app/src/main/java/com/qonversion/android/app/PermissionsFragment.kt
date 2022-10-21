@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentPermissionsBinding
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.dto.QPermission
 
 class PermissionsFragment : Fragment() {

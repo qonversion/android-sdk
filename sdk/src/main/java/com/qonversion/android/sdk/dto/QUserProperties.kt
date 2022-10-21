@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.dto
 
 enum class QUserProperties(val userPropertyCode: String) {
     Email("_q_email"),

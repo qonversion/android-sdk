@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.automations
 
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionShowScreenCallback
+import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import java.lang.ref.WeakReference
 

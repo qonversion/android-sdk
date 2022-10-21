@@ -7,7 +7,7 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.QonversionLaunchCallbackInternal
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.dto.BaseResponse
+import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.extractor.Extractor
 import com.qonversion.android.sdk.internal.extractor.TokenExtractor
 import com.qonversion.android.sdk.internal.storage.Util.Companion.CLIENT_ID

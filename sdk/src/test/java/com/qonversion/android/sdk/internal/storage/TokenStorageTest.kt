@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.storage
 
 import com.github.ivanshafran.sharedpreferencesmock.SPMockBuilder
-import com.qonversion.android.sdk.dto.BaseResponse
+import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.Response
 import com.qonversion.android.sdk.internal.extractor.Extractor
 import com.qonversion.android.sdk.internal.extractor.TokenExtractor
