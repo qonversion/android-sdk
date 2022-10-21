@@ -8,10 +8,12 @@ import android.content.SharedPreferences
 import android.os.Looper
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.dto.automations.Screen
-import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
+import com.qonversion.android.sdk.internal.dto.automations.Screen
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.internal.AppState
+import com.qonversion.android.sdk.internal.QonversionRepository
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

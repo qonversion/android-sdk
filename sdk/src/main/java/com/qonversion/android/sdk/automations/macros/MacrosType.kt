@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.automations.macros
 
-enum class MacrosType(val type: String) {
+internal enum class MacrosType(val type: String) {
     Unknown("unknown"),
     Price("price"),
     SubscriptionDuration("duration_subscription"),

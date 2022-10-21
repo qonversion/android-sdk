@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.automations
 
 import com.google.firebase.messaging.RemoteMessage
-import com.qonversion.android.sdk.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.logger.Logger
+import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert

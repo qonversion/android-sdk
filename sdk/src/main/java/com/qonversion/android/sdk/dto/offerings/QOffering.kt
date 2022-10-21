@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto.offerings
 
-import com.qonversion.android.sdk.OfferingsDelegate
+import com.qonversion.android.sdk.internal.OfferingsDelegate
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.squareup.moshi.Json

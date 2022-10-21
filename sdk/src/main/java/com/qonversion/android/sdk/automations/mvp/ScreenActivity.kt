@@ -14,11 +14,11 @@ import com.qonversion.android.sdk.automations.macros.ScreenProcessor
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
 import com.qonversion.android.sdk.automations.QAutomationsManager
-import com.qonversion.android.sdk.di.QDependencyInjector
-import com.qonversion.android.sdk.di.component.DaggerActivityComponent
-import com.qonversion.android.sdk.di.module.ActivityModule
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent
+import com.qonversion.android.sdk.internal.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.logger.ConsoleLogger
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import kotlinx.android.synthetic.main.q_activity_screen.*
 import javax.inject.Inject
 
@@ -30,7 +30,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     internal lateinit var presenter: ScreenPresenter
 
     @Inject
-    lateinit var screenProcessor: ScreenProcessor
+    internal lateinit var screenProcessor: ScreenProcessor
 
     private val logger = ConsoleLogger()
 
