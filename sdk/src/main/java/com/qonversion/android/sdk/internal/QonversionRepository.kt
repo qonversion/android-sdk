@@ -2,10 +2,10 @@ package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
 import android.os.Handler
-import com.qonversion.android.sdk.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionLaunchCallback
-import com.qonversion.android.sdk.QonversionLaunchCallbackInternal
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.internal.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER

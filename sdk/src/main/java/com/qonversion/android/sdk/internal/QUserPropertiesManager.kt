@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.QonversionError
 import com.qonversion.android.sdk.QonversionErrorCode
-import com.qonversion.android.sdk.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger

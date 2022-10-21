@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.dto.request.data
 
-import com.qonversion.android.sdk.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.purchase.Purchase
 
 internal data class InitRequestData(

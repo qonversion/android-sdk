@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.dto.QAttributionSource;
 import com.qonversion.android.sdk.dto.QUserProperties;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionError;
-import com.qonversion.android.sdk.QonversionLaunchCallback;
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
 
 import org.jetbrains.annotations.NotNull;

@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk
+package com.qonversion.android.sdk.listeners
 
 import com.qonversion.android.sdk.dto.QPermission
 

@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.internal.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import kotlinx.android.synthetic.main.q_activity_screen.*
 import javax.inject.Inject
 
