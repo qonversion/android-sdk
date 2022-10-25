@@ -6,10 +6,10 @@ import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qonversion.android.sdk.dto.QUserProperties
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.mockPrivateField
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
 import io.mockk.*
@@ -27,6 +27,7 @@ class QUserPropertiesManagerTest {
     private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
     private val mockIncrementalCalculator = mockk<IncrementalDelayCalculator>(relaxed = true)
     private val mockLogger: Logger = mockk(relaxed = true)
+    private val mockAppStateProvider = mockk<AppStateProvider>(relaxed = true)
 
     private val fieldIsRequestInProgress = "isRequestInProgress"
     private val fieldRetryDelay = "retryDelay"
@@ -56,6 +57,7 @@ class QUserPropertiesManagerTest {
                 mockRepository,
                 mockPropertiesStorage,
                 mockIncrementalCalculator,
+                mockAppStateProvider,
                 mockLogger
             )
     }
@@ -231,7 +233,7 @@ class QUserPropertiesManagerTest {
         mockErrorSendPropertiesResponse(properties)
         mockIncrementalCounterResponse(calculatedDelay)
         mockPostDelayed((calculatedDelay * 1000).toLong())
-        Qonversion.appState = AppState.Foreground
+        every { mockAppStateProvider.appState } returns AppState.Foreground
 
         // when
         spykPropertiesManager.forceSendProperties()
@@ -251,7 +253,7 @@ class QUserPropertiesManagerTest {
         mockErrorSendPropertiesResponse(properties)
         mockIncrementalCounterResponse(calculatedDelay)
         mockPostDelayed((calculatedDelay * 1000).toLong())
-        Qonversion.appState = AppState.Background
+        every { mockAppStateProvider.appState } returns AppState.Background
 
         // when
         spykPropertiesManager.forceSendProperties()
@@ -359,7 +361,7 @@ class QUserPropertiesManagerTest {
         val value = "some value"
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)
-        Qonversion.appState = AppState.Foreground
+        every { mockAppStateProvider.appState } returns AppState.Foreground
 
         every {
             propertiesManager.forceSendProperties()
@@ -384,7 +386,7 @@ class QUserPropertiesManagerTest {
         // given
         val key = "_q_email"
         val value = "some value"
-        Qonversion.appState = AppState.Background
+        every { mockAppStateProvider.appState } returns AppState.Background
 
         // when
         propertiesManager.setUserProperty(key, value)
@@ -435,7 +437,7 @@ class QUserPropertiesManagerTest {
     @Test
     fun `send properties with delay on background`() {
         // given
-        Qonversion.appState = AppState.Background
+        every { mockAppStateProvider.appState } returns AppState.Background
         val mockDelay = 10
 
         // when
@@ -454,7 +456,7 @@ class QUserPropertiesManagerTest {
     @Test
     fun `send properties with delay on foreground`() {
         // given
-        Qonversion.appState = AppState.Foreground
+        every { mockAppStateProvider.appState } returns AppState.Foreground
 
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)

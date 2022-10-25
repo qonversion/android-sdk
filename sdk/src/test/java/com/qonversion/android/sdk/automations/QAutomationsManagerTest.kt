@@ -11,8 +11,11 @@ import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.AppState
 import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -28,6 +31,7 @@ class QAutomationsManagerTest {
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
     private val mockEventMapper: AutomationsEventMapper = mockk(relaxed = true)
     private val mockApplication: Application = mockk(relaxed = true)
+    private val mockAppStateProvider: AppStateProvider = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
@@ -62,7 +66,7 @@ class QAutomationsManagerTest {
         mockSharedPreferences()
 
         automationsManager =
-            QAutomationsManager(mockRepository, mockPrefs, mockEventMapper, mockApplication)
+            QAutomationsManager(mockRepository, mockPrefs, mockEventMapper, mockApplication, mockAppStateProvider)
     }
 
     @Nested
@@ -288,7 +292,7 @@ class QAutomationsManagerTest {
             } returns null
 
             mockLooper()
-            Qonversion.appState = AppState.Foreground
+            every { mockAppStateProvider.appState } returns AppState.Foreground
 
             // when
             automationsManager.setPushToken(newToken)
@@ -312,7 +316,7 @@ class QAutomationsManagerTest {
             } returns null
 
             mockLooper()
-            Qonversion.appState = AppState.Background
+            every { mockAppStateProvider.appState } returns AppState.Background
 
             // when
             automationsManager.setPushToken(newToken)
@@ -363,7 +367,7 @@ class QAutomationsManagerTest {
             } returns null
 
             mockLooper()
-            Qonversion.appState = AppState.Foreground
+            every { mockAppStateProvider.appState } returns AppState.Foreground
 
             // when
             automationsManager.setPushToken(newToken)
