@@ -1,6 +1,6 @@
-package com.qonversion.android.sdk.dto.products
+package com.qonversion.android.sdk.internal.dto
 
-enum class QProductRenewState(val type: Int) {
+internal enum class QProductRenewState(val type: Int) {
     NonRenewable(-1),
     Unknown(0),
     WillRenew(1),

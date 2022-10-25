@@ -17,11 +17,11 @@ import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.internal.di.module.ActivityModule
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import kotlinx.android.synthetic.main.q_activity_screen.*
 import javax.inject.Inject
 
@@ -98,8 +98,8 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         progressBar.visibility = View.VISIBLE
 
-        Qonversion.sharedInstance.purchase(this, productId, object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+        Qonversion.sharedInstance.purchase(this, productId, object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
                 object {}.javaClass.enclosingMethod?.name,
@@ -114,8 +114,8 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         progressBar.visibility = View.VISIBLE
 
-        Qonversion.sharedInstance.restore(object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+        Qonversion.sharedInstance.restore(object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
                 object {}.javaClass.enclosingMethod?.name,

@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductRenewState
+import com.qonversion.android.sdk.internal.dto.QProductRenewState
 import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.internal.dto.QDateAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityAdapter
@@ -17,7 +17,8 @@ import com.qonversion.android.sdk.internal.dto.QExperimentsAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingsAdapter
-import com.qonversion.android.sdk.internal.dto.QPermissionSourceAdapter
+import com.qonversion.android.sdk.internal.dto.QPermission
+import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
 import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
@@ -63,7 +64,7 @@ class Util {
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
-                    source = QPermissionSource.PlayStore,
+                    source = QEntitlementSource.PlayStore,
                     active = 1
                 ),
                 "Test Permission" to QPermission(
@@ -72,7 +73,7 @@ class Util {
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
-                    source = QPermissionSource.AppStore,
+                    source = QEntitlementSource.AppStore,
                     active = 1
                 )
             ),
@@ -146,7 +147,7 @@ class Util {
                 .add(QPermissionsAdapter())
                 .add(QProductTypeAdapter())
                 .add(QProductRenewStateAdapter())
-                .add(QPermissionSourceAdapter())
+                .add(QEntitlementSourceAdapter())
                 .add(QOfferingsAdapter())
                 .add(QOfferingAdapter())
                 .add(QOfferingTagAdapter())

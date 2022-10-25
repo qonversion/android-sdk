@@ -3,7 +3,7 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -12,7 +12,7 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
@@ -72,7 +72,7 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback)
+    fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -81,7 +81,7 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback)
+    fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -99,7 +99,7 @@ interface Qonversion {
         productId: String,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     )
 
     /**
@@ -118,7 +118,7 @@ interface Qonversion {
         product: QProduct,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     )
 
     /**
@@ -157,18 +157,18 @@ interface Qonversion {
     )
 
     /**
-     * Check user permissions based on product center details
+     * Check user entitlements based on product center details
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun checkPermissions(callback: QonversionPermissionsCallback)
+    fun checkEntitlements(callback: QonversionEntitlementsCallback)
 
     /**
      * Restore user Products
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun restore(callback: QonversionPermissionsCallback)
+    fun restore(callback: QonversionEntitlementsCallback)
 
     /**
      * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
@@ -226,11 +226,11 @@ interface Qonversion {
      * Permissions cache is used when there are problems with the Qonversion API
      * or internet connection. If so, Qonversion will return the last successfully loaded
      * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.MONTH].
+     * The default value is [QEntitlementsCacheLifetime.MONTH].
      *
      * @param lifetime desired permissions cache lifetime duration
      */
-    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime)
+    fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime)
 
     /**
      * Set push token to Qonversion to enable Qonversion push notifications

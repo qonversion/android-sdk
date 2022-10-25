@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.daysToSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.QPermission
+import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -30,7 +30,7 @@ internal class LaunchResultCacheWrapper(
             )
         )
 
-    private var permissionsCacheLifetime = QPermissionsCacheLifetime.MONTH
+    private var permissionsCacheLifetime = QEntitlementsCacheLifetime.MONTH
 
     val productPermissions get() = getLaunchResult()?.productPermissions
 
@@ -39,7 +39,7 @@ internal class LaunchResultCacheWrapper(
 
     private var permissions: Map<String, QPermission>? = null
 
-    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
+    fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime) {
         permissionsCacheLifetime = lifetime
     }
 

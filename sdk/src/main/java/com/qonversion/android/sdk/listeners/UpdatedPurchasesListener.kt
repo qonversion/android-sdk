@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.listeners
 
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.internal.dto.QPermission
 
 interface UpdatedPurchasesListener {
 

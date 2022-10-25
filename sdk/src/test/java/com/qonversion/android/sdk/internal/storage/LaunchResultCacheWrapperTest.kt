@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.internal.storage.Util.Companion.buildMoshi
 import io.mockk.*

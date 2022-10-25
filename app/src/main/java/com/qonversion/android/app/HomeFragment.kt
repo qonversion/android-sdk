@@ -17,10 +17,10 @@ import com.qonversion.android.sdk.automations.Automations
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
@@ -39,7 +39,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
@@ -48,7 +48,7 @@ class HomeFragment : Fragment() {
         Qonversion.sharedInstance.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 updateContent(products)
-                Qonversion.sharedInstance.checkPermissions(getPermissionsCallback())
+                Qonversion.sharedInstance.checkEntitlements(getPermissionsCallback())
             }
 
             override fun onError(error: QonversionError) {
@@ -91,11 +91,11 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    private fun getPermissionsCallback(): QonversionPermissionsCallback {
-        return object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
+    private fun getPermissionsCallback(): QonversionEntitlementsCallback {
+        return object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 showLoading(false)
-                handlePermissions(permissions)
+                handleEntitlements(entitlements)
             }
 
             override fun onError(error: QonversionError) {
@@ -130,15 +130,15 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun handlePermissions(permissions: Map<String, QPermission>) {
+    private fun handleEntitlements(entitlements: Map<String, QEntitlement>) {
         var isNothingToRestore = true
-        val permissionPlus = permissions[permissionPlus]
-        if (permissionPlus != null && permissionPlus.isActive()) {
+        val entitlementPlus = entitlements[permissionPlus]
+        if (entitlementPlus != null && entitlementPlus.isActive) {
             binding.buttonSubscribe.toSuccessState()
             isNothingToRestore = false
         }
-        val permissionStandart = permissions[permissionStandart]
-        if (permissionStandart != null && permissionStandart.isActive()) {
+        val entitlementStandart = entitlements[permissionStandart]
+        if (entitlementStandart != null && entitlementStandart.isActive) {
             binding.buttonInApp.toSuccessState()
             isNothingToRestore = false
         }
@@ -152,8 +152,8 @@ class HomeFragment : Fragment() {
         Qonversion.sharedInstance.purchase(
             requireActivity(),
             productId,
-            callback = object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
+            callback = object : QonversionEntitlementsCallback {
+                override fun onSuccess(permissions: Map<String, QEntitlement>) {
                     when (productId) {
                         productIdSubs -> binding.buttonSubscribe.toSuccessState()
                         productIdInApp -> binding.buttonInApp.toSuccessState()
@@ -185,7 +185,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
-        override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+        override fun onPermissionsUpdate(permissions: Map<String, QEntitlement>) {
             // handle updated permissions here
         }
     }
@@ -195,8 +195,8 @@ class HomeFragment : Fragment() {
             // Handle the final action that the user completed on the in-app screen.
             if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available permissions
-                Qonversion.sharedInstance.checkPermissions(object : QonversionPermissionsCallback {
-                    override fun onSuccess(permissions: Map<String, QPermission>) {
+                Qonversion.sharedInstance.checkEntitlements(object : QonversionEntitlementsCallback {
+                    override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                         // Handle new permissions here
                     }
 

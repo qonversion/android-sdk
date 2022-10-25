@@ -1,9 +1,8 @@
 package com.qonversion.android.sdk.internal.dto
 
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QPermissionSource
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
-import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.dto.eligibility.ProductEligibility
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
@@ -14,7 +13,6 @@ import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductRenewState
 import com.qonversion.android.sdk.dto.products.QProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
@@ -56,15 +54,15 @@ internal class QProductRenewStateAdapter {
     }
 }
 
-internal class QPermissionSourceAdapter {
+internal class QEntitlementSourceAdapter {
     @ToJson
-    private fun toJson(enum: QPermissionSource): String {
+    private fun toJson(enum: QEntitlementSource): String {
         return enum.key
     }
 
     @FromJson
-    fun fromJson(key: String): QPermissionSource {
-        return QPermissionSource.fromKey(key)
+    fun fromJson(key: String): QEntitlementSource {
+        return QEntitlementSource.fromKey(key)
     }
 }
 

@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
-import com.qonversion.android.sdk.internal.billing.toBoolean
+import com.qonversion.android.sdk.internal.toBoolean
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import com.qonversion.android.sdk.internal.provider.AppStateProvider

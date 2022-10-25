@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentPermissionsBinding
 import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 
 class PermissionsFragment : Fragment() {
     private val TAG = "PermissionsFragment"
@@ -23,7 +23,7 @@ class PermissionsFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentPermissionsBinding.inflate(inflater)
 
         binding.recyclerViewPermissionsList.layoutManager = LinearLayoutManager(context)
@@ -34,9 +34,9 @@ class PermissionsFragment : Fragment() {
             )
         )
 
-        Qonversion.sharedInstance.checkPermissions(object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
-                val activePermissions = permissions.values.filter { it.isActive() }
+        Qonversion.sharedInstance.checkEntitlements(object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                val activePermissions = entitlements.values.filter { it.isActive }
                 binding.recyclerViewPermissionsList.adapter = PermissionsAdapter(activePermissions)
             }
 

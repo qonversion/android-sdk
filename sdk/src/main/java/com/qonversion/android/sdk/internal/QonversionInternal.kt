@@ -12,10 +12,11 @@ import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.QPermission
+import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
@@ -25,7 +26,7 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
@@ -126,24 +127,24 @@ internal class QonversionInternal(
         })
     }
 
-    override fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
+    override fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback) {
         productCenterManager?.purchaseProduct(
             context,
             id,
             null,
             null,
             null,
-            mainPermissionsCallback(callback)
+            mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback) {
+    override fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback) {
         productCenterManager?.purchaseProduct(
             context,
             product,
             null,
             null,
-            mainPermissionsCallback(callback)
+            mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -152,7 +153,7 @@ internal class QonversionInternal(
         productId: String,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
             context,
@@ -160,7 +161,7 @@ internal class QonversionInternal(
             oldProductId,
             prorationMode,
             null,
-            mainPermissionsCallback(callback)
+            mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -169,14 +170,14 @@ internal class QonversionInternal(
         product: QProduct,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
             context,
             product,
             oldProductId,
             prorationMode,
-            mainPermissionsCallback(callback)
+            mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -225,13 +226,13 @@ internal class QonversionInternal(
             }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun checkPermissions(callback: QonversionPermissionsCallback) {
-        productCenterManager?.checkPermissions(mainPermissionsCallback(callback))
+    override fun checkEntitlements(callback: QonversionEntitlementsCallback) {
+        productCenterManager?.checkEntitlements(mainEntitlementsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager?.restore(mainPermissionsCallback(callback))
+    override fun restore(callback: QonversionEntitlementsCallback) {
+        productCenterManager?.restore(mainEntitlementsCallback(callback))
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -277,7 +278,7 @@ internal class QonversionInternal(
         isDebugMode = true
     }
 
-    override fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
+    override fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime) {
         productCenterManager?.setPermissionsCacheLifetime(lifetime)
     }
 
@@ -303,10 +304,10 @@ internal class QonversionInternal(
     }
 
     // Private functions
-    private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
-        object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) =
-                postToMainThread { callback.onSuccess(permissions) }
+    private fun mainEntitlementsCallback(callback: QonversionEntitlementsCallback): QonversionEntitlementsCallback =
+        object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                postToMainThread { callback.onSuccess(entitlements) }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }

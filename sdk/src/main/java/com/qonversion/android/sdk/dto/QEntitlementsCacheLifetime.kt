@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto
 
-enum class QPermissionsCacheLifetime(val days: Int) {
+enum class QEntitlementsCacheLifetime(val days: Int) {
     WEEK(7),
     TWO_WEEKS(14),
     MONTH(30),
