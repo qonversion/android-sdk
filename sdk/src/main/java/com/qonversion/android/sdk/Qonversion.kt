@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk
 
 import android.app.Activity
-import android.app.Application
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
@@ -21,7 +20,7 @@ interface Qonversion {
 
     companion object {
 
-        internal var backingInstance: Qonversion? = null
+        private var backingInstance: Qonversion? = null
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.

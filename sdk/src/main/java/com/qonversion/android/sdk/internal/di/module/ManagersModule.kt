@@ -16,7 +16,7 @@ import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage
 
 import dagger.Module
 import dagger.Provides
-import java.util.*
+import java.util.Random
 
 @Module
 internal class ManagersModule {

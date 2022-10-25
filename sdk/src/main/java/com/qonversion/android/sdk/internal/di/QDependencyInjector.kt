@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.di
 
 import android.app.Application
-import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.component.AppComponent
 import com.qonversion.android.sdk.internal.di.component.DaggerAppComponent
