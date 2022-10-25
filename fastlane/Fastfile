@@ -23,14 +23,6 @@ def update_gradle(new_version)
     update_file(path, regex, result_value)
 end
 
-def update_appmodule(new_version)
-  	path = Dir.glob("../sdk/**/AppModule.kt").first
-    regex = /private const val SDK_VERSION = ".*"/
-    result_value = "private const val SDK_VERSION = \"#{new_version}\""
-
-    update_file(path, regex, result_value)
-end
-
 def update_file(path, regex, result_value)
 	file = File.read(path)
     new_content = file.gsub(regex, result_value)
@@ -101,7 +93,6 @@ platform :android do
   	new_version = options[:version]
 
 	update_gradle(new_version)
-	update_appmodule(new_version)
   end
 
 end

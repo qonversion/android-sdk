@@ -7,14 +7,14 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.billing.toBoolean
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.toMap
 import java.lang.Exception
 import java.lang.ref.WeakReference
@@ -26,7 +26,8 @@ internal class QAutomationsManager @Inject constructor(
     private val repository: QonversionRepository,
     private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,
-    private val appContext: Application
+    private val appContext: Application,
+    private val appStateProvider: AppStateProvider
 ) {
     @Volatile
     var automationsDelegate: WeakReference<AutomationsDelegate>? = null
@@ -78,7 +79,7 @@ internal class QAutomationsManager @Inject constructor(
         val oldToken = loadToken()
         if (token.isNotEmpty() && !oldToken.equals(token)) {
             savePendingTokenToPref(token)
-            if (Qonversion.appState.isBackground()) {
+            if (appStateProvider.appState.isBackground()) {
                 pendingToken = token
                 return
             }

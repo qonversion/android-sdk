@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.internal
 
 import com.android.billingclient.api.BillingClient
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.billing.BillingError
 import org.json.JSONException
 import java.io.IOException

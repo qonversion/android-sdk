@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.automations.mvp
 
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
 

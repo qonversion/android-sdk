@@ -56,7 +56,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
     }
 
     private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
-        Qonversion.syncPurchases();
+        Qonversion.getSharedInstance().syncPurchases();
     }
 
     private void launchBilling() {

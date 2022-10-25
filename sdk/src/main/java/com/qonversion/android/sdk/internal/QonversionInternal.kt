@@ -1,0 +1,322 @@
+package com.qonversion.android.sdk.internal
+
+import android.app.Activity
+import android.app.Application
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.android.billingclient.api.BillingFlowParams
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
+import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
+import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
+
+internal class QonversionInternal(
+    internalConfig: InternalConfig,
+    application: Application
+) : Qonversion, LifecycleDelegate, AppStateProvider {
+
+    private var userPropertiesManager: QUserPropertiesManager? = null
+    private var attributionManager: QAttributionManager? = null
+    private var productCenterManager: QProductCenterManager? = null
+    private var automationsManager: QAutomationsManager? = null
+    private var logger = ConsoleLogger()
+    private var isDebugMode = false
+    private val handler = Handler(Looper.getMainLooper())
+
+    override var appState = AppState.Background
+
+    init {
+        val lifecycleHandler = AppLifecycleHandler(this)
+        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
+
+        QDependencyInjector.buildAppComponent(application, internalConfig, this)
+
+        val repository = QDependencyInjector.appComponent.repository()
+        val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
+        val handledPurchasesCache = QDependencyInjector.appComponent.handledPurchasesCache()
+        val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
+        val userInfoService = QDependencyInjector.appComponent.userInfoService()
+        val identityManager = QDependencyInjector.appComponent.identityManager()
+        val config = QDependencyInjector.appComponent.internalConfig()
+
+        val userID = userInfoService.obtainUserID()
+
+        config.uid = userID
+
+        automationsManager = QDependencyInjector.appComponent.automationsManager()
+
+        userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
+
+        attributionManager = QAttributionManager(repository, this)
+
+        val factory = QonversionFactory(application, logger)
+
+        productCenterManager = factory.createProductCenterManager(
+            repository,
+            purchasesCache,
+            handledPurchasesCache,
+            launchResultCacheWrapper,
+            userInfoService,
+            identityManager,
+            config,
+            this
+        )
+
+        userPropertiesManager?.productCenterManager = productCenterManager
+        userPropertiesManager?.sendFacebookAttribution()
+    }
+
+    override fun onAppBackground() {
+        if (!QDependencyInjector.isAppComponentInitialized()) {
+            appState = AppState.PendingBackground
+            return
+        }
+
+        appState = AppState.Background
+
+        userPropertiesManager?.onAppBackground()
+    }
+
+    override fun onAppForeground() {
+        if (!QDependencyInjector.isAppComponentInitialized()) {
+            appState = AppState.PendingForeground
+            return
+        }
+
+        appState = AppState.Foreground
+
+        userPropertiesManager?.onAppForeground()
+        productCenterManager?.onAppForeground()
+        automationsManager?.onAppForeground()
+        attributionManager?.onAppForeground()
+    }
+
+    override fun launch(callback: QonversionLaunchCallback?) {
+        when (appState) {
+            AppState.PendingForeground -> onAppForeground()
+            AppState.PendingBackground -> onAppBackground()
+            else -> {}
+        }
+
+        productCenterManager?.launch(object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) =
+                postToMainThread { callback?.onSuccess(launchResult) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback?.onError(error) }
+        })
+    }
+
+    override fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(
+            context,
+            id,
+            null,
+            null,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback) {
+        productCenterManager?.purchaseProduct(
+            context,
+            product,
+            null,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun updatePurchase(
+        context: Activity,
+        productId: String,
+        oldProductId: String,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager?.purchaseProduct(
+            context,
+            productId,
+            oldProductId,
+            prorationMode,
+            null,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        oldProductId: String,
+        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        callback: QonversionPermissionsCallback
+    ) {
+        productCenterManager?.purchaseProduct(
+            context,
+            product,
+            oldProductId,
+            prorationMode,
+            mainPermissionsCallback(callback)
+        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun products(callback: QonversionProductsCallback) {
+        productCenterManager?.loadProducts(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) =
+                postToMainThread { callback.onSuccess(products) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun offerings(callback: QonversionOfferingsCallback) {
+        productCenterManager?.offerings(object : QonversionOfferingsCallback {
+            override fun onSuccess(offerings: QOfferings) =
+                postToMainThread { callback.onSuccess(offerings) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun experiments(callback: QonversionExperimentsCallback) {
+        productCenterManager?.experiments(object : QonversionExperimentsCallback {
+            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
+                postToMainThread { callback.onSuccess(experiments) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun checkTrialIntroEligibilityForProductIds(
+        productIds: List<String>,
+        callback: QonversionEligibilityCallback
+    ) {
+        productCenterManager?.checkTrialIntroEligibilityForProductIds(
+            productIds,
+            object : QonversionEligibilityCallback {
+                override fun onSuccess(eligibilities: Map<String, QEligibility>) =
+                    callback.onSuccess(eligibilities)
+
+                override fun onError(error: QonversionError) =
+                    callback.onError(error)
+            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun checkPermissions(callback: QonversionPermissionsCallback) {
+        productCenterManager?.checkPermissions(mainPermissionsCallback(callback))
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun restore(callback: QonversionPermissionsCallback) {
+        productCenterManager?.restore(mainPermissionsCallback(callback))
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun syncPurchases() {
+        productCenterManager?.syncPurchases()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun identify(userID: String) {
+        productCenterManager?.identify(userID)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun logout() {
+        productCenterManager?.logout()
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource) {
+        attributionManager?.attribution(conversionInfo, from)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun setProperty(key: QUserProperties, value: String) {
+        userPropertiesManager?.setProperty(key, value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun setUserProperty(key: String, value: String) {
+        userPropertiesManager?.setUserProperty(key, value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
+        productCenterManager?.setUpdatedPurchasesListener(object : UpdatedPurchasesListener {
+            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
+                postToMainThread { listener.onPermissionsUpdate(permissions) }
+            }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun setDebugMode() {
+        isDebugMode = true
+    }
+
+    override fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
+        productCenterManager?.setPermissionsCacheLifetime(lifetime)
+    }
+
+    override fun setNotificationsToken(token: String) {
+        automationsManager?.setPushToken(token)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun handleNotification(messageData: Map<String, String>): Boolean {
+        return automationsManager?.handlePushIfPossible(messageData) ?: run {
+            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return@run false
+        }
+    }
+
+    override fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
+        return automationsManager?.getNotificationCustomPayload(messageData)
+    }
+
+    // Internal functions
+    internal fun logLaunchErrorForFunctionName(functionName: String?) {
+        logger.release("$functionName function can not be executed. It looks like launch was not called.")
+    }
+
+    // Private functions
+    private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
+        object : QonversionPermissionsCallback {
+            override fun onSuccess(permissions: Map<String, QPermission>) =
+                postToMainThread { callback.onSuccess(permissions) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }
+
+    private fun postToMainThread(runnable: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            runnable()
+        } else {
+            handler.post(runnable)
+        }
+    }
+}

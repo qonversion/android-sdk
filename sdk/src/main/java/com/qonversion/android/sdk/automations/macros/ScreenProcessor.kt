@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.automations.macros
 
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -76,7 +76,7 @@ internal class ScreenProcessor {
             return
         }
 
-        Qonversion.products(object : QonversionProductsCallback {
+        Qonversion.sharedInstance.products(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 var processedHtml = originalHtml
 

@@ -18,6 +18,8 @@ import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent
 import com.qonversion.android.sdk.internal.di.module.ActivityModule
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import kotlinx.android.synthetic.main.q_activity_screen.*
@@ -96,7 +98,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         progressBar.visibility = View.VISIBLE
 
-        Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
+        Qonversion.sharedInstance.purchase(this, productId, object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
@@ -112,7 +114,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         progressBar.visibility = View.VISIBLE
 
-        Qonversion.restore(object : QonversionPermissionsCallback {
+        Qonversion.sharedInstance.restore(object : QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(

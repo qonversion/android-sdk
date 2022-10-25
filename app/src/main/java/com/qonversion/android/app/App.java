@@ -9,10 +9,13 @@ import androidx.multidex.MultiDexApplication;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.google.firebase.*;
+import com.qonversion.android.sdk.Qonversion;
+import com.qonversion.android.sdk.QonversionConfig;
+import com.qonversion.android.sdk.dto.LaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
 import com.qonversion.android.sdk.dto.QUserProperties;
-import com.qonversion.android.sdk.Qonversion;
-import com.qonversion.android.sdk.QonversionError;
+import com.qonversion.android.sdk.dto.Store;
+import com.qonversion.android.sdk.dto.QonversionError;
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
 
@@ -29,13 +32,14 @@ public class App extends MultiDexApplication {
 
         FirebaseApp.initializeApp(this);
 
-        //  You can set the flag to distinguish sandbox and production users.
-        //  Don't use it in production
-        Qonversion.setDebugMode();
-        Qonversion.launch(
+        final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                false,
+                LaunchMode.InfrastructureMode,
+                Store.GooglePlay
+        ).build();
+        final Qonversion qonversion = Qonversion.initialize(qonversionConfig);
+        qonversion.launch(
                 new QonversionLaunchCallback() {
                     @Override
                     public void onSuccess(@NotNull QLaunchResult launchResult) {
@@ -51,8 +55,11 @@ public class App extends MultiDexApplication {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
-                Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
-                Qonversion.attribution(conversionData, QAttributionSource.AppsFlyer);
+                Qonversion.getSharedInstance().setProperty(
+                        QUserProperties.AppsFlyerUserId,
+                        AppsFlyerLib.getInstance().getAppsFlyerUID(App.this)
+                );
+                Qonversion.getSharedInstance().attribution(conversionData, QAttributionSource.AppsFlyer);
             }
 
             @Override

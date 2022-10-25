@@ -5,13 +5,13 @@ import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.QUserProperties
-import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
 import javax.inject.Inject
 
@@ -20,6 +20,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
     private val repository: QonversionRepository,
     private var propertiesStorage: PropertiesStorage,
     private val delayCalculator: IncrementalDelayCalculator,
+    private val appStateProvider: AppStateProvider,
     private val logger: Logger
 ) {
     internal var productCenterManager: QProductCenterManager? = null
@@ -130,7 +131,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
 
     @VisibleForTesting
     fun sendPropertiesWithDelay(delaySec: Int) {
-        if (Qonversion.appState.isBackground()) {
+        if (appStateProvider.appState.isBackground()) {
             return
         }
 

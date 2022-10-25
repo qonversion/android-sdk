@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.di.module
 
 import android.app.Application
-import com.qonversion.android.sdk.internal.QonversionConfig
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
 import com.qonversion.android.sdk.internal.api.ApiHelper
 import com.qonversion.android.sdk.internal.api.NetworkInterceptor
@@ -83,7 +83,7 @@ internal class NetworkModule {
     @Provides
     fun provideHeadersInterceptor(
         apiHeadersProvider: ApiHeadersProvider,
-        config: QonversionConfig,
+        config: InternalConfig,
         apiHelper: ApiHelper
     ): NetworkInterceptor {
         return NetworkInterceptor(apiHeadersProvider, apiHelper, config)

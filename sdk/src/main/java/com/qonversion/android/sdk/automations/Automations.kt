@@ -1,12 +1,12 @@
 package com.qonversion.android.sdk.automations
 
-import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import java.lang.ref.WeakReference
 
 object Automations {
-
+    private var logger = ConsoleLogger()
     private val automationsManager: QAutomationsManager? =
         if (QDependencyInjector.isAppComponentInitialized()) {
             QDependencyInjector.appComponent.automationsManager()
@@ -21,7 +21,7 @@ object Automations {
     @JvmStatic
     fun setDelegate(delegate: AutomationsDelegate) {
         automationsManager?.let { it.automationsDelegate = WeakReference(delegate) }
-            ?: Qonversion.logLaunchErrorForFunctionName(
+            ?: logLaunchErrorForFunctionName(
                 object {}.javaClass.enclosingMethod?.name
             )
     }
@@ -34,8 +34,12 @@ object Automations {
     @JvmStatic
     fun showScreen(withID: String, callback: QonversionShowScreenCallback) {
         automationsManager?.loadScreen(withID, callback)
-            ?: Qonversion.logLaunchErrorForFunctionName(
+            ?: logLaunchErrorForFunctionName(
                 object {}.javaClass.enclosingMethod?.name
             )
+    }
+
+    private fun logLaunchErrorForFunctionName(functionName: String?) {
+        logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 }

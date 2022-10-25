@@ -23,7 +23,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
             .setListener { billingResult, list ->
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     if (list != null && list.isNotEmpty()) {
-                        Qonversion.syncPurchases()
+                        Qonversion.sharedInstance.syncPurchases()
                     }
                 }
             }
