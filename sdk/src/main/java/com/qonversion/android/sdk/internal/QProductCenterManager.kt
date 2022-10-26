@@ -9,7 +9,6 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
@@ -70,7 +69,6 @@ internal class QProductCenterManager internal constructor(
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
     private var entitlementCallbacks = mutableListOf<QonversionEntitlementsCallback>()
-    private var experimentsCallbacks = mutableListOf<QonversionExperimentsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionEntitlementsCallback>()
 
     private var processingPartnersIdentityId: String? = null
@@ -218,22 +216,6 @@ internal class QProductCenterManager internal constructor(
                 executeEntitlementsBlock(error)
             }
         })
-    }
-
-    fun experiments(
-        callback: QonversionExperimentsCallback
-    ) {
-        experimentsCallbacks.add(callback)
-
-        if (!isLaunchingFinished) {
-            return
-        }
-
-        if (launchResultCache.sessionLaunchResult != null) {
-            executeExperimentsBlocks()
-        } else {
-            launch()
-        }
     }
 
     fun checkTrialIntroEligibilityForProductIds(
@@ -769,7 +751,6 @@ internal class QProductCenterManager internal constructor(
 
                 loadStoreProductsIfPossible()
 
-                executeExperimentsBlocks()
                 handleCachedPurchases()
 
                 callback?.onSuccess(launchResult)
@@ -875,27 +856,6 @@ internal class QProductCenterManager internal constructor(
 
                 override fun onError(error: QonversionError, httpCode: Int?) {}
             })
-        }
-    }
-
-    @Synchronized
-    private fun executeExperimentsBlocks() {
-        if (experimentsCallbacks.isEmpty()) {
-            return
-        }
-
-        val callbacks = experimentsCallbacks.toList()
-        experimentsCallbacks.clear()
-
-        launchResultCache.sessionLaunchResult?.experiments?.let { experiments ->
-            callbacks.forEach {
-                it.onSuccess(experiments)
-            }
-        } ?: run {
-            experimentsCallbacks.forEach {
-                val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
-                it.onError(error)
-            }
         }
     }
 

@@ -9,7 +9,6 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -137,12 +136,6 @@ interface Qonversion {
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     fun offerings(callback: QonversionOfferingsCallback)
-
-    /**
-     * Qonversion A/B tests help you grow your app revenue by making it easy to run and analyze paywall and promoted in-app product experiments. It gives you the power to measure your paywalls' performance before you roll them out widely. It is an out-of-the-box solution that does not require any third-party service.
-     * @param callback - callback that will be called when response is received
-     */
-    fun experiments(callback: QonversionExperimentsCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
