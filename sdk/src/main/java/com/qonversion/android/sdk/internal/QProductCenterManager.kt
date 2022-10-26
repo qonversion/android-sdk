@@ -27,7 +27,6 @@ import com.qonversion.android.sdk.internal.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.QEntitlementSource
-import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -475,10 +474,6 @@ internal class QProductCenterManager internal constructor(
 
     fun syncPurchases() {
         restore()
-    }
-
-    fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime) {
-        launchResultCache.setPermissionsCacheLifetime(lifetime)
     }
 
     override fun onPurchasesCompleted(purchases: List<Purchase>) {

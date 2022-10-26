@@ -5,6 +5,8 @@ import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
+import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
@@ -12,9 +14,11 @@ import com.qonversion.android.sdk.internal.provider.UidProvider
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
-    val storeConfig: StoreConfig
+    val storeConfig: StoreConfig,
+    override val cacheConfig: CacheConfig
 ) : EnvironmentProvider,
     PrimaryConfigProvider,
+    CacheConfigProvider,
     UidProvider {
 
     @Volatile
@@ -29,7 +33,8 @@ internal class InternalConfig(
 
     constructor(qonversionConfig: QonversionConfig) : this(
         qonversionConfig.primaryConfig,
-        qonversionConfig.storeConfig
+        qonversionConfig.storeConfig,
+        qonversionConfig.cacheConfig
     )
 
     override val environment

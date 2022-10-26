@@ -3,7 +3,6 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -221,16 +220,6 @@ interface Qonversion {
      * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
     fun setDebugMode()
-
-    /**
-     * Permissions cache is used when there are problems with the Qonversion API
-     * or internet connection. If so, Qonversion will return the last successfully loaded
-     * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QEntitlementsCacheLifetime.MONTH].
-     *
-     * @param lifetime desired permissions cache lifetime duration
-     */
-    fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime)
 
     /**
      * Set push token to Qonversion to enable Qonversion push notifications

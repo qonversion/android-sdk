@@ -278,10 +278,6 @@ internal class QonversionInternal(
         isDebugMode = true
     }
 
-    override fun setPermissionsCacheLifetime(lifetime: QEntitlementsCacheLifetime) {
-        productCenterManager?.setPermissionsCacheLifetime(lifetime)
-    }
-
     override fun setNotificationsToken(token: String) {
         automationsManager?.setPushToken(token)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
