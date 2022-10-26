@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.listeners
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -45,5 +46,10 @@ interface QonversionEligibilityCallback {
 
 interface QonversionShowScreenCallback {
    fun onSuccess()
+   fun onError(error: QonversionError)
+}
+
+interface QonversionUserCallback {
+   fun onSuccess(user: QUser)
    fun onError(error: QonversionError)
 }

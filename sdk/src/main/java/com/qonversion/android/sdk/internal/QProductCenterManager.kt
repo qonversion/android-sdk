@@ -26,6 +26,7 @@ import com.qonversion.android.sdk.internal.converter.PurchaseConverter
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -43,6 +44,7 @@ import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import java.util.Date
 
 @SuppressWarnings("LongParameterList")
@@ -798,6 +800,11 @@ internal class QProductCenterManager internal constructor(
             val userID = userInfoService.obtainUserID()
             internalConfig.uid = userID
         }
+    }
+
+    fun getUserInfo(callback: QonversionUserCallback) {
+        val user = QUser(internalConfig.uid, identityManager.currentPartnersIdentityId)
+        callback.onSuccess(user)
     }
 
     fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
