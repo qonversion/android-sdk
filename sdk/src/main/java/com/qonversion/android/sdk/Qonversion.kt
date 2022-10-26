@@ -7,13 +7,13 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 interface Qonversion {
 
@@ -209,13 +209,6 @@ interface Qonversion {
     fun setUserProperty(key: String, value: String)
 
     /**
-     * Set the delegate to handle pending purchases
-     * The delegate is called when the deferred transaction status updates
-     * For example, to handle purchases using slow credit card or SCA flow purchases
-     */
-    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener)
-
-    /**
      * You can set the flag to distinguish sandbox and production users.
      * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
@@ -239,4 +232,19 @@ interface Qonversion {
      * @return a map with custom payload from the notification or null if it's not provided.
      */
     fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
+
+    /**
+     * Provide a listener to be notified about asynchronous user entitlements updates.
+     *
+     * Make sure you provide this listener for being up-to-date with the user entitlements.
+     * Else you can lose some important updates. Also, please, consider that this listener
+     * should live for the whole lifetime of the application.
+     *
+     * You may set entitlements listener both *after* Qonversion SDK initializing
+     * with [Qonversion.setEntitlementsUpdateListener] and *while* Qonversion initializing
+     * with [Qonversion.initialize]
+     *
+     * @param entitlementsUpdateListener listener to be called when entitlements update.
+     */
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
 }

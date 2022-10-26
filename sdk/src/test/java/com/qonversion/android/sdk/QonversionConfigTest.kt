@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.isDebuggable
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -34,6 +35,7 @@ internal class QonversionConfigTest {
     private val mockLaunchMode = mockk<LaunchMode>()
     private val mockStore = mockk<Store>()
     private val mockEnvironment = mockk<Environment>()
+    private val mockEntitlementsListener = mockk<EntitlementsUpdateListener>()
     private val mockShouldConsumePurchases = true
     private val mockEntitlementsCacheLifetime = mockk<QEntitlementsCacheLifetime>()
     private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment)
@@ -55,7 +57,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                mockEntitlementsListener
             )
 
             // then
@@ -63,6 +66,7 @@ internal class QonversionConfigTest {
             assertThat(config.primaryConfig).isSameAs(mockPrimaryConfig)
             assertThat(config.storeConfig).isSameAs(mockStoreConfig)
             assertThat(config.cacheConfig).isSameAs(mockCacheConfig)
+            assertThat(config.entitlementsUpdateListener).isSameAs(mockEntitlementsListener)
         }
     }
 
@@ -128,12 +132,15 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = mockEnvironment
                         shouldConsumePurchases = mockShouldConsumePurchases
+                        entitlementsCacheLifetime = mockEntitlementsCacheLifetime
+                        entitlementsUpdateListener = mockEntitlementsListener
                     }
             val expResult = QonversionConfig(
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                mockEntitlementsListener
             )
 
             // when
@@ -165,7 +172,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 expPrimaryConfig,
                 expStoreConfig,
-                expCacheConfig
+                expCacheConfig,
+                null
             )
 
             // when
@@ -185,6 +193,7 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = sandboxEnvironment
                         shouldConsumePurchases = mockShouldConsumePurchases
+                        entitlementsCacheLifetime = mockEntitlementsCacheLifetime
                     }
             every { mockContext.isDebuggable } returns false
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
@@ -193,7 +202,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                null
             )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
@@ -217,6 +227,7 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = prodEnvironment
                         shouldConsumePurchases = mockShouldConsumePurchases
+                        entitlementsCacheLifetime = mockEntitlementsCacheLifetime
                     }
             every { mockContext.isDebuggable } returns true
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)
@@ -225,7 +236,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                null
             )
             val slotWarningMessage = slot<String>()
             every { Log.w(any(), capture(slotWarningMessage)) } returns 0
@@ -249,6 +261,7 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = sandboxEnvironment
                         shouldConsumePurchases = mockShouldConsumePurchases
+                        entitlementsCacheLifetime = mockEntitlementsCacheLifetime
                     }
             every { mockContext.isDebuggable } returns true
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, sandboxEnvironment)
@@ -257,7 +270,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                null
             )
 
             // when
@@ -277,6 +291,7 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = prodEnvironment
                         shouldConsumePurchases = mockShouldConsumePurchases
+                        entitlementsCacheLifetime = mockEntitlementsCacheLifetime
                     }
             every { mockContext.isDebuggable } returns false
             val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, prodEnvironment)
@@ -285,7 +300,8 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockStoreConfig,
-                mockCacheConfig
+                mockCacheConfig,
+                null
             )
 
             // when

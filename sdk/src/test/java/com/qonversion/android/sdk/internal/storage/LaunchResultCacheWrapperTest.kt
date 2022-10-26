@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.storage
 
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.qonversion.android.sdk.internal.storage.Util.Companion.buildMoshi
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
@@ -12,6 +13,7 @@ class LaunchResultCacheWrapperTest {
     private val mockPrefsCache: SharedPreferencesCache = mockk(relaxed = true)
     private val mockMoshi = buildMoshi()
     private val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)
+    private val mockCacheConfigProvider = mockk<CacheConfigProvider>()
 
     private lateinit var cacheWrapper: LaunchResultCacheWrapper
 
@@ -22,7 +24,7 @@ class LaunchResultCacheWrapperTest {
     fun setUp() {
         clearAllMocks()
 
-        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache)
+        cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider)
     }
 
     @Nested

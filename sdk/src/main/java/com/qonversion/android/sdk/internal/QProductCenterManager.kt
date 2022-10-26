@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 import com.qonversion.android.sdk.internal.LoadStoreProductsState.NotStartedYet
 import com.qonversion.android.sdk.internal.LoadStoreProductsState.Loaded
 import com.qonversion.android.sdk.internal.LoadStoreProductsState.Failed
@@ -43,6 +42,7 @@ import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import java.util.Date
 
 @SuppressWarnings("LongParameterList")
@@ -55,11 +55,10 @@ internal class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
-    private val config: InternalConfig,
+    private val internalConfig: InternalConfig,
     private val appStateProvider: AppStateProvider
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
-    private var listener: UpdatedPurchasesListener? = null
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResultCache.sessionLaunchResult != null
 
@@ -118,10 +117,6 @@ internal class QProductCenterManager internal constructor(
         handlePendingPurchases()
 
         processPendingInitIfAvailable()
-    }
-
-    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
-        this.listener = listener
     }
 
     fun launch(
@@ -211,7 +206,7 @@ internal class QProductCenterManager internal constructor(
                 if (currentUserID == identityID) {
                     executeEntitlementsBlock()
                 } else {
-                    config.uid = identityID
+                    internalConfig.uid = identityID
 
                     launch()
                 }
@@ -801,8 +796,12 @@ internal class QProductCenterManager internal constructor(
             unhandledLogoutAvailable = true
 
             val userID = userInfoService.obtainUserID()
-            config.uid = userID
+            internalConfig.uid = userID
         }
+    }
+
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
     }
 
     private fun handleLogout() {
@@ -1051,8 +1050,10 @@ internal class QProductCenterManager internal constructor(
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
-                    purchaseCallback?.onSuccess(launchResult.permissions.toEntitlementsMap()) ?: run {
-                        listener?.onPermissionsUpdate(launchResult.permissions)
+                    val entitlements = launchResult.permissions.toEntitlementsMap()
+
+                    purchaseCallback?.onSuccess(entitlements) ?: run {
+                        internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
                     }
                     handledPurchasesCache.saveHandledPurchase(purchase)
                 }
@@ -1100,7 +1101,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun shouldCalculatePermissionsLocally(error: QonversionError, httpCode: Int?): Boolean {
-        return !config.isObserveMode && (
+        return !internalConfig.isObserveMode && (
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         httpCode?.isInternalServerError() == true
                 )

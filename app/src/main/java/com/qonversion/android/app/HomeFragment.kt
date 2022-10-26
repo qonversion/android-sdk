@@ -20,9 +20,9 @@ import com.qonversion.android.sdk.automations.QActionResultType
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
@@ -33,7 +33,7 @@ class HomeFragment : Fragment() {
     private val permissionStandart = "standart"
     private val TAG = "HomeFragment"
     private val automationsDelegate = getAutomationsDelegate()
-    private val purchasesListener = getUpdatedPurchasesListener()
+    private val entitlementsUpdateListener = getEntitlementsUpdateListener()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +43,7 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
-        Qonversion.sharedInstance.setUpdatedPurchasesListener(purchasesListener)
+        Qonversion.sharedInstance.setEntitlementsUpdateListener(entitlementsUpdateListener)
 
         Qonversion.sharedInstance.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
@@ -184,9 +184,9 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
-        override fun onPermissionsUpdate(permissions: Map<String, QEntitlement>) {
-            // handle updated permissions here
+    private fun getEntitlementsUpdateListener() = object : EntitlementsUpdateListener {
+        override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
+            // handle updated entitlements here
         }
     }
 

@@ -15,20 +15,18 @@ import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.internal.dto.QPermission
-import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -266,14 +264,6 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
-        productCenterManager?.setUpdatedPurchasesListener(object : UpdatedPurchasesListener {
-            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
-                postToMainThread { listener.onPermissionsUpdate(permissions) }
-            }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
     override fun setDebugMode() {
         isDebugMode = true
     }
@@ -292,6 +282,10 @@ internal class QonversionInternal(
 
     override fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
         return automationsManager?.getNotificationCustomPayload(messageData)
+    }
+
+    override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+        productCenterManager?.setEntitlementsUpdateListener(entitlementsUpdateListener)
     }
 
     // Internal functions
