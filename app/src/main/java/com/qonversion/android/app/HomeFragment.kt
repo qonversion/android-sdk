@@ -1,5 +1,6 @@
 package com.qonversion.android.app
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -85,7 +86,12 @@ class HomeFragment : Fragment() {
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
-            requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
+            if (Build.VERSION.SDK_INT >= 33) {
+                requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE, RemoteMessage::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
+            }
 
         @Suppress("ControlFlowWithEmptyBody")
         if (remoteMessage != null && !Qonversion.sharedInstance.handleNotification(remoteMessage.data)) {

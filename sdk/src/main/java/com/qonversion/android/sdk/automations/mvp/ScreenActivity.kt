@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.qonversion.android.sdk.*
@@ -157,6 +156,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
 
     private fun configureWebClient() {
         binding.webView.webViewClient = object : WebViewClient() {
+            @Deprecated("Deprecated since API 24", ReplaceWith(""))
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
