@@ -30,7 +30,7 @@ internal class LaunchResultCacheWrapper(
             )
         )
 
-    private var permissionsCacheLifetime = QPermissionsCacheLifetime.MONTH
+    private var permissionsCacheLifetime = QPermissionsCacheLifetime.Month
 
     val productPermissions get() = getLaunchResult()?.productPermissions
 

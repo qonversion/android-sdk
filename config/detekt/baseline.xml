@@ -86,13 +86,13 @@
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$365</ID>
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$7</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.MONTH$30</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.SIX_MONTHS$180</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.THREE_MONTHS$90</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TWO_MONTHS$60</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TWO_WEEKS$14</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.WEEK$7</ID>
-    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.YEAR$365</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.Month$30</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.SixMonths$180</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.ThreeMonths$90</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TwoMonths$60</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.TwoWeeks$14</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.Week$7</ID>
+    <ID>MagicNumber:QPermissionsCacheLifetime.kt$QPermissionsCacheLifetime.Year$365</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
