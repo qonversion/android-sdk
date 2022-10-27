@@ -197,7 +197,9 @@ internal class QEligibilityStatusAdapter {
 
 internal class QEligibilityAdapter {
     @ToJson
-    private fun toJson(eligibilities: Map<String, QEligibility>): List<ProductEligibility> {
+    private fun toJson(
+        @Suppress("UNUSED_PARAMETER") eligibilities: Map<String, QEligibility>
+    ): List<ProductEligibility> {
         return listOf()
     }
 

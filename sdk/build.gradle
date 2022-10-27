@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -44,6 +43,10 @@ android {
                 showStandardStreams = true
             }
         }
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 }
 
@@ -116,8 +119,8 @@ dependencies {
     kapt moshi.koltin_codegen
 
     // UI
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // Billing
     api billing.billingClient

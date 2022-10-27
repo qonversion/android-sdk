@@ -4,16 +4,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.qonversion.android.app.databinding.TableRowPermissionBinding
 import com.qonversion.android.sdk.dto.QPermission
-import kotlinx.android.synthetic.main.table_row_permission.view.*
 
 class PermissionsAdapter(private val permissions: List<QPermission>) :
     RecyclerView.Adapter<PermissionsAdapter.RowViewHolder>() {
 
+    private lateinit var binding: TableRowPermissionBinding
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_permission, parent, false)
-        return RowViewHolder(itemView)
+        binding = TableRowPermissionBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return RowViewHolder(binding.root)
     }
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) =
@@ -23,9 +28,9 @@ class PermissionsAdapter(private val permissions: List<QPermission>) :
 
     inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(permission: QPermission) = with(itemView) {
-            txtPermissionId.text = permission.permissionID
-            txtProductId.text = permission.productID
-            txtRenewStateLabel.text = permission.renewState.name
+            binding.txtPermissionId.text = permission.permissionID
+            binding.txtProductId.text = permission.productID
+            binding.txtRenewStateLabel.text = permission.renewState.name
         }
     }
 }

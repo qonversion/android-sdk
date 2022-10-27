@@ -4,19 +4,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.qonversion.android.app.databinding.TableRowProductBinding
 import com.qonversion.android.sdk.dto.products.QProduct
-import kotlinx.android.synthetic.main.table_row_product.view.*
 
 class ProductsAdapter(
     private val products: List<QProduct>,
     private val onItemClicked: (QProduct) -> Unit
-) :
-    RecyclerView.Adapter<ProductsAdapter.RowViewHolder>() {
+) : RecyclerView.Adapter<ProductsAdapter.RowViewHolder>() {
+
+    private lateinit var binding: TableRowProductBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_product, parent, false)
-        return RowViewHolder(itemView) { index ->
+        binding = TableRowProductBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return RowViewHolder(binding.root) { index ->
             onItemClicked(products[index])
         }
     }
@@ -35,9 +39,9 @@ class ProductsAdapter(
         }
 
         fun bind(product: QProduct) = with(itemView) {
-            txtName.text = product.qonversionID
-            txtDescription.text = product.skuDetail?.description
-            txtPrice.text = product.skuDetail?.price
+            binding.txtName.text = product.qonversionID
+            binding.txtDescription.text = product.skuDetail?.description
+            binding.txtPrice.text = product.skuDetail?.price
         }
     }
 }
