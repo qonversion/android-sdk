@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.QAutomationsManager
@@ -375,20 +374,6 @@ object Qonversion : LifecycleDelegate {
     }
 
     /**
-     * Call this function to reset user ID and generate new anonymous user ID.
-     * Call this function before Qonversion.launch()
-     */
-    @Deprecated(
-        "This function was used in debug mode only. You can reinstall the app if you need to reset the user ID.",
-        level = DeprecationLevel.WARNING
-    )
-    @JvmStatic
-    fun resetUser() {
-        logger.debug(object {}.javaClass.enclosingMethod?.name +
-                " function was used in debug mode only. You can reinstall the app if you need to reset the user ID.")
-    }
-
-    /**
      * Send your attribution data
      * @param conversionInfo map received by the attribution source
      * @param from Attribution source
@@ -421,23 +406,6 @@ object Qonversion : LifecycleDelegate {
     @JvmStatic
     fun setUserProperty(key: String, value: String) {
         userPropertiesManager?.setUserProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    /**
-     * Associate a user with their unique ID in your system
-     * @param value your database user ID
-     */
-    @JvmStatic
-    @Deprecated(
-        "Will be removed in a future major release. Use setProperty instead.",
-        replaceWith = ReplaceWith(
-            "Qonversion.setProperty(QUserProperties.CustomUserId, value)",
-            "com.qonversion.android.sdk.dto.QUserProperties"
-        )
-    )
-    fun setUserID(value: String) {
-        userPropertiesManager?.setProperty(QUserProperties.CustomUserId, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
@@ -497,21 +465,6 @@ object Qonversion : LifecycleDelegate {
             logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
             return@run false
         }
-    }
-
-    /**
-     * @param remoteMessage A remote Firebase Message
-     * @see [RemoteMessage](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage)
-     * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
-     */
-    @Deprecated(
-        message = "Will be removed in a future major release.",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("Qonversion.handleNotification(messageData)")
-    )
-    @JvmStatic
-    fun handleNotification(remoteMessage: RemoteMessage): Boolean {
-        return handleNotification(remoteMessage.data)
     }
 
     /**

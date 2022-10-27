@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.automations
 
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.*
@@ -31,10 +30,10 @@ class AutomationsEventMapperTest {
         fun `should return null when payload doesn't contain event`() {
             // given
             val json = null
-            val mockMessage = mockRemoteMessage(json)
+            val mockData = mockRemoteMessageData(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
             // then
             Assert.assertEquals(null, result)
@@ -44,10 +43,10 @@ class AutomationsEventMapperTest {
         fun `should return null when payload contains empty event name`() {
             // given
             val json = "{\"name\": \"\", \"happened\": $timeInSec}"
-            val mockMessage = mockRemoteMessage(json)
+            val mockData = mockRemoteMessageData(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
             // then
             Assert.assertEquals(null, result)
@@ -57,10 +56,10 @@ class AutomationsEventMapperTest {
         fun `should return null when payload contains unknown event name`() {
             // given
             val json = "{\"name\": \"some_event_name\", \"happened\": $timeInSec}"
-            val mockMessage = mockRemoteMessage(json)
+            val mockData = mockRemoteMessageData(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
             // then
             assertThat(result).isNull()
@@ -70,11 +69,11 @@ class AutomationsEventMapperTest {
         fun `should return event with current date when payload doesn't contain event date`() {
             // given
             val json = "{\"name\": \"trial_started\"}"
-            val mockMessage = mockRemoteMessage(json)
+            val mockData = mockRemoteMessageData(json)
             mockCalendar(timeInSec)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
             // then
             assertThat(result).isNotNull
@@ -85,10 +84,10 @@ class AutomationsEventMapperTest {
         fun `should return correct event date when payload contains event date`() {
             // given
             val json = "{\"name\": \"trial_started\", \"happened\": $timeInSec}"
-            val mockMessage = mockRemoteMessage(json)
+            val mockData = mockRemoteMessageData(json)
 
             // when
-            val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+            val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
             // then
             assertThat(result).isNotNull
@@ -117,26 +116,22 @@ class AutomationsEventMapperTest {
                 "{\"name\": \"subscription_product_changed\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionProductChanged
             )
             eventsMap.forEach { json ->
-                val mockMessage = mockRemoteMessage(json.key)
+                val mockData = mockRemoteMessageData(json.key)
 
                 // when
-                val result = automationsEventMapper.getEventFromRemoteMessage(mockMessage.data)
+                val result = automationsEventMapper.getEventFromRemoteMessage(mockData)
 
                 // then
                 Assert.assertEquals(json.value, result?.type)
             }
         }
 
-        private fun mockRemoteMessage(value: String?): RemoteMessage {
+        private fun mockRemoteMessageData(value: String?): Map<String, String> {
             val pickScreen = "qonv.event"
 
-            val remoteMessage = mockk<RemoteMessage>()
-            every {
-                remoteMessage.data
-            } returns mapOf(
-                pickScreen to value
+            return mapOf(
+                pickScreen to (value ?: "")
             )
-            return remoteMessage
         }
 
         private fun mockCalendar(timeInSec: Long) {

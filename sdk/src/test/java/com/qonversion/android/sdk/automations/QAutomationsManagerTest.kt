@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Looper
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
@@ -71,13 +70,13 @@ class QAutomationsManagerTest {
         @Test
         fun `should show screen on Qonversion push when screen and actionPoints requests succeeded`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse()
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -91,7 +90,7 @@ class QAutomationsManagerTest {
         @Test
         fun `should show screen on Qonversion push when trigger event is null`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse()
             automationsManager.automationsDelegate = WeakReference(delegate)
@@ -100,7 +99,7 @@ class QAutomationsManagerTest {
             } returns null
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -114,13 +113,13 @@ class QAutomationsManagerTest {
         @Test
         fun `should show screen on Qonversion push when delegate is null`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse()
             automationsManager.automationsDelegate = null
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -134,7 +133,7 @@ class QAutomationsManagerTest {
         @Test
         fun `shouldn't show screen on Qonversion push when shouldHandleEvent delegate returns false`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse()
             automationsManager.automationsDelegate = WeakReference(object : AutomationsDelegate {
@@ -147,7 +146,7 @@ class QAutomationsManagerTest {
             })
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -160,12 +159,12 @@ class QAutomationsManagerTest {
         @Test
         fun `shouldn't show screen on Qonversion push when actionPoints request failed`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse(false)
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -181,13 +180,13 @@ class QAutomationsManagerTest {
         @Test
         fun `shouldn't show screen on Qonversion push when screens request failed`() {
             // given
-            val remoteMessage = mockRemoteMessage()
+            val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse(false)
             automationsManager.automationsDelegate = WeakReference(delegate)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isTrue()
@@ -201,10 +200,10 @@ class QAutomationsManagerTest {
         @Test
         fun `shouldn't show screen on non-Qonversion`() {
             // given
-            val remoteMessage = mockRemoteMessage(false)
+            val remoteMessageData = mockRemoteMessageData(false)
 
             // when
-            val result = automationsManager.handlePushIfPossible(remoteMessage.data)
+            val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
             assertThat(result).isFalse()
@@ -254,16 +253,12 @@ class QAutomationsManagerTest {
             }
         }
 
-        private fun mockRemoteMessage(isQonversionMessage: Boolean = true): RemoteMessage {
+        private fun mockRemoteMessageData(isQonversionMessage: Boolean = true): Map<String, String> {
             val pickScreen = "qonv.pick_screen"
 
-            val remoteMessage = mockk<RemoteMessage>()
-            every {
-                remoteMessage.data
-            } returns mapOf(
+            return mapOf(
                 if (isQonversionMessage) pickScreen to "1" else "some.app" to "1"
             )
-            return remoteMessage
         }
 
         private fun verifyActivityWasNotStarted() {
