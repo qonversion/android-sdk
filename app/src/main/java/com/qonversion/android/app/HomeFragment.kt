@@ -86,7 +86,7 @@ class HomeFragment : Fragment() {
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
-            if (Build.VERSION.SDK_INT >= 33) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE, RemoteMessage::class.java)
             } else {
                 @Suppress("DEPRECATION")
