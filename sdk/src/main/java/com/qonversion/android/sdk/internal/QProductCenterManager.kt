@@ -47,7 +47,7 @@ import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
-import java.util.*
+import java.util.Date
 
 @SuppressWarnings("LongParameterList")
 internal class QProductCenterManager internal constructor(

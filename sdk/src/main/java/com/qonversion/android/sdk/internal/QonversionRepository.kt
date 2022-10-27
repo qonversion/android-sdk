@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
-import android.os.Handler
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -44,7 +43,8 @@ import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import retrofit2.Response
 import java.lang.RuntimeException
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 
 @SuppressWarnings("LongParameterList")
 internal class QonversionRepository internal constructor(
