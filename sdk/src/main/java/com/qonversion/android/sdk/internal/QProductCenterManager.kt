@@ -2,13 +2,44 @@ package com.qonversion.android.sdk.internal
 
 import android.app.Activity
 import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QPermissionSource
+import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.offerings.QOffering
+import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductRenewState
+import com.qonversion.android.sdk.internal.LoadStoreProductsState.Failed
+import com.qonversion.android.sdk.internal.LoadStoreProductsState.Loaded
+import com.qonversion.android.sdk.internal.LoadStoreProductsState.Loading
+import com.qonversion.android.sdk.internal.LoadStoreProductsState.NotStartedYet
+import com.qonversion.android.sdk.internal.billing.BillingError
+import com.qonversion.android.sdk.internal.billing.BillingService
+import com.qonversion.android.sdk.internal.billing.QonversionBillingService
+import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.billing.sku
+import com.qonversion.android.sdk.internal.converter.GoogleBillingPeriodConverter
+import com.qonversion.android.sdk.internal.converter.GooglePurchaseConverter
+import com.qonversion.android.sdk.internal.converter.PurchaseConverter
+import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
+import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
+import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.services.QUserInfoService
+import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
+import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
@@ -16,36 +47,7 @@ import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
-import com.qonversion.android.sdk.internal.LoadStoreProductsState.NotStartedYet
-import com.qonversion.android.sdk.internal.LoadStoreProductsState.Loaded
-import com.qonversion.android.sdk.internal.LoadStoreProductsState.Failed
-import com.qonversion.android.sdk.internal.LoadStoreProductsState.Loading
-import com.qonversion.android.sdk.internal.billing.QonversionBillingService
-import com.qonversion.android.sdk.internal.converter.GoogleBillingPeriodConverter
-import com.qonversion.android.sdk.internal.converter.GooglePurchaseConverter
-import com.qonversion.android.sdk.internal.converter.PurchaseConverter
-import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QPermissionSource
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
-import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.offerings.QOffering
-import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductRenewState
-import com.qonversion.android.sdk.internal.billing.BillingError
-import com.qonversion.android.sdk.internal.billing.BillingService
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
-import com.qonversion.android.sdk.internal.billing.sku
-import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
-import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
-import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.provider.AppStateProvider
-import com.qonversion.android.sdk.internal.services.QUserInfoService
-import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
-import com.qonversion.android.sdk.internal.storage.PurchasesCache
-import java.util.Date
+import java.util.*
 
 @SuppressWarnings("LongParameterList")
 internal class QProductCenterManager internal constructor(
@@ -100,10 +102,16 @@ internal class QProductCenterManager internal constructor(
         @Synchronized get
 
     init {
-        installDate = context.packageManager.getPackageInfo(
-            context.packageName,
-            0
-        ).firstInstallTime.milliSecondsToSeconds()
+        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong())
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+        }
+        installDate = packageInfo.firstInstallTime.milliSecondsToSeconds()
     }
 
     // Public functions
