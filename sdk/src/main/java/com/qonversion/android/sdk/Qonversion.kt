@@ -58,12 +58,18 @@ interface Qonversion {
 
     /**
      * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
+     */
+    fun launch() = launch(null)
+
+    /**
+     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
      * @param callback - callback that will be called when response is received
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
-     * // todo overload for java
      */
-    fun launch(callback: QonversionLaunchCallback? = null)
+    fun launch(callback: QonversionLaunchCallback?)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -92,7 +98,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -111,7 +116,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -226,7 +230,7 @@ interface Qonversion {
      * Permissions cache is used when there are problems with the Qonversion API
      * or internet connection. If so, Qonversion will return the last successfully loaded
      * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.MONTH].
+     * The default value is [QPermissionsCacheLifetime.Month].
      *
      * @param lifetime desired permissions cache lifetime duration
      */

@@ -64,7 +64,7 @@ class QonversionConfig internal constructor(
          * If set to false make sure that you call [Qonversion.consume] for purchases yourself.
          * todo fix method link above when it will be implemented
          *
-         * The flag makes sense only for [LaunchMode.InfrastructureMode].
+         * The flag makes sense only for [LaunchMode.Infrastructure].
          *
          * @param shouldConsumePurchases if true, the Qonversion will consume purchases itself. If false - it won't.
          * @return builder instance for chain calls.
