@@ -190,7 +190,7 @@ internal class QEligibilityStatusAdapter {
     }
 
     @FromJson
-    fun fromJson(type: String): QIntroEligibilityStatus? {
+    fun fromJson(type: String): QIntroEligibilityStatus {
         return QIntroEligibilityStatus.fromType(type)
     }
 }

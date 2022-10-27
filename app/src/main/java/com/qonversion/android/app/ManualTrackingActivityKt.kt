@@ -56,7 +56,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
             params
         ) { billingResult, list ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                if (!list!!.isEmpty()) {
+                if (list!!.isNotEmpty()) {
                     skuDetails[SKU_ID] = list[0]
                 }
                 launchBillingFlow()

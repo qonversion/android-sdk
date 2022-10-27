@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal
 
 import com.android.billingclient.api.Purchase
-import com.qonversion.android.sdk.internal.QHandledPurchasesCache
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test

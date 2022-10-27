@@ -103,6 +103,7 @@ internal class ScreenProcessor {
     }
 
     companion object {
+        @Suppress("RegExpRedundantEscape")
         private const val MACROS_REGEX = "\\[\\[.*?\\]\\]"
 
         private const val MACROS_PRODUCT_CATEGORY = "product"

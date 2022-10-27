@@ -19,7 +19,7 @@ internal class TokenStorage(
     }
 
     override fun load(): String {
-        return preferences.let { it.getString(TOKEN_KEY, "") } ?: ""
+        return preferences.getString(TOKEN_KEY, "") ?: ""
     }
 
     override fun exist(): Boolean {

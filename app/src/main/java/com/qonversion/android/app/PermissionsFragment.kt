@@ -15,15 +15,16 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.dto.QPermission
 
+private const val TAG = "PermissionsFragment"
+
 class PermissionsFragment : Fragment() {
-    private val TAG = "PermissionsFragment"
     lateinit var binding: FragmentPermissionsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentPermissionsBinding.inflate(inflater)
 
         binding.recyclerViewPermissionsList.layoutManager = LinearLayoutManager(context)

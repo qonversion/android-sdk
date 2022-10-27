@@ -24,6 +24,8 @@ import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
+private const val TAG = "HomeFragment"
+
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
 
@@ -31,7 +33,6 @@ class HomeFragment : Fragment() {
     private val productIdInApp = "in_app"
     private val permissionPlus = "plus"
     private val permissionStandart = "standart"
-    private val TAG = "HomeFragment"
     private val automationsDelegate = getAutomationsDelegate()
     private val purchasesListener = getUpdatedPurchasesListener()
 
@@ -39,7 +40,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
@@ -84,6 +85,8 @@ class HomeFragment : Fragment() {
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
             requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
+
+        @Suppress("ControlFlowWithEmptyBody")
         if (remoteMessage != null && !Qonversion.sharedInstance.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }

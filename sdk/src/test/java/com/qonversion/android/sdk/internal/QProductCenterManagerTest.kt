@@ -50,7 +50,6 @@ class QProductCenterManagerTest {
     private val fieldSkuDetails = "skuDetails"
 
     private val skuTypeInApp = BillingClient.SkuType.INAPP
-    private val skuTypeSubs = BillingClient.SkuType.SUBS
     private val sku = "sku"
     private val purchaseToken = "purchaseToken"
     private val installDate: Long = 1605608753

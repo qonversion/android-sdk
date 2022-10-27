@@ -69,7 +69,7 @@ class GooglePurchaseConverterTest {
     }
 
     @Test
-    fun `shouldn't convert purchases when purchase and skuDetails skus don't match`() {
+    fun `should not convert purchases when purchase and skuDetails skus don't match`() {
         // given
         val spykPurchaseConverter = spyk(purchaseConverter, recordPrivateCalls = true)
 
