@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
 import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
@@ -42,12 +43,12 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
-        Qonversion.setUpdatedPurchasesListener(purchasesListener)
+        Qonversion.sharedInstance.setUpdatedPurchasesListener(purchasesListener)
 
-        Qonversion.products(callback = object : QonversionProductsCallback {
+        Qonversion.sharedInstance.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 updateContent(products)
-                Qonversion.checkPermissions(getPermissionsCallback())
+                Qonversion.sharedInstance.checkPermissions(getPermissionsCallback())
             }
 
             override fun onError(error: QonversionError) {
@@ -66,12 +67,12 @@ class HomeFragment : Fragment() {
 
         binding.buttonRestore.setOnClickListener {
             showLoading(true)
-            Qonversion.restore(getPermissionsCallback())
+            Qonversion.sharedInstance.restore(getPermissionsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
             Firebase.auth.signOut()
-            Qonversion.logout()
+            Qonversion.sharedInstance.logout()
 
             goToAuth()
         }
@@ -83,7 +84,7 @@ class HomeFragment : Fragment() {
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
             requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
-        if (remoteMessage != null && !Qonversion.handleNotification(remoteMessage.data)) {
+        if (remoteMessage != null && !Qonversion.sharedInstance.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }
 
@@ -148,7 +149,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun purchase(productId: String) {
-        Qonversion.purchase(
+        Qonversion.sharedInstance.purchase(
             requireActivity(),
             productId,
             callback = object : QonversionPermissionsCallback {
@@ -194,7 +195,7 @@ class HomeFragment : Fragment() {
             // Handle the final action that the user completed on the in-app screen.
             if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available permissions
-                Qonversion.checkPermissions(object : QonversionPermissionsCallback {
+                Qonversion.sharedInstance.checkPermissions(object : QonversionPermissionsCallback {
                     override fun onSuccess(permissions: Map<String, QPermission>) {
                         // Handle new permissions here
                     }

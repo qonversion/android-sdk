@@ -11,11 +11,12 @@ import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.QUserPropertiesManager
 import com.qonversion.android.sdk.automations.AutomationsEventMapper
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage
 
 import dagger.Module
 import dagger.Provides
-import java.util.*
+import java.util.Random
 
 @Module
 internal class ManagersModule {
@@ -26,9 +27,16 @@ internal class ManagersModule {
         repository: QonversionRepository,
         preferences: SharedPreferences,
         eventMapper: AutomationsEventMapper,
-        appContext: Application
+        appContext: Application,
+        appStateProvider: AppStateProvider
     ): QAutomationsManager {
-        return QAutomationsManager(repository, preferences, eventMapper, appContext)
+        return QAutomationsManager(
+            repository,
+            preferences,
+            eventMapper,
+            appContext,
+            appStateProvider
+        )
     }
 
     @ApplicationScope
@@ -55,9 +63,17 @@ internal class ManagersModule {
         repository: QonversionRepository,
         propertiesStorage: UserPropertiesStorage,
         incrementalDelayCalculator: IncrementalDelayCalculator,
+        appStateProvider: AppStateProvider,
         logger: Logger
     ): QUserPropertiesManager {
-        return QUserPropertiesManager(appContext, repository, propertiesStorage, incrementalDelayCalculator, logger)
+        return QUserPropertiesManager(
+            appContext,
+            repository,
+            propertiesStorage,
+            incrementalDelayCalculator,
+            appStateProvider,
+            logger
+        )
     }
 
     @ApplicationScope

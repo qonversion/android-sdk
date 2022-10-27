@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal
 import android.content.SharedPreferences
 import android.os.Handler
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.internal.Constants.EXPERIMENT_STARTED_EVENT_NAME
@@ -49,7 +49,7 @@ import java.lang.RuntimeException
 internal class QonversionRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
-    private val config: QonversionConfig,
+    private val config: InternalConfig,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
@@ -59,9 +59,9 @@ internal class QonversionRepository internal constructor(
     private var advertisingId: String? = null
     private var installDate: Long = 0
 
-    private val key = config.key
-    private val isDebugMode = config.isDebugMode
-    private val sdkVersion = config.sdkVersion
+    private val key = config.primaryConfig.projectKey
+    private val isDebugMode = config.isSandbox
+    private val sdkVersion = config.primaryConfig.sdkVersion
     private val uid get() = config.uid
 
     // Public functions

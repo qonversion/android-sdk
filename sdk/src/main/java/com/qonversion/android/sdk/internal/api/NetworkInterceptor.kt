@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.api
 
 import com.qonversion.android.sdk.internal.HttpError
-import com.qonversion.android.sdk.internal.QonversionConfig
+import com.qonversion.android.sdk.internal.InternalConfig
 import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Response
@@ -12,7 +12,7 @@ import javax.inject.Inject
 internal class NetworkInterceptor @Inject constructor(
     private val headersProvider: ApiHeadersProvider,
     private val apiHelper: ApiHelper,
-    private val config: QonversionConfig
+    private val config: InternalConfig
 ) : Interceptor {
 
     @Throws(IOException::class)

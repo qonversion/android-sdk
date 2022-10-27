@@ -92,7 +92,7 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun goToMainFlow(userId: String? = null) {
-        userId?.let { Qonversion.identify(userId) }
+        userId?.let { Qonversion.sharedInstance.identify(userId) }
         val intent = MainActivity.getCallingIntent(this)
         startActivity(intent)
     }

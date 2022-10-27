@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
 import com.qonversion.android.sdk.internal.EnvironmentProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
-import com.qonversion.android.sdk.internal.QonversionConfig
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
@@ -29,7 +29,7 @@ internal class RepositoryModule {
     fun provideRepository(
         retrofit: Retrofit,
         environmentProvider: EnvironmentProvider,
-        config: QonversionConfig,
+        config: InternalConfig,
         logger: Logger,
         purchasesCache: PurchasesCache,
         apiErrorMapper: ApiErrorMapper,
@@ -72,7 +72,7 @@ internal class RepositoryModule {
     @ApplicationScope
     @Provides
     fun provideHeadersProvider(
-        config: QonversionConfig,
+        config: InternalConfig,
         sharedPreferencesCache: SharedPreferencesCache
     ): ApiHeadersProvider {
         return ApiHeadersProvider(config, sharedPreferencesCache)

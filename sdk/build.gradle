@@ -19,7 +19,15 @@ android {
         version = release.versionName
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     buildTypes {
+        buildTypes.each {
+            it.buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
+            it.buildConfigField("String","VERSION_NAME", "\"${defaultConfig.versionName}\"")
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

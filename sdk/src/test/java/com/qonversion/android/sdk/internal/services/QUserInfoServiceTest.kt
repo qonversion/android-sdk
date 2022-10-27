@@ -16,6 +16,7 @@ class QUserInfoServiceTest {
 
     private val prefsOriginalUserIdKey = "com.qonversion.keys.originalUserID"
     private val prefsUserIdKey = "com.qonversion.keys.storedUserID"
+    private val prefsPartnerIdentityUserIdKey = "com.qonversion.keys.partnerIdentityUserID"
     private val randomUID = "08111735c1a641f085cae9d0ab98a642"
     private val generatedUID = "QON_$randomUID"
 
@@ -316,6 +317,7 @@ class QUserInfoServiceTest {
             mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
             mockSharedPreferencesCache.getString(prefsUserIdKey, null)
             mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
+            mockSharedPreferencesCache.putString(prefsPartnerIdentityUserIdKey, null)
         }
 
         assertEquals("must be true", true, isLogoutNeeded)

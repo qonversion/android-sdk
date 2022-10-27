@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal
 
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import javax.inject.Inject
 

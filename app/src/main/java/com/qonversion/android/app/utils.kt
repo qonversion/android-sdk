@@ -3,7 +3,7 @@ package com.qonversion.android.app
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 
 fun showError(context: Context, error: QonversionError, logTag: String) {
     val code = error.code                           // Error enum code

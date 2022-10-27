@@ -1,30 +1,13 @@
 package com.qonversion.android.sdk
 
 import android.app.Activity
-import android.app.Application
-import android.os.Handler
-import android.os.Looper
-import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
-import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.logger.ConsoleLogger
-import com.qonversion.android.sdk.automations.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
-import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
-import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.internal.AppLifecycleHandler
-import com.qonversion.android.sdk.internal.AppState
-import com.qonversion.android.sdk.internal.LifecycleDelegate
-import com.qonversion.android.sdk.internal.QAttributionManager
-import com.qonversion.android.sdk.internal.QProductCenterManager
-import com.qonversion.android.sdk.internal.QUserPropertiesManager
-import com.qonversion.android.sdk.internal.QonversionFactory
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.InternalConfig
+import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -33,118 +16,60 @@ import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
-object Qonversion : LifecycleDelegate {
+interface Qonversion {
 
-    private var userPropertiesManager: QUserPropertiesManager? = null
-    private var attributionManager: QAttributionManager? = null
-    private var productCenterManager: QProductCenterManager? = null
-    private var automationsManager: QAutomationsManager? = null
-    private var logger = ConsoleLogger()
-    private var isDebugMode = false
-    private val handler = Handler(Looper.getMainLooper())
-    internal var appState = AppState.Background
+    companion object {
 
-    init {
-        val lifecycleHandler = AppLifecycleHandler(this)
-        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
-    }
+        private var backingInstance: Qonversion? = null
 
-    override fun onAppBackground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingBackground
-            return
+        /**
+         * Use this variable to get a current initialized instance of the Qonversion SDK.
+         * Please, use the variable only after calling Qonversion.initialize().
+         * Otherwise, trying to access the variable will cause an exception.
+         *
+         * @return Current initialized instance of the Qonversion SDK.
+         * @throws UninitializedPropertyAccessException if the instance has not been initialized
+         */
+        @JvmStatic
+        val sharedInstance: Qonversion
+            get() = backingInstance ?: throw UninitializedPropertyAccessException(
+                "Qonversion has not been initialized. You should call " +
+                        "the initialize method before accessing the shared instance of Qonversion."
+            )
+
+        /**
+         * An entry point to use Qonversion SDK. Call to initialize Qonversion SDK with required and extra configs.
+         * The function is the best way to set additional configs you need to use Qonversion SDK.
+         * You still have an option to set a part of additional configs later via calling separated setters.
+         *
+         * @param config a config that contains key SDK settings.
+         * Call [QonversionConfig.Builder.build] to configure and create a QonversionConfig instance.
+         * @return Initialized instance of the Qonversion SDK.
+         */
+        @JvmStatic
+        fun initialize(config: QonversionConfig): Qonversion {
+            val internalConfig = InternalConfig(config)
+
+            return QonversionInternal(internalConfig, config.application).also {
+                backingInstance = it
+            }
         }
-
-        appState = AppState.Background
-
-        userPropertiesManager?.onAppBackground()
-    }
-
-    override fun onAppForeground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingForeground
-            return
-        }
-
-        appState = AppState.Foreground
-
-        userPropertiesManager?.onAppForeground()
-        productCenterManager?.onAppForeground()
-        automationsManager?.onAppForeground()
-        attributionManager?.onAppForeground()
     }
 
     /**
      * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
-     * @param context Application object
-     * @param key project key to setup the SDK
-     * @param observeMode set true if you are using observer mode only
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
+     */
+    fun launch() = launch(null)
+
+    /**
+     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
      * @param callback - callback that will be called when response is received
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      */
-    @JvmStatic
-    @JvmOverloads
-    fun launch(
-        context: Application,
-        key: String,
-        observeMode: Boolean,
-        callback: QonversionLaunchCallback? = null
-    ) {
-        QDependencyInjector.buildAppComponent(context, key, isDebugMode, observeMode)
-
-        if (key.isEmpty()) {
-            throw RuntimeException("Qonversion initialization error! Key should not be empty!")
-        }
-
-        val repository = QDependencyInjector.appComponent.repository()
-        val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
-        val handledPurchasesCache = QDependencyInjector.appComponent.handledPurchasesCache()
-        val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
-        val userInfoService = QDependencyInjector.appComponent.userInfoService()
-        val identityManager = QDependencyInjector.appComponent.identityManager()
-        val config = QDependencyInjector.appComponent.qonversionConfig()
-
-        val userID = userInfoService.obtainUserID()
-
-        config.uid = userID
-
-        automationsManager = QDependencyInjector.appComponent.automationsManager()
-
-        userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
-
-        attributionManager = QAttributionManager(repository)
-
-        val factory = QonversionFactory(context, logger)
-
-        productCenterManager = factory.createProductCenterManager(
-            repository,
-            observeMode,
-            purchasesCache,
-            handledPurchasesCache,
-            launchResultCacheWrapper,
-            userInfoService,
-            identityManager,
-            config
-        )
-
-        userPropertiesManager?.productCenterManager = productCenterManager
-        userPropertiesManager?.sendFacebookAttribution()
-
-        when (appState) {
-            AppState.PendingForeground -> onAppForeground()
-            AppState.PendingBackground -> onAppBackground()
-            else -> {}
-        }
-
-        productCenterManager?.launch(object : QonversionLaunchCallback {
-            override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { callback?.onSuccess(launchResult) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback?.onError(error) }
-        })
-    }
+    fun launch(callback: QonversionLaunchCallback?)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -153,17 +78,7 @@ object Qonversion : LifecycleDelegate {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(
-            context,
-            id,
-            null,
-            null,
-            null,
-            mainPermissionsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -172,16 +87,7 @@ object Qonversion : LifecycleDelegate {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback) {
-        productCenterManager?.purchaseProduct(
-            context,
-            product,
-            null,
-            null,
-            mainPermissionsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -193,24 +99,13 @@ object Qonversion : LifecycleDelegate {
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    @JvmOverloads
     fun updatePurchase(
         context: Activity,
         productId: String,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionPermissionsCallback
-    ) {
-        productCenterManager?.purchaseProduct(
-            context,
-            productId,
-            oldProductId,
-            prorationMode,
-            null,
-            mainPermissionsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    )
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -222,23 +117,13 @@ object Qonversion : LifecycleDelegate {
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    @JvmOverloads
     fun updatePurchase(
         context: Activity,
         product: QProduct,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionPermissionsCallback
-    ) {
-        productCenterManager?.purchaseProduct(
-            context,
-            product,
-            oldProductId,
-            prorationMode,
-            mainPermissionsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    )
 
     /**
      * Return Qonversion Products in assoсiation with Google Play Store Products
@@ -246,18 +131,7 @@ object Qonversion : LifecycleDelegate {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun products(
-        callback: QonversionProductsCallback
-    ) {
-        productCenterManager?.loadProducts(object : QonversionProductsCallback {
-            override fun onSuccess(products: Map<String, QProduct>) =
-                postToMainThread { callback.onSuccess(products) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun products(callback: QonversionProductsCallback)
 
     /**
      * Return Qonversion Offerings Object
@@ -267,35 +141,13 @@ object Qonversion : LifecycleDelegate {
      * @see [Offerings](https://qonversion.io/docs/offerings)
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun offerings(
-        callback: QonversionOfferingsCallback
-    ) {
-        productCenterManager?.offerings(object : QonversionOfferingsCallback {
-            override fun onSuccess(offerings: QOfferings) =
-                postToMainThread { callback.onSuccess(offerings) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun offerings(callback: QonversionOfferingsCallback)
 
     /**
      * Qonversion A/B tests help you grow your app revenue by making it easy to run and analyze paywall and promoted in-app product experiments. It gives you the power to measure your paywalls' performance before you roll them out widely. It is an out-of-the-box solution that does not require any third-party service.
      * @param callback - callback that will be called when response is received
      */
-    @JvmStatic
-    fun experiments(
-        callback: QonversionExperimentsCallback
-    ) {
-        productCenterManager?.experiments(object : QonversionExperimentsCallback {
-            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
-                postToMainThread { callback.onSuccess(experiments) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun experiments(callback: QonversionExperimentsCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
@@ -303,200 +155,103 @@ object Qonversion : LifecycleDelegate {
      * @param productIds products identifiers that must be checked
      * @param callback - callback that will be called when response is received
      */
-    @JvmStatic
     fun checkTrialIntroEligibilityForProductIds(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
-    ) {
-        productCenterManager?.checkTrialIntroEligibilityForProductIds(
-            productIds,
-            object : QonversionEligibilityCallback {
-                override fun onSuccess(eligibilities: Map<String, QEligibility>) =
-                    callback.onSuccess(eligibilities)
-
-                override fun onError(error: QonversionError) =
-                    callback.onError(error)
-            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    )
 
     /**
      * Check user permissions based on product center details
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun checkPermissions(
-        callback: QonversionPermissionsCallback
-    ) {
-        productCenterManager?.checkPermissions(mainPermissionsCallback(callback))
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun checkPermissions(callback: QonversionPermissionsCallback)
 
     /**
      * Restore user Products
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    @JvmStatic
-    fun restore(callback: QonversionPermissionsCallback) {
-        productCenterManager?.restore(mainPermissionsCallback(callback))
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun restore(callback: QonversionPermissionsCallback)
 
     /**
      * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
      * @warning This function should only be called if you're using Qonversion SDK in observer mode.
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      */
-    @JvmStatic
-    fun syncPurchases() {
-        productCenterManager?.syncPurchases()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun syncPurchases()
 
     /**
      * Call this function to link a user to his unique ID in your system and share purchase data.
      * @param userID - unique user ID in your system
      */
-    @JvmStatic
-    fun identify(userID: String) {
-        productCenterManager?.identify(userID)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun identify(userID: String)
 
     /**
      * Call this function to unlink a user from his unique ID in your system and his purchase data.
      */
-    @JvmStatic
-    fun logout() {
-        productCenterManager?.logout()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun logout()
 
     /**
      * Send your attribution data
      * @param conversionInfo map received by the attribution source
      * @param from Attribution source
      */
-    @JvmStatic
-    fun attribution(
-        conversionInfo: Map<String, Any>,
-        from: QAttributionSource
-    ) {
-        attributionManager?.attribution(conversionInfo, from)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource)
 
     /**
      * Sets Qonversion reserved user properties, like email or one-signal id
      * @param key defined enum key that will be transformed to string
      * @param value property value
      */
-    @JvmStatic
-    fun setProperty(key: QUserProperties, value: String) {
-        userPropertiesManager?.setProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun setProperty(key: QUserProperties, value: String)
 
     /**
      * Sets custom user properties
      * @param key custom user property key
      * @param value property value
      */
-    @JvmStatic
-    fun setUserProperty(key: String, value: String) {
-        userPropertiesManager?.setUserProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun setUserProperty(key: String, value: String)
 
     /**
      * Set the delegate to handle pending purchases
      * The delegate is called when the deferred transaction status updates
      * For example, to handle purchases using slow credit card or SCA flow purchases
      */
-    @JvmStatic
-    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener) {
-        productCenterManager?.setUpdatedPurchasesListener(object : UpdatedPurchasesListener {
-            override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
-                postToMainThread { listener.onPermissionsUpdate(permissions) }
-            }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener)
 
     /**
      * You can set the flag to distinguish sandbox and production users.
      * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
-    @JvmStatic
-    fun setDebugMode() {
-        isDebugMode = true
-    }
+    fun setDebugMode()
 
     /**
      * Permissions cache is used when there are problems with the Qonversion API
      * or internet connection. If so, Qonversion will return the last successfully loaded
      * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.MONTH].
+     * The default value is [QPermissionsCacheLifetime.Month].
      *
      * @param lifetime desired permissions cache lifetime duration
      */
-    @JvmStatic
-    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
-        productCenterManager?.setPermissionsCacheLifetime(lifetime)
-    }
+    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime)
 
     /**
      * Set push token to Qonversion to enable Qonversion push notifications
      */
-    @JvmStatic
-    fun setNotificationsToken(token: String) {
-        automationsManager?.setPushToken(token)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
+    fun setNotificationsToken(token: String)
 
     /**
      * @param messageData RemoteMessage payload data
      * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
      * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
      */
-    @JvmStatic
-    fun handleNotification(messageData: Map<String, String>): Boolean {
-        return automationsManager?.handlePushIfPossible(messageData) ?: run {
-            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return@run false
-        }
-    }
+    fun handleNotification(messageData: Map<String, String>): Boolean
 
     /**
      * Get parsed custom payload, which you added to the notification in the dashboard
      * @param messageData RemoteMessage payload data
      * @return a map with custom payload from the notification or null if it's not provided.
      */
-    @JvmStatic
-    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
-        return automationsManager?.getNotificationCustomPayload(messageData)
-    }
-
-    // Internal functions
-    internal fun logLaunchErrorForFunctionName(functionName: String?) {
-        logger.release("$functionName function can not be executed. It looks like launch was not called.")
-    }
-
-    // Private functions
-    private fun mainPermissionsCallback(callback: QonversionPermissionsCallback): QonversionPermissionsCallback =
-        object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) =
-                postToMainThread { callback.onSuccess(permissions) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }
-
-    private fun postToMainThread(runnable: () -> Unit) {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            runnable()
-        } else {
-            handler.post(runnable)
-        }
-    }
+    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
 }

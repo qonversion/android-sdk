@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal
 
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -91,6 +91,7 @@ class QIdentityManagerTest {
             verifySequence {
                 mockUserInfoService.obtainUserID()
                 mockRepository.identify(newUserID, currentUserID, any(), any())
+                mockUserInfoService.storePartnersIdentityId(newUserID)
                 mockUserInfoService.storeQonversionUserId(identityID)
             }
         }
@@ -115,6 +116,7 @@ class QIdentityManagerTest {
             verifySequence {
                 mockUserInfoService.obtainUserID()
                 mockRepository.identify(newUserID, currentUserID, any(), any())
+                mockUserInfoService.storePartnersIdentityId(newUserID)
             }
         }
 

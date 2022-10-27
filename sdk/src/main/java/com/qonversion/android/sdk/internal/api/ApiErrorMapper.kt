@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.api
 
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject

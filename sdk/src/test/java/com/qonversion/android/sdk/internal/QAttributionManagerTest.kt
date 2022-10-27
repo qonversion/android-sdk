@@ -2,8 +2,8 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Looper
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.getPrivateField
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.mockPrivateField
 import io.mockk.*
 import org.junit.Assert
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.assertAll
 
 class QAttributionManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val appStateProvider = mockk<AppStateProvider>()
 
     private lateinit var attributionManager: QAttributionManager
 
@@ -25,7 +26,7 @@ class QAttributionManagerTest {
     fun setUp() {
         clearAllMocks()
 
-        attributionManager = QAttributionManager(mockRepository)
+        attributionManager = QAttributionManager(mockRepository, appStateProvider)
     }
 
     @Nested
@@ -34,7 +35,7 @@ class QAttributionManagerTest {
         fun `should send attribution on foreground`() {
             // given
             mockLooper()
-            Qonversion.appState = AppState.Foreground
+            every {appStateProvider.appState} returns AppState.Foreground
 
             // when
             attributionManager.attribution(conversionInfo, QAttributionSource.AppsFlyer)
@@ -49,7 +50,7 @@ class QAttributionManagerTest {
         fun `should not send attribution on background`() {
             // given
             mockLooper()
-            Qonversion.appState = AppState.Background
+            every {appStateProvider.appState} returns AppState.Background
 
             // when
             attributionManager.attribution(conversionInfo, QAttributionSource.AppsFlyer)

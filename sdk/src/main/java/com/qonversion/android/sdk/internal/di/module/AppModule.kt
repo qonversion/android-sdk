@@ -3,10 +3,11 @@ package com.qonversion.android.sdk.internal.di.module
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import com.qonversion.android.sdk.internal.QonversionConfig
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
@@ -17,9 +18,8 @@ import dagger.Provides
 @Module
 internal class AppModule(
     private val application: Application,
-    private val projectKey: String,
-    private val isDebugMode: Boolean,
-    private val isObserveMode: Boolean
+    private val internalConfig: InternalConfig,
+    private val appStateProvider: AppStateProvider
 ) {
     @ApplicationScope
     @Provides
@@ -29,8 +29,14 @@ internal class AppModule(
 
     @ApplicationScope
     @Provides
-    fun provideConfig(): QonversionConfig {
-        return QonversionConfig(projectKey, SDK_VERSION, isDebugMode, isObserveMode)
+    fun provideConfig(): InternalConfig {
+        return internalConfig
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideAppStateProvider(): AppStateProvider {
+        return appStateProvider
     }
 
     @ApplicationScope
@@ -66,9 +72,5 @@ internal class AppModule(
         sharedPreferencesCache: SharedPreferencesCache
     ): LaunchResultCacheWrapper {
         return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
-    }
-
-    companion object {
-        private const val SDK_VERSION = "3.4.0"
     }
 }

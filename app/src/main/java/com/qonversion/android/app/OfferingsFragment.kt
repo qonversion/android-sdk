@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentOfferingsBinding
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
 import com.qonversion.android.sdk.dto.QPermission
@@ -37,7 +37,7 @@ class OfferingsFragment : Fragment() {
             )
         )
 
-        Qonversion.offerings(object : QonversionOfferingsCallback {
+        Qonversion.sharedInstance.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) {
                 val mainProducts = offerings.main?.products
                 mainProducts?.let {
@@ -57,7 +57,7 @@ class OfferingsFragment : Fragment() {
     }
 
     private fun purchase(product: QProduct) {
-        Qonversion.purchase(requireActivity(), product, callback = object :
+        Qonversion.sharedInstance.purchase(requireActivity(), product, callback = object :
             QonversionPermissionsCallback {
             override fun onSuccess(permissions: Map<String, QPermission>) {
                 Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()

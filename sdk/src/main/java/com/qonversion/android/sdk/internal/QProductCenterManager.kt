@@ -6,10 +6,9 @@ import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionErrorCode
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
@@ -42,6 +41,7 @@ import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
@@ -57,7 +57,8 @@ internal class QProductCenterManager internal constructor(
     private val launchResultCache: LaunchResultCacheWrapper,
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
-    private val config: QonversionConfig
+    private val config: InternalConfig,
+    private val appStateProvider: AppStateProvider
 ) : QonversionBillingService.PurchasesListener, OfferingsDelegate {
 
     private var listener: UpdatedPurchasesListener? = null
@@ -697,7 +698,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun processInit(initRequestData: InitRequestData) {
-        if (Qonversion.appState.isBackground()) {
+        if (appStateProvider.appState.isBackground()) {
             pendingInitRequestData = initRequestData
             return
         }
