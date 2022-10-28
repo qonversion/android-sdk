@@ -7,10 +7,10 @@ import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.Store
 import android.content.Context
 import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.application
-import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.isDebuggable
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
@@ -71,7 +71,7 @@ class QonversionConfig internal constructor(
          * If set to false make sure that you call [Qonversion.consume] for purchases yourself.
          * todo fix method link above when it will be implemented
          *
-         * The flag makes sense only for [LaunchMode.InfrastructureMode].
+         * The flag makes sense only for [LaunchMode.Infrastructure].
          *
          * @param shouldConsumePurchases if true, the Qonversion will consume purchases itself. If false - it won't.
          * @return builder instance for chain calls.

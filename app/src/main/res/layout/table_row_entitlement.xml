@@ -9,12 +9,12 @@
     android:weightSum="3">
 
     <TextView
-        android:id="@+id/txtPermissionId"
+        android:id="@+id/txtEntitlementId"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="@string/permission_id"
+        android:text="@string/entitlement_id"
         android:textColor="@color/colorQonversionBlue" />
 
     <TextView

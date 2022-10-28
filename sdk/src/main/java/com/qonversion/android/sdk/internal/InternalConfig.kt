@@ -47,5 +47,5 @@ internal class InternalConfig(
 
     override val isSandbox get() = environment === Environment.Sandbox
 
-    val isObserveMode get() = primaryConfig.launchMode == LaunchMode.ObserveMode
+    val isObserveMode get() = primaryConfig.launchMode == LaunchMode.Observe
 }

@@ -5,14 +5,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.qonversion.android.sdk.dto.QEntitlement
-import kotlinx.android.synthetic.main.table_row_permission.view.*
+import kotlinx.android.synthetic.main.table_row_entitlement.view.*
 
-class PermissionsAdapter(private val entitlements: List<QEntitlement>) :
-    RecyclerView.Adapter<PermissionsAdapter.RowViewHolder>() {
+class EntitlementsAdapter(private val entitlements: List<QEntitlement>) :
+    RecyclerView.Adapter<EntitlementsAdapter.RowViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
         val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_permission, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.table_row_entitlement, parent, false)
         return RowViewHolder(itemView)
     }
 
@@ -23,8 +23,8 @@ class PermissionsAdapter(private val entitlements: List<QEntitlement>) :
 
     inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(entitlement: QEntitlement) = with(itemView) {
-            txtPermissionId.text = entitlement.permissionID
-            txtProductId.text = entitlement.product.productID
+            txtEntitlementId.text = entitlement.id
+            txtProductId.text = entitlement.product.productId
             txtRenewStateLabel.text = entitlement.product.subscription?.renewState?.name
         }
     }

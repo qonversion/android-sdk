@@ -7,9 +7,9 @@
         android:title="Home" />
 
     <item
-        android:id="@+id/permissionsFragment"
-        android:icon="@drawable/ic_permission"
-        android:title="Permissions" />
+        android:id="@+id/entitlementsFragment"
+        android:icon="@drawable/ic_entitlement"
+        android:title="Entitlements" />
 
     <item
         android:id="@+id/offeringsFragment"
