@@ -83,7 +83,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verifySequence {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
@@ -106,7 +106,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verifySequence {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
@@ -126,7 +126,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verifySequence {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
@@ -153,7 +153,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verify {
                 mockRepository wasNot Called
             }
@@ -171,7 +171,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
             }
@@ -193,7 +193,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isTrue()
+            assertThat(result).isTrue
             verify(exactly = 1) {
                 mockRepository.actionPoints(getQueryParams(), any(), any())
                 mockRepository.screens(screenId, any(), any())
@@ -210,7 +210,7 @@ class QAutomationsManagerTest {
             val result = automationsManager.handlePushIfPossible(remoteMessageData)
 
             // then
-            assertThat(result).isFalse()
+            assertThat(result).isFalse
             verify {
                 mockRepository wasNot called
             }

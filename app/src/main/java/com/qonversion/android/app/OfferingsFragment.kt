@@ -18,15 +18,16 @@ import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 
+private const val TAG = "OfferingsFragment"
+
 class OfferingsFragment : Fragment() {
-    private val TAG = "OfferingsFragment"
     lateinit var binding: FragmentOfferingsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentOfferingsBinding.inflate(inflater)
 
         binding.recyclerViewProductsList.layoutManager = LinearLayoutManager(context)

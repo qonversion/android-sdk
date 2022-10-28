@@ -9,14 +9,12 @@ import com.qonversion.android.sdk.internal.dto.Environment
 import com.qonversion.android.sdk.internal.dto.device.Os
 import java.util.*
 
-internal class EnvironmentProvider(private val context: Context) {
-
-    companion object {
-        private const val UNKNOWN = "UNKNOWN"
-    }
-
+internal class EnvironmentProvider(
+    private val context: Context,
+    private val sdkVersion: String
+) {
     fun getInfo(idfa: String? = null, pushToken: String? = null): Environment = Environment(
-        getVersionName(),
+        sdkVersion,
         getCarrier(),
         getDeviceId(),
         getLocale(),
@@ -30,12 +28,6 @@ internal class EnvironmentProvider(private val context: Context) {
         idfa,
         pushToken
     )
-
-    private fun getVersionName(): String = try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionName
-    } catch (throwable: Throwable) {
-        UNKNOWN
-    }
 
     @SuppressLint("HardwareIds")
     private fun getDeviceId(): String =

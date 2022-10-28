@@ -32,7 +32,7 @@ class ApiHelperTest {
             val result = apiHelper.isV1Request(request)
 
             // then
-            Assertions.assertThat(result).isTrue()
+            Assertions.assertThat(result).isTrue
         }
 
         @Test
@@ -45,7 +45,7 @@ class ApiHelperTest {
             val result = apiHelper.isV1Request(request)
 
             // then
-            Assertions.assertThat(result).isFalse()
+            Assertions.assertThat(result).isFalse
         }
 
         private fun mockRequestWithUrl(url: String): Request {

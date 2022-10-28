@@ -10,7 +10,6 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
-import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -40,7 +39,7 @@ class QProductCenterManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockUserInfoService = mockk<QUserInfoService>(relaxed = true)
     private val mockIdentityManager = mockk<QIdentityManager>(relaxed = true)
-    private val mockBillingService: QonversionBillingService = mockk()
+    private val mockBillingService = mockk<QonversionBillingService>()
     private val mockConsumer = mockk<Consumer>(relaxed = true)
     private val mockConfig = mockk<InternalConfig>(relaxed = true)
     private val mockAppStateProvider = mockk<AppStateProvider>(relaxed = true)
@@ -50,7 +49,6 @@ class QProductCenterManagerTest {
     private val fieldSkuDetails = "skuDetails"
 
     private val skuTypeInApp = BillingClient.SkuType.INAPP
-    private val skuTypeSubs = BillingClient.SkuType.SUBS
     private val sku = "sku"
     private val purchaseToken = "purchaseToken"
     private val installDate: Long = 1605608753
@@ -213,7 +211,7 @@ class QProductCenterManagerTest {
         mockInfo.firstInstallTime = installDate
 
         every {
-            mockManager.getPackageInfo(packageName, 0)
+            mockManager.getPackageInfo(packageName, PackageManager.GET_META_DATA)
         } returns mockInfo
     }
 }

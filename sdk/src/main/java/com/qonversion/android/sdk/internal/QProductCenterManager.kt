@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.internal
 
 import android.app.Activity
 import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
@@ -35,10 +37,10 @@ import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
@@ -97,10 +99,16 @@ internal class QProductCenterManager internal constructor(
         @Synchronized get
 
     init {
-        installDate = context.packageManager.getPackageInfo(
-            context.packageName,
-            0
-        ).firstInstallTime.milliSecondsToSeconds()
+        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong())
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+        }
+        installDate = packageInfo.firstInstallTime.milliSecondsToSeconds()
     }
 
     // Public functions
@@ -278,7 +286,14 @@ internal class QProductCenterManager internal constructor(
         @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
-        purchaseProduct(context, product.qonversionID, oldProductId, prorationMode, product.offeringID, callback)
+        purchaseProduct(
+            context,
+            product.qonversionID,
+            oldProductId,
+            prorationMode,
+            product.offeringID,
+            callback
+        )
     }
 
     fun purchaseProduct(
@@ -292,10 +307,24 @@ internal class QProductCenterManager internal constructor(
         if (launchError != null) {
             retryLaunch(
                 onSuccess = {
-                    tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
+                    tryToPurchase(
+                        context,
+                        productId,
+                        oldProductId,
+                        prorationMode,
+                        offeringId,
+                        callback
+                    )
                 },
                 onError = {
-                    tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
+                    tryToPurchase(
+                        context,
+                        productId,
+                        oldProductId,
+                        prorationMode,
+                        offeringId,
+                        callback
+                    )
                 }
             )
         } else {
@@ -315,7 +344,14 @@ internal class QProductCenterManager internal constructor(
             Loading, NotStartedYet -> {
                 productsCallbacks.add(object : QonversionProductsCallback {
                     override fun onSuccess(products: Map<String, QProduct>) =
-                        processPurchase(context, id, oldProductId, prorationMode, offeringId, callback)
+                        processPurchase(
+                            context,
+                            id,
+                            oldProductId,
+                            prorationMode,
+                            offeringId,
+                            callback
+                        )
 
                     override fun onError(error: QonversionError) = callback.onError(error)
                 })
@@ -428,15 +464,18 @@ internal class QProductCenterManager internal constructor(
         billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
             consumer.consumeHistoryRecords(historyRecords)
             val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
-            val loadedSkuDetails = skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
+            val loadedSkuDetails =
+                skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
             val resultSkuIds = (skuIds - loadedSkuDetails.keys).toSet()
 
             if (resultSkuIds.isNotEmpty()) {
                 billingService.loadProducts(resultSkuIds, onLoadCompleted = {
-                    it.forEach { singleSkuDetails -> run {
-                        loadedSkuDetails[singleSkuDetails.sku] = singleSkuDetails
-                        skuDetails = skuDetails + (singleSkuDetails.sku to singleSkuDetails)
-                    } }
+                    it.forEach { singleSkuDetails ->
+                        run {
+                            loadedSkuDetails[singleSkuDetails.sku] = singleSkuDetails
+                            skuDetails = skuDetails + (singleSkuDetails.sku to singleSkuDetails)
+                        }
+                    }
 
                     processRestore(historyRecords, loadedSkuDetails, callback)
                 }, onLoadFailed = {
@@ -519,7 +558,7 @@ internal class QProductCenterManager internal constructor(
         }
 
         launchResultCache.productPermissions?.let {
-            if (launchResult.products.values.all { it.skuDetail == null }) {
+            if (launchResult.products.values.all { product -> product.skuDetail == null }) {
                 addSkuDetailForProducts(launchResult.products.values)
             }
 
@@ -547,11 +586,13 @@ internal class QProductCenterManager internal constructor(
         }
 
         launchResultCache.productPermissions?.let {
-            if (launchResult.products.values.all { it.skuDetail == null }) {
+            if (launchResult.products.values.all { product -> product.skuDetail == null }) {
                 addSkuDetailForProducts(launchResult.products.values)
             }
 
-            val purchasedProduct = launchResult.products.values.find { it.skuDetail?.sku == purchase.sku } ?: run {
+            val purchasedProduct = launchResult.products.values.find { product ->
+                product.skuDetail?.sku == purchase.sku
+            } ?: run {
                 failLocallyGrantingPermissionsWithError(purchaseCallback, purchaseError)
                 return
             }
@@ -606,7 +647,11 @@ internal class QProductCenterManager internal constructor(
         return mergeManuallyCreatedPermissions(newPermissions)
     }
 
-    private fun createPermission(id: String, purchaseTime: Long, purchasedProduct: QProduct): QPermission? {
+    private fun createPermission(
+        id: String,
+        purchaseTime: Long,
+        purchasedProduct: QProduct
+    ): QPermission? {
         val purchaseDurationInDays = GoogleBillingPeriodConverter.convertPeriodToDays(
             purchasedProduct.skuDetail?.subscriptionPeriod
         )
@@ -648,8 +693,10 @@ internal class QProductCenterManager internal constructor(
         existingPermission ?: return localCreatedPermission
 
         // If expiration date is null then it's permanent permissions and thus should take precedence over expiring one.
-        val newPermissionExpirationTime = localCreatedPermission.expirationDate?.time ?: Long.MAX_VALUE
-        val existingPermissionExpirationTime = existingPermission.expirationDate?.time ?: Long.MAX_VALUE
+        val newPermissionExpirationTime =
+            localCreatedPermission.expirationDate?.time ?: Long.MAX_VALUE
+        val existingPermissionExpirationTime =
+            existingPermission.expirationDate?.time ?: Long.MAX_VALUE
         val doesNewOneExpireLater =
             newPermissionExpirationTime > existingPermissionExpirationTime
 
@@ -683,7 +730,8 @@ internal class QProductCenterManager internal constructor(
         billingService.queryPurchases(
             onQueryCompleted = { purchases ->
                 if (purchases.isEmpty()) {
-                    val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                    val initRequestData =
+                        InitRequestData(installDate, advertisingID, callback = callback)
                     processInit(initRequestData)
                     return@queryPurchases
                 }
@@ -694,9 +742,11 @@ internal class QProductCenterManager internal constructor(
                     completedPurchases,
                     onCompleted = { skuDetails ->
                         val skuDetailsMap = skuDetails.associateBy { it.sku }
-                        val purchasesInfo = converter.convertPurchases(skuDetailsMap, completedPurchases)
+                        val purchasesInfo =
+                            converter.convertPurchases(skuDetailsMap, completedPurchases)
 
-                        val handledPurchasesCallback = getWrappedPurchasesCallback(completedPurchases, callback)
+                        val handledPurchasesCallback =
+                            getWrappedPurchasesCallback(completedPurchases, callback)
 
                         val initRequestData = InitRequestData(
                             installDate,
@@ -707,12 +757,14 @@ internal class QProductCenterManager internal constructor(
                         processInit(initRequestData)
                     },
                     onFailed = {
-                        val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                        val initRequestData =
+                            InitRequestData(installDate, advertisingID, callback = callback)
                         processInit(initRequestData)
                     })
             },
             onQueryFailed = {
-                val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+                val initRequestData =
+                    InitRequestData(installDate, advertisingID, callback = callback)
                 processInit(initRequestData)
             })
     }
@@ -1060,7 +1112,13 @@ internal class QProductCenterManager internal constructor(
         }
 
         if (sku == product?.storeID) {
-            repository.purchase(installDate, purchase, offering?.experimentInfo, product?.qonversionID, callback)
+            repository.purchase(
+                installDate,
+                purchase,
+                offering?.experimentInfo,
+                product.qonversionID,
+                callback
+            )
             productPurchaseModel.remove(sku)
         } else {
             repository.purchase(installDate, purchase, null, product?.qonversionID, callback)

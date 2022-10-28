@@ -1,11 +1,13 @@
 package com.qonversion.android.app
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.ktx.auth
@@ -24,6 +26,8 @@ import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 
+private const val TAG = "HomeFragment"
+
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
 
@@ -31,7 +35,6 @@ class HomeFragment : Fragment() {
     private val productIdInApp = "in_app"
     private val entitlementPlus = "plus"
     private val entitlementStandart = "standart"
-    private val TAG = "HomeFragment"
     private val automationsDelegate = getAutomationsDelegate()
     private val entitlementsUpdateListener = getEntitlementsUpdateListener()
 
@@ -83,7 +86,19 @@ class HomeFragment : Fragment() {
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
-            requireActivity().intent.getParcelableExtra(FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireActivity().intent.getParcelableExtra(
+                    FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE,
+                    RemoteMessage::class.java
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                requireActivity().intent.getParcelableExtra(
+                    FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE
+                )
+            }
+
+        @Suppress("ControlFlowWithEmptyBody")
         if (remoteMessage != null && !Qonversion.sharedInstance.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }
@@ -218,8 +233,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun MaterialButton.toSuccessState() {
-        val successColor = resources.getColor(R.color.colorGreen)
-        val textColor = resources.getColor(R.color.colorWhite)
+        val successColor = ContextCompat.getColor(context, R.color.colorGreen)
+        val textColor = ContextCompat.getColor(context, R.color.colorWhite)
         text = getStr(R.string.successfully_purchased)
         setBackgroundColor(successColor)
         setStrokeColorResource(R.color.colorGreen)

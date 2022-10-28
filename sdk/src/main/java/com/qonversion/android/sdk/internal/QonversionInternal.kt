@@ -282,7 +282,7 @@ internal class QonversionInternal(
     }
 
     // Internal functions
-    internal fun logLaunchErrorForFunctionName(functionName: String?) {
+    private fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 

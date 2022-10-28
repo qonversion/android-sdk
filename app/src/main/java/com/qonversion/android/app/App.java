@@ -13,7 +13,6 @@ import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionConfig;
 import com.qonversion.android.sdk.dto.LaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
-import com.qonversion.android.sdk.dto.QEntitlement;
 import com.qonversion.android.sdk.dto.QUserProperties;
 import com.qonversion.android.sdk.dto.Store;
 import com.qonversion.android.sdk.dto.QonversionError;
