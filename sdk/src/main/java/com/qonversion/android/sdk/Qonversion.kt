@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 interface Qonversion {
 
@@ -218,6 +219,12 @@ interface Qonversion {
      * Call this function to unlink a user from his unique ID in your system and his purchase data.
      */
     fun logout()
+
+    /**
+     * This method returns information about the current Qonversion user.
+     * @param callback - callback that will be called when response is received
+     */
+    fun getUserInfo(callback: QonversionUserCallback)
 
     /**
      * Send your attribution data

@@ -25,6 +25,7 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -235,6 +236,10 @@ internal class QonversionInternal(
     override fun logout() {
         productCenterManager?.logout()
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun getUserInfo(callback: QonversionUserCallback) {
+        productCenterManager?.getUserInfo(callback)
     }
 
     override fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource) {
