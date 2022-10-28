@@ -15,8 +15,9 @@ import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 
+private const val TAG = "EntitlementsFragment"
+
 class EntitlementsFragment : Fragment() {
-    private val TAG = "EntitlementsFragment"
     lateinit var binding: FragmentEntitlementsBinding
 
     override fun onCreateView(
