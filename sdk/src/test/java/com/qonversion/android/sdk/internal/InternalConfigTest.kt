@@ -123,7 +123,7 @@ internal class InternalConfigTest {
             val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isTrue()
+            assertThat(isSandbox).isTrue
         }
 
         @Test
@@ -137,7 +137,7 @@ internal class InternalConfigTest {
             val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isFalse()
+            assertThat(isSandbox).isFalse
         }
     }
 

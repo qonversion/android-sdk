@@ -21,8 +21,11 @@ internal class FacebookAttribution {
         if (content == null || !content.moveToFirst()) {
             return null
         }
-        val attributionId =
-            content.getString(content.getColumnIndex(ATTRIBUTION_ID_COLUMN_NAME))
+        val columnIndex = content.getColumnIndex(ATTRIBUTION_ID_COLUMN_NAME)
+        if (columnIndex < 0) {
+            return null
+        }
+        val attributionId = content.getString(columnIndex)
         content.close()
 
         return attributionId

@@ -10,7 +10,6 @@ import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
-import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
