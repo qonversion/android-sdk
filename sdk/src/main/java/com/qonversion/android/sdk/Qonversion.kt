@@ -57,12 +57,19 @@ interface Qonversion {
 
     /**
      * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
+     */
+    fun launch() = launch(null)
+
+    /**
+     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
      * @param callback - callback that will be called when response is received
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      * // todo overload for java
      */
-    fun launch(callback: QonversionLaunchCallback? = null)
+    fun launch(callback: QonversionLaunchCallback?)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
