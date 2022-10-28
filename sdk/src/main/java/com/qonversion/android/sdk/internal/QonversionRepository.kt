@@ -13,9 +13,6 @@ import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
 import com.qonversion.android.sdk.internal.billing.sku
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
-import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
-import com.qonversion.android.sdk.internal.billing.stringValue
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.dto.QLaunchResult

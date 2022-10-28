@@ -11,17 +11,17 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_homeFragment_to_permissionsFragment"
-            app:destination="@id/permissionsFragment" />
+            android:id="@+id/action_homeFragment_to_entitlementsFragment"
+            app:destination="@id/entitlementsFragment" />
         <action
             android:id="@+id/action_homeFragment_to_offeringsFragment"
             app:destination="@id/offeringsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/permissionsFragment"
-        android:name="com.qonversion.android.app.PermissionsFragment"
-        android:label="fragment_permissions"
-        tools:layout="@layout/fragment_permissions" />
+        android:id="@+id/entitlementsFragment"
+        android:name="com.qonversion.android.app.EntitlementsFragment"
+        android:label="fragment_entitlements"
+        tools:layout="@layout/fragment_entitlements" />
     <fragment
         android:id="@+id/offeringsFragment"
         android:name="com.qonversion.android.app.OfferingsFragment"

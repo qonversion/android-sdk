@@ -7,14 +7,6 @@ import com.android.billingclient.api.PurchaseHistoryRecord
 import java.text.SimpleDateFormat
 import java.util.*
 
-internal fun Int.toBoolean() = this != 0
-
-internal fun String?.toBoolean() = this == "1"
-
-internal fun Boolean.toInt() = if (this) 1 else 0
-
-internal fun Boolean.stringValue() = if (this) "1" else "0"
-
 internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
 
 internal fun BillingResult.getDescription() =
@@ -31,10 +23,6 @@ internal val Purchase.sku: String?
 
 internal val PurchaseHistoryRecord.sku: String?
     get() = skus.firstOrNull()
-
-internal fun Long.milliSecondsToSeconds(): Long = this / 1000
-
-internal fun Long.secondsToMilliSeconds(): Long = this * 1000
 
 internal fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
 

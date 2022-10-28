@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.daysToSeconds
 import com.qonversion.android.sdk.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.QPermission
+import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -16,7 +16,8 @@ private const val PERMISSIONS_CACHE_TIMESTAMP_KEY = "permissions_timestamp"
 
 internal class LaunchResultCacheWrapper(
     moshi: Moshi,
-    private val cache: SharedPreferencesCache
+    private val cache: SharedPreferencesCache,
+    private val cacheConfigProvider: CacheConfigProvider
 ) {
     private val launchResultAdapter: JsonAdapter<QLaunchResult> =
         moshi.adapter(QLaunchResult::class.java)
@@ -30,18 +31,12 @@ internal class LaunchResultCacheWrapper(
             )
         )
 
-    private var permissionsCacheLifetime = QPermissionsCacheLifetime.Month
-
     val productPermissions get() = getLaunchResult()?.productPermissions
 
     var sessionLaunchResult: QLaunchResult? = null
         private set
 
     private var permissions: Map<String, QPermission>? = null
-
-    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime) {
-        permissionsCacheLifetime = lifetime
-    }
 
     fun getActualPermissions(): Map<String, QPermission>? {
         return permissions ?: if (isPermissionsCacheOutdated()) {
@@ -89,7 +84,8 @@ internal class LaunchResultCacheWrapper(
     }
 
     private fun isPermissionsCacheOutdated(): Boolean {
-        return isCacheOutdated(PERMISSIONS_CACHE_TIMESTAMP_KEY, permissionsCacheLifetime.days.daysToSeconds)
+        val cacheLifetime = cacheConfigProvider.cacheConfig.entitlementsCacheLifetime
+        return isCacheOutdated(PERMISSIONS_CACHE_TIMESTAMP_KEY, cacheLifetime.days.daysToSeconds)
     }
 
     @Suppress("SameParameterValue")

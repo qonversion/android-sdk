@@ -6,10 +6,13 @@ import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.Store
 import android.content.Context
+import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.isDebuggable
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
 /**
  * This class contains all the available configurations for the initialization of Qonversion SDK.
@@ -23,7 +26,9 @@ import com.qonversion.android.sdk.internal.isDebuggable
 class QonversionConfig internal constructor(
     internal val application: Application,
     internal val primaryConfig: PrimaryConfig,
-    internal val storeConfig: StoreConfig
+    internal val storeConfig: StoreConfig,
+    internal val cacheConfig: CacheConfig,
+    internal val entitlementsUpdateListener: EntitlementsUpdateListener?
 ) {
 
     /**
@@ -46,6 +51,8 @@ class QonversionConfig internal constructor(
     ) {
         internal var environment = Environment.Production
         internal var shouldConsumePurchases = true
+        internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.MONTH
+        internal var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
         /**
          * Set current application [Environment]. Used to distinguish sandbox and production users.
@@ -74,6 +81,32 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Entitlements cache is used when there are problems with the Qonversion API
+         * or internet connection. If so, Qonversion will return the last successfully loaded
+         * entitlements. The current method allows you to configure how long that cache may be used.
+         * The default value is [QEntitlementsCacheLifetime.MONTH].
+         *
+         * @param lifetime desired entitlements cache lifetime duration
+         */
+        fun setEntitlementsCacheLifetime(lifetime: QEntitlementsCacheLifetime): Builder = apply {
+            this.entitlementsCacheLifetime = lifetime
+        }
+
+        /**
+         * Provide a listener to be notified about asynchronous user entitlements updates.
+         *
+         * Make sure you provide this listener for being up-to-date with the user entitlements.
+         * Else you can lose some important updates. Also, please, consider that this listener
+         * should live for the whole lifetime of the application.
+         *
+         * @param entitlementsUpdateListener listener to be called when entitlements update.
+         * @return builder instance for chain calls.
+         */
+        fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener): Builder = apply {
+            this.entitlementsUpdateListener = entitlementsUpdateListener
+        }
+
+        /**
          * Generate [QonversionConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -92,11 +125,14 @@ class QonversionConfig internal constructor(
 
             val primaryConfig = PrimaryConfig(projectKey, launchMode, environment)
             val storeConfig = StoreConfig(store, shouldConsumePurchases)
+            val cacheConfig = CacheConfig(entitlementsCacheLifetime)
 
             return QonversionConfig(
                 context.application,
                 primaryConfig,
-                storeConfig
+                storeConfig,
+                cacheConfig,
+                entitlementsUpdateListener
             )
         }
     }

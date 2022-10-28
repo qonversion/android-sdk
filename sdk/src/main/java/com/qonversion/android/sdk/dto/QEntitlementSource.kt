@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto
 
-enum class QPermissionSource(internal val key: String) {
+enum class QEntitlementSource(internal val key: String) {
     Unknown("unknown"), // Unable to detect the source
     AppStore("appstore"), // App Store
     PlayStore("playstore"), // Play Store
@@ -8,7 +8,7 @@ enum class QPermissionSource(internal val key: String) {
     Manual("manual"); // The entitlement was activated manually
 
     companion object {
-        fun fromKey(key: String): QPermissionSource {
+        fun fromKey(key: String): QEntitlementSource {
             return values().find { it.key == key } ?: Unknown
         }
     }

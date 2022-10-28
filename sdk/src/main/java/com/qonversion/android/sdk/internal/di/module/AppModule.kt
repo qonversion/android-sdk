@@ -71,6 +71,6 @@ internal class AppModule(
         moshi: Moshi,
         sharedPreferencesCache: SharedPreferencesCache
     ): LaunchResultCacheWrapper {
-        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache)
+        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache, internalConfig)
     }
 }
