@@ -17,12 +17,10 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -193,16 +191,6 @@ internal class QonversionInternal(
         productCenterManager?.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) =
                 postToMainThread { callback.onSuccess(offerings) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun experiments(callback: QonversionExperimentsCallback) {
-        productCenterManager?.experiments(object : QonversionExperimentsCallback {
-            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
-                postToMainThread { callback.onSuccess(experiments) }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }

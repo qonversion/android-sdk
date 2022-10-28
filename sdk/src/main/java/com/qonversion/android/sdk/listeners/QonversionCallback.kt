@@ -6,7 +6,6 @@ import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 
 internal interface QonversionLaunchCallbackInternal {
    fun onSuccess(launchResult: QLaunchResult)
@@ -25,11 +24,6 @@ interface QonversionProductsCallback {
 
 interface QonversionOfferingsCallback {
    fun onSuccess(offerings: QOfferings)
-   fun onError(error: QonversionError)
-}
-
-interface QonversionExperimentsCallback {
-   fun onSuccess(experiments: Map<String, QExperimentInfo>)
    fun onError(error: QonversionError)
 }
 
