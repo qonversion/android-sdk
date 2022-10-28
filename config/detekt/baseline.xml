@@ -176,8 +176,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:115</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:116</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:159</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:161</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:176</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
@@ -208,7 +208,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.TokenExtractorTest.kt:19</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:139</ID>
-    <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
+    <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T> getErrorFromResponse(value: Response&lt;T>): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.internal.requests.AttributionRequestTest.kt</ID>
@@ -253,8 +253,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt:4</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:13</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEvent.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:5</ID>
@@ -272,8 +270,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:8</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:22</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:30</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:21</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:29</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:15</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:16</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.api.Api.kt:3</ID>
@@ -294,8 +292,9 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:28</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String>): AutomationsEvent?</ID>
+    <ID>ReturnCount:FacebookAttribution.kt$FacebookAttribution$fun getAttributionId(contentResolver: ContentResolver): String?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails>) -> Unit)? = null, onLoadFailed: ((error: QonversionError) -> Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionEntitlementsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
@@ -334,7 +333,6 @@
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenActivity.kt$ScreenActivity$e: Exception</ID>
-    <ID>TooGenericExceptionThrown:BaseResponse.kt$throw RuntimeException("backend exception")</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
@@ -357,8 +355,8 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo>): List&lt;QExperimentInfo></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering&gt;</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering></ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission>): List&lt;QPermission></ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductDurationAdapter$@ToJson private fun toJson(enum: QProductDuration): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductTypeAdapter$@ToJson private fun toJson(enum: QProductType): Int</ID>
