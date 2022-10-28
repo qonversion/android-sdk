@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal
 
 import com.android.billingclient.api.Purchase
-import com.qonversion.android.sdk.internal.QHandledPurchasesCache
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
@@ -27,7 +26,7 @@ class QHandledPurchasesCacheTest {
         val shouldHandle = handledPurchasesCache.shouldHandlePurchase(firstPurchase)
 
         // then
-        assertThat(shouldHandle).isTrue()
+        assertThat(shouldHandle).isTrue
     }
 
     @Test
@@ -40,8 +39,8 @@ class QHandledPurchasesCacheTest {
         val shouldHandle2 = handledPurchasesCache.shouldHandlePurchase(secondPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse()
-        assertThat(shouldHandle2).isTrue()
+        assertThat(shouldHandle1).isFalse
+        assertThat(shouldHandle2).isTrue
     }
 
     @Test
@@ -56,9 +55,9 @@ class QHandledPurchasesCacheTest {
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse()
-        assertThat(shouldHandle2).isFalse()
-        assertThat(shouldHandle3).isTrue()
+        assertThat(shouldHandle1).isFalse
+        assertThat(shouldHandle2).isFalse
+        assertThat(shouldHandle3).isTrue
     }
 
     @Test
@@ -73,9 +72,9 @@ class QHandledPurchasesCacheTest {
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse()
-        assertThat(shouldHandle2).isFalse()
-        assertThat(shouldHandle3).isTrue()
+        assertThat(shouldHandle1).isFalse
+        assertThat(shouldHandle2).isFalse
+        assertThat(shouldHandle3).isTrue
     }
 
     private fun mockPurchase(

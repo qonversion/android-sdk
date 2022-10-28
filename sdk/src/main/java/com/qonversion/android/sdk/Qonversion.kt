@@ -9,11 +9,11 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 interface Qonversion {
 
@@ -94,6 +94,22 @@ interface Qonversion {
      * @param context current activity context
      * @param productId Qonversion product identifier for purchase
      * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    fun updatePurchase(
+        context: Activity,
+        productId: String,
+        oldProductId: String,
+        callback: QonversionEntitlementsCallback
+    ) = updatePurchase(context, productId, oldProductId, null, callback)
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param productId Qonversion product identifier for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
      * @param prorationMode proration mode
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
@@ -107,6 +123,22 @@ interface Qonversion {
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product Qonversion product for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        oldProductId: String,
+        callback: QonversionEntitlementsCallback
+    ) = updatePurchase(context, product, oldProductId, null, callback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -128,8 +160,8 @@ interface Qonversion {
     )
 
     /**
-     * Return Qonversion Products in assoсiation with Google Play Store Products
-     * If you get an empty SkuDetails be sure your products are correctly setted up in Google Play Store.
+     * Return Qonversion Products in association with Google Play Store Products
+     * If you get an empty SkuDetails be sure your products are correctly set up in Google Play Store.
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
@@ -144,12 +176,6 @@ interface Qonversion {
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     fun offerings(callback: QonversionOfferingsCallback)
-
-    /**
-     * Qonversion A/B tests help you grow your app revenue by making it easy to run and analyze paywall and promoted in-app product experiments. It gives you the power to measure your paywalls' performance before you roll them out widely. It is an out-of-the-box solution that does not require any third-party service.
-     * @param callback - callback that will be called when response is received
-     */
-    fun experiments(callback: QonversionExperimentsCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
@@ -193,6 +219,12 @@ interface Qonversion {
      * Call this function to unlink a user from his unique ID in your system and his purchase data.
      */
     fun logout()
+
+    /**
+     * This method returns information about the current Qonversion user.
+     * @param callback - callback that will be called when response is received
+     */
+    fun getUserInfo(callback: QonversionUserCallback)
 
     /**
      * Send your attribution data

@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
-import android.os.Handler
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -41,6 +40,8 @@ import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import retrofit2.Response
 import java.lang.RuntimeException
+import java.util.Timer
+import java.util.TimerTask
 
 @SuppressWarnings("LongParameterList")
 internal class QonversionRepository internal constructor(
@@ -373,7 +374,7 @@ internal class QonversionRepository internal constructor(
         retry: (attemptIndex: Int) -> Unit
     ) {
         // Retrying only errors caused by client network connection problems (errorCode == null) or server side problems
-        if (attemptIndex < MAX_RETRIES_COUNT && (errorCode == null || errorCode.isInternalServerError())) {
+        if (attemptIndex < MAX_RETRIES_COUNT) {
             val nextAttemptIndex = attemptIndex + 1
             // For the first error retry instantly.
             if (attemptIndex == 0) {
@@ -382,8 +383,10 @@ internal class QonversionRepository internal constructor(
                 try {
                     // For the rest - add delay (subtracting 1 from delay index, because first one was instant)
                     val delay = delayCalculator.countDelay(0, attemptIndex - 1)
-                    Handler().postDelayed({
-                        retry(nextAttemptIndex)
+                    Timer("Delayed retry", false).schedule(object : TimerTask() {
+                        override fun run() {
+                            retry(nextAttemptIndex)
+                        }
                     }, delay.toLong().secondsToMilliSeconds())
                 } catch (_: RuntimeException) {
                     retry(nextAttemptIndex)

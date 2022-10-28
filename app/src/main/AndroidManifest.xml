@@ -29,7 +29,10 @@
         <activity android:name=".ManualTrackingActivity" />
         <activity android:name=".ManualTrackingActivityKt" />
 
-        <service android:name=".FirebaseMessageReceiver" >
+        <service
+            android:name=".FirebaseMessageReceiver"
+            android:exported="false"
+        >
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>

@@ -5,15 +5,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.qonversion.android.sdk.dto.QEntitlement
-import kotlinx.android.synthetic.main.table_row_entitlement.view.*
+import com.qonversion.android.app.databinding.TableRowEntitlementBinding
 
 class EntitlementsAdapter(private val entitlements: List<QEntitlement>) :
     RecyclerView.Adapter<EntitlementsAdapter.RowViewHolder>() {
 
+    private lateinit var binding: TableRowEntitlementBinding
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.table_row_entitlement, parent, false)
-        return RowViewHolder(itemView)
+        binding = TableRowEntitlementBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return RowViewHolder(binding.root)
     }
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) =
@@ -23,9 +28,9 @@ class EntitlementsAdapter(private val entitlements: List<QEntitlement>) :
 
     inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(entitlement: QEntitlement) = with(itemView) {
-            txtEntitlementId.text = entitlement.id
-            txtProductId.text = entitlement.product.productId
-            txtRenewStateLabel.text = entitlement.product.subscription?.renewState?.name
+            binding.txtEntitlementId.text = entitlement.id
+            binding.txtProductId.text = entitlement.product.productId
+            binding.txtRenewStateLabel.text = entitlement.product.subscription?.renewState?.name
         }
     }
 }

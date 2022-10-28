@@ -123,7 +123,7 @@ internal class InternalConfigTest {
             val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isTrue()
+            assertThat(isSandbox).isTrue
         }
 
         @Test
@@ -137,7 +137,25 @@ internal class InternalConfigTest {
             val isSandbox = environmentProvider.isSandbox
 
             // then
-            assertThat(isSandbox).isFalse()
+            assertThat(isSandbox).isFalse
+        }
+    }
+
+    @Nested
+    inner class EntitlementsUpdateListenerProviderTest {
+
+        @Test
+        fun `get entitlement updates listener`() {
+            // given
+            val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
+            internalConfig.entitlementsUpdateListener = mockEntitlementsUpdateListener
+            val provider: EntitlementsUpdateListenerProvider = internalConfig
+
+            // when
+            val result = provider.entitlementsUpdateListener
+
+            // then
+            assertThat(result).isSameAs(mockEntitlementsUpdateListener)
         }
     }
 

@@ -394,7 +394,7 @@ internal class QonversionBillingService internal constructor(
             BillingClient.SkuType.SUBS,
             productIDs,
             { skuDetailsSubs ->
-                val skuSubs = skuDetailsSubs.map { it.sku }
+                val skuSubs = skuDetailsSubs.map { it.sku }.toSet()
                 val skuInApp = productIDs - skuSubs
 
                 if (skuInApp.isNotEmpty()) {

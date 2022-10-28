@@ -17,16 +17,15 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -199,16 +198,6 @@ internal class QonversionInternal(
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun experiments(callback: QonversionExperimentsCallback) {
-        productCenterManager?.experiments(object : QonversionExperimentsCallback {
-            override fun onSuccess(experiments: Map<String, QExperimentInfo>) =
-                postToMainThread { callback.onSuccess(experiments) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
     override fun checkTrialIntroEligibilityForProductIds(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
@@ -247,6 +236,10 @@ internal class QonversionInternal(
     override fun logout() {
         productCenterManager?.logout()
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun getUserInfo(callback: QonversionUserCallback) {
+        productCenterManager?.getUserInfo(callback)
     }
 
     override fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource) {
@@ -289,7 +282,7 @@ internal class QonversionInternal(
     }
 
     // Internal functions
-    internal fun logLaunchErrorForFunctionName(functionName: String?) {
+    private fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }
 

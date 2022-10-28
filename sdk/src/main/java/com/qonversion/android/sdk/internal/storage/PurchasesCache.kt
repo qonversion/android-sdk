@@ -26,7 +26,7 @@ internal class PurchasesCache(
             purchases.add(purchase)
 
             if (purchases.size >= MAX_PURCHASES_NUMBER) {
-                val oldPurchases = purchases.toMutableList().take(MAX_OLD_PURCHASES_NUMBER)
+                val oldPurchases = purchases.toMutableList().take(MAX_OLD_PURCHASES_NUMBER).toSet()
                 purchases.removeAll(oldPurchases)
             }
 
