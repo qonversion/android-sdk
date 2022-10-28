@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.automations
 
 import com.qonversion.android.sdk.internal.billing.getCurrentTimeInMillis
-import com.qonversion.android.sdk.internal.billing.secondsToMilliSeconds
+import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.logger.Logger
 import org.json.JSONException
 import org.json.JSONObject

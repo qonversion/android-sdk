@@ -19,12 +19,12 @@ import com.qonversion.android.sdk.automations.Automations
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.QActionResult
 import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
 
 private const val TAG = "HomeFragment"
 
@@ -33,10 +33,10 @@ class HomeFragment : Fragment() {
 
     private val productIdSubs = "main"
     private val productIdInApp = "in_app"
-    private val permissionPlus = "plus"
-    private val permissionStandart = "standart"
+    private val entitlementPlus = "plus"
+    private val entitlementStandart = "standart"
     private val automationsDelegate = getAutomationsDelegate()
-    private val purchasesListener = getUpdatedPurchasesListener()
+    private val entitlementsUpdateListener = getEntitlementsUpdateListener()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,12 +46,12 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
-        Qonversion.sharedInstance.setUpdatedPurchasesListener(purchasesListener)
+        Qonversion.sharedInstance.setEntitlementsUpdateListener(entitlementsUpdateListener)
 
         Qonversion.sharedInstance.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 updateContent(products)
-                Qonversion.sharedInstance.checkPermissions(getPermissionsCallback())
+                Qonversion.sharedInstance.checkEntitlements(getEntitlementsCallback())
             }
 
             override fun onError(error: QonversionError) {
@@ -70,7 +70,7 @@ class HomeFragment : Fragment() {
 
         binding.buttonRestore.setOnClickListener {
             showLoading(true)
-            Qonversion.sharedInstance.restore(getPermissionsCallback())
+            Qonversion.sharedInstance.restore(getEntitlementsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
@@ -106,11 +106,11 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    private fun getPermissionsCallback(): QonversionPermissionsCallback {
-        return object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
+    private fun getEntitlementsCallback(): QonversionEntitlementsCallback {
+        return object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 showLoading(false)
-                handlePermissions(permissions)
+                handleEntitlements(entitlements)
             }
 
             override fun onError(error: QonversionError) {
@@ -145,15 +145,15 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun handlePermissions(permissions: Map<String, QPermission>) {
+    private fun handleEntitlements(entitlements: Map<String, QEntitlement>) {
         var isNothingToRestore = true
-        val permissionPlus = permissions[permissionPlus]
-        if (permissionPlus != null && permissionPlus.isActive()) {
+        val entitlementPlus = entitlements[entitlementPlus]
+        if (entitlementPlus != null && entitlementPlus.isActive) {
             binding.buttonSubscribe.toSuccessState()
             isNothingToRestore = false
         }
-        val permissionStandart = permissions[permissionStandart]
-        if (permissionStandart != null && permissionStandart.isActive()) {
+        val entitlementStandart = entitlements[entitlementStandart]
+        if (entitlementStandart != null && entitlementStandart.isActive) {
             binding.buttonInApp.toSuccessState()
             isNothingToRestore = false
         }
@@ -167,8 +167,8 @@ class HomeFragment : Fragment() {
         Qonversion.sharedInstance.purchase(
             requireActivity(),
             productId,
-            callback = object : QonversionPermissionsCallback {
-                override fun onSuccess(permissions: Map<String, QPermission>) {
+            callback = object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                     when (productId) {
                         productIdSubs -> binding.buttonSubscribe.toSuccessState()
                         productIdInApp -> binding.buttonInApp.toSuccessState()
@@ -199,9 +199,9 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun getUpdatedPurchasesListener() = object : UpdatedPurchasesListener {
-        override fun onPermissionsUpdate(permissions: Map<String, QPermission>) {
-            // handle updated permissions here
+    private fun getEntitlementsUpdateListener() = object : EntitlementsUpdateListener {
+        override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
+            // handle updated entitlements here
         }
     }
 
@@ -209,10 +209,10 @@ class HomeFragment : Fragment() {
         override fun automationsDidFinishExecuting(actionResult: QActionResult) {
             // Handle the final action that the user completed on the in-app screen.
             if (actionResult.type == QActionResultType.Purchase) {
-                // You can check available permissions
-                Qonversion.sharedInstance.checkPermissions(object : QonversionPermissionsCallback {
-                    override fun onSuccess(permissions: Map<String, QPermission>) {
-                        // Handle new permissions here
+                // You can check available entitlements
+                Qonversion.sharedInstance.checkEntitlements(object : QonversionEntitlementsCallback {
+                    override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                        // Handle new entitlements here
                     }
 
                     override fun onError(error: QonversionError) {

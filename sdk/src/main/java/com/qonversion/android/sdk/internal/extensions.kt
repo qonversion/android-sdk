@@ -3,6 +3,8 @@ package com.qonversion.android.sdk.internal
 import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.internal.dto.QPermission
 import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Call
@@ -77,3 +79,21 @@ internal fun JSONArray.toList(): List<Any?> {
 internal val Context.isDebuggable get() = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 
 internal val Context.application get() = applicationContext as Application
+
+internal fun Int.toBoolean() = this != 0
+
+internal fun String?.toBoolean() = this == "1"
+
+internal fun Boolean.toInt() = if (this) 1 else 0
+
+internal fun Boolean.stringValue() = if (this) "1" else "0"
+
+internal fun Long.milliSecondsToSeconds(): Long = this / 1000
+
+internal fun Long.secondsToMilliSeconds(): Long = this * 1000
+
+internal fun Map<String, QPermission>.toEntitlementsMap(): Map<String, QEntitlement> {
+    val res = mutableMapOf<String, QEntitlement>()
+    forEach { (id, permission) -> res[id] = QEntitlement(permission) }
+    return res
+}

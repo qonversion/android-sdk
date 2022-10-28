@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionConfig;
 import com.qonversion.android.sdk.dto.LaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
+import com.qonversion.android.sdk.dto.QEntitlement;
 import com.qonversion.android.sdk.dto.QUserProperties;
 import com.qonversion.android.sdk.dto.Store;
 import com.qonversion.android.sdk.dto.QonversionError;
@@ -35,11 +36,11 @@ public class App extends MultiDexApplication {
         final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                LaunchMode.InfrastructureMode,
+                LaunchMode.Infrastructure,
                 Store.GooglePlay
         ).build();
-        final Qonversion qonversion = Qonversion.initialize(qonversionConfig);
-        qonversion.launch(
+        Qonversion.initialize(qonversionConfig);
+        Qonversion.getSharedInstance().launch(
                 new QonversionLaunchCallback() {
                     @Override
                     public void onSuccess(@NotNull QLaunchResult launchResult) {

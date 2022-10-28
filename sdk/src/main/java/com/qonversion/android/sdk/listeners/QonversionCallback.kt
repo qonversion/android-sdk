@@ -1,12 +1,12 @@
 package com.qonversion.android.sdk.listeners
 
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.offerings.QOfferings
-import com.qonversion.android.sdk.dto.QPermission
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 
 internal interface QonversionLaunchCallbackInternal {
    fun onSuccess(launchResult: QLaunchResult)
@@ -28,13 +28,8 @@ interface QonversionOfferingsCallback {
    fun onError(error: QonversionError)
 }
 
-interface QonversionExperimentsCallback {
-   fun onSuccess(experiments: Map<String, QExperimentInfo>)
-   fun onError(error: QonversionError)
-}
-
-interface QonversionPermissionsCallback {
-   fun onSuccess(permissions: Map<String, QPermission>)
+interface QonversionEntitlementsCallback {
+   fun onSuccess(entitlements: Map<String, QEntitlement>)
    fun onError(error: QonversionError)
 }
 
@@ -45,5 +40,10 @@ interface QonversionEligibilityCallback {
 
 interface QonversionShowScreenCallback {
    fun onSuccess()
+   fun onError(error: QonversionError)
+}
+
+interface QonversionUserCallback {
+   fun onSuccess(user: QUser)
    fun onError(error: QonversionError)
 }

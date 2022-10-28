@@ -3,9 +3,12 @@ package com.qonversion.android.sdk.internal
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.Environment
 import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
+import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -17,12 +20,16 @@ internal class InternalConfigTest {
 
     private val mockPrimaryConfig = mockk<PrimaryConfig>()
     private val mockStoreConfig = mockk<StoreConfig>()
+    private val mockCacheConfig = mockk<CacheConfig>()
+    private val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
 
     @BeforeEach
     fun setUp() {
         internalConfig = InternalConfig(
             mockPrimaryConfig,
-            mockStoreConfig
+            mockStoreConfig,
+            mockCacheConfig,
+            mockEntitlementsUpdateListener
         )
     }
 
@@ -35,12 +42,16 @@ internal class InternalConfigTest {
             // when
             val internalConfig = InternalConfig(
                 mockPrimaryConfig,
-                mockStoreConfig
+                mockStoreConfig,
+                mockCacheConfig,
+                mockEntitlementsUpdateListener
             )
 
             // then
             assertThat(internalConfig.primaryConfig).isSameAs(mockPrimaryConfig)
             assertThat(internalConfig.storeConfig).isSameAs(mockStoreConfig)
+            assertThat(internalConfig.cacheConfig).isSameAs(mockCacheConfig)
+            assertThat(internalConfig.entitlementsUpdateListener).isSameAs(mockEntitlementsUpdateListener)
         }
 
         @Test
@@ -49,7 +60,9 @@ internal class InternalConfigTest {
             val qonversionConfig = QonversionConfig(
                 mockk(),
                 mockPrimaryConfig,
-                mockStoreConfig
+                mockStoreConfig,
+                mockCacheConfig,
+                mockEntitlementsUpdateListener
             )
 
             // when
@@ -58,6 +71,8 @@ internal class InternalConfigTest {
             // then
             assertThat(internalConfig.primaryConfig).isSameAs(mockPrimaryConfig)
             assertThat(internalConfig.storeConfig).isSameAs(mockStoreConfig)
+            assertThat(internalConfig.cacheConfig).isSameAs(mockCacheConfig)
+            assertThat(internalConfig.entitlementsUpdateListener).isSameAs(mockEntitlementsUpdateListener)
         }
     }
 
@@ -123,6 +138,24 @@ internal class InternalConfigTest {
 
             // then
             assertThat(isSandbox).isFalse()
+        }
+    }
+
+    @Nested
+    inner class EntitlementsUpdateListenerProviderTest {
+
+        @Test
+        fun `get entitlement updates listener`() {
+            // given
+            val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
+            internalConfig.entitlementsUpdateListener = mockEntitlementsUpdateListener
+            val provider: EntitlementsUpdateListenerProvider = internalConfig
+
+            // when
+            val result = provider.entitlementsUpdateListener
+
+            // then
+            assertThat(result).isSameAs(mockEntitlementsUpdateListener)
         }
     }
 }

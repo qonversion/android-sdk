@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.internal.dto.QExperimentsAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingsAdapter
-import com.qonversion.android.sdk.internal.dto.QPermissionSourceAdapter
+import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
 import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
@@ -54,7 +54,7 @@ internal class NetworkModule {
             .add(QPermissionsAdapter())
             .add(QProductTypeAdapter())
             .add(QProductRenewStateAdapter())
-            .add(QPermissionSourceAdapter())
+            .add(QEntitlementSourceAdapter())
             .add(QOfferingsAdapter())
             .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())

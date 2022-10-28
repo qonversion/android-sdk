@@ -3,18 +3,17 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.QPermissionsCacheLifetime
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionExperimentsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.UpdatedPurchasesListener
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 interface Qonversion {
 
@@ -58,12 +57,19 @@ interface Qonversion {
 
     /**
      * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
+     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
+     */
+    fun launch() = launch(null)
+
+    /**
+     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
      * @param callback - callback that will be called when response is received
      * @see [Observer mode](https://qonversion.io/docs/observer-mode)
      * @see [Installing the Android SDK](https://qonversion.io/docs/google)
      * // todo overload for java
      */
-    fun launch(callback: QonversionLaunchCallback? = null)
+    fun launch(callback: QonversionLaunchCallback?)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -72,7 +78,7 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun purchase(context: Activity, id: String, callback: QonversionPermissionsCallback)
+    fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -81,7 +87,23 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun purchase(context: Activity, product: QProduct, callback: QonversionPermissionsCallback)
+    fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback)
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param productId Qonversion product identifier for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    fun updatePurchase(
+        context: Activity,
+        productId: String,
+        oldProductId: String,
+        callback: QonversionEntitlementsCallback
+    ) = updatePurchase(context, productId, oldProductId, null, callback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -99,8 +121,24 @@ interface Qonversion {
         productId: String,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     )
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product Qonversion product for purchase
+     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param callback - callback that will be called when response is received
+     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
+     * @see [Product Center](https://qonversion.io/docs/product-center)
+     */
+    fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        oldProductId: String,
+        callback: QonversionEntitlementsCallback
+    ) = updatePurchase(context, product, oldProductId, null, callback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
@@ -118,7 +156,7 @@ interface Qonversion {
         product: QProduct,
         oldProductId: String,
         @BillingFlowParams.ProrationMode prorationMode: Int? = null,
-        callback: QonversionPermissionsCallback
+        callback: QonversionEntitlementsCallback
     )
 
     /**
@@ -140,12 +178,6 @@ interface Qonversion {
     fun offerings(callback: QonversionOfferingsCallback)
 
     /**
-     * Qonversion A/B tests help you grow your app revenue by making it easy to run and analyze paywall and promoted in-app product experiments. It gives you the power to measure your paywalls' performance before you roll them out widely. It is an out-of-the-box solution that does not require any third-party service.
-     * @param callback - callback that will be called when response is received
-     */
-    fun experiments(callback: QonversionExperimentsCallback)
-
-    /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
      * You can show only a regular price for users who are not eligible for an introductory offer.
      * @param productIds products identifiers that must be checked
@@ -157,18 +189,18 @@ interface Qonversion {
     )
 
     /**
-     * Check user permissions based on product center details
+     * Check user entitlements based on product center details
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun checkPermissions(callback: QonversionPermissionsCallback)
+    fun checkEntitlements(callback: QonversionEntitlementsCallback)
 
     /**
      * Restore user Products
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
-    fun restore(callback: QonversionPermissionsCallback)
+    fun restore(callback: QonversionEntitlementsCallback)
 
     /**
      * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
@@ -187,6 +219,12 @@ interface Qonversion {
      * Call this function to unlink a user from his unique ID in your system and his purchase data.
      */
     fun logout()
+
+    /**
+     * This method returns information about the current Qonversion user.
+     * @param callback - callback that will be called when response is received
+     */
+    fun getUserInfo(callback: QonversionUserCallback)
 
     /**
      * Send your attribution data
@@ -210,27 +248,10 @@ interface Qonversion {
     fun setUserProperty(key: String, value: String)
 
     /**
-     * Set the delegate to handle pending purchases
-     * The delegate is called when the deferred transaction status updates
-     * For example, to handle purchases using slow credit card or SCA flow purchases
-     */
-    fun setUpdatedPurchasesListener(listener: UpdatedPurchasesListener)
-
-    /**
      * You can set the flag to distinguish sandbox and production users.
      * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
     fun setDebugMode()
-
-    /**
-     * Permissions cache is used when there are problems with the Qonversion API
-     * or internet connection. If so, Qonversion will return the last successfully loaded
-     * permissions. The current method allows you to configure how long that cache may be used.
-     * The default value is [QPermissionsCacheLifetime.MONTH].
-     *
-     * @param lifetime desired permissions cache lifetime duration
-     */
-    fun setPermissionsCacheLifetime(lifetime: QPermissionsCacheLifetime)
 
     /**
      * Set push token to Qonversion to enable Qonversion push notifications
@@ -250,4 +271,19 @@ interface Qonversion {
      * @return a map with custom payload from the notification or null if it's not provided.
      */
     fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
+
+    /**
+     * Provide a listener to be notified about asynchronous user entitlements updates.
+     *
+     * Make sure you provide this listener for being up-to-date with the user entitlements.
+     * Else you can lose some important updates. Also, please, consider that this listener
+     * should live for the whole lifetime of the application.
+     *
+     * You may set entitlements listener both *after* Qonversion SDK initializing
+     * with [Qonversion.setEntitlementsUpdateListener] and *while* Qonversion initializing
+     * with [Qonversion.initialize]
+     *
+     * @param entitlementsUpdateListener listener to be called when entitlements update.
+     */
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
 }

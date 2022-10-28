@@ -42,5 +42,7 @@ enum class QonversionErrorCode(val specification: String) {
     UnknownClientPlatform("The current platform is not supported"),
     FraudPurchase("Fraud purchase was detected"),
     ProjectConfigError("The project is not configured or configured incorrectly in the Qonversion Dashboard"),
-    InvalidStoreCredentials("This account does not have access to the requested application")
+    InvalidStoreCredentials("This account does not have access to the requested application"),
+    NotInitialized("Qonversion has not been initialized. You should call " +
+            "the initialize method before accessing the shared instance of Qonversion."),
 }

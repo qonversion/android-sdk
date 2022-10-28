@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.converter
 import android.util.Pair
 import com.android.billingclient.api.SkuDetails
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
-import com.qonversion.android.sdk.internal.billing.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.extractor.Extractor

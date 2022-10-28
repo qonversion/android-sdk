@@ -13,8 +13,8 @@ import com.qonversion.android.app.databinding.FragmentOfferingsBinding
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionPermissionsCallback
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 
@@ -59,8 +59,8 @@ class OfferingsFragment : Fragment() {
 
     private fun purchase(product: QProduct) {
         Qonversion.sharedInstance.purchase(requireActivity(), product, callback = object :
-            QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
+            QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
             }
 
