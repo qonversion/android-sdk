@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PermissionsFragment">
+    tools:context=".EntitlementsFragment">
 
     <ImageView
         android:id="@+id/imageView"
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/active_permissions"
+        android:text="@string/active_entitlements"
         android:textColor="@color/colorBlack"
         android:textSize="26sp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -49,7 +49,7 @@
             android:layout_margin="5dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/permission_id"
+            android:text="@string/entitlement_id"
             android:textColor="@color/colorWhite" />
 
         <TextView
@@ -73,10 +73,10 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPermissionsList"
+        android:id="@+id/recyclerViewEntitlementsList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/layout"
-        tools:listitem="@layout/table_row_permission" />
+        tools:listitem="@layout/table_row_entitlement" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

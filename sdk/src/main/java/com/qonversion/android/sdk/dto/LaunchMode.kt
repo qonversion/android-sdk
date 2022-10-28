@@ -9,6 +9,6 @@ import com.qonversion.android.sdk.Qonversion
  * https://documentation.qonversion.io/docs/how-qonversion-works
  */
 enum class LaunchMode {
-    ObserveMode,
-    InfrastructureMode
+    Observe,
+    Infrastructure
 }

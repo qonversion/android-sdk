@@ -36,11 +36,11 @@ public class App extends MultiDexApplication {
         final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                LaunchMode.InfrastructureMode,
+                LaunchMode.Infrastructure,
                 Store.GooglePlay
         ).build();
-        final Qonversion qonversion = Qonversion.initialize(qonversionConfig);
-        qonversion.launch(
+        Qonversion.initialize(qonversionConfig);
+        Qonversion.getSharedInstance().launch(
                 new QonversionLaunchCallback() {
                     @Override
                     public void onSuccess(@NotNull QLaunchResult launchResult) {
