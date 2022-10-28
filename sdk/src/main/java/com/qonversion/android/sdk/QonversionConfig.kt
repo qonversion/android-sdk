@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.dto.LaunchMode
 import com.qonversion.android.sdk.dto.Store
 import android.content.Context
 import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.application
