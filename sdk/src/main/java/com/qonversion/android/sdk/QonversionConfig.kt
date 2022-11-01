@@ -2,14 +2,12 @@ package com.qonversion.android.sdk
 
 import android.app.Application
 import android.util.Log
-import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.LaunchMode
-import com.qonversion.android.sdk.dto.Store
+import com.qonversion.android.sdk.dto.QEnvironment
+import com.qonversion.android.sdk.dto.QLaunchMode
 import android.content.Context
 import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
-import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.isDebuggable
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
@@ -26,7 +24,6 @@ import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 class QonversionConfig internal constructor(
     internal val application: Application,
     internal val primaryConfig: PrimaryConfig,
-    internal val storeConfig: StoreConfig,
     internal val cacheConfig: CacheConfig,
     internal val entitlementsUpdateListener: EntitlementsUpdateListener?
 ) {
@@ -40,27 +37,24 @@ class QonversionConfig internal constructor(
      * @constructor creates an instance of a builder
      * @param context the current context
      * @param projectKey your Project Key from Qonversion Dashboard
-     * @param launchMode launch mode of the Qonversion SDK todo add link
-     * @param store the store used for purchases (only [Store.GooglePlay] is supported for now)
+     * @param launchMode launch mode of the Qonversion SDK
      */
-    class Builder @JvmOverloads constructor(
+    class Builder(
         private val context: Context,
         private val projectKey: String,
-        private val launchMode: LaunchMode,
-        private val store: Store = Store.GooglePlay
+        private val launchMode: QLaunchMode
     ) {
-        internal var environment = Environment.Production
-        internal var shouldConsumePurchases = true
+        internal var environment = QEnvironment.Production
         internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.MONTH
         internal var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
         /**
-         * Set current application [Environment]. Used to distinguish sandbox and production users.
+         * Set current application [QEnvironment]. Used to distinguish sandbox and production users.
          *
          * @param environment current environment.
          * @return builder instance for chain calls.
          */
-        fun setEnvironment(environment: Environment): Builder = apply {
+        fun setEnvironment(environment: QEnvironment): Builder = apply {
             this.environment = environment
         }
 
@@ -101,20 +95,18 @@ class QonversionConfig internal constructor(
             if (projectKey.isBlank()) {
                 throw IllegalStateException("Project key is empty")
             }
-            if (environment === Environment.Production && context.isDebuggable) {
+            if (environment === QEnvironment.Production && context.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Production for debug build.")
-            } else if (environment === Environment.Sandbox && !context.isDebuggable) {
+            } else if (environment === QEnvironment.Sandbox && !context.isDebuggable) {
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
 
             val primaryConfig = PrimaryConfig(projectKey, launchMode, environment)
-            val storeConfig = StoreConfig(store, shouldConsumePurchases)
             val cacheConfig = CacheConfig(entitlementsCacheLifetime)
 
             return QonversionConfig(
                 context.application,
                 primaryConfig,
-                storeConfig,
                 cacheConfig,
                 entitlementsUpdateListener
             )

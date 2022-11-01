@@ -1,11 +1,10 @@
 package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.QonversionConfig
-import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.dto.QEnvironment
+import com.qonversion.android.sdk.dto.QLaunchMode
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
-import com.qonversion.android.sdk.internal.dto.config.StoreConfig
 import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
@@ -19,7 +18,6 @@ internal class InternalConfigTest {
     private lateinit var internalConfig: InternalConfig
 
     private val mockPrimaryConfig = mockk<PrimaryConfig>()
-    private val mockStoreConfig = mockk<StoreConfig>()
     private val mockCacheConfig = mockk<CacheConfig>()
     private val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
 
@@ -27,7 +25,6 @@ internal class InternalConfigTest {
     fun setUp() {
         internalConfig = InternalConfig(
             mockPrimaryConfig,
-            mockStoreConfig,
             mockCacheConfig,
             mockEntitlementsUpdateListener
         )
@@ -42,14 +39,12 @@ internal class InternalConfigTest {
             // when
             val internalConfig = InternalConfig(
                 mockPrimaryConfig,
-                mockStoreConfig,
                 mockCacheConfig,
                 mockEntitlementsUpdateListener
             )
 
             // then
             assertThat(internalConfig.primaryConfig).isSameAs(mockPrimaryConfig)
-            assertThat(internalConfig.storeConfig).isSameAs(mockStoreConfig)
             assertThat(internalConfig.cacheConfig).isSameAs(mockCacheConfig)
             assertThat(internalConfig.entitlementsUpdateListener).isSameAs(mockEntitlementsUpdateListener)
         }
@@ -60,7 +55,6 @@ internal class InternalConfigTest {
             val qonversionConfig = QonversionConfig(
                 mockk(),
                 mockPrimaryConfig,
-                mockStoreConfig,
                 mockCacheConfig,
                 mockEntitlementsUpdateListener
             )
@@ -70,7 +64,6 @@ internal class InternalConfigTest {
 
             // then
             assertThat(internalConfig.primaryConfig).isSameAs(mockPrimaryConfig)
-            assertThat(internalConfig.storeConfig).isSameAs(mockStoreConfig)
             assertThat(internalConfig.cacheConfig).isSameAs(mockCacheConfig)
             assertThat(internalConfig.entitlementsUpdateListener).isSameAs(mockEntitlementsUpdateListener)
         }
@@ -95,8 +88,8 @@ internal class InternalConfigTest {
     @Nested
     inner class EnvironmentProviderTest {
         private val mockProjectKey = "projectKey"
-        private val mockLaunchMode = mockk<LaunchMode>()
-        private val mockEnvironment = mockk<Environment>()
+        private val mockLaunchMode = mockk<QLaunchMode>()
+        private val mockEnvironment = mockk<QEnvironment>()
 
         @Test
         fun `get environment`() {
@@ -116,7 +109,7 @@ internal class InternalConfigTest {
         fun `is sandbox when sandbox env`() {
             // given
             val environmentProvider: EnvironmentProvider = internalConfig
-            val environment = Environment.Sandbox
+            val environment = QEnvironment.Sandbox
             internalConfig.primaryConfig = PrimaryConfig(mockProjectKey, mockLaunchMode, environment)
 
             // when
@@ -130,7 +123,7 @@ internal class InternalConfigTest {
         fun `is not sandbox when prod env`() {
             // given
             val environmentProvider: EnvironmentProvider = internalConfig
-            val environment = Environment.Production
+            val environment = QEnvironment.Production
             internalConfig.primaryConfig = PrimaryConfig(mockProjectKey, mockLaunchMode, environment)
 
             // when
