@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.automations.dto
 
-import com.qonversion.android.sdk.automations.dto.AutomationsEventType
 import java.util.*
 
 data class AutomationsEvent(
