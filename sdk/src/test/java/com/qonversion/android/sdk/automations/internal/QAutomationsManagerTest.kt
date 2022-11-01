@@ -296,6 +296,7 @@ internal class QAutomationsManagerTest {
 
             mockLooper()
             every { mockAppStateProvider.appState } returns AppState.Foreground
+            automationsManager.isLaunchFinished = true
 
             // when
             automationsManager.setPushToken(newToken)
@@ -306,7 +307,27 @@ internal class QAutomationsManagerTest {
                 mockPrefs.edit()
                 mockEditor.putString(pendingPushTokenKey, newToken)
                 mockEditor.apply()
-                mockRepository.setPushToken(newToken)
+                mockRepository.sendPushToken(newToken)
+            }
+        }
+
+        @Test
+        fun `should send new token when launch is processed`() {
+            // given
+            val newToken = "newToken"
+            every {
+                mockPrefs.getString(pendingPushTokenKey, null)
+            } returns newToken
+
+            mockLooper()
+
+            // when
+            automationsManager.onLaunchProcessed()
+
+            // then
+            verifySequence {
+                mockPrefs.getString(pendingPushTokenKey, null)
+                mockRepository.sendPushToken(newToken)
             }
         }
 
@@ -320,6 +341,7 @@ internal class QAutomationsManagerTest {
 
             mockLooper()
             every { mockAppStateProvider.appState } returns AppState.Background
+            automationsManager.isLaunchFinished = true
 
             // when
             automationsManager.setPushToken(newToken)
@@ -334,7 +356,31 @@ internal class QAutomationsManagerTest {
                 mockEditor.apply()
             }
             verify(exactly = 0) {
-                mockRepository.setPushToken(newToken)
+                mockRepository.sendPushToken(newToken)
+            }
+        }
+
+        @Test
+        fun `shouldn't send a token when launch is not finished`() {
+            val token = "someToken"
+            every {
+                mockPrefs.getString(pushTokenKey, "")
+            } returns "another token"
+
+            // when
+            automationsManager.setPushToken(token)
+
+            // then
+            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
+            assertThat(pendingToken).isEqualTo(token)
+            verify(exactly = 1) {
+                mockPrefs.getString(pushTokenKey, "")
+                mockEditor.putString(pendingPushTokenKey, token)
+            }
+            verify {
+                listOf(
+                    mockRepository
+                ) wasNot Called
             }
         }
 
@@ -344,6 +390,7 @@ internal class QAutomationsManagerTest {
             every {
                 mockPrefs.getString(pushTokenKey, "")
             } returns oldToken
+            automationsManager.isLaunchFinished = true
 
             // when
             automationsManager.setPushToken(oldToken)
@@ -371,6 +418,7 @@ internal class QAutomationsManagerTest {
 
             mockLooper()
             every { mockAppStateProvider.appState } returns AppState.Foreground
+            automationsManager.isLaunchFinished = true
 
             // when
             automationsManager.setPushToken(newToken)
@@ -404,7 +452,7 @@ internal class QAutomationsManagerTest {
             assertThat(pendingToken).isNull()
 
             verifyOrder {
-                mockRepository.setPushToken(newToken)
+                mockRepository.sendPushToken(newToken)
             }
         }
 

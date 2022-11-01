@@ -33,6 +33,7 @@ import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
+import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
@@ -70,9 +71,7 @@ internal class QonversionRepository internal constructor(
         advertisingId = initRequestData.idfa
         this.installDate = initRequestData.installDate
 
-        val token = preferences.getString(PENDING_PUSH_TOKEN_KEY, null)
-
-        initRequest(initRequestData.purchases, initRequestData.callback, token)
+        initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
     fun purchase(
@@ -189,8 +188,8 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun setPushToken(token: String) {
-        initRequest(pushToken = token)
+    fun sendPushToken(token: String) {
+        sendPushTokenRequest(token)
     }
 
     fun screens(
@@ -516,15 +515,29 @@ internal class QonversionRepository internal constructor(
         }
     }
 
+    private fun sendPushTokenRequest(token: String) {
+        val device = environmentProvider.getInfo()
+        val request = SendPushTokenRequest(key, uid, device.deviceId, token)
+
+        api.sendPushToken(request).enqueue {
+            onResponse = {
+                preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
+                preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
+            }
+            onFailure = {
+                logger.release("sendPushTokenRequest - failure - ${it?.toQonversionError()}")
+            }
+        }
+    }
+
     private fun initRequest(
         purchases: List<Purchase>? = null,
-        callback: QonversionLaunchCallback? = null,
-        pushToken: String? = null
+        callback: QonversionLaunchCallback? = null
     ) {
         val inapps: List<Inapp> = convertPurchases(purchases)
         val initRequest = InitRequest(
             installDate = installDate,
-            device = environmentProvider.getInfo(advertisingId, pushToken),
+            device = environmentProvider.getInfo(advertisingId),
             version = sdkVersion,
             accessToken = key,
             clientUid = uid,
@@ -538,11 +551,6 @@ internal class QonversionRepository internal constructor(
 
                 val body = it.body()
                 if (body != null && body.success) {
-                    if (!pushToken.isNullOrEmpty()) {
-                        preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
-                        preferences.edit().putString(PUSH_TOKEN_KEY, pushToken).apply()
-                    }
-
                     callback?.onSuccess(body.data)
                 } else {
                     callback?.onError(errorMapper.getErrorFromResponse(it))

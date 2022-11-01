@@ -117,7 +117,10 @@ internal class QonversionInternal(
 
         productCenterManager?.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { callback?.onSuccess(launchResult) }
+                postToMainThread {
+                    automationsManager?.onLaunchProcessed()
+                    callback?.onSuccess(launchResult)
+                }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback?.onError(error) }
