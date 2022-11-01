@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations.macros
+package com.qonversion.android.sdk.automations.internal.macros
 
 internal enum class MacrosType(val type: String) {
     Unknown("unknown"),

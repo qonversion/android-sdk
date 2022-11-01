@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.dto
 
 enum class AutomationsEventType(val type: String) {
     Unknown("unknown"),

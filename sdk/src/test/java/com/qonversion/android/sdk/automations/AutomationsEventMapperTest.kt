@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.automations
 
+import com.qonversion.android.sdk.automations.dto.AutomationsEventType
+import com.qonversion.android.sdk.automations.internal.AutomationsEventMapper
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.*

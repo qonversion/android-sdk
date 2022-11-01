@@ -6,10 +6,10 @@ import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.QIdentityManager
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
-import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.QUserPropertiesManager
-import com.qonversion.android.sdk.automations.AutomationsEventMapper
+import com.qonversion.android.sdk.automations.internal.AutomationsEventMapper
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage

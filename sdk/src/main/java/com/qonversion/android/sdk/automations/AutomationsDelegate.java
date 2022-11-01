@@ -2,6 +2,9 @@ package com.qonversion.android.sdk.automations;
 
 import android.content.Context;
 
+import com.qonversion.android.sdk.automations.dto.AutomationsEvent;
+import com.qonversion.android.sdk.automations.dto.QActionResult;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

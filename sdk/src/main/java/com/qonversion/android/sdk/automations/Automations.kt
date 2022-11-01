@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.automations
 
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger

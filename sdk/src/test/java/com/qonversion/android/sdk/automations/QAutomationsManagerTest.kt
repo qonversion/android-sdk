@@ -7,6 +7,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Looper
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.dto.AutomationsEvent
+import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.internal.AutomationsEventMapper
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger

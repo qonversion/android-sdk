@@ -253,7 +253,7 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEvent.kt:3</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.dto.AutomationsEvent.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:19</ID>
