@@ -18,7 +18,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
-class ScreenPresenterTest {
+internal class ScreenPresenterTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockView = mockk<ScreenContract.View>(relaxed = true)
     private lateinit var screenPresenter: ScreenPresenter

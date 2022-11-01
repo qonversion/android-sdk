@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-class QonversionBillingServiceTest {
+internal class QonversionBillingServiceTest {
     private val skuSubs = "subs"
     private val skuInapp = "inapp"
     private val purchaseToken = "token"

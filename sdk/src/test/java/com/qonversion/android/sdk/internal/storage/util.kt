@@ -27,7 +27,7 @@ import com.qonversion.android.sdk.internal.dto.QProductsAdapter
 import com.squareup.moshi.Moshi
 import java.util.*
 
-class Util {
+internal class Util {
 
     companion object {
         const val CLIENT_ID = "XXXXX"

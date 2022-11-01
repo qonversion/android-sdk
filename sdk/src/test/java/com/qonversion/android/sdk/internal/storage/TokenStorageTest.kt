@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class TokenStorageTest {
+internal class TokenStorageTest {
 
     private lateinit var tokenStorage: TokenStorage
     private lateinit var tokenExtractor: Extractor<retrofit2.Response<BaseResponse<Response>>>

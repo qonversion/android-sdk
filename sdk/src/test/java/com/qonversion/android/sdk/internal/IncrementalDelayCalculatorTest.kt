@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class IncrementalDelayCalculatorTest {
+internal class IncrementalDelayCalculatorTest {
     private val mockRandomizer = mockk<Random>(relaxed = true)
     private val random = 3
     private val minDelay = 5

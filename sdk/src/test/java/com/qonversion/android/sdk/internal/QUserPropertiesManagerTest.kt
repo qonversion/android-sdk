@@ -20,7 +20,7 @@ import org.junit.jupiter.api.assertAll
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class QUserPropertiesManagerTest {
+internal class QUserPropertiesManagerTest {
     private val mockContext = mockk<Application>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)

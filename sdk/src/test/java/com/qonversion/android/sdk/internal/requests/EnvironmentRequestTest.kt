@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class EnvironmentRequestTest {
+internal class EnvironmentRequestTest {
 
     private lateinit var adapter: JsonAdapter<Environment>
 

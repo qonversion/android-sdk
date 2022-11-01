@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi
 import org.junit.Before
 import org.junit.Test
 
-class PropertiesRequestTest {
+internal class PropertiesRequestTest {
     private lateinit var adapter: JsonAdapter<PropertiesRequest>
 
     @Before

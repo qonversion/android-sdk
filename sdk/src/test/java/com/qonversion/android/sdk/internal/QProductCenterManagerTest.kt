@@ -30,7 +30,7 @@ import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
-class QProductCenterManagerTest {
+internal class QProductCenterManagerTest {
     private val mockLogger: Logger = mockk(relaxed = true)
     private val mockDeviceStorage = mockk<PurchasesCache>(relaxed = true)
     private val mockHandledPurchasesCache = mockk<QHandledPurchasesCache>(relaxed = true)

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class AppRequestTest {
+internal class AppRequestTest {
 
     private lateinit var adapter: JsonAdapter<App>
 

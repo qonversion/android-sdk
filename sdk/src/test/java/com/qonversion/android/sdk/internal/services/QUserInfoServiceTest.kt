@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class QUserInfoServiceTest {
+internal class QUserInfoServiceTest {
     private val mockSharedPreferencesCache = mockk<SharedPreferencesCache>(relaxed = true)
     private val mockTokenStorage = mockk<TokenStorage>(relaxed = true)
 

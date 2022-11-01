@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class SkuDetailsTokenExtractorTest {
+internal class SkuDetailsTokenExtractorTest {
 
     @Test
     fun extractSkuDetailsTokenFromCorrectJson() {

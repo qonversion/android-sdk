@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.internal
 
 import android.app.Activity
 import android.app.Application
@@ -7,10 +7,9 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Looper
 import com.qonversion.android.sdk.*
+import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.dto.AutomationsEvent
 import com.qonversion.android.sdk.automations.dto.QActionResult
-import com.qonversion.android.sdk.automations.internal.AutomationsEventMapper
-import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.lang.ref.WeakReference
 
-class QAutomationsManagerTest {
+internal class QAutomationsManagerTest {
     private val mockRepository: QonversionRepository = mockk(relaxed = true)
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)

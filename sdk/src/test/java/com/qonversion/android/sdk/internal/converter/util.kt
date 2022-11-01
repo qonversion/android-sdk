@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.converter
 
-class Util {
+internal class Util {
 
     companion object {
         const val CORRECT_SKU_DETAILS_SUB_JSON = "{\n" +

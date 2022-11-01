@@ -12,7 +12,7 @@ import io.mockk.*
 import org.junit.Before
 import org.junit.Test
 
-class ConsumerTest {
+internal class ConsumerTest {
     private val sku = "sku"
     private val skuTypeInApp = BillingClient.SkuType.INAPP
     private val skuTypeSubs = BillingClient.SkuType.SUBS

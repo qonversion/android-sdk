@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import retrofit2.Response
 
 @RunWith(RobolectricTestRunner::class)
-class TokenExtractorTest {
+internal class TokenExtractorTest {
 
     private lateinit var tokenExtractor: Extractor<Response<BaseResponse<com.qonversion.android.sdk.internal.dto.Response>>>
 

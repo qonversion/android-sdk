@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class UserPropertiesStorageTest {
+internal class UserPropertiesStorageTest {
     private lateinit var userPropertiesStorage: UserPropertiesStorage
 
     @Before

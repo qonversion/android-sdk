@@ -15,8 +15,8 @@
     <ID>Filename:com.qonversion.android.sdk.internal.requests.queue.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.validator.util.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:1</ID>
+    <ID>FinalNewline:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.ConsumerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt:1</ID>
@@ -165,16 +165,16 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:104</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:105</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:106</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:107</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:108</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:109</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:111</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:114</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:115</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:116</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:104</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:105</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:106</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:107</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:108</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:109</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:111</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:114</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:115</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:116</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:159</ID>
@@ -212,7 +212,7 @@
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.internal.requests.AttributionRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
     <ID>NewLineAtEndOfFile:ConsumerTest.kt$com.qonversion.android.sdk.internal.ConsumerTest.kt</ID>
     <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.internal.requests.EnvironmentRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:GooglePurchaseConverterTest.kt$com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt</ID>
@@ -225,7 +225,7 @@
     <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PurchaseRequestTest.kt$com.qonversion.android.sdk.internal.requests.PurchaseRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PurchasesCacheTest.kt$com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt</ID>
-    <ID>NewLineAtEndOfFile:QAutomationsManagerTest.kt$com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:QAutomationsManagerTest.kt$com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:QHandledPurchasesCacheTest.kt$com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt</ID>
     <ID>NewLineAtEndOfFile:QProductCenterManagerTest.kt$com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt</ID>
     <ID>NewLineAtEndOfFile:QUserInfoServiceTest.kt$com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt</ID>
@@ -242,11 +242,11 @@
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.internal.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.internal.validator.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
-    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:281</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:281</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:17</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:360</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:360</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:140</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.PurchaseRequestTest.kt:24</ID>
@@ -254,10 +254,10 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.dto.AutomationsEvent.kt:3</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:11</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.AutomationsEventMapperTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:19</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:9</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:11</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:5</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:19</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.mvp.ScreenActivity.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.AdvertisingProvider.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.ConsumerTest.kt:11</ID>
@@ -300,7 +300,7 @@
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundComma:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:146</ID>
-    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.QAutomationsManagerTest.kt:274</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:274</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.ConsumerTest.kt:107</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.ConsumerTest.kt:123</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.ConsumerTest.kt:138</ID>

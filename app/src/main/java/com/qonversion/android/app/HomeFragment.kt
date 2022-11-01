@@ -15,7 +15,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
 import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.internal.AutomationsInternal
+import com.qonversion.android.sdk.automations.Automations
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
@@ -82,7 +82,7 @@ class HomeFragment : Fragment() {
 
         // Automation
         // You can skip this step if you don't need to handle the Qonversion Automations result
-        AutomationsInternal.setDelegate(automationsDelegate)
+        Automations.sharedInstance.setDelegate(automationsDelegate)
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
@@ -99,7 +99,7 @@ class HomeFragment : Fragment() {
             }
 
         @Suppress("ControlFlowWithEmptyBody")
-        if (remoteMessage != null && !Qonversion.sharedInstance.handleNotification(remoteMessage.data)) {
+        if (remoteMessage != null && !Automations.sharedInstance.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }
 

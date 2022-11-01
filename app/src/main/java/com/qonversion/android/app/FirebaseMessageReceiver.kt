@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.App.CHANNEL_ID
-import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.automations.Automations
 
 class FirebaseMessageReceiver : FirebaseMessagingService() {
     private val tag = "FirebaseMessageReceiver"
@@ -17,7 +17,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(tag, "onNewToken: $token")
-        Qonversion.sharedInstance.setNotificationsToken(token)
+        Automations.sharedInstance.setNotificationsToken(token)
     }
 
     /**

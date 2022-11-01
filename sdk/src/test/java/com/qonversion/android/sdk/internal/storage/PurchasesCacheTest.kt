@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class PurchasesCacheTest {
+internal class PurchasesCacheTest {
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
 
