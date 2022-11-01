@@ -87,20 +87,6 @@ internal class QonversionConfigTest {
         }
 
         @Test
-        fun `setting should consume purchases`() {
-            // given
-            val builder =
-                QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode, mockStore)
-            builder.shouldConsumePurchases = true
-
-            // when
-            builder.setShouldConsumePurchases(false)
-
-            // then
-            assertThat(builder.shouldConsumePurchases).isEqualTo(false)
-        }
-
-        @Test
         fun `setting entitlements cache lifetime`() {
             // given
             val builder =
