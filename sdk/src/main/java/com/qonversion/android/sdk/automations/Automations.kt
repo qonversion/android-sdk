@@ -47,7 +47,7 @@ interface Automations {
 
     /**
      * The delegate is responsible for handling in-app screens and actions when push notification is received.
-     * Make sure the method is called before Qonversion.handleNotification
+     * Make sure the method is called before [Automations.handleNotification].
      */
     fun setDelegate(delegate: AutomationsDelegate)
 
@@ -57,4 +57,24 @@ interface Automations {
      * @param callback - callback that is called when the screen is shown to a user
      */
     fun showScreen(withID: String, callback: QonversionShowScreenCallback)
+
+    /**
+     * Set push token to Qonversion to enable Qonversion push notifications
+     */
+    fun setNotificationsToken(token: String)
+
+    /**
+     * @param messageData RemoteMessage payload data
+     * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
+     * @return true when a push notification was received from Qonversion.
+     *         Otherwise returns false, so you need to handle a notification yourself.
+     */
+    fun handleNotification(messageData: Map<String, String>): Boolean
+
+    /**
+     * Get parsed custom payload, which you added to the notification in the dashboard
+     * @param messageData RemoteMessage payload data
+     * @return a map with custom payload from the notification or null if it's not provided.
+     */
+    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
 }

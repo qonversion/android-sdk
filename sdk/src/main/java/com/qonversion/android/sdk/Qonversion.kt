@@ -254,25 +254,6 @@ interface Qonversion {
     fun setDebugMode()
 
     /**
-     * Set push token to Qonversion to enable Qonversion push notifications
-     */
-    fun setNotificationsToken(token: String)
-
-    /**
-     * @param messageData RemoteMessage payload data
-     * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
-     * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
-     */
-    fun handleNotification(messageData: Map<String, String>): Boolean
-
-    /**
-     * Get parsed custom payload, which you added to the notification in the dashboard
-     * @param messageData RemoteMessage payload data
-     * @return a map with custom payload from the notification or null if it's not provided.
-     */
-    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
-
-    /**
      * Provide a listener to be notified about asynchronous user entitlements updates.
      *
      * Make sure you provide this listener for being up-to-date with the user entitlements.

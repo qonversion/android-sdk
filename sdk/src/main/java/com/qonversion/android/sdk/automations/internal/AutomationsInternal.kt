@@ -30,6 +30,22 @@ internal class AutomationsInternal : Automations {
             )
     }
 
+    override fun setNotificationsToken(token: String) {
+        automationsManager?.setPushToken(token)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun handleNotification(messageData: Map<String, String>): Boolean {
+        return automationsManager?.handlePushIfPossible(messageData) ?: run {
+            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            return@run false
+        }
+    }
+
+    override fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
+        return automationsManager?.getNotificationCustomPayload(messageData)
+    }
+
     private fun logLaunchErrorForFunctionName(functionName: String?) {
         logger.release("$functionName function can not be executed. It looks like launch was not called.")
     }

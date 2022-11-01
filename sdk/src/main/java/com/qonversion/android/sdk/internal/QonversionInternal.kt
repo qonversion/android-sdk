@@ -261,22 +261,6 @@ internal class QonversionInternal(
         isDebugMode = true
     }
 
-    override fun setNotificationsToken(token: String) {
-        automationsManager?.setPushToken(token)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun handleNotification(messageData: Map<String, String>): Boolean {
-        return automationsManager?.handlePushIfPossible(messageData) ?: run {
-            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return@run false
-        }
-    }
-
-    override fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
-        return automationsManager?.getNotificationCustomPayload(messageData)
-    }
-
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
         productCenterManager?.setEntitlementsUpdateListener(entitlementsUpdateListener)
     }
