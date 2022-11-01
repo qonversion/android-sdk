@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.Qonversion
  * See more information about launch modes and choose preferred in the documentation
  * https://documentation.qonversion.io/docs/how-qonversion-works
  */
-enum class LaunchMode {
+enum class QLaunchMode {
     Observe,
     Infrastructure
 }

@@ -12,10 +12,9 @@ import com.google.firebase.*;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionConfig;
 import com.qonversion.android.sdk.automations.Automations;
-import com.qonversion.android.sdk.dto.LaunchMode;
+import com.qonversion.android.sdk.dto.QLaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
 import com.qonversion.android.sdk.dto.QUserProperties;
-import com.qonversion.android.sdk.dto.Store;
 import com.qonversion.android.sdk.dto.QonversionError;
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback;
 import com.qonversion.android.sdk.dto.QLaunchResult;
@@ -36,8 +35,7 @@ public class App extends MultiDexApplication {
         final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                LaunchMode.Infrastructure,
-                Store.GooglePlay
+                QLaunchMode.Infrastructure
         ).build();
         Qonversion.initialize(qonversionConfig);
         Automations.initialize(); // Initialize if you use Automations.
