@@ -2,9 +2,8 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
-import com.qonversion.android.sdk.internal.dto.config.StoreConfig
-import com.qonversion.android.sdk.dto.Environment
-import com.qonversion.android.sdk.dto.LaunchMode
+import com.qonversion.android.sdk.dto.QEnvironment
+import com.qonversion.android.sdk.dto.QLaunchMode
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
@@ -16,7 +15,6 @@ import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
-    val storeConfig: StoreConfig,
     override val cacheConfig: CacheConfig,
     override var entitlementsUpdateListener: EntitlementsUpdateListener?
 ) : EnvironmentProvider,
@@ -37,7 +35,6 @@ internal class InternalConfig(
 
     constructor(qonversionConfig: QonversionConfig) : this(
         qonversionConfig.primaryConfig,
-        qonversionConfig.storeConfig,
         qonversionConfig.cacheConfig,
         qonversionConfig.entitlementsUpdateListener
     )
@@ -45,7 +42,7 @@ internal class InternalConfig(
     override val environment
         get() = primaryConfig.environment
 
-    override val isSandbox get() = environment === Environment.Sandbox
+    override val isSandbox get() = environment === QEnvironment.Sandbox
 
-    val isObserveMode get() = primaryConfig.launchMode == LaunchMode.Observe
+    val isObserveMode get() = primaryConfig.launchMode == QLaunchMode.Observe
 }
