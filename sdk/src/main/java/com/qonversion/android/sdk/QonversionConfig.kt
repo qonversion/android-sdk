@@ -65,22 +65,6 @@ class QonversionConfig internal constructor(
         }
 
         /**
-         * Define should Qonversion consume purchases itself or not.
-         * You may need to consume purchases yourself if you want to add custom handling of them
-         * before it, for example, send the purchase to API or hand over coins to the user.
-         * If set to false make sure that you call [Qonversion.consume] for purchases yourself.
-         * todo fix method link above when it will be implemented
-         *
-         * The flag makes sense only for [LaunchMode.Infrastructure].
-         *
-         * @param shouldConsumePurchases if true, the Qonversion will consume purchases itself. If false - it won't.
-         * @return builder instance for chain calls.
-         */
-        fun setShouldConsumePurchases(shouldConsumePurchases: Boolean): Builder = apply {
-            this.shouldConsumePurchases = shouldConsumePurchases
-        }
-
-        /**
          * Entitlements cache is used when there are problems with the Qonversion API
          * or internet connection. If so, Qonversion will return the last successfully loaded
          * entitlements. The current method allows you to configure how long that cache may be used.
