@@ -185,8 +185,8 @@ interface Qonversion {
 
     /**
      * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
-     * @warning This function should only be called if you're using Qonversion SDK in observer mode.
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @warning This function should only be called if you're using Qonversion SDK in analytics mode.
+     * @see [Analytics mode](https://qonversion.io/docs/observer-mode)
      */
     fun syncPurchases()
 

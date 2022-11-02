@@ -43,7 +43,7 @@ internal class QonversionFactory(
         val billingService = createBillingService(productCenterManager)
 
         productCenterManager.billingService = billingService
-        productCenterManager.consumer = createConsumer(billingService, config.isObserveMode)
+        productCenterManager.consumer = createConsumer(billingService, config.isAnalyticsMode)
 
         return productCenterManager
     }
@@ -67,7 +67,7 @@ internal class QonversionFactory(
         return builder.build()
     }
 
-    private fun createConsumer(billingService: BillingService, isObserveMode: Boolean): Consumer {
-        return Consumer(billingService, isObserveMode)
+    private fun createConsumer(billingService: BillingService, isAnalyticsMode: Boolean): Consumer {
+        return Consumer(billingService, isAnalyticsMode)
     }
 }
