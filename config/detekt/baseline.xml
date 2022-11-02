@@ -11,6 +11,7 @@
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided>${}</ID>
+    <ID>EmptyFunctionBlock:QonversionInternal.kt$QonversionInternal.&lt;no name provided>${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.converter.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.requests.queue.util.kt:1</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
@@ -247,7 +248,7 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.converter.util.kt:55</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:17</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:363</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:410</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:140</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.PurchaseRequestTest.kt:24</ID>
