@@ -81,25 +81,17 @@ internal class QonversionInternal(
 
         userPropertiesManager?.productCenterManager = productCenterManager
         userPropertiesManager?.sendFacebookAttribution()
+
+        launch()
     }
 
     override fun onAppBackground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingBackground
-            return
-        }
-
         appState = AppState.Background
 
         userPropertiesManager?.onAppBackground()
     }
 
     override fun onAppForeground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingForeground
-            return
-        }
-
         appState = AppState.Foreground
 
         userPropertiesManager?.onAppForeground()
@@ -108,22 +100,12 @@ internal class QonversionInternal(
         attributionManager?.onAppForeground()
     }
 
-    override fun launch(callback: QonversionLaunchCallback?) {
-        when (appState) {
-            AppState.PendingForeground -> onAppForeground()
-            AppState.PendingBackground -> onAppBackground()
-            else -> {}
-        }
-
+    private fun launch() {
         productCenterManager?.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread {
-                    automationsManager?.onLaunchProcessed()
-                    callback?.onSuccess(launchResult)
-                }
+                postToMainThread { automationsManager?.onLaunchProcessed() }
 
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback?.onError(error) }
+            override fun onError(error: QonversionError) {}
         })
     }
 
@@ -241,7 +223,7 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun getUserInfo(callback: QonversionUserCallback) {
+    override fun userInfo(callback: QonversionUserCallback) {
         productCenterManager?.getUserInfo(callback)
     }
 

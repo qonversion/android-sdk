@@ -9,7 +9,6 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
@@ -56,22 +55,6 @@ interface Qonversion {
     }
 
     /**
-     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
-     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
-     */
-    fun launch() = launch(null)
-
-    /**
-     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
-     * @param callback - callback that will be called when response is received
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
-     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
-     * // todo overload for java
-     */
-    fun launch(callback: QonversionLaunchCallback?)
-
-    /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param id Qonversion product identifier for purchase
@@ -114,7 +97,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -149,7 +131,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -224,7 +205,7 @@ interface Qonversion {
      * This method returns information about the current Qonversion user.
      * @param callback - callback that will be called when response is received
      */
-    fun getUserInfo(callback: QonversionUserCallback)
+    fun userInfo(callback: QonversionUserCallback)
 
     /**
      * Send your attribution data

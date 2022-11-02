@@ -525,7 +525,7 @@ internal class QonversionRepository internal constructor(
                 preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
             }
             onFailure = {
-                logger.release("sendPushTokenRequest - failure - ${it?.toQonversionError()}")
+                logger.release("sendPushTokenRequest - failure - ${it.toQonversionError()}")
             }
         }
     }

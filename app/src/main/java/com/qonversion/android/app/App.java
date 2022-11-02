@@ -12,14 +12,10 @@ import com.google.firebase.*;
 import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionConfig;
 import com.qonversion.android.sdk.automations.Automations;
+import com.qonversion.android.sdk.dto.QEnvironment;
 import com.qonversion.android.sdk.dto.QLaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
 import com.qonversion.android.sdk.dto.QUserProperties;
-import com.qonversion.android.sdk.dto.QonversionError;
-import com.qonversion.android.sdk.listeners.QonversionLaunchCallback;
-import com.qonversion.android.sdk.dto.QLaunchResult;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -36,20 +32,11 @@ public class App extends MultiDexApplication {
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
                 QLaunchMode.Infrastructure
-        ).build();
+        )
+                .setEnvironment(QEnvironment.Sandbox)
+                .build();
         Qonversion.initialize(qonversionConfig);
         Automations.initialize(); // Initialize if you use Automations.
-        Qonversion.getSharedInstance().launch(
-                new QonversionLaunchCallback() {
-                    @Override
-                    public void onSuccess(@NotNull QLaunchResult launchResult) {
-                    }
-
-                    @Override
-                    public void onError(@NotNull QonversionError error) {
-                    }
-                }
-        );
 
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
 

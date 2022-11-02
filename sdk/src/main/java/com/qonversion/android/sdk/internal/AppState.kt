@@ -2,9 +2,7 @@ package com.qonversion.android.sdk.internal
 
 internal enum class AppState {
     Foreground,
-    Background,
-    PendingBackground,
-    PendingForeground;
+    Background;
 
     fun isBackground() =
         this == Background
