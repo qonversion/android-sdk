@@ -88,13 +88,13 @@
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$365</ID>
     <ID>MagicNumber:GoogleBillingPeriodConverter.kt$GoogleBillingPeriodConverter$7</ID>
     <ID>MagicNumber:GooglePurchaseConverter.kt$GooglePurchaseConverter$3</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.MONTH$30</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.SIX_MONTHS$180</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.THREE_MONTHS$90</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.TWO_MONTHS$60</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.TWO_WEEKS$14</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.WEEK$7</ID>
-    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.YEAR$365</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Month$30</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.SixMonths$180</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.ThreeMonths$90</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.TwoMonths$60</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.TwoWeeks$14</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Week$7</ID>
+    <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Year$365</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Annual$4</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$3</ID>
     <ID>MagicNumber:QProductDuration.kt$QProductDuration.Companion$4</ID>
@@ -255,7 +255,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:124</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.storage.TokenStorageTest.kt:63</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.validator.RequestValidatorTest.kt:3</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.automations.dto.AutomationsEvent.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:22</ID>
