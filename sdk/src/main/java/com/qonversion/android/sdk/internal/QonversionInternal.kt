@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
-import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
@@ -81,25 +81,17 @@ internal class QonversionInternal(
 
         userPropertiesManager?.productCenterManager = productCenterManager
         userPropertiesManager?.sendFacebookAttribution()
+
+        launch()
     }
 
     override fun onAppBackground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingBackground
-            return
-        }
-
         appState = AppState.Background
 
         userPropertiesManager?.onAppBackground()
     }
 
     override fun onAppForeground() {
-        if (!QDependencyInjector.isAppComponentInitialized()) {
-            appState = AppState.PendingForeground
-            return
-        }
-
         appState = AppState.Foreground
 
         userPropertiesManager?.onAppForeground()
@@ -108,19 +100,12 @@ internal class QonversionInternal(
         attributionManager?.onAppForeground()
     }
 
-    override fun launch(callback: QonversionLaunchCallback?) {
-        when (appState) {
-            AppState.PendingForeground -> onAppForeground()
-            AppState.PendingBackground -> onAppBackground()
-            else -> {}
-        }
-
+    private fun launch() {
         productCenterManager?.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { callback?.onSuccess(launchResult) }
+                postToMainThread { automationsManager?.onLaunchProcessed() }
 
-            override fun onError(error: QonversionError) =
-                postToMainThread { callback?.onError(error) }
+            override fun onError(error: QonversionError) {}
         })
     }
 
@@ -238,7 +223,7 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun getUserInfo(callback: QonversionUserCallback) {
+    override fun userInfo(callback: QonversionUserCallback) {
         productCenterManager?.getUserInfo(callback)
     }
 
@@ -259,22 +244,6 @@ internal class QonversionInternal(
 
     override fun setDebugMode() {
         isDebugMode = true
-    }
-
-    override fun setNotificationsToken(token: String) {
-        automationsManager?.setPushToken(token)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun handleNotification(messageData: Map<String, String>): Boolean {
-        return automationsManager?.handlePushIfPossible(messageData) ?: run {
-            logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-            return@run false
-        }
-    }
-
-    override fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>? {
-        return automationsManager?.getNotificationCustomPayload(messageData)
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {

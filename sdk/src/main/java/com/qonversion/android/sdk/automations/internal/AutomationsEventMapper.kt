@@ -1,5 +1,7 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.internal
 
+import com.qonversion.android.sdk.automations.dto.AutomationsEvent
+import com.qonversion.android.sdk.automations.dto.AutomationsEventType
 import com.qonversion.android.sdk.internal.billing.getCurrentTimeInMillis
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.logger.Logger

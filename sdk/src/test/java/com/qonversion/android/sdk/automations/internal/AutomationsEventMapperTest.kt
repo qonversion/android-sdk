@@ -1,5 +1,6 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.internal
 
+import com.qonversion.android.sdk.automations.dto.AutomationsEventType
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.logger.Logger
 import io.mockk.*
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class AutomationsEventMapperTest {
+internal class AutomationsEventMapperTest {
 
     private lateinit var automationsEventMapper: AutomationsEventMapper
     private val mockLogger: Logger = mockk(relaxed = true)

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.di.module
 
-import com.qonversion.android.sdk.automations.macros.ScreenProcessor
+import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.internal.di.scope.ActivityScope
 import com.qonversion.android.sdk.automations.mvp.ScreenContract
 import dagger.Module

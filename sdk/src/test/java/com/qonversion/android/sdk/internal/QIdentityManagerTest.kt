@@ -7,7 +7,7 @@ import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
-class QIdentityManagerTest {
+internal class QIdentityManagerTest {
     private val mockUserInfoService = mockk<QUserInfoService>(relaxed = true)
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
 

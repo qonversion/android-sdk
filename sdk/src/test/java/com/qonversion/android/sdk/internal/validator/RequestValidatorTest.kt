@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.validator
 
 import org.junit.Test
 
-class RequestValidatorTest {
+internal class RequestValidatorTest {
 
     @Test
     fun validateWithNotEmptyClientUid() {

@@ -2,6 +2,7 @@ package com.qonversion.android.app
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -9,7 +10,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.App.CHANNEL_ID
-import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.automations.Automations
 
 class FirebaseMessageReceiver : FirebaseMessagingService() {
     private val tag = "FirebaseMessageReceiver"
@@ -17,7 +18,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(tag, "onNewToken: $token")
-        Qonversion.sharedInstance.setNotificationsToken(token)
+        Automations.sharedInstance.setNotificationsToken(token)
     }
 
     /**
@@ -40,7 +41,11 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
         intent.putExtra(INTENT_REMOTE_MESSAGE, remoteMessage)
         // Flag FLAG_ONE_SHOT indicates that this PendingIntent can be used only once
         val pendingIntent: PendingIntent =
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            } else {
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            }
 
         // 2. Create a notification
         val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)

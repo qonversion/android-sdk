@@ -9,7 +9,6 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
@@ -23,7 +22,7 @@ interface Qonversion {
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.
-         * Please, use the variable only after calling Qonversion.initialize().
+         * Please, use the variable only after calling [Qonversion.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
          * @return Current initialized instance of the Qonversion SDK.
@@ -54,22 +53,6 @@ interface Qonversion {
             }
         }
     }
-
-    /**
-     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
-     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
-     */
-    fun launch() = launch(null)
-
-    /**
-     * Launches Qonversion SDK with the given project key, you can get one in your account on https://dash.qonversion.io
-     * @param callback - callback that will be called when response is received
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
-     * @see [Installing the Android SDK](https://qonversion.io/docs/google)
-     * // todo overload for java
-     */
-    fun launch(callback: QonversionLaunchCallback?)
 
     /**
      * Make a purchase and validate that through server-to-server using Qonversion's Backend
@@ -114,7 +97,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -149,7 +131,6 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
      * @see [Product Center](https://qonversion.io/docs/product-center)
-     * // todo override for java
      */
     fun updatePurchase(
         context: Activity,
@@ -204,8 +185,8 @@ interface Qonversion {
 
     /**
      * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
-     * @warning This function should only be called if you're using Qonversion SDK in observer mode.
-     * @see [Observer mode](https://qonversion.io/docs/observer-mode)
+     * @warning This function should only be called if you're using Qonversion SDK in analytics mode.
+     * @see [Analytics mode](https://qonversion.io/docs/observer-mode)
      */
     fun syncPurchases()
 
@@ -224,7 +205,7 @@ interface Qonversion {
      * This method returns information about the current Qonversion user.
      * @param callback - callback that will be called when response is received
      */
-    fun getUserInfo(callback: QonversionUserCallback)
+    fun userInfo(callback: QonversionUserCallback)
 
     /**
      * Send your attribution data
@@ -252,25 +233,6 @@ interface Qonversion {
      * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
      */
     fun setDebugMode()
-
-    /**
-     * Set push token to Qonversion to enable Qonversion push notifications
-     */
-    fun setNotificationsToken(token: String)
-
-    /**
-     * @param messageData RemoteMessage payload data
-     * @see [RemoteMessage data](https://firebase.google.com/docs/reference/android/com/google/firebase/messaging/RemoteMessage#public-mapstring,-string-getdata)
-     * @return true when a push notification was received from Qonversion. Otherwise returns false, so you need to handle a notification yourself
-     */
-    fun handleNotification(messageData: Map<String, String>): Boolean
-
-    /**
-     * Get parsed custom payload, which you added to the notification in the dashboard
-     * @param messageData RemoteMessage payload data
-     * @return a map with custom payload from the notification or null if it's not provided.
-     */
-    fun getNotificationCustomPayload(messageData: Map<String, String>): Map<String, Any?>?
 
     /**
      * Provide a listener to be notified about asynchronous user entitlements updates.

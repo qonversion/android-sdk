@@ -6,7 +6,7 @@ import org.junit.Before
 import org.junit.Test
 import org.assertj.core.api.Assertions.assertThat
 
-class QHandledPurchasesCacheTest {
+internal class QHandledPurchasesCacheTest {
     private lateinit var handledPurchasesCache: QHandledPurchasesCache
 
     private val firstPurchase = mockPurchase("1")

@@ -9,13 +9,13 @@ import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 
 internal class Consumer internal constructor(
     private val billingService: BillingService,
-    private val isObserveMode: Boolean
+    private val isAnalyticsMode: Boolean
 ) {
     fun consumePurchases(
         purchases: List<Purchase>,
         skuDetails: Map<String, SkuDetails>
     ) {
-        if (isObserveMode) {
+        if (isAnalyticsMode) {
             return
         }
 
@@ -30,7 +30,7 @@ internal class Consumer internal constructor(
     }
 
     fun consumeHistoryRecords(records: List<PurchaseHistory>) {
-        if (isObserveMode) {
+        if (isAnalyticsMode) {
             return
         }
 

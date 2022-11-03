@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class LaunchResultCacheWrapperTest {
+internal class LaunchResultCacheWrapperTest {
     private val mockPrefsCache: SharedPreferencesCache = mockk(relaxed = true)
     private val mockMoshi = buildMoshi()
     private val mockAdapter = mockMoshi.adapter(QLaunchResult::class.java)

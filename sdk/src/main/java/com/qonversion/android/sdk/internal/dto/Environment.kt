@@ -15,6 +15,5 @@ internal data class Environment(
     @Json(name = "timezone") val timezone: String,
     @Json(name = "platform") val platform: String,
     @Json(name = "country") val country: String,
-    @Json(name = "advertiser_id") val advertiserId: String?,
-    @Json(name = "push_token") val pushToken: String?
+    @Json(name = "advertiser_id") val advertiserId: String?
 )

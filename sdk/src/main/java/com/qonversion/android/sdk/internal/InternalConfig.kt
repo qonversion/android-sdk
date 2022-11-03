@@ -44,5 +44,5 @@ internal class InternalConfig(
 
     override val isSandbox get() = environment === QEnvironment.Sandbox
 
-    val isObserveMode get() = primaryConfig.launchMode == QLaunchMode.Observe
+    val isAnalyticsMode get() = primaryConfig.launchMode == QLaunchMode.Analytics
 }

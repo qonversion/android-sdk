@@ -4,7 +4,7 @@ import com.qonversion.android.sdk.internal.storage.Util.Companion.CLIENT_UID
 import org.junit.Assert
 import org.junit.Test
 
-class TokenValidatorTest {
+internal class TokenValidatorTest {
 
     @Test
     fun validateWithEmpty() {

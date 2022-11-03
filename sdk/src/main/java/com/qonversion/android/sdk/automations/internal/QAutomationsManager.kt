@@ -1,10 +1,12 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.internal
 
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
+import com.qonversion.android.sdk.automations.AutomationsDelegate
+import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.dto.QonversionError
@@ -36,6 +38,7 @@ internal class QAutomationsManager @Inject constructor(
 
     private val logger = ConsoleLogger()
     private var pendingToken: String? = null
+    internal var isLaunchFinished = false
 
     fun onAppForeground() {
         pendingToken?.let {
@@ -77,15 +80,28 @@ internal class QAutomationsManager @Inject constructor(
 
     fun setPushToken(token: String) {
         val oldToken = loadToken()
-        if (token.isNotEmpty() && !oldToken.equals(token)) {
-            savePendingTokenToPref(token)
-            if (appStateProvider.appState.isBackground()) {
-                pendingToken = token
-                return
-            }
+        if (token.isEmpty() || oldToken.equals(token)) {
+            return
+        }
 
+        savePendingTokenToPref(token)
+        if (!isLaunchFinished || appStateProvider.appState.isBackground()) {
+            pendingToken = token
+        } else {
             sendPushToken(token)
         }
+    }
+
+    private fun processPushToken() {
+        val token = getPendingToken()
+        if (!token.isNullOrEmpty()) {
+            sendPushToken(token)
+        }
+    }
+
+    internal fun onLaunchProcessed() {
+        isLaunchFinished = true
+        processPushToken()
     }
 
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
@@ -177,9 +193,13 @@ internal class QAutomationsManager @Inject constructor(
     }
 
     private fun sendPushToken(token: String) {
-        repository.setPushToken(token)
+        repository.sendPushToken(token)
 
         pendingToken = null
+    }
+
+    private fun getPendingToken(): String? {
+        return preferences.getString(PENDING_PUSH_TOKEN_KEY, null)
     }
 
     private fun savePendingTokenToPref(token: String) =

@@ -84,13 +84,13 @@ internal class QonversionConfigTest {
             // given
             val builder =
                 QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
-            builder.entitlementsCacheLifetime = QEntitlementsCacheLifetime.MONTH
+            builder.entitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
 
             // when
-            builder.setEntitlementsCacheLifetime(QEntitlementsCacheLifetime.WEEK)
+            builder.setEntitlementsCacheLifetime(QEntitlementsCacheLifetime.Week)
 
             // then
-            assertThat(builder.entitlementsCacheLifetime).isEqualTo(QEntitlementsCacheLifetime.WEEK)
+            assertThat(builder.entitlementsCacheLifetime).isEqualTo(QEntitlementsCacheLifetime.Week)
         }
     }
 
@@ -132,7 +132,7 @@ internal class QonversionConfigTest {
         fun `successful build without full list of arguments`() {
             // given
             val defaultEnvironment = QEnvironment.Production
-            val defaultEntitlementsCacheLifetime = QEntitlementsCacheLifetime.MONTH
+            val defaultEntitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
 
             val mockContext = mockk<Context>(relaxed = true)
             val mockApplication = mockk<Application>()

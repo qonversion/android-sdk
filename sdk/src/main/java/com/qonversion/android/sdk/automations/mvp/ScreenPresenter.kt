@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.automations.mvp
 import android.net.Uri
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
-import com.qonversion.android.sdk.automations.QActionResultType
+import com.qonversion.android.sdk.automations.dto.QActionResultType
 import javax.inject.Inject
 
 internal class ScreenPresenter @Inject constructor(

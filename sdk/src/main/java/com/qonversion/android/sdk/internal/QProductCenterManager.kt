@@ -1126,7 +1126,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun shouldCalculatePermissionsLocally(error: QonversionError, httpCode: Int?): Boolean {
-        return !internalConfig.isObserveMode && (
+        return !internalConfig.isAnalyticsMode && (
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         httpCode?.isInternalServerError() == true
                 )

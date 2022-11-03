@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-class QAttributionManagerTest {
+internal class QAttributionManagerTest {
     private val mockRepository = mockk<QonversionRepository>(relaxed = true)
     private val appStateProvider = mockk<AppStateProvider>()
 

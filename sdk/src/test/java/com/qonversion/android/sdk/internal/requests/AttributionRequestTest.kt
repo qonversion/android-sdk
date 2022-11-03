@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class AttributionRequestTest {
+internal class AttributionRequestTest {
 
     private lateinit var adapter: JsonAdapter<AttributionRequest>
 

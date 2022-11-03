@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class GooglePurchaseConverterTest {
+internal class GooglePurchaseConverterTest {
     private val mockExtractor: SkuDetailsTokenExtractor = mockk(relaxed = true)
     private lateinit var purchaseConverter: GooglePurchaseConverter
 

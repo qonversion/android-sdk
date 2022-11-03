@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.dto
 
 import com.qonversion.android.sdk.dto.QonversionError
 

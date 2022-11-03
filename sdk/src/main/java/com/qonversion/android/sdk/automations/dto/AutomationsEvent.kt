@@ -1,6 +1,6 @@
-package com.qonversion.android.sdk.automations
+package com.qonversion.android.sdk.automations.dto
 
-import java.util.*
+import java.util.Date
 
 data class AutomationsEvent(
     val type: AutomationsEventType,

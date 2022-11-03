@@ -9,11 +9,12 @@ import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.macros.ScreenProcessor
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.automations.QAutomationsManager
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.R
+import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
+import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QActionResultType
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.databinding.QActivityScreenBinding
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent

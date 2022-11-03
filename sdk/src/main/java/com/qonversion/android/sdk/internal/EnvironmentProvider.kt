@@ -13,7 +13,7 @@ internal class EnvironmentProvider(
     private val context: Context,
     private val sdkVersion: String
 ) {
-    fun getInfo(idfa: String? = null, pushToken: String? = null): Environment = Environment(
+    fun getInfo(idfa: String? = null): Environment = Environment(
         sdkVersion,
         getCarrier(),
         getDeviceId(),
@@ -25,8 +25,7 @@ internal class EnvironmentProvider(
         getTimeZone(),
         "android",
         getCountry(),
-        idfa,
-        pushToken
+        idfa
     )
 
     @SuppressLint("HardwareIds")

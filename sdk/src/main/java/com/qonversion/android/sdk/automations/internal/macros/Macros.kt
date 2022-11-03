@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations.macros
+package com.qonversion.android.sdk.automations.internal.macros
 
 internal data class Macros(
     val type: MacrosType,

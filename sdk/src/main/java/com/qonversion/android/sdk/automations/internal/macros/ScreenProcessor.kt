@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.automations.macros
+package com.qonversion.android.sdk.automations.internal.macros
 
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QonversionError

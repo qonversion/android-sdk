@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class InAppRequestTest {
+internal class InAppRequestTest {
 
     private lateinit var adapter: JsonAdapter<Inapp>
     private val converter =

@@ -45,7 +45,7 @@ class QonversionConfig internal constructor(
         private val launchMode: QLaunchMode
     ) {
         internal var environment = QEnvironment.Production
-        internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.MONTH
+        internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
         internal var entitlementsUpdateListener: EntitlementsUpdateListener? = null
 
         /**
@@ -62,7 +62,7 @@ class QonversionConfig internal constructor(
          * Entitlements cache is used when there are problems with the Qonversion API
          * or internet connection. If so, Qonversion will return the last successfully loaded
          * entitlements. The current method allows you to configure how long that cache may be used.
-         * The default value is [QEntitlementsCacheLifetime.MONTH].
+         * The default value is [QEntitlementsCacheLifetime.Month].
          *
          * @param lifetime desired entitlements cache lifetime duration
          */

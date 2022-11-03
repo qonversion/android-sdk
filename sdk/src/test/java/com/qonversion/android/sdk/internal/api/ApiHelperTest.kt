@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class ApiHelperTest {
+internal class ApiHelperTest {
 
     private lateinit var apiHelper: ApiHelper
 

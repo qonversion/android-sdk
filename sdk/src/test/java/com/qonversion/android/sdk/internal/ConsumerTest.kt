@@ -12,12 +12,12 @@ import io.mockk.*
 import org.junit.Before
 import org.junit.Test
 
-class ConsumerTest {
+internal class ConsumerTest {
     private val sku = "sku"
     private val skuTypeInApp = BillingClient.SkuType.INAPP
     private val skuTypeSubs = BillingClient.SkuType.SUBS
     private val purchaseToken = "purchaseToken"
-    private val fieldIsObserveMode = "isObserveMode"
+    private val fieldIsAnalyticsMode = "isAnalyticsMode"
 
     private val mockBillingService: QonversionBillingService = mockk()
 
@@ -27,16 +27,16 @@ class ConsumerTest {
     fun setUp() {
         clearAllMocks()
 
-        val isObserveMode = false
-        consumer = Consumer(mockBillingService, isObserveMode)
+        val isAnalyticsMode = false
+        consumer = Consumer(mockBillingService, isAnalyticsMode)
     }
 
     @Test
-    fun `consume purchases when observe mode is true`() {
+    fun `consume purchases when analytics mode is true`() {
         val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED)
         val purchases = listOf(purchase)
         val skuDetails = mockSkuDetailsMap(skuTypeInApp)
-        consumer.mockPrivateField(fieldIsObserveMode, true)
+        consumer.mockPrivateField(fieldIsAnalyticsMode, true)
 
         consumer.consumePurchases(purchases, skuDetails)
 
@@ -104,12 +104,12 @@ class ConsumerTest {
     }
 
     @Test
-    fun `consume history records when observe mode is true`(){
+    fun `consume history records when analytics mode is true`(){
         val record = mockPurchaseHistoryRecord()
         val purchaseHistory = PurchaseHistory(skuTypeInApp, record)
         val purchaseHistoryList = listOf(purchaseHistory)
 
-        consumer.mockPrivateField(fieldIsObserveMode, true)
+        consumer.mockPrivateField(fieldIsAnalyticsMode, true)
 
         consumer.consumeHistoryRecords(purchaseHistoryList)
 
