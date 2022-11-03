@@ -13,7 +13,7 @@ data class QPermission(
     @Json(name = "renew_state") val renewState: QProductRenewState,
     @Json(name = "started_timestamp") val startedDate: Date,
     @Json(name = "expiration_timestamp") val expirationDate: Date?,
-    @Json(name = "source") val source: QPermissionSource,
+    @Json(name = "source") val source: QPermissionSource = QPermissionSource.Unknown,
     @Json(name = "active") internal val active: Int
 ) {
     fun isActive(): Boolean {
