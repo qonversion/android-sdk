@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
@@ -91,7 +91,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
                                 retryPropertiesRequest()
                             }
 
-                            override fun onError(error: QonversionError) {
+                            override fun onError(error: QonversionError, httpCode: Int?) {
                                 retryPropertiesRequest()
                             }
                         })

@@ -2,20 +2,15 @@ package com.qonversion.android.sdk.listeners
 
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 
-internal interface QonversionLaunchCallbackInternal {
+internal interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
    fun onError(error: QonversionError, httpCode: Int?)
-}
-
-interface QonversionLaunchCallback {
-   fun onSuccess(launchResult: QLaunchResult)
-   fun onError(error: QonversionError)
 }
 
 interface QonversionProductsCallback {

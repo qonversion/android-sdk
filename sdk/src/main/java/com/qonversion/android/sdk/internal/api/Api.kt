@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.api
 
-import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.EligibilityResult
 import com.qonversion.android.sdk.internal.dto.identity.IdentityResult
@@ -8,6 +7,7 @@ import com.qonversion.android.sdk.internal.dto.request.*
 import com.qonversion.android.sdk.internal.dto.ActionPoints
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.Data
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.Response
 import retrofit2.Call
 import retrofit2.http.POST

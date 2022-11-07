@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -105,7 +105,7 @@ internal class QonversionInternal(
             override fun onSuccess(launchResult: QLaunchResult) =
                 postToMainThread { automationsManager?.onLaunchProcessed() }
 
-            override fun onError(error: QonversionError) {}
+            override fun onError(error: QonversionError, httpCode: Int?) {}
         })
     }
 
