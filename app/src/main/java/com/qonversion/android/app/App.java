@@ -31,7 +31,7 @@ public class App extends MultiDexApplication {
         final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                QLaunchMode.Infrastructure
+                QLaunchMode.SubscriptionManagement
         )
                 .setEnvironment(QEnvironment.Sandbox)
                 .build();
