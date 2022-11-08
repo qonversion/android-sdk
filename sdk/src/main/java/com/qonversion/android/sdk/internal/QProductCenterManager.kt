@@ -43,7 +43,7 @@ import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import java.util.Date
 
@@ -839,7 +839,7 @@ internal class QProductCenterManager internal constructor(
         callback.onSuccess(user)
     }
 
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
         internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
     }
 

@@ -22,7 +22,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 
@@ -199,7 +199,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun getEntitlementsUpdateListener() = object : EntitlementsUpdateListener {
+    private fun getEntitlementsUpdateListener() = object : QEntitlementsUpdateListener {
         override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
             // handle updated entitlements here
         }

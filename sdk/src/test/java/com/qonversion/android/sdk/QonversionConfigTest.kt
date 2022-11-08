@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.isDebuggable
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -32,7 +32,7 @@ internal class QonversionConfigTest {
     private val projectKey = "some project key"
     private val mockLaunchMode = mockk<QLaunchMode>()
     private val mockEnvironment = mockk<QEnvironment>()
-    private val mockEntitlementsListener = mockk<EntitlementsUpdateListener>()
+    private val mockEntitlementsListener = mockk<QEntitlementsUpdateListener>()
     private val mockEntitlementsCacheLifetime = mockk<QEntitlementsCacheLifetime>()
     private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment)
     private val mockCacheConfig = CacheConfig(mockEntitlementsCacheLifetime)

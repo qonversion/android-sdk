@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -247,5 +247,5 @@ interface Qonversion {
      *
      * @param entitlementsUpdateListener listener to be called when entitlements update.
      */
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener)
 }

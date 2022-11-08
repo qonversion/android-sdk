@@ -19,7 +19,7 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
@@ -246,7 +246,7 @@ internal class QonversionInternal(
         isDebugMode = true
     }
 
-    override fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+    override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
         productCenterManager?.setEntitlementsUpdateListener(entitlementsUpdateListener)
     }
 
