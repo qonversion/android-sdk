@@ -3,7 +3,6 @@ package com.qonversion.android.sdk.internal.dto
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.internal.dto.QPermission
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.util.Date

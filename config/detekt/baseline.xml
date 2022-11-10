@@ -133,11 +133,11 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
-    <ID>MaxLineLength:EntitlementsUpdateListener.kt$EntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
+    <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
@@ -208,8 +208,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:226</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:227</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.TokenExtractorTest.kt:19</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:139</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T> getErrorFromResponse(value: Response&lt;T>): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
@@ -274,8 +274,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:29</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:15</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:16</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.api.Api.kt:3</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.api.Api.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.api.ApiHeadersProvider.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.billing.QonversionBillingServiceTest.kt:5</ID>
@@ -285,11 +283,10 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:28</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:29</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String>): AutomationsEvent?</ID>
     <ID>ReturnCount:FacebookAttribution.kt$FacebookAttribution$fun getAttributionId(contentResolver: ContentResolver): String?</ID>
@@ -364,8 +361,6 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct>): List&lt;QProduct></ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
-    <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.dto.*</ID>
-    <ID>WildcardImport:Api.kt$import com.qonversion.android.sdk.internal.dto.request.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
   </CurrentIssues>
 </SmellBaseline>
