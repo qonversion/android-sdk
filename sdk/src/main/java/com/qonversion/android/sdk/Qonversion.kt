@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.dto.QUserProperties
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -29,7 +29,8 @@ interface Qonversion {
          * @throws UninitializedPropertyAccessException if the instance has not been initialized
          */
         @JvmStatic
-        val sharedInstance: Qonversion
+        @get:JvmName("getSharedInstance")
+        val shared: Qonversion
             get() = backingInstance ?: throw UninitializedPropertyAccessException(
                 "Qonversion has not been initialized. You should call " +
                         "the initialize method before accessing the shared instance of Qonversion."
@@ -247,5 +248,5 @@ interface Qonversion {
      *
      * @param entitlementsUpdateListener listener to be called when entitlements update.
      */
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener)
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener)
 }

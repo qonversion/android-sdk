@@ -10,5 +10,5 @@ import com.qonversion.android.sdk.Qonversion
  */
 enum class QLaunchMode {
     Analytics, // formerly Observer mode
-    Infrastructure
+    SubscriptionManagement // formerly Infrastructure mode
 }

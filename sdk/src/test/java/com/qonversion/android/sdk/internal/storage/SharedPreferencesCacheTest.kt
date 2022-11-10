@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.storage
 
 import android.content.SharedPreferences
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert

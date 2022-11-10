@@ -1,15 +1,14 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.internal.dto
 
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.internal.dto.QPermission
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.util.Date
 
 @JsonClass(generateAdapter = true)
-data class QLaunchResult internal constructor(
+internal data class QLaunchResult internal constructor(
     @Json(name = "uid") val uid: String,
     @Json(name = "timestamp") val date: Date,
     @Json(name = "products") val products: Map<String, QProduct> = mapOf(),

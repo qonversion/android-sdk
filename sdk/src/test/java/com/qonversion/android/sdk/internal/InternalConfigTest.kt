@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -19,7 +19,7 @@ internal class InternalConfigTest {
 
     private val mockPrimaryConfig = mockk<PrimaryConfig>()
     private val mockCacheConfig = mockk<CacheConfig>()
-    private val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
+    private val mockEntitlementsUpdateListener = mockk<QEntitlementsUpdateListener>()
 
     @BeforeEach
     fun setUp() {
@@ -140,7 +140,7 @@ internal class InternalConfigTest {
         @Test
         fun `get entitlement updates listener`() {
             // given
-            val mockEntitlementsUpdateListener = mockk<EntitlementsUpdateListener>()
+            val mockEntitlementsUpdateListener = mockk<QEntitlementsUpdateListener>()
             internalConfig.entitlementsUpdateListener = mockEntitlementsUpdateListener
             val provider: EntitlementsUpdateListenerProvider = internalConfig
 
