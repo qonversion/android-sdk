@@ -29,8 +29,8 @@ class EntitlementsAdapter(private val entitlements: List<QEntitlement>) :
     inner class RowViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(entitlement: QEntitlement) = with(itemView) {
             binding.txtEntitlementId.text = entitlement.id
-            binding.txtProductId.text = entitlement.product.productId
-            binding.txtRenewStateLabel.text = entitlement.product.subscription?.renewState?.name
+            binding.txtProductId.text = entitlement.productId
+            binding.txtRenewStateLabel.text = entitlement.renewState.name
         }
     }
 }
