@@ -19,7 +19,8 @@ interface Automations {
          * @throws UninitializedPropertyAccessException if the instance has not been initialized
          */
         @JvmStatic
-        val sharedInstance: Automations
+        @get:JvmName("getSharedInstance")
+        val shared: Automations
             get() = backingInstance ?: throw UninitializedPropertyAccessException(
                 "Automations have not been initialized. You should call " +
                         "the initialize method before accessing the shared instance of Automations."

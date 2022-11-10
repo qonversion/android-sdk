@@ -18,7 +18,7 @@ class FirebaseMessageReceiver : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(tag, "onNewToken: $token")
-        Automations.sharedInstance.setNotificationsToken(token)
+        Automations.shared.setNotificationsToken(token)
     }
 
     /**

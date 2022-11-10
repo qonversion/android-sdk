@@ -82,7 +82,7 @@ class HomeFragment : Fragment() {
 
         // Automation
         // You can skip this step if you don't need to handle the Qonversion Automations result
-        Automations.sharedInstance.setDelegate(automationsDelegate)
+        Automations.shared.setDelegate(automationsDelegate)
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
@@ -99,7 +99,7 @@ class HomeFragment : Fragment() {
             }
 
         @Suppress("ControlFlowWithEmptyBody")
-        if (remoteMessage != null && !Automations.sharedInstance.handleNotification(remoteMessage.data)) {
+        if (remoteMessage != null && !Automations.shared.handleNotification(remoteMessage.data)) {
             // Handle notification yourself
         }
 
