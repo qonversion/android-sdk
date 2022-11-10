@@ -40,7 +40,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
                 .setListener((billingResult, list) -> {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         if (list != null && !list.isEmpty()) {
-                            Qonversion.getShared().syncPurchases();
+                            Qonversion.getSharedInstance().syncPurchases();
                         }
                     }
                 })
