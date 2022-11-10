@@ -38,7 +38,7 @@ class OfferingsFragment : Fragment() {
             )
         )
 
-        Qonversion.sharedInstance.offerings(object : QonversionOfferingsCallback {
+        Qonversion.shared.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) {
                 val mainProducts = offerings.main?.products
                 mainProducts?.let {
@@ -58,7 +58,7 @@ class OfferingsFragment : Fragment() {
     }
 
     private fun purchase(product: QProduct) {
-        Qonversion.sharedInstance.purchase(requireActivity(), product, callback = object :
+        Qonversion.shared.purchase(requireActivity(), product, callback = object :
             QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()

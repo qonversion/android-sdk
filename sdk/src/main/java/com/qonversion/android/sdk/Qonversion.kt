@@ -29,7 +29,8 @@ interface Qonversion {
          * @throws UninitializedPropertyAccessException if the instance has not been initialized
          */
         @JvmStatic
-        val sharedInstance: Qonversion
+        @get:JvmName("getSharedInstance")
+        val shared: Qonversion
             get() = backingInstance ?: throw UninitializedPropertyAccessException(
                 "Qonversion has not been initialized. You should call " +
                         "the initialize method before accessing the shared instance of Qonversion."

@@ -46,12 +46,12 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Product Center
-        Qonversion.sharedInstance.setEntitlementsUpdateListener(entitlementsUpdateListener)
+        Qonversion.shared.setEntitlementsUpdateListener(entitlementsUpdateListener)
 
-        Qonversion.sharedInstance.products(callback = object : QonversionProductsCallback {
+        Qonversion.shared.products(callback = object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 updateContent(products)
-                Qonversion.sharedInstance.checkEntitlements(getEntitlementsCallback())
+                Qonversion.shared.checkEntitlements(getEntitlementsCallback())
             }
 
             override fun onError(error: QonversionError) {
@@ -70,12 +70,12 @@ class HomeFragment : Fragment() {
 
         binding.buttonRestore.setOnClickListener {
             showLoading(true)
-            Qonversion.sharedInstance.restore(getEntitlementsCallback())
+            Qonversion.shared.restore(getEntitlementsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
             Firebase.auth.signOut()
-            Qonversion.sharedInstance.logout()
+            Qonversion.shared.logout()
 
             goToAuth()
         }
@@ -164,7 +164,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun purchase(productId: String) {
-        Qonversion.sharedInstance.purchase(
+        Qonversion.shared.purchase(
             requireActivity(),
             productId,
             callback = object : QonversionEntitlementsCallback {
@@ -210,7 +210,7 @@ class HomeFragment : Fragment() {
             // Handle the final action that the user completed on the in-app screen.
             if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available entitlements
-                Qonversion.sharedInstance.checkEntitlements(object : QonversionEntitlementsCallback {
+                Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
                     override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                         // Handle new entitlements here
                     }
