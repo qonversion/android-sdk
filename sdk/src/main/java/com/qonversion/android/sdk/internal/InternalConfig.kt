@@ -11,12 +11,12 @@ import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerPr
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     override val cacheConfig: CacheConfig,
-    override var entitlementsUpdateListener: EntitlementsUpdateListener?
+    override var entitlementsUpdateListener: QEntitlementsUpdateListener?
 ) : EnvironmentProvider,
     PrimaryConfigProvider,
     CacheConfigProvider,

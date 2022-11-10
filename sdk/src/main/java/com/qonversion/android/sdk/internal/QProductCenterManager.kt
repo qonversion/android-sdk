@@ -12,7 +12,6 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.listeners.QonversionLaunchCallbackInternal
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
@@ -24,7 +23,7 @@ import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.converter.GoogleBillingPeriodConverter
 import com.qonversion.android.sdk.internal.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.internal.converter.PurchaseConverter
-import com.qonversion.android.sdk.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
@@ -44,7 +43,7 @@ import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import java.util.Date
 
@@ -189,7 +188,7 @@ internal class QProductCenterManager internal constructor(
                     processIdentity(userID)
                 }
 
-                override fun onError(error: QonversionError) {
+                override fun onError(error: QonversionError, httpCode: Int?) {
                     processingPartnersIdentityId = null
 
                     executeEntitlementsBlock(error)
@@ -528,7 +527,7 @@ internal class QProductCenterManager internal constructor(
         repository.restore(
             installDate,
             purchaseHistoryRecords,
-            object : QonversionLaunchCallbackInternal {
+            object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
                     callback?.onSuccess(launchResult.permissions.toEntitlementsMap())
@@ -779,8 +778,8 @@ internal class QProductCenterManager internal constructor(
                 outerCallback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError) {
-                outerCallback?.onError(error)
+            override fun onError(error: QonversionError, httpCode: Int?) {
+                outerCallback?.onError(error, httpCode)
             }
         }
     }
@@ -810,13 +809,13 @@ internal class QProductCenterManager internal constructor(
                 callback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError) {
+            override fun onError(error: QonversionError, httpCode: Int?) {
                 launchError = error
 
                 loadStoreProductsIfPossible()
                 executeEntitlementsBlock(error.takeIf { pendingPartnersIdentityId != null })
 
-                callback?.onError(error)
+                callback?.onError(error, httpCode)
             }
         }
     }
@@ -840,7 +839,7 @@ internal class QProductCenterManager internal constructor(
         callback.onSuccess(user)
     }
 
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: EntitlementsUpdateListener) {
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
         internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
     }
 
@@ -907,7 +906,7 @@ internal class QProductCenterManager internal constructor(
         val cachedPurchases = purchasesCache.loadPurchases()
         cachedPurchases.forEach { purchase ->
             repository.purchase(installDate, purchase, null, null, object :
-                QonversionLaunchCallbackInternal {
+                QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
                     purchasesCache.clearPurchase(purchase)
@@ -988,7 +987,7 @@ internal class QProductCenterManager internal constructor(
     ) {
         launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) = onSuccess(launchResult)
-            override fun onError(error: QonversionError) = onError(error)
+            override fun onError(error: QonversionError, httpCode: Int?) = onError(error)
         })
     }
 
@@ -1065,7 +1064,7 @@ internal class QProductCenterManager internal constructor(
             val skuDetail = skuDetails[purchase.sku] ?: return@forEach
 
             val purchaseInfo = Pair.create(skuDetail, purchase)
-            purchase(purchaseInfo, object : QonversionLaunchCallbackInternal {
+            purchase(purchaseInfo, object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
 
@@ -1094,7 +1093,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun purchase(
         purchaseInfo: Pair<SkuDetails, Purchase>,
-        callback: QonversionLaunchCallbackInternal
+        callback: QonversionLaunchCallback
     ) {
         val sku = purchaseInfo.first.sku
         val product = productPurchaseModel[sku]?.first

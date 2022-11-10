@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.internal.provider
 
-import com.qonversion.android.sdk.listeners.EntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 
 internal interface EntitlementsUpdateListenerProvider {
 
-    val entitlementsUpdateListener: EntitlementsUpdateListener?
+    val entitlementsUpdateListener: QEntitlementsUpdateListener?
 }

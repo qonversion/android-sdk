@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.storage
 
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
-import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.qonversion.android.sdk.internal.storage.Util.Companion.buildMoshi
 import io.mockk.*

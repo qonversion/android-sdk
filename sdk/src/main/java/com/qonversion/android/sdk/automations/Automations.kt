@@ -34,7 +34,7 @@ interface Automations {
         @JvmStatic
         fun initialize(): Automations {
             try {
-                Qonversion.sharedInstance
+                Qonversion.shared
             } catch (e: UninitializedPropertyAccessException) {
                 throw UninitializedPropertyAccessException("Qonversion has not been initialized. " +
                         "Automations initialization should be called after Qonversion is initialized.")

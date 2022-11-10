@@ -35,7 +35,7 @@ class EntitlementsFragment : Fragment() {
             )
         )
 
-        Qonversion.sharedInstance.checkEntitlements(object : QonversionEntitlementsCallback {
+        Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 val activeEntitlements = entitlements.values.filter { it.isActive }
                 binding.recyclerViewEntitlementsList.adapter = EntitlementsAdapter(activeEntitlements)

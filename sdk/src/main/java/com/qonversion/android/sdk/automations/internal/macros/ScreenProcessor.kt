@@ -76,7 +76,7 @@ internal class ScreenProcessor {
             return
         }
 
-        Qonversion.sharedInstance.products(object : QonversionProductsCallback {
+        Qonversion.shared.products(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 var processedHtml = originalHtml
 

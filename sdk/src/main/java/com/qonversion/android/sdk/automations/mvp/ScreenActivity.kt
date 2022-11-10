@@ -102,7 +102,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         binding.progressBar.progressBar.visibility = View.VISIBLE
 
-        Qonversion.sharedInstance.purchase(this, productId, object : QonversionEntitlementsCallback {
+        Qonversion.shared.purchase(this, productId, object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
@@ -118,7 +118,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         binding.progressBar.progressBar.visibility = View.VISIBLE
 
-        Qonversion.sharedInstance.restore(object : QonversionEntitlementsCallback {
+        Qonversion.shared.restore(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
