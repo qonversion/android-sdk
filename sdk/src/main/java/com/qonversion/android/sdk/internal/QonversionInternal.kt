@@ -37,7 +37,6 @@ internal class QonversionInternal(
     private var productCenterManager: QProductCenterManager? = null
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
-    private var isDebugMode = false
     private val handler = Handler(Looper.getMainLooper())
 
     override var appState = AppState.Background
@@ -240,10 +239,6 @@ internal class QonversionInternal(
     override fun setUserProperty(key: String, value: String) {
         userPropertiesManager?.setUserProperty(key, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun setDebugMode() {
-        isDebugMode = true
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
