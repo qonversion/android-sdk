@@ -53,11 +53,10 @@ internal class QonversionInternal(
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
-        val config = QDependencyInjector.appComponent.internalConfig()
 
         val userID = userInfoService.obtainUserID()
 
-        config.uid = userID
+        internalConfig.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -74,7 +73,7 @@ internal class QonversionInternal(
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
-            config,
+            internalConfig,
             this
         )
 
