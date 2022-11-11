@@ -15,7 +15,7 @@ interface Automations {
          * Please, use the variable only after calling [Automations.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
-         * @return Current initialized instance of the Qonversion SDK.
+         * @return Current initialized instance of the Automations SDK.
          * @throws UninitializedPropertyAccessException if the instance has not been initialized
          */
         @JvmStatic
@@ -30,7 +30,7 @@ interface Automations {
          * An entry point to use Qonversion Automations. Call to initialize Automations.
          * Make sure you have initialized [Qonversion] first.
          *
-         * @return Initialized instance of the Qonversion SDK.
+         * @return Initialized instance of the Automations SDK.
          */
         @JvmStatic
         fun initialize(): Automations {
