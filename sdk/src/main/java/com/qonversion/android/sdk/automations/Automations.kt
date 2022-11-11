@@ -12,7 +12,7 @@ interface Automations {
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.
-         * Please, use the variable only after calling [Automations.initialize].
+         * Please, use the property only after calling [Automations.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
          * @return Current initialized instance of the Automations SDK.
