@@ -47,7 +47,7 @@ public interface AutomationsDelegate {
      *
      * @param actionResult executed action.
      *                     For instance, if the user made a purchase then action.type = QActionResultType.Purchase.
-     *                     You can use the Qonversion.checkPermissions() method to get available permissions
+     *                     You can use the [Qonversion.checkEntitlements] method to get available permissions
      */
     default void automationsDidFinishExecuting(@NotNull QActionResult actionResult) {
     }
