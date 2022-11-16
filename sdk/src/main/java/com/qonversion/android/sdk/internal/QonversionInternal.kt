@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
-import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -225,8 +225,8 @@ internal class QonversionInternal(
         productCenterManager?.getUserInfo(callback)
     }
 
-    override fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource) {
-        attributionManager?.attribution(conversionInfo, from)
+    override fun attribution(data: Map<String, Any>, provider: QAttributionProvider) {
+        attributionManager?.attribution(data, provider)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 

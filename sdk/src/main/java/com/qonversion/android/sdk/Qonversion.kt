@@ -2,7 +2,7 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
-import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -210,10 +210,10 @@ interface Qonversion {
 
     /**
      * Send your attribution data
-     * @param conversionInfo map received by the attribution source
-     * @param from Attribution source
+     * @param data map received by the attribution source
+     * @param provider Attribution provider
      */
-    fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource)
+    fun attribution(data: Map<String, Any>, provider: QAttributionProvider)
 
     /**
      * Sets Qonversion reserved user properties, like email or one-signal id

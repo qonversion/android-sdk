@@ -1,36 +1,33 @@
 package com.qonversion.android.sdk.internal
 
-import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 
 internal class QAttributionManager internal constructor(
     private val repository: QonversionRepository,
     private val appStateProvider: AppStateProvider
 ) {
-    private var pendingAttributionSource: QAttributionSource? = null
-    private var pendingConversionInfo: Map<String, Any>? = null
+    private var pendingAttributionProvider: QAttributionProvider? = null
+    private var pendingData: Map<String, Any>? = null
 
     fun onAppForeground() {
-        val source = pendingAttributionSource
-        val info = pendingConversionInfo
+        val source = pendingAttributionProvider
+        val info = pendingData
         if (source != null && !info.isNullOrEmpty()) {
             repository.attribution(info, source.id)
 
-            pendingConversionInfo = null
-            pendingAttributionSource = null
+            pendingData = null
+            pendingAttributionProvider = null
         }
     }
 
-    fun attribution(
-        conversionInfo: Map<String, Any>,
-        from: QAttributionSource
-    ) {
+    fun attribution(data: Map<String, Any>, provider: QAttributionProvider) {
         if (appStateProvider.appState.isBackground()) {
-            pendingAttributionSource = from
-            pendingConversionInfo = conversionInfo
+            pendingAttributionProvider = provider
+            pendingData = data
             return
         }
 
-        repository.attribution(conversionInfo, from.id)
+        repository.attribution(data, provider.id)
     }
 }
