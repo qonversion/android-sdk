@@ -15,7 +15,7 @@ import com.qonversion.android.sdk.dto.QAttributionSource
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -181,7 +181,7 @@ internal class QonversionInternal(
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun checkTrialIntroEligibilityForProductIds(
+    override fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     ) {
@@ -230,7 +230,7 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun setProperty(key: QUserProperties, value: String) {
+    override fun setProperty(key: QUserProperty, value: String) {
         userPropertiesManager?.setProperty(key, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }

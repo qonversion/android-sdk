@@ -3,7 +3,7 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
@@ -165,7 +165,7 @@ interface Qonversion {
      * @param productIds products identifiers that must be checked
      * @param callback - callback that will be called when response is received
      */
-    fun checkTrialIntroEligibilityForProductIds(
+    fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     )
@@ -220,7 +220,7 @@ interface Qonversion {
      * @param key defined enum key that will be transformed to string
      * @param value property value
      */
-    fun setProperty(key: QUserProperties, value: String)
+    fun setProperty(key: QUserProperty, value: String)
 
     /**
      * Sets custom user properties

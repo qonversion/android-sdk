@@ -15,7 +15,7 @@ import com.qonversion.android.sdk.automations.Automations;
 import com.qonversion.android.sdk.dto.QEnvironment;
 import com.qonversion.android.sdk.dto.QLaunchMode;
 import com.qonversion.android.sdk.dto.QAttributionSource;
-import com.qonversion.android.sdk.dto.QUserProperties;
+import com.qonversion.android.sdk.dto.QUserProperty;
 
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class App extends MultiDexApplication {
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
                 Qonversion.getSharedInstance().setProperty(
-                        QUserProperties.AppsFlyerUserId,
+                        QUserProperty.AppsFlyerUserId,
                         AppsFlyerLib.getInstance().getAppsFlyerUID(App.this)
                 );
                 Qonversion.getSharedInstance().attribution(conversionData, QAttributionSource.AppsFlyer);

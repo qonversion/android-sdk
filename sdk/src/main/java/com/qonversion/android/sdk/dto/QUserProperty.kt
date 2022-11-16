@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.dto
 
-enum class QUserProperties(val userPropertyCode: String) {
+enum class QUserProperty(val userPropertyCode: String) {
     Email("_q_email"),
     Name("_q_name"),
     KochavaDeviceId("_q_kochava_device_id"),
