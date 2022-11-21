@@ -11,11 +11,11 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
-import com.qonversion.android.sdk.dto.QAttributionSource
+import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -37,7 +37,6 @@ internal class QonversionInternal(
     private var productCenterManager: QProductCenterManager? = null
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
-    private var isDebugMode = false
     private val handler = Handler(Looper.getMainLooper())
 
     override var appState = AppState.Background
@@ -54,11 +53,10 @@ internal class QonversionInternal(
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
-        val config = QDependencyInjector.appComponent.internalConfig()
 
         val userID = userInfoService.obtainUserID()
 
-        config.uid = userID
+        internalConfig.uid = userID
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -75,7 +73,7 @@ internal class QonversionInternal(
             launchResultCacheWrapper,
             userInfoService,
             identityManager,
-            config,
+            internalConfig,
             this
         )
 
@@ -183,7 +181,7 @@ internal class QonversionInternal(
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun checkTrialIntroEligibilityForProductIds(
+    override fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     ) {
@@ -227,12 +225,12 @@ internal class QonversionInternal(
         productCenterManager?.getUserInfo(callback)
     }
 
-    override fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource) {
-        attributionManager?.attribution(conversionInfo, from)
+    override fun attribution(data: Map<String, Any>, provider: QAttributionProvider) {
+        attributionManager?.attribution(data, provider)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun setProperty(key: QUserProperties, value: String) {
+    override fun setProperty(key: QUserProperty, value: String) {
         userPropertiesManager?.setProperty(key, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -240,10 +238,6 @@ internal class QonversionInternal(
     override fun setUserProperty(key: String, value: String) {
         userPropertiesManager?.setUserProperty(key, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun setDebugMode() {
-        isDebugMode = true
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {

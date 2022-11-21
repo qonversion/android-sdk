@@ -12,14 +12,15 @@ interface Automations {
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.
-         * Please, use the variable only after calling [Automations.initialize].
+         * Please, use the property only after calling [Automations.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
-         * @return Current initialized instance of the Qonversion SDK.
+         * @return Current initialized instance of the Automations SDK.
          * @throws UninitializedPropertyAccessException if the instance has not been initialized
          */
         @JvmStatic
-        val sharedInstance: Automations
+        @get:JvmName("getSharedInstance")
+        val shared: Automations
             get() = backingInstance ?: throw UninitializedPropertyAccessException(
                 "Automations have not been initialized. You should call " +
                         "the initialize method before accessing the shared instance of Automations."
@@ -29,7 +30,7 @@ interface Automations {
          * An entry point to use Qonversion Automations. Call to initialize Automations.
          * Make sure you have initialized [Qonversion] first.
          *
-         * @return Initialized instance of the Qonversion SDK.
+         * @return Initialized instance of the Automations SDK.
          */
         @JvmStatic
         fun initialize(): Automations {

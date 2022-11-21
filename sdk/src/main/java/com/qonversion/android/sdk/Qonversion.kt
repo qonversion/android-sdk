@@ -2,8 +2,8 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
-import com.qonversion.android.sdk.dto.QAttributionSource
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QAttributionProvider
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
@@ -22,7 +22,7 @@ interface Qonversion {
 
         /**
          * Use this variable to get a current initialized instance of the Qonversion SDK.
-         * Please, use the variable only after calling [Qonversion.initialize].
+         * Please, use the property only after calling [Qonversion.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
          * @return Current initialized instance of the Qonversion SDK.
@@ -56,7 +56,7 @@ interface Qonversion {
     }
 
     /**
-     * Make a purchase and validate that through server-to-server using Qonversion's Backend
+     * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param id Qonversion product identifier for purchase
      * @param callback - callback that will be called when response is received
@@ -65,7 +65,7 @@ interface Qonversion {
     fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback)
 
     /**
-     * Make a purchase and validate that through server-to-server using Qonversion's Backend
+     * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param product Qonversion product for purchase
      * @param callback - callback that will be called when response is received
@@ -74,7 +74,7 @@ interface Qonversion {
     fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback)
 
     /**
-     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param productId Qonversion product identifier for purchase
      * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
@@ -90,7 +90,7 @@ interface Qonversion {
     ) = updatePurchase(context, productId, oldProductId, null, callback)
 
     /**
-     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
+     * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param productId Qonversion product identifier for purchase
      * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
@@ -165,7 +165,7 @@ interface Qonversion {
      * @param productIds products identifiers that must be checked
      * @param callback - callback that will be called when response is received
      */
-    fun checkTrialIntroEligibilityForProductIds(
+    fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     )
@@ -210,17 +210,17 @@ interface Qonversion {
 
     /**
      * Send your attribution data
-     * @param conversionInfo map received by the attribution source
-     * @param from Attribution source
+     * @param data map received by the attribution source
+     * @param provider Attribution provider
      */
-    fun attribution(conversionInfo: Map<String, Any>, from: QAttributionSource)
+    fun attribution(data: Map<String, Any>, provider: QAttributionProvider)
 
     /**
      * Sets Qonversion reserved user properties, like email or one-signal id
      * @param key defined enum key that will be transformed to string
      * @param value property value
      */
-    fun setProperty(key: QUserProperties, value: String)
+    fun setProperty(key: QUserProperty, value: String)
 
     /**
      * Sets custom user properties
@@ -228,12 +228,6 @@ interface Qonversion {
      * @param value property value
      */
     fun setUserProperty(key: String, value: String)
-
-    /**
-     * You can set the flag to distinguish sandbox and production users.
-     * To see the sandbox users turn on the Viewing test Data toggle on Qonversion Dashboard
-     */
-    fun setDebugMode()
 
     /**
      * Provide a listener to be notified about asynchronous user entitlements updates.

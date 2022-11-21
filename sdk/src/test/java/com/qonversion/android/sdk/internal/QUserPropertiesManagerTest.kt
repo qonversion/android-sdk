@@ -5,7 +5,7 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -303,7 +303,7 @@ internal class QUserPropertiesManagerTest {
     @Test
     fun setProperty() {
         // given
-        val key = QUserProperties.Email
+        val key = QUserProperty.Email
         val value = "me@qonversion.io"
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 

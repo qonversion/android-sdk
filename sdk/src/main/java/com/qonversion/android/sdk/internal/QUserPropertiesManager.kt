@@ -4,7 +4,7 @@ import android.app.Application
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.VisibleForTesting
-import com.qonversion.android.sdk.dto.QUserProperties
+import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -55,7 +55,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
             val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
             if (fbAttributionId != null) {
                 setUserProperty(
-                    QUserProperties.FacebookAttribution.userPropertyCode,
+                    QUserProperty.FacebookAttribution.userPropertyCode,
                     fbAttributionId
                 )
             }
@@ -113,7 +113,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
         }
     }
 
-    fun setProperty(key: QUserProperties, value: String) {
+    fun setProperty(key: QUserProperty, value: String) {
         setUserProperty(key.userPropertyCode, value)
     }
 
