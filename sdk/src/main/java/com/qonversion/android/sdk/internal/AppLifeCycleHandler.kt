@@ -1,16 +1,19 @@
 package com.qonversion.android.sdk.internal
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 
 internal class AppLifecycleHandler(private val lifecycleDelegate: LifecycleDelegate) :
-    DefaultLifecycleObserver {
+    LifecycleObserver {
 
-    override fun onStart(owner: LifecycleOwner) {
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onMoveToForeground() {
         lifecycleDelegate.onAppForeground()
     }
 
-    override fun onStop(owner: LifecycleOwner) {
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onMoveToBackground() {
         lifecycleDelegate.onAppBackground()
     }
 }
