@@ -318,7 +318,7 @@
     <ID>SpacingAroundParens:com.qonversion.android.sdk.utils.kt:64</ID>
     <ID>StringTemplate:com.qonversion.android.sdk.utils.kt:49</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
-    <ID>SwallowedException:Automations.kt$Automations.Companion$catch (e: UninitializedPropertyAccessException) { throw UninitializedPropertyAccessException("Qonversion has not been initialized. " + "Automations initialization should be called after Qonversion is initialized.") }</ID>
+    <ID>SwallowedException:Automations.kt$Automations.Companion$catch (e: UninitializedPropertyAccessException) { throw UninitializedPropertyAccessException("Qonversion has not been initialized. " + "Automations should be used after Qonversion is initialized.") }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: SecurityException) { null }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
