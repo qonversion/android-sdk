@@ -44,9 +44,15 @@ interface Qonversion {
          * @param config a config that contains key SDK settings.
          * Call [QonversionConfig.Builder.build] to configure and create a QonversionConfig instance.
          * @return Initialized instance of the Qonversion SDK.
+         * @throws IllegalStateException if method called more then once.
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
+            if (backingInstance != null) {
+                throw IllegalStateException("Qonversion has been initialized already. " +
+                        "Multiple instances of Qonversion are not supported now.")
+            }
+
             val internalConfig = InternalConfig(config)
 
             return QonversionInternal(internalConfig, config.application).also {
