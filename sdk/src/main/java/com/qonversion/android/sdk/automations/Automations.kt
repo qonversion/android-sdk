@@ -11,39 +11,34 @@ interface Automations {
         private var backingInstance: Automations? = null
 
         /**
-         * Use this variable to get a current initialized instance of the Qonversion SDK.
-         * Please, use the property only after calling [Automations.initialize].
+         * Use this variable to get a current initialized instance of the Automations SDK.
+         * Please, use Automations only after calling [Qonversion.initialize].
          * Otherwise, trying to access the variable will cause an exception.
          *
          * @return Current initialized instance of the Automations SDK.
-         * @throws UninitializedPropertyAccessException if the instance has not been initialized
+         * @throws UninitializedPropertyAccessException if Qonversion has not been initialized
          */
         @JvmStatic
         @get:JvmName("getSharedInstance")
         val shared: Automations
-            get() = backingInstance ?: throw UninitializedPropertyAccessException(
-                "Automations have not been initialized. You should call " +
-                        "the initialize method before accessing the shared instance of Automations."
-            )
+            get() {
+                if (backingInstance == null) {
+                    synchronized(Automations::class.java) {
+                        if (backingInstance == null) {
+                            try {
+                                Qonversion.shared
+                            } catch (e: UninitializedPropertyAccessException) {
+                                throw UninitializedPropertyAccessException("Qonversion has not been initialized. " +
+                                        "Automations should be used after Qonversion is initialized.")
+                            }
 
-        /**
-         * An entry point to use Qonversion Automations. Call to initialize Automations.
-         * Make sure you have initialized [Qonversion] first.
-         *
-         * @return Initialized instance of the Automations SDK.
-         */
-        @JvmStatic
-        fun initialize(): Automations {
-            try {
-                Qonversion.shared
-            } catch (e: UninitializedPropertyAccessException) {
-                throw UninitializedPropertyAccessException("Qonversion has not been initialized. " +
-                        "Automations initialization should be called after Qonversion is initialized.")
+                            backingInstance = AutomationsInternal()
+                        }
+                    }
+                }
+
+                return backingInstance ?: throw IllegalStateException("Unexpected uninitialized state")
             }
-            return AutomationsInternal().also {
-                backingInstance = it
-            }
-        }
     }
 
     /**
