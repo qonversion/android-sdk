@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import android.app.Activity
+import android.util.Log
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QUserProperty
@@ -47,6 +48,14 @@ interface Qonversion {
          */
         @JvmStatic
         fun initialize(config: QonversionConfig): Qonversion {
+            backingInstance?.let {
+                Log.e(
+                    "Qonversion", "Qonversion has been initialized already. " +
+                            "Multiple instances of Qonversion are not supported now."
+                )
+                return it
+            }
+
             val internalConfig = InternalConfig(config)
 
             return QonversionInternal(internalConfig, config.application).also {

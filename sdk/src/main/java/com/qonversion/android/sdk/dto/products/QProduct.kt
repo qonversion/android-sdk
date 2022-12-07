@@ -27,5 +27,5 @@ data class QProduct(
     var prettyPrice: String? = null
 
     @Transient
-    var trialDuration: QTrialDuration? = null
+    var trialDuration: QTrialDuration = QTrialDuration.Unknown
 }
