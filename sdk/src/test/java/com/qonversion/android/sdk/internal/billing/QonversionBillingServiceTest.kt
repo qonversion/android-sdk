@@ -333,7 +333,7 @@ internal class QonversionBillingServiceTest {
             mockConsumeResponse(consumeParams)
 
             billingService.consume(purchaseToken)
-            assertThat(consumeParams.isCaptured).isTrue
+            assertThat(consumeParams.isCaptured).isTrue()
             assertThat(consumeParams.captured.purchaseToken).isEqualTo(purchaseToken)
         }
 
@@ -345,12 +345,12 @@ internal class QonversionBillingServiceTest {
             every { mockBillingClient.isReady } returns false
             billingService.consume(purchaseToken)
 
-            assertThat(consumeParams.isCaptured).isFalse
+            assertThat(consumeParams.isCaptured).isFalse()
 
             every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
-            assertThat(consumeParams.isCaptured).isTrue
+            assertThat(consumeParams.isCaptured).isTrue()
             assertThat(consumeParams.captured.purchaseToken).isEqualTo(purchaseToken)
         }
 
@@ -381,7 +381,7 @@ internal class QonversionBillingServiceTest {
             mockAcknowledgeResponse(acknowledgeParams)
 
             billingService.acknowledge(purchaseToken)
-            assertThat(acknowledgeParams.isCaptured).isTrue
+            assertThat(acknowledgeParams.isCaptured).isTrue()
             assertThat(acknowledgeParams.captured.purchaseToken).isEqualTo(purchaseToken)
         }
 
@@ -393,12 +393,12 @@ internal class QonversionBillingServiceTest {
             every { mockBillingClient.isReady } returns false
 
             billingService.acknowledge(purchaseToken)
-            assertThat(acknowledgeParams.isCaptured).isFalse
+            assertThat(acknowledgeParams.isCaptured).isFalse()
 
             every { mockBillingClient.isReady } returns true
             billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.OK))
 
-            assertThat(acknowledgeParams.isCaptured).isTrue
+            assertThat(acknowledgeParams.isCaptured).isTrue()
             assertThat(acknowledgeParams.captured.purchaseToken).isEqualTo(purchaseToken)
         }
 

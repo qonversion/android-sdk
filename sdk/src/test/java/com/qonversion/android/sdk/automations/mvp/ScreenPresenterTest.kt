@@ -37,7 +37,7 @@ internal class ScreenPresenterTest {
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
         verifyViewWasNotCalled()
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -47,7 +47,7 @@ internal class ScreenPresenterTest {
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
         verifyViewWasNotCalled()
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -57,7 +57,7 @@ internal class ScreenPresenterTest {
         val result = screenPresenter.shouldOverrideUrlLoading(url)
 
         verifyViewWasNotCalled()
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -76,7 +76,7 @@ internal class ScreenPresenterTest {
             mockView.close()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -95,7 +95,7 @@ internal class ScreenPresenterTest {
             mockView.close()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -114,7 +114,7 @@ internal class ScreenPresenterTest {
             mockView.close()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -133,7 +133,7 @@ internal class ScreenPresenterTest {
             mockView.close()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -152,7 +152,7 @@ internal class ScreenPresenterTest {
             mockView.restore()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -182,7 +182,7 @@ internal class ScreenPresenterTest {
             mockView.close()
             mockView.onError(any())
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -210,7 +210,7 @@ internal class ScreenPresenterTest {
             mockView.restore()
             mockView.close()
         }
-        assertThat(result).isTrue
+        assertThat(result).isTrue()
     }
 
     @Test
