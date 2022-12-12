@@ -26,7 +26,7 @@ internal class QHandledPurchasesCacheTest {
         val shouldHandle = handledPurchasesCache.shouldHandlePurchase(firstPurchase)
 
         // then
-        assertThat(shouldHandle).isTrue
+        assertThat(shouldHandle).isTrue()
     }
 
     @Test
@@ -39,8 +39,8 @@ internal class QHandledPurchasesCacheTest {
         val shouldHandle2 = handledPurchasesCache.shouldHandlePurchase(secondPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse
-        assertThat(shouldHandle2).isTrue
+        assertThat(shouldHandle1).isFalse()
+        assertThat(shouldHandle2).isTrue()
     }
 
     @Test
@@ -55,9 +55,9 @@ internal class QHandledPurchasesCacheTest {
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse
-        assertThat(shouldHandle2).isFalse
-        assertThat(shouldHandle3).isTrue
+        assertThat(shouldHandle1).isFalse()
+        assertThat(shouldHandle2).isFalse()
+        assertThat(shouldHandle3).isTrue()
     }
 
     @Test
@@ -72,9 +72,9 @@ internal class QHandledPurchasesCacheTest {
         val shouldHandle3 = handledPurchasesCache.shouldHandlePurchase(thirdPurchase)
 
         // then
-        assertThat(shouldHandle1).isFalse
-        assertThat(shouldHandle2).isFalse
-        assertThat(shouldHandle3).isTrue
+        assertThat(shouldHandle1).isFalse()
+        assertThat(shouldHandle2).isFalse()
+        assertThat(shouldHandle3).isTrue()
     }
 
     private fun mockPurchase(
