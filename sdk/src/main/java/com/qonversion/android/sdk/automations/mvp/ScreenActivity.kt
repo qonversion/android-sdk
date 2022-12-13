@@ -100,7 +100,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     override fun purchase(productId: String) {
         val actionResult = QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
         automationsManager.automationsDidStartExecuting(actionResult)
-        binding.progressBar.progressBar.visibility = View.VISIBLE
+        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
 
         Qonversion.shared.purchase(this, productId, object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
@@ -116,7 +116,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     override fun restore() {
         val actionResult = QActionResult(QActionResultType.Restore)
         automationsManager.automationsDidStartExecuting(actionResult)
-        binding.progressBar.progressBar.visibility = View.VISIBLE
+        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
 
         Qonversion.shared.restore(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
@@ -130,7 +130,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     }
 
     override fun close(actionResult: QActionResult) {
-        binding.progressBar.progressBar.visibility = View.GONE
+        binding.progressBarLayout.progressBar.visibility = View.GONE
         finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()
@@ -163,7 +163,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                binding.progressBar.progressBar.visibility = View.GONE
+                binding.progressBarLayout.progressBar.visibility = View.GONE
                 return super.onPageFinished(view, url)
             }
         }
@@ -203,7 +203,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         error: QonversionError,
         actionResult: QActionResult
     ) {
-        binding.progressBar.progressBar.visibility = View.GONE
+        binding.progressBarLayout.progressBar.visibility = View.GONE
         logger.debug("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)
