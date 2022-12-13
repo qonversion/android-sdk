@@ -9,14 +9,12 @@ import androidx.multidex.MultiDexApplication;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 import com.google.firebase.*;
-import com.qonversion.android.sdk.AttributionSource;
-import com.qonversion.android.sdk.QUserProperties;
 import com.qonversion.android.sdk.Qonversion;
-import com.qonversion.android.sdk.QonversionError;
-import com.qonversion.android.sdk.QonversionLaunchCallback;
-import com.qonversion.android.sdk.dto.QLaunchResult;
-
-import org.jetbrains.annotations.NotNull;
+import com.qonversion.android.sdk.QonversionConfig;
+import com.qonversion.android.sdk.dto.QEnvironment;
+import com.qonversion.android.sdk.dto.QLaunchMode;
+import com.qonversion.android.sdk.dto.QAttributionProvider;
+import com.qonversion.android.sdk.dto.QUserProperty;
 
 import java.util.Map;
 
@@ -29,30 +27,24 @@ public class App extends MultiDexApplication {
 
         FirebaseApp.initializeApp(this);
 
-        //  You can set the flag to distinguish sandbox and production users.
-        //  Don't use it in production
-        Qonversion.setDebugMode();
-        Qonversion.launch(
+        final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
                 this,
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
-                false,
-                new QonversionLaunchCallback() {
-                    @Override
-                    public void onSuccess(@NotNull QLaunchResult launchResult) {
-                    }
-
-                    @Override
-                    public void onError(@NotNull QonversionError error) {
-                    }
-                }
-        );
+                QLaunchMode.SubscriptionManagement
+        )
+                .setEnvironment(QEnvironment.Sandbox)
+                .build();
+        Qonversion.initialize(qonversionConfig);
 
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
 
             @Override
             public void onConversionDataSuccess(final Map<String, Object> conversionData) {
-                Qonversion.setProperty(QUserProperties.AppsFlyerUserId, AppsFlyerLib.getInstance().getAppsFlyerUID(App.this));
-                Qonversion.attribution(conversionData, AttributionSource.AppsFlyer);
+                Qonversion.getSharedInstance().setProperty(
+                        QUserProperty.AppsFlyerUserId,
+                        AppsFlyerLib.getInstance().getAppsFlyerUID(App.this)
+                );
+                Qonversion.getSharedInstance().attribution(conversionData, QAttributionProvider.AppsFlyer);
             }
 
             @Override
