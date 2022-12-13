@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.dto.products
 
 enum class QTrialDuration(val type: Int) {
     NotAvailable(-1),
+    Unknown(0),
     ThreeDays(1),
     Week(2),
     TwoWeeks(3),
@@ -16,6 +17,7 @@ enum class QTrialDuration(val type: Int) {
         fun fromType(type: Int): QTrialDuration {
             return when (type) {
                 -1 -> NotAvailable
+                0 -> Unknown
                 1 -> ThreeDays
                 2 -> Week
                 3 -> TwoWeeks

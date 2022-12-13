@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.dto.products
 
 import com.android.billingclient.api.SkuDetails
-import com.qonversion.android.sdk.converter.GoogleBillingPeriodConverter
+import com.qonversion.android.sdk.internal.converter.GoogleBillingPeriodConverter
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -27,5 +27,5 @@ data class QProduct(
     var prettyPrice: String? = null
 
     @Transient
-    var trialDuration: QTrialDuration? = null
+    var trialDuration: QTrialDuration = QTrialDuration.Unknown
 }

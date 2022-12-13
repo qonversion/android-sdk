@@ -1,11 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 //apply plugin: 'com.google.gms.google-services'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 
 buildscript {
-    ext.nav_version = "2.3.5"
+    ext.nav_version = '2.3.5'
     repositories {
         google()
         mavenCentral()
@@ -16,12 +15,11 @@ buildscript {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.qonversion.sample"
         minSdkVersion 16
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -68,7 +66,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar',  '*.aar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -79,8 +77,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'androidx.multidex:multidex:2.0.1'
 
-
-    implementation 'com.android.billingclient:billing:2.2.0'
     implementation 'com.appsflyer:af-android-sdk:5.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.android.support:multidex:1.0.3'

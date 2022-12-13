@@ -1,10 +1,10 @@
 package com.qonversion.android.sdk.automations.mvp
 
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QActionResultType
 
-class ScreenContract {
+internal class ScreenContract {
     interface View {
         fun openScreen(screenId: String, htmlPage: String)
 

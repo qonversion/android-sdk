@@ -9,17 +9,21 @@ import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.macros.ScreenProcessor
-import com.qonversion.android.sdk.automations.QActionResult
-import com.qonversion.android.sdk.automations.QActionResultType
-import com.qonversion.android.sdk.automations.QAutomationsManager
-import com.qonversion.android.sdk.di.QDependencyInjector
-import com.qonversion.android.sdk.di.component.DaggerActivityComponent
-import com.qonversion.android.sdk.di.module.ActivityModule
-import com.qonversion.android.sdk.dto.QPermission
-import com.qonversion.android.sdk.logger.ConsoleLogger
-import kotlinx.android.synthetic.main.q_activity_screen.*
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.R
+import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
+import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QActionResultType
+import com.qonversion.android.sdk.automations.internal.QAutomationsManager
+import com.qonversion.android.sdk.databinding.QActivityScreenBinding
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.di.component.DaggerActivityComponent
+import com.qonversion.android.sdk.internal.di.module.ActivityModule
+import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import javax.inject.Inject
 
 class ScreenActivity : Activity(), ScreenContract.View {
@@ -30,13 +34,16 @@ class ScreenActivity : Activity(), ScreenContract.View {
     internal lateinit var presenter: ScreenPresenter
 
     @Inject
-    lateinit var screenProcessor: ScreenProcessor
+    internal lateinit var screenProcessor: ScreenProcessor
+
+    private lateinit var binding: QActivityScreenBinding
 
     private val logger = ConsoleLogger()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.q_activity_screen)
+        binding = QActivityScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         injectDependencies()
 
@@ -93,10 +100,10 @@ class ScreenActivity : Activity(), ScreenContract.View {
     override fun purchase(productId: String) {
         val actionResult = QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
         automationsManager.automationsDidStartExecuting(actionResult)
-        progressBar.visibility = View.VISIBLE
+        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
 
-        Qonversion.purchase(this, productId, object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+        Qonversion.shared.purchase(this, productId, object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
                 object {}.javaClass.enclosingMethod?.name,
@@ -109,10 +116,10 @@ class ScreenActivity : Activity(), ScreenContract.View {
     override fun restore() {
         val actionResult = QActionResult(QActionResultType.Restore)
         automationsManager.automationsDidStartExecuting(actionResult)
-        progressBar.visibility = View.VISIBLE
+        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
 
-        Qonversion.restore(object : QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) = close(actionResult)
+        Qonversion.shared.restore(object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
 
             override fun onError(error: QonversionError) = handleOnErrorCallback(
                 object {}.javaClass.enclosingMethod?.name,
@@ -123,7 +130,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
     }
 
     override fun close(actionResult: QActionResult) {
-        progressBar.visibility = View.GONE
+        binding.progressBarLayout.progressBar.visibility = View.GONE
         finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()
@@ -133,7 +140,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Failure to show the in-app screen")
         builder.setMessage(error.description)
-        builder.setPositiveButton(android.R.string.yes) { _, _ ->
+        builder.setPositiveButton(R.string.yes) { _, _ ->
             if (shouldCloseActivity) {
                 close()
             }
@@ -149,13 +156,14 @@ class ScreenActivity : Activity(), ScreenContract.View {
     }
 
     private fun configureWebClient() {
-        webView.webViewClient = object : WebViewClient() {
+        binding.webView.webViewClient = object : WebViewClient() {
+            @Deprecated("Deprecated since API 24", ReplaceWith(""))
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                progressBar.visibility = View.GONE
+                binding.progressBarLayout.progressBar.visibility = View.GONE
                 return super.onPageFinished(view, url)
             }
         }
@@ -167,7 +175,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         extraHtmlPage?.let {
             screenProcessor.processScreen(it,
                 { macrosHtml ->
-                    webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
+                    binding.webView.loadDataWithBaseURL(null, macrosHtml, MIME_TYPE, ENCODING, null)
                 }, { error ->
                     logger.release("loadWebView() -> Failure to process screen macros ${error.description}")
                     onError(error, true)
@@ -195,7 +203,7 @@ class ScreenActivity : Activity(), ScreenContract.View {
         error: QonversionError,
         actionResult: QActionResult
     ) {
-        progressBar.visibility = View.GONE
+        binding.progressBarLayout.progressBar.visibility = View.GONE
         logger.debug("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)

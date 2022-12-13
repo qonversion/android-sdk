@@ -11,22 +11,23 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.app.databinding.FragmentOfferingsBinding
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.QonversionError
-import com.qonversion.android.sdk.QonversionOfferingsCallback
-import com.qonversion.android.sdk.QonversionPermissionsCallback
-import com.qonversion.android.sdk.dto.QPermission
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 
+private const val TAG = "OfferingsFragment"
+
 class OfferingsFragment : Fragment() {
-    private val TAG = "OfferingsFragment"
     lateinit var binding: FragmentOfferingsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentOfferingsBinding.inflate(inflater)
 
         binding.recyclerViewProductsList.layoutManager = LinearLayoutManager(context)
@@ -37,7 +38,7 @@ class OfferingsFragment : Fragment() {
             )
         )
 
-        Qonversion.offerings(object : QonversionOfferingsCallback {
+        Qonversion.shared.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) {
                 val mainProducts = offerings.main?.products
                 mainProducts?.let {
@@ -57,9 +58,9 @@ class OfferingsFragment : Fragment() {
     }
 
     private fun purchase(product: QProduct) {
-        Qonversion.purchase(requireActivity(), product, callback = object :
-            QonversionPermissionsCallback {
-            override fun onSuccess(permissions: Map<String, QPermission>) {
+        Qonversion.shared.purchase(requireActivity(), product, callback = object :
+            QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
             }
 

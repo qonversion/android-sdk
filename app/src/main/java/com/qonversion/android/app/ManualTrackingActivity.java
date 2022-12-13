@@ -11,8 +11,6 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -22,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ManualTrackingActivity extends AppCompatActivity {
 
@@ -29,7 +28,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
     private BillingClient client;
 
-    private Map<String, SkuDetails> skuDetails = new HashMap<>();
+    private final Map<String, SkuDetails> skuDetails = new HashMap<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
@@ -38,13 +37,10 @@ public class ManualTrackingActivity extends AppCompatActivity {
         client = BillingClient
                 .newBuilder(this)
                 .enablePendingPurchases()
-                .setListener(new PurchasesUpdatedListener() {
-                    @Override
-                    public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> list) {
-                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                            if (list != null && !list.isEmpty()) {
-                                trackPurchase(skuDetails.get(SKU_ID), list.get(0));
-                            }
+                .setListener((billingResult, list) -> {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                        if (list != null && !list.isEmpty()) {
+                            Qonversion.getSharedInstance().syncPurchases();
                         }
                     }
                 })
@@ -55,14 +51,10 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
     }
 
-    private void trackPurchase(@NonNull SkuDetails details, @NonNull Purchase purchase) {
-        Qonversion.syncPurchases();
-    }
-
     private void launchBilling() {
         client.startConnection(new BillingClientStateListener() {
             @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
 
                     final SkuDetailsParams params = SkuDetailsParams
@@ -73,7 +65,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
                     client.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
                         @Override
-                        public void onSkuDetailsResponse(BillingResult billingResult, List<SkuDetails> list) {
+                        public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> list) {
                             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                                 if (!list.isEmpty()) {
                                     skuDetails.put(SKU_ID, list.get(0));
@@ -96,7 +88,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
     private void launchBillingFlow() {
         final BillingFlowParams params = BillingFlowParams
                 .newBuilder()
-                .setSkuDetails(skuDetails.get(SKU_ID))
+                .setSkuDetails(Objects.requireNonNull(skuDetails.get(SKU_ID)))
                 .build();
         client.launchBillingFlow(this, params);
     }
