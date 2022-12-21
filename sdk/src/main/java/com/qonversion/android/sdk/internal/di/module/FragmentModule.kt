@@ -7,7 +7,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-internal class ActivityModule(private val view: ScreenContract.View) {
+internal class FragmentModule(private val view: ScreenContract.View) {
 
     @ActivityScope
     @Provides

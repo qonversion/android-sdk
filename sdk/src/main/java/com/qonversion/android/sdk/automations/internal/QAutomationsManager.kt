@@ -2,9 +2,9 @@ package com.qonversion.android.sdk.automations.internal
 
 import android.app.Activity
 import android.app.Application
-import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
+import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
@@ -109,9 +109,7 @@ internal class QAutomationsManager @Inject constructor(
             { screen ->
                 val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
 
-                val intent = Intent(context, ScreenActivity::class.java)
-                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
-                intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
+                val intent = ScreenActivity.getCallingIntent(context, screenId, screen.htmlPage)
                 if (context !is Activity) {
                     intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                     logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
