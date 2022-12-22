@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.add
-import androidx.fragment.app.commit
 import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.automations.internal.getScreenTransactionAnimations
@@ -18,20 +16,40 @@ class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            val args = ScreenFragment.getArguments(
+            showScreen(
                 intent.getStringExtra(INTENT_SCREEN_ID),
-                intent.getStringExtra(INTENT_HTML_PAGE)
+                intent.getStringExtra(INTENT_HTML_PAGE),
+                false
             )
-            supportFragmentManager.commit {
-                setReorderingAllowed(true)
-                add<ScreenFragment>(R.id.fragment_container_view, null, args)
-            }
         }
     }
 
     override fun finish() {
         super.finish()
         playCloseAnimation()
+    }
+
+    internal fun showScreen(screenId: String?, htmlPage: String?, addToBackStack: Boolean = true) {
+        val args = ScreenFragment.getArguments(screenId, htmlPage)
+        val fragment = ScreenFragment()
+        fragment.arguments = args
+        val transaction = supportFragmentManager
+            .beginTransaction()
+
+        if (addToBackStack) {
+            transaction
+                .setCustomAnimations(
+                    R.anim.q_slide_in_from_left,
+                    R.anim.q_fade_out,
+                    R.anim.q_fade_in,
+                    R.anim.q_slide_out_to_left
+                )
+                .addToBackStack(null)
+        }
+
+        transaction
+            .replace(R.id.fragment_container_view, fragment)
+            .commit()
     }
 
     private fun playCloseAnimation() {

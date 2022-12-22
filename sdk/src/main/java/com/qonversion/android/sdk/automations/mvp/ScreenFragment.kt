@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
-import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.databinding.QFragmentScreenBinding
@@ -74,10 +73,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
 
         try {
-            val intent = Intent(context, ScreenActivity::class.java)
-            intent.putExtra(EX_HTML_PAGE, htmlPage)
-            intent.putExtra(EX_SCREEN_ID, screenId)
-            startActivity(intent)
+            (activity as ScreenActivity).showScreen(screenId, htmlPage)
             automationsManager.automationsDidFinishExecuting(actionResult)
         } catch (e: Exception) {
             automationsManager.automationsDidFailExecuting(actionResult)
@@ -99,17 +95,18 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun openDeepLink(url: String) {
-        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
-        automationsManager.automationsDidStartExecuting(actionResult)
-
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
-            close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
-        } catch (e: ActivityNotFoundException) {
-            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
-            automationsManager.automationsDidFailExecuting(actionResult)
-        }
+        return openScreen(requireArguments().getString(EX_SCREEN_ID)!!, requireArguments().getString(EX_HTML_PAGE)!!)
+//        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
+//        automationsManager.automationsDidStartExecuting(actionResult)
+//
+//        try {
+//            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+//            startActivity(intent)
+//            close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
+//        } catch (e: ActivityNotFoundException) {
+//            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+//            automationsManager.automationsDidFailExecuting(actionResult)
+//        }
     }
 
     override fun purchase(productId: String) {
