@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.databinding.QFragmentScreenBinding
@@ -156,12 +157,12 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         automationsManager.automationsFinished()
     }
 
-    override fun onError(error: QonversionError, shouldCloseActivity: Boolean) {
+    override fun onError(error: QonversionError, shouldCloseScreen: Boolean) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Failed to show the in-app screen")
         builder.setMessage(error.description)
         builder.setPositiveButton(android.R.string.ok) { _, _ ->
-            if (shouldCloseActivity) {
+            if (shouldCloseScreen) {
                 close()
             }
         }
@@ -242,7 +243,10 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         private const val ENCODING = "UTF-8"
         private const val ACTION_MAP_KEY = "value"
 
-        fun getArguments(screenId: String?, htmlPage: String?) = Bundle().also {
+        fun getArguments(
+            screenId: String?,
+            htmlPage: String?
+        ) = Bundle().also {
             it.putString(EX_SCREEN_ID, screenId)
             it.putString(EX_HTML_PAGE, htmlPage)
         }

@@ -4,9 +4,10 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
-import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.automations.AutomationsDelegate
+import com.qonversion.android.sdk.automations.ScreenCustomizationDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.dto.QonversionError
@@ -33,6 +34,11 @@ internal class QAutomationsManager @Inject constructor(
 ) {
     @Volatile
     var automationsDelegate: WeakReference<AutomationsDelegate>? = null
+        @Synchronized set
+        @Synchronized get
+
+    @Volatile
+    var screenCustomizationDelegate: WeakReference<ScreenCustomizationDelegate>? = null
         @Synchronized set
         @Synchronized get
 
@@ -109,7 +115,14 @@ internal class QAutomationsManager @Inject constructor(
             { screen ->
                 val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
 
-                val intent = ScreenActivity.getCallingIntent(context, screenId, screen.htmlPage)
+                val screenPresentationConfig = screenCustomizationDelegate?.get()
+                    ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
+                val intent = ScreenActivity.getCallingIntent(
+                    context,
+                    screenId,
+                    screen.htmlPage,
+                    screenPresentationConfig.presentationStyle
+                )
                 if (context !is Activity) {
                     intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                     logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
@@ -117,6 +130,12 @@ internal class QAutomationsManager @Inject constructor(
 
                 try {
                     context.startActivity(intent)
+                    if (context is Activity) {
+                        getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let {
+                            val (openAnimation, closeAnimation) = it
+                            context.overridePendingTransition(openAnimation, closeAnimation)
+                        }
+                    }
                     callback?.onSuccess()
                 } catch (e: Exception) {
                     val errorMessage = "Failed to start screen with id $screenId with exception: $e"
@@ -164,8 +183,10 @@ internal class QAutomationsManager @Inject constructor(
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {
-        logger.release("AutomationsDelegate.$functionName() function can not be executed. " +
-                "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
+        logger.release(
+            "AutomationsDelegate.$functionName() function can not be executed. " +
+                    "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC"
+        )
     }
 
     private fun loadScreenIfPossible() {

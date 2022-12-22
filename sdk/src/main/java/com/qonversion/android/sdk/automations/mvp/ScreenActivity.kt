@@ -7,8 +7,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import com.qonversion.android.sdk.R
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
+import com.qonversion.android.sdk.automations.internal.getScreenTransactionAnimations
 
 class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
+    private val presentationStyle get() = intent.getSerializableExtra(
+        INTENT_SCREEN_PRESENTATION_STYLE
+    ) as? QScreenPresentationStyle
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
@@ -23,25 +29,33 @@ class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
         }
     }
 
-    @Deprecated("")
-    override fun onBackPressed() {
-        @Suppress("DEPRECATION")
-        super.onBackPressed()
+    override fun finish() {
+        super.finish()
         playCloseAnimation()
     }
 
     private fun playCloseAnimation() {
-        overridePendingTransition(R.anim.slide_in_from_bottom, R.anim.slide_out_to_bottom)
+        getScreenTransactionAnimations(presentationStyle)?.let {
+            val (openAnimation, closeAnimation) = it
+            overridePendingTransition(openAnimation, closeAnimation)
+        }
     }
 
     companion object {
         private const val INTENT_HTML_PAGE = "htmlPage"
         private const val INTENT_SCREEN_ID = "screenId"
+        private const val INTENT_SCREEN_PRESENTATION_STYLE = "screenPresentationStyle"
 
-        fun getCallingIntent(context: Context, screenId: String, htmlPage: String) =
+        fun getCallingIntent(
+            context: Context,
+            screenId: String,
+            htmlPage: String,
+            screenPresentationStyle: QScreenPresentationStyle
+        ) =
             Intent(context, ScreenActivity::class.java).also {
                 it.putExtra(INTENT_SCREEN_ID, screenId)
                 it.putExtra(INTENT_HTML_PAGE, htmlPage)
+                it.putExtra(INTENT_SCREEN_PRESENTATION_STYLE, screenPresentationStyle)
             }
     }
 }
