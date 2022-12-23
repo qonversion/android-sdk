@@ -17,14 +17,18 @@ import com.qonversion.android.app.databinding.FragmentHomeBinding
 import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.automations.Automations
 import com.qonversion.android.sdk.automations.AutomationsDelegate
+import com.qonversion.android.sdk.automations.ScreenCustomizationDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 
 private const val TAG = "HomeFragment"
 
@@ -35,6 +39,7 @@ class HomeFragment : Fragment() {
     private val productIdInApp = "in_app"
     private val entitlementPlus = "plus"
     private val entitlementStandart = "standart"
+    private val screenCustomizationDelegate = getScreenCustomizationDelegate()
     private val automationsDelegate = getAutomationsDelegate()
     private val entitlementsUpdateListener = getEntitlementsUpdateListener()
 
@@ -83,6 +88,8 @@ class HomeFragment : Fragment() {
         // Automation
         // You can skip this step if you don't need to handle the Qonversion Automations result
         Automations.shared.setDelegate(automationsDelegate)
+
+        Automations.shared.setScreenCustomizationDelegate(screenCustomizationDelegate)
 
         // Check if the activity was launched from a push notification
         val remoteMessage: RemoteMessage? =
@@ -205,9 +212,19 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun getScreenCustomizationDelegate() = object : ScreenCustomizationDelegate {
+        override fun getPresentationConfigurationForScreen(screenId: String): QScreenPresentationConfig {
+            return QScreenPresentationConfig(
+                QScreenPresentationStyle.FULL_SCREEN
+            )
+        }
+    }
+
     private fun getAutomationsDelegate() = object : AutomationsDelegate {
         override fun automationsDidFinishExecuting(actionResult: QActionResult) {
             // Handle the final action that the user completed on the in-app screen.
+            Log.d("AUTOMATIONS", "automationsDidFinishExecuting " + actionResult.type)
+
             if (actionResult.type == QActionResultType.Purchase) {
                 // You can check available entitlements
                 Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
@@ -224,11 +241,23 @@ class HomeFragment : Fragment() {
 
         override fun automationsDidFailExecuting(actionResult: QActionResult) {
             // Do some logic or track event
+            Log.d("AUTOMATIONS", "automationsDidFailExecuting " + actionResult.type)
         }
 
 
         override fun automationsDidStartExecuting(actionResult: QActionResult) {
             // Do some logic or track event
+            Log.d("AUTOMATIONS", "automationsDidStartExecuting " + actionResult.type)
+        }
+
+        override fun automationsDidShowScreen(screenId: String) {
+            // Do some logic or track event
+            Log.d("AUTOMATIONS", "automationsDidShowScreen $screenId")
+        }
+
+        override fun automationsFinished() {
+            // Do some logic or track event
+            Log.d("AUTOMATIONS", "automationsFinished")
         }
     }
 

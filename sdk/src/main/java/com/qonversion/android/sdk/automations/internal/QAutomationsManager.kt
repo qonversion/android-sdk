@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.automations.internal
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.AutomationsDelegate
@@ -30,6 +31,7 @@ internal class QAutomationsManager @Inject constructor(
     private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,
     private val appContext: Application,
+    private val activityProvider: ActivityProvider,
     private val appStateProvider: AppStateProvider
 ) {
     @Volatile
@@ -113,7 +115,7 @@ internal class QAutomationsManager @Inject constructor(
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
         repository.screens(screenId,
             { screen ->
-                val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
+                val context: Context = activityProvider.getCurrentActivity() ?: appContext
 
                 val screenPresentationConfig = screenCustomizationDelegate?.get()
                     ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
@@ -130,10 +132,13 @@ internal class QAutomationsManager @Inject constructor(
 
                 try {
                     context.startActivity(intent)
-                    if (context is Activity) {
-                        getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let {
-                            val (openAnimation, closeAnimation) = it
+                    getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let { transitionAnimations ->
+                        if (context is Activity) {
+                            val (openAnimation, closeAnimation) = transitionAnimations
                             context.overridePendingTransition(openAnimation, closeAnimation)
+                        } else {
+                            logger.debug("Can't use transition animations, cause the provided context is not an activity. " +
+                                    "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent")
                         }
                     }
                     callback?.onSuccess()

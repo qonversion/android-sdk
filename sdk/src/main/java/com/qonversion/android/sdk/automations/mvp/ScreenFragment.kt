@@ -26,7 +26,6 @@ import com.qonversion.android.sdk.internal.di.module.FragmentModule
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import javax.inject.Inject
-import java.lang.ref.WeakReference
 
 class ScreenFragment : Fragment(), ScreenContract.View {
     @Inject
