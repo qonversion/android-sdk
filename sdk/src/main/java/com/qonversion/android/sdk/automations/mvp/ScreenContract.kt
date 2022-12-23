@@ -18,6 +18,8 @@ internal class ScreenContract {
 
         fun close(actionResult: QActionResult = QActionResult(QActionResultType.Close))
 
+        fun closeAll(actionResult: QActionResult = QActionResult(QActionResultType.Close))
+
         fun onError(error: QonversionError, shouldCloseScreen: Boolean = false)
     }
 

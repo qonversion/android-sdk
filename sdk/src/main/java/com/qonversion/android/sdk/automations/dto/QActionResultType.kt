@@ -7,7 +7,8 @@ enum class QActionResultType(val type: String) {
     Navigation("navigate"),
     Purchase("purchase"),
     Restore("restore"),
-    Close("close");
+    Close("close"),
+    CloseAll("closeAll");
 
     companion object {
         fun fromType(type: String?) = values().find { it.type == type } ?: Unknown

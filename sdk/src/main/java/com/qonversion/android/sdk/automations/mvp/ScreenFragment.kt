@@ -149,6 +149,16 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun close(actionResult: QActionResult) {
         binding.progressBarLayout.progressBar.visibility = View.GONE
+        val wasLast = (activity as? ScreenActivity)?.goBack() ?: false
+        automationsManager.automationsDidFinishExecuting(actionResult)
+
+        if (wasLast) {
+            automationsManager.automationsFinished()
+        }
+    }
+
+    override fun closeAll(actionResult: QActionResult) {
+        binding.progressBarLayout.progressBar.visibility = View.GONE
         activity?.finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()

@@ -52,6 +52,16 @@ class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
             .commit()
     }
 
+    internal fun goBack(): Boolean {
+        val isLastScreen = supportFragmentManager.backStackEntryCount == 0
+        if (isLastScreen) {
+            finish()
+        } else {
+            supportFragmentManager.popBackStack()
+        }
+        return isLastScreen
+    }
+
     private fun playCloseAnimation() {
         getScreenTransactionAnimations(presentationStyle)?.let {
             val (openAnimation, closeAnimation) = it
