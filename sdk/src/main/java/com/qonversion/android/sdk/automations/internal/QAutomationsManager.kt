@@ -137,8 +137,10 @@ internal class QAutomationsManager @Inject constructor(
                             val (openAnimation, closeAnimation) = transitionAnimations
                             context.overridePendingTransition(openAnimation, closeAnimation)
                         } else {
-                            logger.debug("Can't use transition animations, cause the provided context is not an activity. " +
-                                    "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent")
+                            logger.debug(
+                                "Can't use transition animations, cause the provided context is not an activity. " +
+                                        "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"
+                            )
                         }
                     }
                     callback?.onSuccess()

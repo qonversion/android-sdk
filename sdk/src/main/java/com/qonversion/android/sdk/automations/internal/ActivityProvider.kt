@@ -6,7 +6,7 @@ import android.os.Bundle
 import javax.inject.Inject
 import java.lang.ref.WeakReference
 
-class ActivityProvider @Inject constructor(application: Application): Application.ActivityLifecycleCallbacks {
+class ActivityProvider @Inject constructor(application: Application) : Application.ActivityLifecycleCallbacks {
 
     private var currentActivity: WeakReference<Activity>? = null
 
