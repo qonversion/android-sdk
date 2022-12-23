@@ -26,6 +26,7 @@ import com.qonversion.android.sdk.internal.di.module.FragmentModule
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import javax.inject.Inject
+import java.lang.ref.WeakReference
 
 class ScreenFragment : Fragment(), ScreenContract.View {
     @Inject
@@ -37,8 +38,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     @Inject
     internal lateinit var screenProcessor: ScreenProcessor
 
-    private var _binding: QFragmentScreenBinding? = null
-    private val binding get() = _binding!!
+    private var binding: QFragmentScreenBinding? = null
 
     private val logger = ConsoleLogger()
 
@@ -47,7 +47,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = QFragmentScreenBinding.inflate(inflater, container, false)
+        val binding = QFragmentScreenBinding.inflate(inflater, container, false)
+        this.binding = binding
         return binding.root
     }
 
@@ -65,7 +66,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
     override fun openScreen(screenId: String, htmlPage: String) {
@@ -112,7 +113,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun purchase(productId: String) {
         val actionResult = QActionResult(QActionResultType.Purchase, getActionResultMap(productId))
         automationsManager.automationsDidStartExecuting(actionResult)
-        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         activity?.let {
             Qonversion.shared.purchase(
@@ -134,7 +135,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun restore() {
         val actionResult = QActionResult(QActionResultType.Restore)
         automationsManager.automationsDidStartExecuting(actionResult)
-        binding.progressBarLayout.progressBar.visibility = View.VISIBLE
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         Qonversion.shared.restore(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(actionResult)
@@ -148,7 +149,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun close(actionResult: QActionResult) {
-        binding.progressBarLayout.progressBar.visibility = View.GONE
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         val wasLast = (activity as? ScreenActivity)?.goBack() ?: false
         automationsManager.automationsDidFinishExecuting(actionResult)
 
@@ -158,7 +159,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun closeAll(actionResult: QActionResult) {
-        binding.progressBarLayout.progressBar.visibility = View.GONE
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         activity?.finish()
         automationsManager.automationsDidFinishExecuting(actionResult)
         automationsManager.automationsFinished()
@@ -177,14 +178,14 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     private fun configureWebClient() {
-        binding.webView.webViewClient = object : WebViewClient() {
+        binding?.webView?.webViewClient = object : WebViewClient() {
             @Deprecated("Deprecated since API 24", ReplaceWith(""))
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return presenter.shouldOverrideUrlLoading(url)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                binding.progressBarLayout.progressBar.visibility = View.GONE
+                binding?.progressBarLayout?.progressBar?.visibility = View.GONE
                 return super.onPageFinished(view, url)
             }
         }
@@ -203,7 +204,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         extraHtmlPage?.let {
             screenProcessor.processScreen(it,
                 { macrosHtml ->
-                    binding.webView.loadDataWithBaseURL(
+                    binding?.webView?.loadDataWithBaseURL(
                         null,
                         macrosHtml,
                         MIME_TYPE,
@@ -237,7 +238,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         error: QonversionError,
         actionResult: QActionResult
     ) {
-        binding.progressBarLayout.progressBar.visibility = View.GONE
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         logger.debug("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)
