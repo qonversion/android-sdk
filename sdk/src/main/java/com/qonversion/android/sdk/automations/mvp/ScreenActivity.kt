@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.automations.mvp
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
@@ -70,9 +71,12 @@ class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
     }
 
     companion object {
-        private const val INTENT_HTML_PAGE = "htmlPage"
-        private const val INTENT_SCREEN_ID = "screenId"
-        private const val INTENT_SCREEN_PRESENTATION_STYLE = "screenPresentationStyle"
+        @VisibleForTesting
+        const val INTENT_HTML_PAGE = "htmlPage"
+        @VisibleForTesting
+        const val INTENT_SCREEN_ID = "screenId"
+        @VisibleForTesting
+        const val INTENT_SCREEN_PRESENTATION_STYLE = "screenPresentationStyle"
 
         fun getCallingIntent(
             context: Context,

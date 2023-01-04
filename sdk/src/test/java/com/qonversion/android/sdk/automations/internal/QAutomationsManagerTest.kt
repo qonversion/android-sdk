@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.*
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.dto.AutomationsEvent
 import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -34,6 +35,7 @@ internal class QAutomationsManagerTest {
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
     private val mockEventMapper: AutomationsEventMapper = mockk(relaxed = true)
     private val mockApplication: Application = mockk(relaxed = true)
+    private val mockActivityProvider: ActivityProvider = mockk<ActivityProvider>(relaxed = true)
     private val mockAppStateProvider: AppStateProvider = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
@@ -45,10 +47,6 @@ internal class QAutomationsManagerTest {
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
     private val delegate = object : AutomationsDelegate {
-        override fun contextForScreenIntent(): Activity {
-            return mockActivity
-        }
-
         override fun automationsDidShowScreen(screenId: String) {}
 
         override fun automationsDidStartExecuting(actionResult: QActionResult) {}
@@ -68,8 +66,18 @@ internal class QAutomationsManagerTest {
         mockIntent()
         mockSharedPreferences()
 
-        automationsManager =
-            QAutomationsManager(mockRepository, mockPrefs, mockEventMapper, mockApplication, mockAppStateProvider)
+        every { mockActivityProvider.getCurrentActivity() } answers {
+            mockActivity
+        }
+
+        automationsManager = QAutomationsManager(
+            mockRepository,
+            mockPrefs,
+            mockEventMapper,
+            mockApplication,
+            mockActivityProvider,
+            mockAppStateProvider
+        )
     }
 
     @Nested
@@ -118,34 +126,12 @@ internal class QAutomationsManagerTest {
         }
 
         @Test
-        fun `should show screen on Qonversion push when delegate is null`() {
-            // given
-            val remoteMessageData = mockRemoteMessageData()
-            mockActionPointsResponse()
-            mockScreensResponse()
-            automationsManager.automationsDelegate = null
-
-            // when
-            val result = automationsManager.handlePushIfPossible(remoteMessageData)
-
-            // then
-            assertThat(result).isTrue()
-            verifySequence {
-                mockRepository.actionPoints(getQueryParams(), any(), any())
-                mockRepository.screens(screenId, any(), any())
-            }
-            verifyActivityWasStarted(mockApplication)
-        }
-
-        @Test
         fun `shouldn't show screen on Qonversion push when shouldHandleEvent delegate returns false`() {
             // given
             val remoteMessageData = mockRemoteMessageData()
             mockActionPointsResponse()
             mockScreensResponse()
             automationsManager.automationsDelegate = WeakReference(object : AutomationsDelegate {
-                override fun contextForScreenIntent(): Activity = mockActivity
-
                 override fun shouldHandleEvent(
                     event: AutomationsEvent,
                     payload: MutableMap<String, String>
@@ -523,6 +509,12 @@ internal class QAutomationsManagerTest {
             anyConstructed<Intent>().putExtra(
                 ScreenActivity.INTENT_SCREEN_ID,
                 screenId
+            )
+        } answers { mockIntent }
+        every {
+            anyConstructed<Intent>().putExtra(
+                ScreenActivity.INTENT_SCREEN_PRESENTATION_STYLE,
+                any<QScreenPresentationStyle>()
             )
         } answers { mockIntent }
 
