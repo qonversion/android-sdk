@@ -2,11 +2,13 @@ package com.qonversion.android.sdk.automations.internal
 
 import android.app.Activity
 import android.app.Application
-import android.content.Intent
+import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.AutomationsDelegate
+import com.qonversion.android.sdk.automations.ScreenCustomizationDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
+import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.dto.QonversionError
@@ -29,10 +31,16 @@ internal class QAutomationsManager @Inject constructor(
     private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,
     private val appContext: Application,
+    private val activityProvider: ActivityProvider,
     private val appStateProvider: AppStateProvider
 ) {
     @Volatile
     var automationsDelegate: WeakReference<AutomationsDelegate>? = null
+        @Synchronized set
+        @Synchronized get
+
+    @Volatile
+    var screenCustomizationDelegate: WeakReference<ScreenCustomizationDelegate>? = null
         @Synchronized set
         @Synchronized get
 
@@ -107,11 +115,16 @@ internal class QAutomationsManager @Inject constructor(
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
         repository.screens(screenId,
             { screen ->
-                val context = automationsDelegate?.get()?.contextForScreenIntent() ?: appContext
+                val context: Context = activityProvider.getCurrentActivity() ?: appContext
 
-                val intent = Intent(context, ScreenActivity::class.java)
-                intent.putExtra(ScreenActivity.INTENT_HTML_PAGE, screen.htmlPage)
-                intent.putExtra(ScreenActivity.INTENT_SCREEN_ID, screenId)
+                val screenPresentationConfig = screenCustomizationDelegate?.get()
+                    ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
+                val intent = ScreenActivity.getCallingIntent(
+                    context,
+                    screenId,
+                    screen.htmlPage,
+                    screenPresentationConfig.presentationStyle
+                )
                 if (context !is Activity) {
                     intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                     logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
@@ -119,6 +132,17 @@ internal class QAutomationsManager @Inject constructor(
 
                 try {
                     context.startActivity(intent)
+                    getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let { transitionAnimations ->
+                        if (context is Activity) {
+                            val (openAnimation, closeAnimation) = transitionAnimations
+                            context.overridePendingTransition(openAnimation, closeAnimation)
+                        } else {
+                            logger.debug(
+                                "Can't use transition animations, cause the provided context is not an activity. " +
+                                        "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"
+                            )
+                        }
+                    }
                     callback?.onSuccess()
                 } catch (e: Exception) {
                     val errorMessage = "Failed to start screen with id $screenId with exception: $e"
@@ -166,8 +190,10 @@ internal class QAutomationsManager @Inject constructor(
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {
-        logger.release("AutomationsDelegate.$functionName() function can not be executed. " +
-                "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC")
+        logger.release(
+            "AutomationsDelegate.$functionName() function can not be executed. " +
+                    "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC"
+        )
     }
 
     private fun loadScreenIfPossible() {

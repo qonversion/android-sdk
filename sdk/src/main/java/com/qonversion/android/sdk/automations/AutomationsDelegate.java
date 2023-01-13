@@ -9,14 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public interface AutomationsDelegate {
+import kotlin.Deprecated;
 
-    /**
-     * Returns the context for screen intent
-     */
-    default Context contextForScreenIntent() {
-        return null;
-    }
+public interface AutomationsDelegate {
 
     /**
      * Called when Automations' screen is shown
@@ -72,5 +67,13 @@ public interface AutomationsDelegate {
      */
     default Boolean shouldHandleEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
         return true;
+    }
+
+    /**
+     * Returns the context for screen intent
+     */
+    @Deprecated(message = "Is not used anymore")
+    default Context contextForScreenIntent() {
+        return null;
     }
 }

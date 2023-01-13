@@ -41,6 +41,9 @@ internal class ScreenPresenter @Inject constructor(
             QActionResultType.Close -> {
                 view.close()
             }
+            QActionResultType.CloseAll -> {
+                view.closeAll()
+            }
             QActionResultType.Navigation -> {
                 val screenId = uri.getData()
                 if (screenId != null) {
