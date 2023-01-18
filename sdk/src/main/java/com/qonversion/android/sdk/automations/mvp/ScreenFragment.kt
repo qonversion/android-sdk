@@ -95,18 +95,17 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun openDeepLink(url: String) {
-        return openScreen(requireArguments().getString(EX_SCREEN_ID)!!, requireArguments().getString(EX_HTML_PAGE)!!)
-//        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
-//        automationsManager.automationsDidStartExecuting(actionResult)
-//
-//        try {
-//            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-//            startActivity(intent)
-//            close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
-//        } catch (e: ActivityNotFoundException) {
-//            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
-//            automationsManager.automationsDidFailExecuting(actionResult)
-//        }
+        val actionResult = QActionResult(QActionResultType.DeepLink, getActionResultMap(url))
+        automationsManager.automationsDidStartExecuting(actionResult)
+
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+            close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
+        } catch (e: ActivityNotFoundException) {
+            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+            automationsManager.automationsDidFailExecuting(actionResult)
+        }
     }
 
     override fun purchase(productId: String) {
