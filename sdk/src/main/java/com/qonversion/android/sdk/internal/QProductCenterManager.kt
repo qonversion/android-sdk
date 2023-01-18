@@ -1128,7 +1128,7 @@ internal class QProductCenterManager internal constructor(
         return !internalConfig.isAnalyticsMode && (
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         httpCode?.isInternalServerError() == true ||
-                        Constants.FATAL_HTTP_ERRORS.contains(httpCode)
+                        httpCode in Constants.FATAL_HTTP_ERRORS
                 )
     }
 }
