@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.api
 
+import com.qonversion.android.sdk.internal.Constants
 import com.qonversion.android.sdk.internal.HttpError
 import com.qonversion.android.sdk.internal.InternalConfig
 import okhttp3.Interceptor
@@ -34,15 +35,11 @@ internal class NetworkInterceptor @Inject constructor(
                 .build()
 
             val response = chain.proceed(request)
-            if (response.code() in FATAL_ERRORS && apiHelper.isV1Request(request)) {
+            if (response.code() in Constants.FATAL_HTTP_ERRORS && apiHelper.isV1Request(request)) {
                 config.fatalError = HttpError(response.code(), response.message())
             }
 
             return response
         }
-    }
-
-    companion object {
-        private val FATAL_ERRORS = listOf(401, 402, 403)
     }
 }

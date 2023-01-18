@@ -13,4 +13,5 @@ internal object Constants {
     const val INTERNAL_SERVER_ERROR_MIN = 500
     const val INTERNAL_SERVER_ERROR_MAX = 599
     const val PRICE_MICROS_DIVIDER: Double = 1000000.0
+    val FATAL_HTTP_ERRORS = listOf(401, 402, 403)
 }
