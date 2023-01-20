@@ -48,6 +48,12 @@ interface Automations {
     fun setDelegate(delegate: AutomationsDelegate)
 
     /**
+     * The delegate is responsible for customizing screens representation.
+     * @param delegate delegate that would be called before opening Qonversion screens.
+     */
+    fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate)
+
+    /**
      * Show the screen using its ID.
      * @param withID identifier of the screen which must be shown.
      * @param callback callback that is called when the screen is shown to a user.
