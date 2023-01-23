@@ -52,12 +52,13 @@ internal class QUserInfoService @Inject constructor(
         val originalUserId = preferences.getString(PREFS_ORIGINAL_USER_ID_KEY, null)
         val currentUserId = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
 
+        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
+
         if (originalUserId == currentUserId) {
             return false
         }
 
         preferences.putString(PREFS_QONVERSION_USER_ID_KEY, originalUserId)
-        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, null)
 
         return true
     }
