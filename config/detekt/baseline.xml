@@ -267,7 +267,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.AdvertisingProvider.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.ConsumerTest.kt:11</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.EnvironmentProvider.kt:10</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.EnvironmentProvider.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.IncrementalDelayCalculator.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt:4</ID>
@@ -326,6 +326,7 @@
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
     <ID>SwallowedException:Automations.kt$Automations.Companion$catch (e: UninitializedPropertyAccessException) { throw UninitializedPropertyAccessException("Qonversion has not been initialized. " + "Automations should be used after Qonversion is initialized.") }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.release("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
+    <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: SecurityException) { null }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
@@ -335,6 +336,7 @@
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
