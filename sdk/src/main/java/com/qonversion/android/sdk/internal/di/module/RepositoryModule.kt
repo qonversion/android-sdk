@@ -65,8 +65,8 @@ internal class RepositoryModule {
 
     @ApplicationScope
     @Provides
-    fun provideEnvironment(context: Application, internalConfig: InternalConfig): EnvironmentProvider {
-        return EnvironmentProvider(context, internalConfig.primaryConfig.sdkVersion)
+    fun provideEnvironment(context: Application): EnvironmentProvider {
+        return EnvironmentProvider(context)
     }
 
     @ApplicationScope
