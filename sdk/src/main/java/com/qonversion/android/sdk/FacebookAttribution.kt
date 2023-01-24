@@ -15,7 +15,7 @@ class FacebookAttribution {
                 null,
                 null
             )
-        } catch (e: SecurityException) {
+        } catch (e: Exception) {
             null
         }
         if (content == null || !content.moveToFirst()) {
