@@ -53,6 +53,8 @@ end
 def push_tag(tag)
   system("git checkout develop")
   system("git pull origin develop")
+  system("git config --global user.email \"action@github.com\"")
+  system("git config --global user.name \"GitHub Action\"")
   add_git_tag(tag: tag)
   push_git_tags(tag: tag)
 end
