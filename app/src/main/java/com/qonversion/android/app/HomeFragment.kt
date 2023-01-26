@@ -215,7 +215,7 @@ class HomeFragment : Fragment() {
     private fun getScreenCustomizationDelegate() = object : ScreenCustomizationDelegate {
         override fun getPresentationConfigurationForScreen(screenId: String): QScreenPresentationConfig {
             return QScreenPresentationConfig(
-                QScreenPresentationStyle.FULL_SCREEN
+                QScreenPresentationStyle.FullScreen
             )
         }
     }
