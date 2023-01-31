@@ -35,11 +35,12 @@ internal class NetworkModule {
     @Provides
     fun provideRetrofit(
         client: OkHttpClient,
-        moshi: Moshi
+        moshi: Moshi,
+        internalConfig: InternalConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(BASE_URL)
+            .baseUrl(internalConfig.apiUrl)
             .client(client)
             .build()
     }
@@ -91,12 +92,13 @@ internal class NetworkModule {
 
     @ApplicationScope
     @Provides
-    fun provideApiHelper(): ApiHelper {
-        return ApiHelper()
+    fun provideApiHelper(
+        internalConfig: InternalConfig
+    ): ApiHelper {
+        return ApiHelper(internalConfig.apiUrl)
     }
 
     companion object {
-        const val BASE_URL = "https://api.qonversion.io/"
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L // 10 MB
     }

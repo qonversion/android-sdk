@@ -39,10 +39,17 @@ internal class InternalConfig(
         qonversionConfig.entitlementsUpdateListener
     )
 
+    override val apiUrl: String
+        get() = primaryConfig.proxyUrl ?: BASE_URL
+
     override val environment
         get() = primaryConfig.environment
 
     override val isSandbox get() = environment === QEnvironment.Sandbox
 
     val isAnalyticsMode get() = primaryConfig.launchMode == QLaunchMode.Analytics
+
+    companion object {
+        private const val BASE_URL = "https://api.qonversion.io/"
+    }
 }

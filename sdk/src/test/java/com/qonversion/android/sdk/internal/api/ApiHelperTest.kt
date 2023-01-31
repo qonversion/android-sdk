@@ -11,13 +11,14 @@ import org.junit.jupiter.api.Test
 
 internal class ApiHelperTest {
 
+    private val apiUrl = "https://api.qonversion.io/"
     private lateinit var apiHelper: ApiHelper
 
     @BeforeEach
     fun setUp() {
         clearAllMocks()
 
-        apiHelper = ApiHelper()
+        apiHelper = ApiHelper(apiUrl)
     }
 
     @Nested
@@ -25,7 +26,7 @@ internal class ApiHelperTest {
         @Test
         fun `should return true when request version is 1`() {
             // given
-            val url = "https://api.qonversion.io/v1/user/init"
+            val url = "${apiUrl}v1/user/init"
             val request = mockRequestWithUrl(url)
 
             // when
@@ -38,7 +39,7 @@ internal class ApiHelperTest {
         @Test
         fun `should return false when request version is 2`() {
             // given
-            val url = "https://api.qonversion.io/v2/screens/id"
+            val url = "${apiUrl}v2/screens/id"
             val request = mockRequestWithUrl(url)
 
             // when
