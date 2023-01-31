@@ -96,7 +96,7 @@ class QonversionConfig internal constructor(
         fun setProxyURL(url: String): Builder = apply {
             proxyUrl = url
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                proxyUrl = "https://${proxyUrl}"
+                proxyUrl = "https://$proxyUrl"
             }
 
             if (!url.endsWith("/")) {
