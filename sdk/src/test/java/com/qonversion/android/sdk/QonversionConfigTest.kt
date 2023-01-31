@@ -34,7 +34,8 @@ internal class QonversionConfigTest {
     private val mockEnvironment = mockk<QEnvironment>()
     private val mockEntitlementsListener = mockk<QEntitlementsUpdateListener>()
     private val mockEntitlementsCacheLifetime = mockk<QEntitlementsCacheLifetime>()
-    private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment)
+    private val mockProxyUrl = "mock url"
+    private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment, mockProxyUrl)
     private val mockCacheConfig = CacheConfig(mockEntitlementsCacheLifetime)
 
     @BeforeEach
@@ -112,6 +113,7 @@ internal class QonversionConfigTest {
                         environment = mockEnvironment
                         entitlementsCacheLifetime = mockEntitlementsCacheLifetime
                         entitlementsUpdateListener = mockEntitlementsListener
+                        proxyUrl = mockProxyUrl
                     }
             val expResult = QonversionConfig(
                 mockApplication,

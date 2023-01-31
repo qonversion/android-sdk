@@ -19,7 +19,7 @@ import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
  *
  * You should pass the created instance to the [Qonversion.initialize] method.
  *
- * @see [The documentation](https://documentation.qonversion.io/v3.0/docs/configuring-the-sdks)
+ * @see [The documentation](https://documentation.qonversion.io/docs/quickstart)
  */
 class QonversionConfig internal constructor(
     internal val application: Application,
@@ -47,6 +47,7 @@ class QonversionConfig internal constructor(
         internal var environment = QEnvironment.Production
         internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
         internal var entitlementsUpdateListener: QEntitlementsUpdateListener? = null
+        internal var proxyUrl: String? = null
 
         /**
          * Set current application [QEnvironment]. Used to distinguish sandbox and production users.
@@ -85,6 +86,25 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Provide a URL to your proxy server which will redirect all the requests from the app
+         * to our API. Please, contact us before using this feature.
+         *
+         * @param url your proxy server url
+         * @return builder instance for chain calls.
+         * @see [The documentation](https://documentation.qonversion.io/docs/custom-proxy-server-for-sdks)
+         */
+        fun setProxyURL(url: String): Builder = apply {
+            proxyUrl = url
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                proxyUrl = "https://${proxyUrl}"
+            }
+
+            if (!url.endsWith("/")) {
+                proxyUrl += "/"
+            }
+        }
+
+        /**
          * Generate [QonversionConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -101,7 +121,7 @@ class QonversionConfig internal constructor(
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
 
-            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment)
+            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl)
             val cacheConfig = CacheConfig(entitlementsCacheLifetime)
 
             return QonversionConfig(
