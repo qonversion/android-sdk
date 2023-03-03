@@ -9,5 +9,6 @@ internal data class PrimaryConfig(
     val launchMode: QLaunchMode,
     val environment: QEnvironment,
     val proxyUrl: String? = null,
+    val isKidsSDK: Boolean = false,
     val sdkVersion: String = BuildConfig.VERSION_NAME
 )

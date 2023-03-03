@@ -129,19 +129,23 @@ internal class QProductCenterManager internal constructor(
     fun launch(
         callback: QonversionLaunchCallback? = null
     ) {
-        val adProvider = AdvertisingProvider()
         val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
 
-        adProvider.init(context, object : AdvertisingProvider.Callback {
-            override fun onSuccess(advertisingId: String) {
-                advertisingID = advertisingId
-                continueLaunchWithPurchasesInfo(launchCallback)
-            }
+        if (!internalConfig.primaryConfig.isKidsSDK) {
+            val adProvider = AdvertisingProvider()
+            adProvider.init(context, object : AdvertisingProvider.Callback {
+                override fun onSuccess(advertisingId: String) {
+                    advertisingID = advertisingId
+                    continueLaunchWithPurchasesInfo(launchCallback)
+                }
 
-            override fun onFailure(t: Throwable) {
-                continueLaunchWithPurchasesInfo(launchCallback)
-            }
-        })
+                override fun onFailure(t: Throwable) {
+                    continueLaunchWithPurchasesInfo(launchCallback)
+                }
+            })
+        } else {
+            continueLaunchWithPurchasesInfo(launchCallback)
+        }
     }
 
     fun loadProducts(
