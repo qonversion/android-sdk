@@ -131,7 +131,7 @@ internal class QProductCenterManager internal constructor(
     ) {
         val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
 
-        if (!internalConfig.primaryConfig.isKidsSDK) {
+        if (!internalConfig.primaryConfig.isKidsMode) {
             val adProvider = AdvertisingProvider()
             adProvider.init(context, object : AdvertisingProvider.Callback {
                 override fun onSuccess(advertisingId: String) {

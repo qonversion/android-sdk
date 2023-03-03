@@ -101,10 +101,10 @@ internal class QonversionConfigTest {
                 QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
 
             // when
-            builder.enableKidsSDKMode()
+            builder.enableKidsMode()
 
             // then
-            assertThat(builder.isKidsSDK).isTrue()
+            assertThat(builder.isKidsMode).isTrue()
         }
 
         @Test
@@ -117,7 +117,7 @@ internal class QonversionConfigTest {
 
 
             // then
-            assertThat(builder.isKidsSDK).isFalse()
+            assertThat(builder.isKidsMode).isFalse()
         }
     }
 
