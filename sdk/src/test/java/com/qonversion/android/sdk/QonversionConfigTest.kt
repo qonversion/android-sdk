@@ -93,6 +93,32 @@ internal class QonversionConfigTest {
             // then
             assertThat(builder.entitlementsCacheLifetime).isEqualTo(QEntitlementsCacheLifetime.Week)
         }
+
+        @Test
+        fun `setting kids sdk mode enabled`() {
+            // given
+            val builder =
+                QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
+
+            // when
+            builder.enableKidsMode()
+
+            // then
+            assertThat(builder.isKidsMode).isTrue()
+        }
+
+        @Test
+        fun `setting kids sdk mode disabled`() {
+            // given
+            val builder =
+                QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
+
+            // when
+
+
+            // then
+            assertThat(builder.isKidsMode).isFalse()
+        }
     }
 
     @Nested

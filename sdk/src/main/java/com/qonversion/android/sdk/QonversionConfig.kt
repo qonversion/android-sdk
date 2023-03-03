@@ -48,6 +48,7 @@ class QonversionConfig internal constructor(
         internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
         internal var entitlementsUpdateListener: QEntitlementsUpdateListener? = null
         internal var proxyUrl: String? = null
+        internal var isKidsMode: Boolean = false
 
         /**
          * Set current application [QEnvironment]. Used to distinguish sandbox and production users.
@@ -105,6 +106,14 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Use this function to enable Qonversion SDK Kids mode.
+         * With this mode activated, our SDK does not collect any information that violates Google Children’s Privacy Policy.
+         */
+        fun enableKidsMode(): Builder = apply {
+            this.isKidsMode = true
+        }
+
+        /**
          * Generate [QonversionConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -121,7 +130,7 @@ class QonversionConfig internal constructor(
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
 
-            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl)
+            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode)
             val cacheConfig = CacheConfig(entitlementsCacheLifetime)
 
             return QonversionConfig(
