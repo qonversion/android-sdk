@@ -67,11 +67,9 @@ internal class QUserPropertiesManagerTest {
         // given
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
         val fbAttributionId = "fbAttributionId"
-        mockkConstructor(FacebookAttribution::class)
-        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns fbAttributionId
 
         // when
-        spykPropertiesManager.sendFacebookAttribution()
+        spykPropertiesManager.onFbAttributionIdResult(fbAttributionId)
 
         // then
         verify(exactly = 1) {
@@ -86,11 +84,9 @@ internal class QUserPropertiesManagerTest {
     fun `should not send facebook attribution when it is null`() {
         // given
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
-        mockkConstructor(FacebookAttribution::class)
-        every { anyConstructed<FacebookAttribution>().getAttributionId(mockContentResolver) } returns null
 
         // when
-        spykPropertiesManager.sendFacebookAttribution()
+        spykPropertiesManager.onFbAttributionIdResult(null)
 
         // then
         verify(exactly = 0) {

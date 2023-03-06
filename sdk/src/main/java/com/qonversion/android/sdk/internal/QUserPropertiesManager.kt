@@ -21,7 +21,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
     private val delayCalculator: IncrementalDelayCalculator,
     private val appStateProvider: AppStateProvider,
     private val logger: Logger
-) {
+) : FacebookAttributionListener {
     internal var productCenterManager: QProductCenterManager? = null
     private var handler: Handler? = null
     private var isRequestInProgress = false
@@ -52,16 +52,16 @@ internal class QUserPropertiesManager @Inject internal constructor(
 
     fun sendFacebookAttribution() {
         try {
-            val fbAttributionId = FacebookAttribution().getAttributionId(context.contentResolver)
-            if (fbAttributionId != null) {
-                setUserProperty(
-                    QUserProperty.FacebookAttribution.userPropertyCode,
-                    fbAttributionId
-                )
-            }
+            FacebookAttribution().getAttributionId(context.contentResolver, this)
         } catch (e: IllegalStateException) {
             logger.release("Failed to retrieve facebook attribution ${e.localizedMessage}")
         }
+    }
+
+    override fun onFbAttributionIdResult(id: String?) {
+        id ?: return
+
+        setUserProperty(QUserProperty.FacebookAttribution.userPropertyCode, id)
     }
 
     fun forceSendProperties() {
