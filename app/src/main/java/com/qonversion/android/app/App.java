@@ -32,7 +32,7 @@ public class App extends MultiDexApplication {
                 "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
                 QLaunchMode.SubscriptionManagement
         )
-                .setEnvironment(QEnvironment.Sandbox)
+                .setEnvironment(QEnvironment.Sandbox) // For Automation testing
                 .build();
         Qonversion.initialize(qonversionConfig);
 
