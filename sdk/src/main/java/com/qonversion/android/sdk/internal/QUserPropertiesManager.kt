@@ -21,7 +21,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
     private val delayCalculator: IncrementalDelayCalculator,
     private val appStateProvider: AppStateProvider,
     private val logger: Logger
-): FacebookAttributionListener {
+) : FacebookAttributionListener {
     internal var productCenterManager: QProductCenterManager? = null
     private var handler: Handler? = null
     private var isRequestInProgress = false

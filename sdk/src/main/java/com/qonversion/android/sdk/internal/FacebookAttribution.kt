@@ -17,7 +17,10 @@ internal class FacebookAttribution {
         }
     }
 
-    private fun getAttributionIdAsync(contentResolver: ContentResolver, listenerRef: WeakReference<FacebookAttributionListener>) {
+    private fun getAttributionIdAsync(
+        contentResolver: ContentResolver,
+        listenerRef: WeakReference<FacebookAttributionListener>
+    ) {
         val projection = arrayOf(ATTRIBUTION_ID_COLUMN_NAME)
         val content = try {
             contentResolver.query(
