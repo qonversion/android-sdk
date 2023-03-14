@@ -116,7 +116,7 @@ internal class QonversionInternal(
             return
         }
 
-        Qonversion.shared.restore(callback = object: QonversionEntitlementsCallback {
+        Qonversion.shared.restore(callback = object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 sharedPreferencesCache?.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
             }

@@ -74,17 +74,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonRestore.setOnClickListener {
-            Automations.shared.showScreen("L6uklD_1", callback = object :
-                QonversionShowScreenCallback {
-                override fun onSuccess() {
-                    print("dd")
-                }
-
-                override fun onError(error: QonversionError) {
-                    print("ee")
-                }
-
-            })
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
         }

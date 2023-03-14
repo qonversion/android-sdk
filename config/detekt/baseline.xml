@@ -161,6 +161,7 @@
     <ID>MaxLineLength:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.QueryPurchasesHistory$billingClientStateListener.onBillingSetupFinished(buildResult(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE))</ID>
     <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$val isHistoricalDataSynced: Boolean = sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong experimentInfo value", expectedValue.offerings?.main?.experimentInfo, realValue?.offerings?.main?.experimentInfo) }</ID>
@@ -187,7 +188,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:159</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:176</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:172</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:114</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:109</ID>
@@ -297,12 +299,12 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:29</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:3</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
-    <ID>ReturnCount:FacebookAttribution.kt$FacebookAttribution$fun getAttributionId(contentResolver: ContentResolver): String?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionEntitlementsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
+    <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.QonversionInternal.kt:119</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundComma:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:146</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:263</ID>
@@ -317,7 +319,7 @@
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:303</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.requests.PropertiesRequestTest.kt:13</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.requests.PropertiesRequestTest.kt:19</ID>
-    <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:494</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:490</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:207</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverterTest.kt:308</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:212</ID>
@@ -343,6 +345,7 @@
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
+    <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
