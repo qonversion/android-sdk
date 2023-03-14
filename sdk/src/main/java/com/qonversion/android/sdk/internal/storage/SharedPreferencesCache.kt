@@ -13,6 +13,10 @@ internal class SharedPreferencesCache(
 
     override fun getInt(key: String, defValue: Int): Int = preferences.getInt(key, defValue)
 
+    override fun getBool(key: String, defValue: Boolean): Boolean = preferences.getBoolean(key, defValue)
+
+    override fun putBool(key: String, value: Boolean) = preferences.edit().putBoolean(key, value).apply()
+
     override fun putFloat(key: String, value: Float) =
         preferences.edit().putFloat(key, value).apply()
 

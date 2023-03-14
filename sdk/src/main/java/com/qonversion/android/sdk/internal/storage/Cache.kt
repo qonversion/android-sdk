@@ -10,6 +10,10 @@ internal interface Cache {
      */
     fun getInt(key: String, defValue: Int): Int
 
+    fun getBool(key: String, defValue: Boolean = false): Boolean
+
+    fun putBool(key: String, value: Boolean)
+
     fun putFloat(key: String, value: Float)
     /**
      * @param defValue is returned if the Float preference for key does not exist

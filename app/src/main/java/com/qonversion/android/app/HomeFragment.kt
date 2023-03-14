@@ -28,6 +28,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 
 private const val TAG = "HomeFragment"
 
@@ -73,6 +74,17 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonRestore.setOnClickListener {
+            Automations.shared.showScreen("L6uklD_1", callback = object :
+                QonversionShowScreenCallback {
+                override fun onSuccess() {
+                    print("dd")
+                }
+
+                override fun onError(error: QonversionError) {
+                    print("ee")
+                }
+
+            })
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
         }
