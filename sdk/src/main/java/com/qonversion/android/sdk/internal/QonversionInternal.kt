@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -38,6 +39,7 @@ internal class QonversionInternal(
     private var automationsManager: QAutomationsManager? = null
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
+    private var sharedPreferencesCache: SharedPreferencesCache? = null
 
     override var appState = AppState.Background
 
@@ -53,6 +55,7 @@ internal class QonversionInternal(
         val launchResultCacheWrapper = QDependencyInjector.appComponent.launchResultCacheWrapper()
         val userInfoService = QDependencyInjector.appComponent.userInfoService()
         val identityManager = QDependencyInjector.appComponent.identityManager()
+        sharedPreferencesCache = QDependencyInjector.appComponent.sharedPreferencesCache()
 
         val userID = userInfoService.obtainUserID()
 
@@ -104,6 +107,23 @@ internal class QonversionInternal(
                 postToMainThread { automationsManager?.onLaunchProcessed() }
 
             override fun onError(error: QonversionError, httpCode: Int?) {}
+        })
+    }
+
+    override fun syncHistoricalData() {
+        val isHistoricalDataSynced: Boolean = sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
+        if (isHistoricalDataSynced) {
+            return
+        }
+
+        Qonversion.shared.restore(callback = object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                sharedPreferencesCache?.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.release("Historical data sync failed.")
+            }
         })
     }
 
