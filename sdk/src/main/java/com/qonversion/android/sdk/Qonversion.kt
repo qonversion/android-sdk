@@ -65,6 +65,11 @@ interface Qonversion {
     }
 
     /**
+    Call this function to sync the subscriber data with the first launch when Qonversion is implemented.
+     */
+    fun syncHistoricalData()
+
+    /**
      * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param id Qonversion product identifier for purchase

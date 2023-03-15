@@ -17,6 +17,7 @@ import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import dagger.Component
 
 @ApplicationScope
@@ -38,4 +39,5 @@ internal interface AppComponent {
     fun userPropertiesManager(): QUserPropertiesManager
     fun internalConfig(): InternalConfig
     fun appStateProvider(): AppStateProvider
+    fun sharedPreferencesCache(): SharedPreferencesCache
 }
