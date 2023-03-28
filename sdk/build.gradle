@@ -142,7 +142,7 @@ dependencies {
     kapt dagger.compiler
 
     // Preference
-    androidTestImplementation "androidx.preference:preference:1.1.1"
+    implementation "androidx.preference:preference:1.1.1"
 
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"
