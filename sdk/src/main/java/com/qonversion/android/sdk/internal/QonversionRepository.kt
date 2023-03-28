@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
+import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -88,18 +89,30 @@ internal class QonversionRepository internal constructor(
         historyRecords: List<PurchaseHistory>,
         callback: QonversionLaunchCallback?
     ) {
-        restoreRequest(installDate, historyRecords, callback)
+        val history = convertHistory(historyRecords)
+
+        restoreRequest(installDate, history, callback)
     }
 
-    fun attribution(conversionInfo: Map<String, Any>, from: String) {
+    fun attribution(
+        conversionInfo: Map<String, Any>, from: String,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((error: QonversionError) -> Unit)? = null
+    ) {
         val attributionRequest = createAttributionRequest(conversionInfo, from)
         api.attribution(attributionRequest).enqueue {
             onResponse = {
                 logger.release("AttributionRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    onSuccess?.invoke()
+                } else {
+                    onError?.invoke(errorMapper.getErrorFromResponse(it))
+                }
             }
 
             onFailure = {
                 logger.release("AttributionRequest - failure - ${it.toQonversionError()}")
+                onError?.invoke(it.toQonversionError())
             }
         }
     }
@@ -473,12 +486,12 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    private fun restoreRequest(
+    @VisibleForTesting
+    internal fun restoreRequest(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
+        history: List<History>,
         callback: QonversionLaunchCallback?
     ) {
-        val history = convertHistory(historyRecords)
         val request = RestoreRequest(
             installDate = installDate,
             device = environmentProvider.getInfo(advertisingId),

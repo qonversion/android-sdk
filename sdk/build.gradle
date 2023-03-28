@@ -13,6 +13,9 @@ android {
         group = 'io.qonversion.android.sdk'
         version = release.versionName
         versionName = release.versionName
+
+        multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     kotlinOptions {
@@ -139,13 +142,16 @@ dependencies {
     kapt dagger.compiler
 
     // Preference
-    implementation "androidx.preference:preference:1.1.1"
+    androidTestImplementation "androidx.preference:preference:1.1.1"
 
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
+    implementation 'com.android.support:multidex:1.0.3'
+
     // JUnit
     testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'junit:junit:4.13'
     testImplementation junit.api
     testRuntimeOnly junit.engine
 
@@ -154,14 +160,20 @@ dependencies {
 
     // Robolectric
     testImplementation "org.robolectric:robolectric:4.3.1"
+    androidTestImplementation "org.robolectric:robolectric:4.4"
 
     // MockK
     testImplementation 'io.mockk:mockk:1.10.0'
+    androidTestImplementation 'io.mockk:mockk-android:1.10.0'
 
     // Mockito
     testImplementation 'org.mockito:mockito-core:2.23.0'
 
     testImplementation 'androidx.test:core:1.2.0'
+    androidTestImplementation 'androidx.test:core:1.4.0'
+    androidTestImplementation "androidx.test:runner:1.4.0"
+    androidTestImplementation "androidx.test:rules:1.4.0"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
 
     testImplementation 'androidx.test.ext:junit:1.1.1'
 
