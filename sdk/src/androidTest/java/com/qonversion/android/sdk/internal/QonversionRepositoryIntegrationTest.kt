@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
@@ -89,22 +90,52 @@ internal class QonversionRepositoryIntegrationTest {
         "test_inapp" to listOf("noAds")
     )
 
+    private val expectedPermissions = mapOf(
+        "premium" to QPermission(
+            "premium",
+            "test_monthly",
+            QProductRenewState.Canceled,
+            Date(1679933171000),
+            Date(1679935273000),
+            QEntitlementSource.PlayStore,
+            0
+        )
+    )
+
+    private val purchase = Purchase(
+        detailsToken = "AEuhp4Kd9cZ3ZlkS2MylEXHBcZVLjwwllncPBm4a6lrVvj3uYGICnsE5w87i81qNsa38DPOW08BcZfLxJFxIWeISVwoBkT55tA2Bb6cKGsip724=",
+        title = "DONT CHANGE! Sub for integration tests. (Qonversion Sample)",
+        description = "",
+        productId = "google_monthly",
+        type = "subs",
+        originalPrice = "$6.99",
+        originalPriceAmountMicros = 6990000,
+        priceCurrencyCode = "SGD",
+        price = "6.99",
+        priceAmountMicros = 6990000,
+        periodUnit = 2,
+        periodUnitsCount = 1,
+        freeTrialPeriod = "",
+        introductoryAvailable = false,
+        introductoryPriceAmountMicros = 0,
+        introductoryPrice = "0.00",
+        introductoryPriceCycles = 0,
+        introductoryPeriodUnit = 0,
+        introductoryPeriodUnitsCount = null,
+        orderId = "GPA.3307-0767-0668-99058",
+        originalOrderId = "GPA.3307-0767-0668-99058",
+        packageName = "com.qonversion.sample",
+        purchaseTime = 1679933171,
+        purchaseState = 1,
+        purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
+        acknowledged = false,
+        autoRenewing = true,
+        paymentMode = 0
+    )
+
     @Before
     fun setUp() {
-        val qonversionConfig = QonversionConfig.Builder(
-            ApplicationProvider.getApplicationContext(),
-            "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a",
-            QLaunchMode.SubscriptionManagement
-        ).build()
-        val internalConfig = InternalConfig(qonversionConfig)
-        internalConfig.uid = uid
-        QDependencyInjector.buildAppComponent(
-            qonversionConfig.application,
-            internalConfig,
-            appStateProvider
-        )
-
-        repository = QDependencyInjector.appComponent.repository()
+        repository = initRepositoryForUid(uid)
     }
 
     @Test
@@ -145,40 +176,10 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun b_purchase() {
+    fun b1_purchase() {
         // given
         val signal = CountDownLatch(1)
 
-        val purchase = Purchase(
-            detailsToken = "AEuhp4Kd9cZ3ZlkS2MylEXHBcZVLjwwllncPBm4a6lrVvj3uYGICnsE5w87i81qNsa38DPOW08BcZfLxJFxIWeISVwoBkT55tA2Bb6cKGsip724=",
-            title = "DONT CHANGE! Sub for integration tests. (Qonversion Sample)",
-            description = "",
-            productId = "google_monthly",
-            type = "subs",
-            originalPrice = "$6.99",
-            originalPriceAmountMicros = 6990000,
-            priceCurrencyCode = "SGD",
-            price = "6.99",
-            priceAmountMicros = 6990000,
-            periodUnit = 2,
-            periodUnitsCount = 1,
-            freeTrialPeriod = "",
-            introductoryAvailable = false,
-            introductoryPriceAmountMicros = 0,
-            introductoryPrice = "0.00",
-            introductoryPriceCycles = 0,
-            introductoryPeriodUnit = 0,
-            introductoryPeriodUnitsCount = null,
-            orderId = "GPA.3307-0767-0668-99058",
-            originalOrderId = "GPA.3307-0767-0668-99058",
-            packageName = "com.qonversion.sample",
-            purchaseTime = 1679933171,
-            purchaseState = 1,
-            purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-            acknowledged = false,
-            autoRenewing = true,
-            paymentMode = 0
-        )
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
@@ -207,6 +208,41 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun b2_purchase_for_existing_user() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val callback = object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                // then
+                Log.i("LaunchResult", launchResult.toString())
+                assertTrue(launchResult.uid.isNotEmpty())
+                assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
+                assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
+                assertEquals(expectedOfferings, launchResult.offerings)
+                assertTrue(
+                    Maps.difference(
+                        emptyMap(),
+                        launchResult.productPermissions!!
+                    ).areEqual()
+                )
+                signal.countDown()
+            }
+
+            override fun onError(error: QonversionError, httpCode: Int?) {
+                fail("Shouldn't fail")
+            }
+        }
+
+        val repository = initRepositoryForUid("QON_test_uid1679992132407")
+
+        // when
+        repository.purchase(installDate, purchase, null, "test_monthly", callback)
+
+        signal.await()
+    }
+
+    @Test
     fun c_restore() {
         // given
         val signal = CountDownLatch(1)
@@ -218,18 +254,6 @@ internal class QonversionRepositoryIntegrationTest {
                 1679933171,
                 "SGD",
                 "6.99"
-            )
-        )
-
-        val expectedPermissions = mapOf(
-            "premium" to QPermission(
-                "premium",
-                "test_monthly",
-                QProductRenewState.Canceled,
-                Date(1679933171000),
-                Date(1679935273000),
-                QEntitlementSource.PlayStore,
-                0
             )
         )
 
@@ -436,5 +460,22 @@ internal class QonversionRepositoryIntegrationTest {
         )
 
         signal.await()
+    }
+
+    private fun initRepositoryForUid(uid: String): QonversionRepository {
+        val qonversionConfig = QonversionConfig.Builder(
+            ApplicationProvider.getApplicationContext(),
+            "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a",
+            QLaunchMode.SubscriptionManagement
+        ).build()
+        val internalConfig = InternalConfig(qonversionConfig)
+        internalConfig.uid = uid
+        QDependencyInjector.buildAppComponent(
+            qonversionConfig.application,
+            internalConfig,
+            appStateProvider
+        )
+
+        return QDependencyInjector.appComponent.repository()
     }
 }
