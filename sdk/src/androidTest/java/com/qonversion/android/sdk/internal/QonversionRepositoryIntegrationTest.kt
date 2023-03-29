@@ -41,7 +41,7 @@ import org.junit.runners.MethodSorters
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-private val uid = "QON_test_uid_" + System.currentTimeMillis()
+private val uid = "QON_test_uid_android_" + System.currentTimeMillis()
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
