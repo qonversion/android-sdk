@@ -95,7 +95,8 @@ internal class QonversionRepository internal constructor(
     }
 
     fun attribution(
-        conversionInfo: Map<String, Any>, from: String,
+        conversionInfo: Map<String, Any>,
+        from: String,
         onSuccess: (() -> Unit)? = null,
         onError: ((error: QonversionError) -> Unit)? = null
     ) {

@@ -38,7 +38,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.util.*
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 
 private val uid = "QON_test_uid_" + System.currentTimeMillis()
