@@ -33,26 +33,20 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.MethodSorters
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-private val uid = "QON_test_uid_android_" + System.currentTimeMillis()
+private val uidPrefix = "QON_test_uid_android_" + System.currentTimeMillis()
 
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 internal class QonversionRepositoryIntegrationTest {
 
     private val appStateProvider = object : AppStateProvider {
         override val appState: AppState
             get() = AppState.Foreground
     }
-
-    private lateinit var repository: QonversionRepository
 
     private val installDate = 1679652674L
 
@@ -133,13 +127,8 @@ internal class QonversionRepositoryIntegrationTest {
         paymentMode = 0
     )
 
-    @Before
-    fun setUp() {
-        repository = initRepositoryForUid(uid)
-    }
-
     @Test
-    fun a_init() {
+    fun init() {
         // given
         val signal = CountDownLatch(1)
 
@@ -169,6 +158,9 @@ internal class QonversionRepositoryIntegrationTest {
             }
         )
 
+        val uid = uidPrefix + "_init"
+        val repository = initRepositoryForUid(uid)
+
         // when
         repository.init(data)
 
@@ -176,7 +168,7 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun b1_purchase() {
+    fun purchase() {
         // given
         val signal = CountDownLatch(1)
 
@@ -201,14 +193,29 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
+        val uid = uidPrefix + "_purchase"
+        val repository = initRepositoryForUid(uid)
+
         // when
-        repository.purchase(installDate, purchase, null, "test_monthly", callback)
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.purchase(
+                installDate,
+                purchase,
+                null,
+                "test_monthly",
+                callback
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun b2_purchase_for_existing_user() {
+    fun purchase_for_existing_user() {
         // given
         val signal = CountDownLatch(1)
 
@@ -234,7 +241,8 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid("QON_test_uid1679992132407")
+        val uid = "QON_test_uid1679992132407"
+        val repository = initRepositoryForUid(uid)
 
         // when
         repository.purchase(installDate, purchase, null, "test_monthly", callback)
@@ -243,7 +251,7 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun c_restore() {
+    fun restore() {
         // given
         val signal = CountDownLatch(1)
 
@@ -278,8 +286,17 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
+        val uid = uidPrefix + "_restore"
+        val repository = initRepositoryForUid(uid)
+
         // when
-        repository.restoreRequest(installDate, history, callback)
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.restoreRequest(installDate, history, callback)
+        }
 
         signal.await()
 
@@ -287,7 +304,7 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun d_attribution() {
+    fun attribution() {
         // given
         val signal = CountDownLatch(1)
         val testAttributionInfo = mapOf(
@@ -296,19 +313,28 @@ internal class QonversionRepositoryIntegrationTest {
             "toma" to "s"
         )
 
+        val uid = uidPrefix + "_attribution"
+        val repository = initRepositoryForUid(uid)
+
         // when and then
-        repository.attribution(
-            testAttributionInfo,
-            QAttributionProvider.AppsFlyer.id,
-            { signal.countDown() },
-            { fail("Shouldn't fail") }
-        )
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.attribution(
+                testAttributionInfo,
+                QAttributionProvider.AppsFlyer.id,
+                { signal.countDown() },
+                { fail("Shouldn't fail") }
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun e_sendProperties() {
+    fun sendProperties() {
         // given
         val signal = CountDownLatch(1)
         val testProperties = mapOf(
@@ -316,18 +342,27 @@ internal class QonversionRepositoryIntegrationTest {
             QUserProperty.CustomUserId.userPropertyCode to "custom user id"
         )
 
+        val uid = uidPrefix + "_sendProperties"
+        val repository = initRepositoryForUid(uid)
+
         // when and then
-        repository.sendProperties(
-            testProperties,
-            { signal.countDown() },
-            { fail("Shouldn't fail") }
-        )
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.sendProperties(
+                testProperties,
+                { signal.countDown() },
+                { fail("Shouldn't fail") }
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun f_eligibilityForProductIds() {
+    fun eligibilityForProductIds() {
         // given
         val signal = CountDownLatch(1)
         val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
@@ -349,46 +384,73 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
+        val uid = uidPrefix + "_eligibilityForProductIds"
+        val repository = initRepositoryForUid(uid)
+
         // when and then
-        repository.eligibilityForProductIds(
-            productIds,
-            installDate,
-            callback
-        )
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.eligibilityForProductIds(
+                productIds,
+                installDate,
+                callback
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun g_identify() {
+    fun identify() {
         // given
         val signal = CountDownLatch(1)
+        val uid = uidPrefix + "_identify"
         val identityId = "identity_for_$uid"
 
-        // when and then
-        repository.identify(
-            identityId,
-            uid,
-            { newAnonId ->
-                assertEquals(newAnonId, uid)
+        val repository = initRepositoryForUid(uid)
 
-                signal.countDown()
-            },
-            { fail("Shouldn't fail") }
-        )
+        // when and then
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.identify(
+                identityId,
+                uid,
+                { newAnonId ->
+                    assertEquals(newAnonId, uid)
+
+                    signal.countDown()
+                },
+                { fail("Shouldn't fail") }
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun h_sendPushToken() {
+    fun sendPushToken() {
         // given
         val signal = CountDownLatch(1)
 
         val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"
 
+        val uid = uidPrefix + "_sendPushToken"
+        val repository = initRepositoryForUid(uid)
+
         // when
-        repository.sendPushToken(token)
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.sendPushToken(token)
+        }
 
         // then
         // check that nothing critical happens
@@ -400,35 +462,53 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun i_screens() {
+    fun screens() {
         // given
         val signal = CountDownLatch(1)
 
-        // when
-        repository.screens(
-            noCodeScreenId,
-            { screen ->
-                assertEquals(screen.id, noCodeScreenId)
-                assertEquals(screen.background, "#CDFFD7")
-                assertEquals(screen.lang, "EN")
-                assertEquals(screen.obj, "screen")
-                assertTrue(screen.htmlPage.isNotEmpty())
+        val uid = uidPrefix + "_screens"
+        val repository = initRepositoryForUid(uid)
 
-                signal.countDown()
-            },
-            { fail("Shouldn't fail") }
-        )
+        // when
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.screens(
+                noCodeScreenId,
+                { screen ->
+                    assertEquals(screen.id, noCodeScreenId)
+                    assertEquals(screen.background, "#CDFFD7")
+                    assertEquals(screen.lang, "EN")
+                    assertEquals(screen.obj, "screen")
+                    assertTrue(screen.htmlPage.isNotEmpty())
+
+                    signal.countDown()
+                },
+                { fail("Shouldn't fail") }
+            )
+        }
 
         signal.await()
     }
 
     @Test
-    fun j_views() {
+    fun views() {
         // given
         val signal = CountDownLatch(1)
 
+        val uid = uidPrefix + "_views"
+        val repository = initRepositoryForUid(uid)
+
         // when
-        repository.views(noCodeScreenId)
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.views(noCodeScreenId)
+        }
 
         // then
         // check that nothing critical happens
@@ -440,26 +520,56 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun k_actionPoints() {
+    fun actionPoints() {
         // given
         val signal = CountDownLatch(1)
 
-        // when
-        repository.actionPoints(
-            mapOf(
-                "type" to "screen_view",
-                "active" to "1"
-            ),
-            { actionPoints ->
-                // no trigger for automation
-                assertTrue(actionPoints === null)
+        val uid = uidPrefix + "_actionPoints"
+        val repository = initRepositoryForUid(uid)
 
-                signal.countDown()
-            },
-            { fail("Shouldn't fail") }
-        )
+        // when
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.actionPoints(
+                mapOf(
+                    "type" to "screen_view",
+                    "active" to "1"
+                ),
+                { actionPoints ->
+                    // no trigger for automation
+                    assertTrue(actionPoints === null)
+
+                    signal.countDown()
+                },
+                { fail("Shouldn't fail") }
+            )
+        }
 
         signal.await()
+    }
+
+    private fun withNewUserCreated(
+        repository: QonversionRepository,
+        onComplete: (error: QonversionError?) -> Unit
+    ) {
+        val data = InitRequestData(
+            installDate,
+            null,
+            emptyList(),
+            object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    onComplete(null)
+                }
+
+                override fun onError(error: QonversionError, httpCode: Int?) {
+                    onComplete(error)
+                }
+            }
+        )
+        repository.init(data)
     }
 
     private fun initRepositoryForUid(uid: String): QonversionRepository {
