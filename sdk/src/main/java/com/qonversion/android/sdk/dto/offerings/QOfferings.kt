@@ -16,7 +16,8 @@ data class QOfferings(
 
     override fun equals(other: Any?): Boolean {
         return other is QOfferings &&
-                main == other.main &&
-                availableOfferings equalsIgnoreOrder other.availableOfferings
+                (other === this ||
+                        main == other.main &&
+                        availableOfferings equalsIgnoreOrder other.availableOfferings)
     }
 }

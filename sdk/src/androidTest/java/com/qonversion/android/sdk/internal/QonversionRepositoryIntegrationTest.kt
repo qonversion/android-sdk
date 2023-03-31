@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
@@ -132,6 +131,7 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
+        val uid = uidPrefix + "_init"
         val data = InitRequestData(
             installDate,
             null,
@@ -139,7 +139,7 @@ internal class QonversionRepositoryIntegrationTest {
             object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     // then
-                    assertTrue(launchResult.uid.isNotEmpty())
+                    assertEquals(launchResult.uid, uid)
                     assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
                     assertTrue(Maps.difference(emptyMap(), launchResult.permissions).areEqual())
                     assertEquals(expectedOfferings, launchResult.offerings)
@@ -158,7 +158,6 @@ internal class QonversionRepositoryIntegrationTest {
             }
         )
 
-        val uid = uidPrefix + "_init"
         val repository = initRepositoryForUid(uid)
 
         // when
@@ -172,10 +171,11 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
+        val uid = uidPrefix + "_purchase"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
-                assertTrue(launchResult.uid.isNotEmpty())
+                assertEquals(launchResult.uid, uid)
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
                 assertTrue(Maps.difference(emptyMap(), launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
@@ -193,7 +193,6 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val uid = uidPrefix + "_purchase"
         val repository = initRepositoryForUid(uid)
 
         // when
@@ -219,11 +218,11 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
+        val uid = "QON_test_uid1679992132407"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
-                Log.i("LaunchResult", launchResult.toString())
-                assertTrue(launchResult.uid.isNotEmpty())
+                assertEquals(launchResult.uid, uid)
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
                 assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
@@ -241,7 +240,6 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val uid = "QON_test_uid1679992132407"
         val repository = initRepositoryForUid(uid)
 
         // when
@@ -265,10 +263,11 @@ internal class QonversionRepositoryIntegrationTest {
             )
         )
 
+        val uid = uidPrefix + "_restore"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
-                assertTrue(launchResult.uid.isNotEmpty())
+                assertEquals(launchResult.uid, uid)
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
                 assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
@@ -286,7 +285,6 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val uid = uidPrefix + "_restore"
         val repository = initRepositoryForUid(uid)
 
         // when
