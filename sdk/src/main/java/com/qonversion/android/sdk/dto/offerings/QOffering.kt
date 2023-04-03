@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.dto.offerings
 import com.qonversion.android.sdk.internal.OfferingsDelegate
 import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.equalsIgnoreOrder
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -24,5 +25,21 @@ class QOffering(
 
     fun productForID(id: String): QProduct? {
         return products.firstOrNull { it.qonversionID == id }
+    }
+
+    override fun hashCode(): Int {
+        return offeringID.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is QOffering &&
+                other.offeringID == offeringID &&
+                other.tag == tag &&
+                other.products equalsIgnoreOrder products &&
+                other.experimentInfo == experimentInfo
+    }
+
+    override fun toString(): String {
+        return "QOffering(offeringID=$offeringID, tag=$tag, products=$products, experimentInfo=$experimentInfo)"
     }
 }
