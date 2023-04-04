@@ -23,6 +23,13 @@ def update_gradle(new_version)
     update_file(path, regex, result_value)
 end
 
+def update_outager_url_in_tests(url)
+	path = "../sdk/src/androidTest/java/com/qonversion/android/sdk/internal/OutagerIntegrationTest.kt"
+    regex = /\<paste outager link here\>/
+
+    update_file(path, regex, url)
+end
+
 def update_file(path, regex, result_value)
 	file = File.read(path)
     new_content = file.gsub(regex, result_value)
@@ -95,6 +102,12 @@ platform :android do
   	new_version = options[:version]
 
 	update_gradle(new_version)
+  end
+
+  lane :setOutagerUrl do |options|
+    path = options[:url]
+
+	update_outager_url_in_tests(path)
   end
 
 end

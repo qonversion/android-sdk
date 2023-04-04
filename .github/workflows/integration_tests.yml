@@ -7,7 +7,7 @@ on:
     - cron: '0 3 * * *'
 
 jobs:
-  build:
+  testing:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,14 +18,12 @@ jobs:
       with:
         java-version: 11
 
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
-
-    - name: Set up Ruby 2.6
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 2.6.0
+    - name: Set Outager url
+      run: |
+        fastlane setOutagerUrl url:${{ secrets.OUTAGER_URL }}
 
     - name: Build and Tests
-      run: |
-          ./gradlew sdk:connectedAndroidTest
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 30
+        script: ./gradlew sdk:connectedAndroidTest
