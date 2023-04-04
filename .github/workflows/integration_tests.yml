@@ -1,6 +1,7 @@
 name: Planned integration tests
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * *'
