@@ -197,8 +197,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:111</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:230</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:362</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:421</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:360</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:419</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:87</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:157</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:159</ID>
