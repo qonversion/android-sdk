@@ -283,8 +283,6 @@ internal class OutagerIntegrationTest {
         }
 
         signal.await()
-
-        // when
     }
 
     @Test
