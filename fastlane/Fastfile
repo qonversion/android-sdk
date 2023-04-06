@@ -24,7 +24,7 @@ def update_gradle(new_version)
 end
 
 def update_outager_url_in_tests(url)
-	path = "../sdk/src/androidTest/java/com/qonversion/android/sdk/internal/OutagerIntegrationTest.kt"
+	path = "../**/OutagerIntegrationTest.kt"
     regex = /\<paste outager link here\>/
 
     update_file(path, regex, url)
