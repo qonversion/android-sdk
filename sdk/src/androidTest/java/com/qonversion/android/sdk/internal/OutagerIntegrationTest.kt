@@ -11,8 +11,8 @@ import com.qonversion.android.sdk.dto.QEntitlementSource
 import com.qonversion.android.sdk.dto.QLaunchMode
 import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -37,10 +37,10 @@ import org.junit.runner.RunWith
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-private val uidPrefix = "QON_test_uid_android_" + System.currentTimeMillis()
+private val uidPrefix = "QON_test_uid_outager_android_" + System.currentTimeMillis()
 
 @RunWith(AndroidJUnit4::class)
-internal class QonversionRepositoryIntegrationTest {
+internal class OutagerIntegrationTest {
 
     private val appStateProvider = object : AppStateProvider {
         override val appState: AppState
@@ -81,18 +81,6 @@ internal class QonversionRepositoryIntegrationTest {
         "test_monthly" to listOf("premium"),
         "test_annual" to listOf("premium"),
         "test_inapp" to listOf("noAds")
-    )
-
-    private val expectedPermissions = mapOf(
-        "premium" to QPermission(
-            "premium",
-            "test_monthly",
-            QProductRenewState.Canceled,
-            Date(1679933171000),
-            Date(1679935273000),
-            QEntitlementSource.PlayStore,
-            0
-        )
     )
 
     private val purchase = Purchase(
@@ -140,8 +128,12 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     // then
                     assertEquals(launchResult.uid, uid)
-                    assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                    assertTrue(Maps.difference(emptyMap(), launchResult.permissions).areEqual())
+                    assertTrue(
+                        Maps.difference(expectedProducts, launchResult.products).areEqual()
+                    )
+                    assertTrue(
+                        Maps.difference(emptyMap(), launchResult.permissions).areEqual()
+                    )
                     assertEquals(expectedOfferings, launchResult.offerings)
                     assertTrue(
                         Maps.difference(
@@ -171,17 +163,31 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
+        val expectedPermissions = mapOf(
+            "premium" to QPermission(
+                "premium",
+                "test_monthly",
+                QProductRenewState.Unknown,
+                Date(1679933171000),
+                Date(1682525171000), // plus month
+                QEntitlementSource.Unknown,
+                1
+            )
+        )
+
         val uid = uidPrefix + "_purchase"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
                 assertEquals(launchResult.uid, uid)
-                assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                assertTrue(Maps.difference(emptyMap(), launchResult.permissions).areEqual())
+                assertTrue(
+                    Maps.difference(expectedProducts, launchResult.products).areEqual()
+                )
+                assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
                 assertTrue(
                     Maps.difference(
-                        emptyMap(),
+                        expectedProductPermissions,
                         launchResult.productPermissions!!
                     ).areEqual()
                 )
@@ -214,41 +220,6 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun purchase_for_existing_user() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = "QON_test_uid1679992132407"
-        val callback = object : QonversionLaunchCallback {
-            override fun onSuccess(launchResult: QLaunchResult) {
-                // then
-                assertEquals(launchResult.uid, uid)
-                assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
-                assertEquals(expectedOfferings, launchResult.offerings)
-                assertTrue(
-                    Maps.difference(
-                        emptyMap(),
-                        launchResult.productPermissions!!
-                    ).areEqual()
-                )
-                signal.countDown()
-            }
-
-            override fun onError(error: QonversionError, httpCode: Int?) {
-                fail("Shouldn't fail")
-            }
-        }
-
-        val repository = initRepositoryForUid(uid)
-
-        // when
-        repository.purchase(installDate, purchase, null, "test_monthly", callback)
-
-        signal.await()
-    }
-
-    @Test
     fun restore() {
         // given
         val signal = CountDownLatch(1)
@@ -262,18 +233,33 @@ internal class QonversionRepositoryIntegrationTest {
                 "6.99"
             )
         )
+        val expectedPermissions = mapOf(
+            "premium" to QPermission(
+                "premium",
+                "test_monthly",
+                QProductRenewState.Unknown,
+                Date(1679933171000),
+                Date(1680537971000), // plus seven days
+                QEntitlementSource.Unknown,
+                1
+            )
+        )
 
         val uid = uidPrefix + "_restore"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
                 assertEquals(launchResult.uid, uid)
-                assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
+                assertTrue(
+                    Maps.difference(expectedProducts, launchResult.products).areEqual()
+                )
+                assertTrue(
+                    Maps.difference(expectedPermissions, launchResult.permissions).areEqual()
+                )
                 assertEquals(expectedOfferings, launchResult.offerings)
                 assertTrue(
                     Maps.difference(
-                        emptyMap(),
+                        expectedProductPermissions,
                         launchResult.productPermissions!!
                     ).areEqual()
                 )
@@ -297,8 +283,6 @@ internal class QonversionRepositoryIntegrationTest {
         }
 
         signal.await()
-
-        // when
     }
 
     @Test
@@ -364,21 +348,17 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
         val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
-        val expectedResult = mapOf(
-            monthlyProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroProduct),
-            annualProduct.qonversionID to QEligibility(QIntroEligibilityStatus.Unknown),
-            inappProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroProduct)
-        )
 
         val callback = object : QonversionEligibilityCallback {
             override fun onSuccess(eligibilities: Map<String, QEligibility>) {
-                assertTrue(Maps.difference(expectedResult, eligibilities).areEqual())
-
-                signal.countDown()
+                fail("Shouldn't succeed")
             }
 
             override fun onError(error: QonversionError) {
-                fail("Shouldn't fail")
+                // Unsupported method on Outager
+                assertEquals(error.code, QonversionErrorCode.BackendError)
+                assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)
+                signal.countDown()
             }
         }
 
@@ -468,23 +448,20 @@ internal class QonversionRepositoryIntegrationTest {
         val repository = initRepositoryForUid(uid)
 
         // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
+        withNewUserCreated(repository) { initError ->
+            initError?.let {
                 fail("Failed to create user")
             }
 
             repository.screens(
                 noCodeScreenId,
-                { screen ->
-                    assertEquals(screen.id, noCodeScreenId)
-                    assertEquals(screen.background, "#CDFFD7")
-                    assertEquals(screen.lang, "EN")
-                    assertEquals(screen.obj, "screen")
-                    assertTrue(screen.htmlPage.isNotEmpty())
-
+                { fail("Shouldn't succeed") },
+                { error ->
+                    // Unsupported method on Outager
+                    assertEquals(error.code, QonversionErrorCode.BackendError)
+                    assertEquals(error.additionalMessage, """HTTP status code=503, error=Service Unavailable. """)
                     signal.countDown()
-                },
-                { fail("Shouldn't fail") }
+                }
             )
         }
 
@@ -526,8 +503,8 @@ internal class QonversionRepositoryIntegrationTest {
         val repository = initRepositoryForUid(uid)
 
         // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
+        withNewUserCreated(repository) { initError ->
+            initError?.let {
                 fail("Failed to create user")
             }
 
@@ -536,13 +513,13 @@ internal class QonversionRepositoryIntegrationTest {
                     "type" to "screen_view",
                     "active" to "1"
                 ),
-                { actionPoints ->
-                    // no trigger for automation
-                    assertTrue(actionPoints === null)
-
+                { fail("Shouldn't succeed") },
+                { error ->
+                    // Unsupported method on Outager
+                    assertEquals(error.code, QonversionErrorCode.BackendError)
+                    assertEquals(error.additionalMessage, """HTTP status code=503, error=Service Unavailable. """)
                     signal.countDown()
-                },
-                { fail("Shouldn't fail") }
+                }
             )
         }
 
@@ -575,7 +552,9 @@ internal class QonversionRepositoryIntegrationTest {
             ApplicationProvider.getApplicationContext(),
             "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a",
             QLaunchMode.SubscriptionManagement
-        ).build()
+        )
+            .setProxyURL("<paste outager link here>")
+            .build()
         val internalConfig = InternalConfig(qonversionConfig)
         internalConfig.uid = uid
         QDependencyInjector.buildAppComponent(
