@@ -205,12 +205,12 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:172</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:114</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:102</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:126</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:324</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:375</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:644</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:865</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:103</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:127</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:325</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:376</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:646</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:867</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:109</ID>
