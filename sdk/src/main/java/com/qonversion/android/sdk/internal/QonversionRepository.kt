@@ -121,7 +121,7 @@ internal class QonversionRepository internal constructor(
     fun sendProperties(
         properties: Map<String, String>,
         onSuccess: () -> Unit,
-        onError: (error: QonversionError) -> Unit
+        onError: (error: QonversionError?) -> Unit
     ) {
         val propertiesRequest = PropertiesRequest(
             accessToken = key,
