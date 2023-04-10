@@ -37,7 +37,8 @@ import org.junit.runner.RunWith
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-private val uidPrefix = "QON_test_uid_outager_android_" + System.currentTimeMillis()
+private const val PROJECT_KEY = "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a"
+private val UID_PREFIX = "QON_test_uid_outager_android_" + System.currentTimeMillis()
 
 @RunWith(AndroidJUnit4::class)
 internal class OutagerIntegrationTest {
@@ -119,7 +120,7 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_init"
+        val uid = UID_PREFIX + "_init"
         val data = InitRequestData(
             installDate,
             null,
@@ -150,7 +151,7 @@ internal class OutagerIntegrationTest {
             }
         )
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         repository.init(data)
@@ -175,7 +176,7 @@ internal class OutagerIntegrationTest {
             )
         )
 
-        val uid = uidPrefix + "_purchase"
+        val uid = UID_PREFIX + "_purchase"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
@@ -199,7 +200,7 @@ internal class OutagerIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -245,7 +246,7 @@ internal class OutagerIntegrationTest {
             )
         )
 
-        val uid = uidPrefix + "_restore"
+        val uid = UID_PREFIX + "_restore"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
@@ -271,7 +272,7 @@ internal class OutagerIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -295,8 +296,8 @@ internal class OutagerIntegrationTest {
             "toma" to "s"
         )
 
-        val uid = uidPrefix + "_attribution"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_attribution"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -324,8 +325,8 @@ internal class OutagerIntegrationTest {
             QUserProperty.CustomUserId.userPropertyCode to "custom user id"
         )
 
-        val uid = uidPrefix + "_sendProperties"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_sendProperties"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -362,8 +363,8 @@ internal class OutagerIntegrationTest {
             }
         }
 
-        val uid = uidPrefix + "_eligibilityForProductIds"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_eligibilityForProductIds"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -385,10 +386,10 @@ internal class OutagerIntegrationTest {
     fun identify() {
         // given
         val signal = CountDownLatch(1)
-        val uid = uidPrefix + "_identify"
+        val uid = UID_PREFIX + "_identify"
         val identityId = "identity_for_$uid"
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -418,8 +419,8 @@ internal class OutagerIntegrationTest {
 
         val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"
 
-        val uid = uidPrefix + "_sendPushToken"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_sendPushToken"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -444,8 +445,8 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_screens"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_screens"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { initError ->
@@ -473,8 +474,8 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_views"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_views"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -499,8 +500,8 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_actionPoints"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_actionPoints"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { initError ->
@@ -547,10 +548,10 @@ internal class OutagerIntegrationTest {
         repository.init(data)
     }
 
-    private fun initRepositoryForUid(uid: String): QonversionRepository {
+    private fun initRepository(uid: String, projectKey: String = PROJECT_KEY): QonversionRepository {
         val qonversionConfig = QonversionConfig.Builder(
             ApplicationProvider.getApplicationContext(),
-            "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a",
+            projectKey,
             QLaunchMode.SubscriptionManagement
         )
             .setProxyURL("<paste outager link here>")
