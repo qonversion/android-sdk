@@ -11,6 +11,7 @@ import com.qonversion.android.sdk.dto.QEntitlementSource
 import com.qonversion.android.sdk.dto.QLaunchMode
 import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.qonversion.android.sdk.dto.offerings.QOffering
@@ -30,6 +31,7 @@ import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -37,7 +39,9 @@ import org.junit.runner.RunWith
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-private val uidPrefix = "QON_test_uid_android_" + System.currentTimeMillis()
+private const val PROJECT_KEY = "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a"
+private const val INCORRECT_PROJECT_KEY = "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-aaaaa"
+private val UID_PREFIX = "QON_test_uid_android_" + System.currentTimeMillis()
 
 @RunWith(AndroidJUnit4::class)
 internal class QonversionRepositoryIntegrationTest {
@@ -131,7 +135,7 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_init"
+        val uid = UID_PREFIX + "_init"
         val data = InitRequestData(
             installDate,
             null,
@@ -158,7 +162,38 @@ internal class QonversionRepositoryIntegrationTest {
             }
         )
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
+
+        // when
+        repository.init(data)
+
+        signal.await()
+    }
+
+    @Test
+    fun initError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_init"
+        val data = InitRequestData(
+            installDate,
+            null,
+            emptyList(),
+            object : QonversionLaunchCallback {
+                override fun onSuccess(launchResult: QLaunchResult) {
+                    fail("Shouldn't succeed")
+                }
+
+                override fun onError(error: QonversionError, httpCode: Int?) {
+                    // then
+                    assertIncorrectProjectKeyError(error)
+                    signal.countDown()
+                }
+            }
+        )
+
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
 
         // when
         repository.init(data)
@@ -171,7 +206,7 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_purchase"
+        val uid = UID_PREFIX + "_purchase"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
@@ -193,7 +228,7 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -240,10 +275,41 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         repository.purchase(installDate, purchase, null, "test_monthly", callback)
+
+        signal.await()
+    }
+
+    @Test
+    fun purchaseError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_purchase"
+        val callback = object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                fail("Shouldn't succeed")
+            }
+
+            override fun onError(error: QonversionError, httpCode: Int?) {
+                assertIncorrectProjectKeyError(error)
+                signal.countDown()
+            }
+        }
+
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when
+        repository.purchase(
+            installDate,
+            purchase,
+            null,
+            "test_monthly",
+            callback
+        )
 
         signal.await()
     }
@@ -263,7 +329,7 @@ internal class QonversionRepositoryIntegrationTest {
             )
         )
 
-        val uid = uidPrefix + "_restore"
+        val uid = UID_PREFIX + "_restore"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
@@ -285,7 +351,7 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -297,8 +363,41 @@ internal class QonversionRepositoryIntegrationTest {
         }
 
         signal.await()
+    }
+
+    @Test
+    fun restoreError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val history = listOf(
+            History(
+                "google_monthly",
+                "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
+                1679933171,
+                "SGD",
+                "6.99"
+            )
+        )
+
+        val uid = UID_PREFIX + "_restore"
+        val callback = object : QonversionLaunchCallback {
+            override fun onSuccess(launchResult: QLaunchResult) {
+                fail("Shouldn't succeed")
+            }
+
+            override fun onError(error: QonversionError, httpCode: Int?) {
+                assertIncorrectProjectKeyError(error)
+                signal.countDown()
+            }
+        }
+
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
 
         // when
+        repository.restoreRequest(installDate, history, callback)
+
+        signal.await()
     }
 
     @Test
@@ -311,8 +410,8 @@ internal class QonversionRepositoryIntegrationTest {
             "toma" to "s"
         )
 
-        val uid = uidPrefix + "_attribution"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_attribution"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -332,6 +431,33 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun attributionError() {
+        // given
+        val signal = CountDownLatch(1)
+        val testAttributionInfo = mapOf(
+            "one" to 3,
+            "to be or not" to "be",
+            "toma" to "s"
+        )
+
+        val uid = UID_PREFIX + "_attribution"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when and then
+        repository.attribution(
+            testAttributionInfo,
+            QAttributionProvider.AppsFlyer.id,
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertAccessDeniedError(error)
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
+    @Test
     fun sendProperties() {
         // given
         val signal = CountDownLatch(1)
@@ -340,8 +466,8 @@ internal class QonversionRepositoryIntegrationTest {
             QUserProperty.CustomUserId.userPropertyCode to "custom user id"
         )
 
-        val uid = uidPrefix + "_sendProperties"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_sendProperties"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -355,6 +481,32 @@ internal class QonversionRepositoryIntegrationTest {
                 { fail("Shouldn't fail") }
             )
         }
+
+        signal.await()
+    }
+
+    @Test
+    fun sendPropertiesError() {
+        // given
+        val signal = CountDownLatch(1)
+        val testProperties = mapOf(
+            "customProperty" to "custom property value",
+            QUserProperty.CustomUserId.userPropertyCode to "custom user id"
+        )
+
+        val uid = UID_PREFIX + "_sendProperties"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when and then
+        repository.sendProperties(
+            testProperties,
+            { fail("Shouldn't fail") },
+            { error ->
+                assertNotNull(error)
+                assertIncorrectProjectKeyError(error!!)
+                signal.countDown()
+            }
+        )
 
         signal.await()
     }
@@ -382,8 +534,8 @@ internal class QonversionRepositoryIntegrationTest {
             }
         }
 
-        val uid = uidPrefix + "_eligibilityForProductIds"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_eligibilityForProductIds"
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -402,13 +554,44 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun eligibilityForProductIdsError() {
+        // given
+        val signal = CountDownLatch(1)
+        val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
+
+        val callback = object : QonversionEligibilityCallback {
+            override fun onSuccess(eligibilities: Map<String, QEligibility>) {
+                fail("Shouldn't succeed")
+            }
+
+            override fun onError(error: QonversionError) {
+                assertIncorrectProjectKeyError(error)
+
+                signal.countDown()
+            }
+        }
+
+        val uid = UID_PREFIX + "_eligibilityForProductIds"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when and then
+        repository.eligibilityForProductIds(
+            productIds,
+            installDate,
+            callback
+        )
+
+        signal.await()
+    }
+
+    @Test
     fun identify() {
         // given
         val signal = CountDownLatch(1)
-        val uid = uidPrefix + "_identify"
+        val uid = UID_PREFIX + "_identify"
         val identityId = "identity_for_$uid"
 
-        val repository = initRepositoryForUid(uid)
+        val repository = initRepository(uid)
 
         // when and then
         withNewUserCreated(repository) { error ->
@@ -432,14 +615,38 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun identifyError() {
+        // given
+        val signal = CountDownLatch(1)
+        val uid = UID_PREFIX + "_identify"
+        val identityId = "identity_for_$uid"
+
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when and then
+        repository.identify(
+            identityId,
+            uid,
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertAccessDeniedError(error)
+
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
+    @Test
     fun sendPushToken() {
         // given
         val signal = CountDownLatch(1)
 
         val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"
 
-        val uid = uidPrefix + "_sendPushToken"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_sendPushToken"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -464,8 +671,8 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_screens"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_screens"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -492,12 +699,34 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun screensError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_screens"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when
+        repository.screens(
+            noCodeScreenId,
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertAccessDeniedError(error)
+
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
+    @Test
     fun views() {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_views"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_views"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -518,12 +747,32 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
+    fun viewsError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_views"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when
+        repository.views(noCodeScreenId)
+
+        // then
+        // check that nothing critical happens
+        Handler(Looper.getMainLooper()).postDelayed(
+            { signal.countDown() },
+            1000
+        )
+        signal.await()
+    }
+
+    @Test
     fun actionPoints() {
         // given
         val signal = CountDownLatch(1)
 
-        val uid = uidPrefix + "_actionPoints"
-        val repository = initRepositoryForUid(uid)
+        val uid = UID_PREFIX + "_actionPoints"
+        val repository = initRepository(uid)
 
         // when
         withNewUserCreated(repository) { error ->
@@ -549,6 +798,31 @@ internal class QonversionRepositoryIntegrationTest {
         signal.await()
     }
 
+    @Test
+    fun actionPointsError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_actionPoints"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when
+        repository.actionPoints(
+            mapOf(
+                "type" to "screen_view",
+                "active" to "1"
+            ),
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertAccessDeniedError(error)
+
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
     private fun withNewUserCreated(
         repository: QonversionRepository,
         onComplete: (error: QonversionError?) -> Unit
@@ -570,10 +844,10 @@ internal class QonversionRepositoryIntegrationTest {
         repository.init(data)
     }
 
-    private fun initRepositoryForUid(uid: String): QonversionRepository {
+    private fun initRepository(uid: String, projectKey: String = PROJECT_KEY): QonversionRepository {
         val qonversionConfig = QonversionConfig.Builder(
             ApplicationProvider.getApplicationContext(),
-            "V4pK6FQo3PiDPj_2vYO1qZpNBbFXNP-a",
+            projectKey,
             QLaunchMode.SubscriptionManagement
         ).build()
         val internalConfig = InternalConfig(qonversionConfig)
@@ -585,5 +859,21 @@ internal class QonversionRepositoryIntegrationTest {
         )
 
         return QDependencyInjector.appComponent.repository()
+    }
+
+    private fun assertIncorrectProjectKeyError(error: QonversionError) {
+        assertEquals(error.code, QonversionErrorCode.InvalidCredentials)
+        assertTrue(listOf(
+            """HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """,
+            """HTTP status code=401, data={"code":10003,"message":"Invalid access token received"}. """
+        ).contains(error.additionalMessage))
+    }
+
+    private fun assertAccessDeniedError(error: QonversionError) {
+        assertEquals(error.code, QonversionErrorCode.BackendError)
+        assertTrue(listOf(
+            "HTTP status code=400, . ",
+            "HTTP status code=401, error=User with specified access token does not exist. "
+        ).contains(error.additionalMessage))
     }
 }
