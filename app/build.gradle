@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 
 buildscript {
-    ext.nav_version = '2.3.5'
+    ext.nav_version = '2.5.3'
     repositories {
         google()
         mavenCentral()
@@ -67,10 +67,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar',  '*.aar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.6.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
@@ -83,8 +83,8 @@ dependencies {
 
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:26.1.0')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx:19.0.2'
+    implementation 'com.google.firebase:firebase-messaging-ktx:22.0.0'
 
     // Google sign-in
     implementation 'com.google.firebase:firebase-auth-ktx'

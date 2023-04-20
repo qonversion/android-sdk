@@ -17,7 +17,6 @@ import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.toBoolean
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
-import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.toMap
 import java.lang.Exception
@@ -115,45 +114,45 @@ internal class QAutomationsManager @Inject constructor(
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
         repository.screens(screenId,
             { screen ->
-                val context: Context = activityProvider.getCurrentActivity() ?: appContext
-
-                val screenPresentationConfig = screenCustomizationDelegate?.get()
-                    ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
-                val intent = ScreenActivity.getCallingIntent(
-                    context,
-                    screenId,
-                    screen.htmlPage,
-                    screenPresentationConfig.presentationStyle
-                )
-                if (context !is Activity) {
-                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
-                }
-
-                try {
-                    context.startActivity(intent)
-                    getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let { transitionAnimations ->
-                        if (context is Activity) {
-                            val (openAnimation, closeAnimation) = transitionAnimations
-                            context.overridePendingTransition(openAnimation, closeAnimation)
-                        } else {
-                            logger.debug(
-                                "Can't use transition animations, cause the provided context is not an activity. " +
-                                        "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"
-                            )
-                        }
-                    }
-                    callback?.onSuccess()
-                } catch (e: Exception) {
-                    val errorMessage = "Failed to start screen with id $screenId with exception: $e"
-                    logger.release("loadScreen() -> $errorMessage")
-                    callback?.onError(
-                        QonversionError(
-                            QonversionErrorCode.UnknownError,
-                            errorMessage
-                        )
-                    )
-                }
+//                val context: Context = activityProvider.getCurrentActivity() ?: appContext
+//
+//                val screenPresentationConfig = screenCustomizationDelegate?.get()
+//                    ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
+//                val intent = ScreenActivity.getCallingIntent(
+//                    context,
+//                    screenId,
+//                    screen.htmlPage,
+//                    screenPresentationConfig.presentationStyle
+//                )
+//                if (context !is Activity) {
+//                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+//                    logger.debug("loadScreen() -> Screen intent will process with a non-Activity context")
+//                }
+//
+//                try {
+//                    context.startActivity(intent)
+//                    getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let { transitionAnimations ->
+//                        if (context is Activity) {
+//                            val (openAnimation, closeAnimation) = transitionAnimations
+//                            context.overridePendingTransition(openAnimation, closeAnimation)
+//                        } else {
+//                            logger.debug(
+//                                "Can't use transition animations, cause the provided context is not an activity. " +
+//                                        "To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"
+//                            )
+//                        }
+//                    }
+//                    callback?.onSuccess()
+//                } catch (e: Exception) {
+//                    val errorMessage = "Failed to start screen with id $screenId with exception: $e"
+//                    logger.release("loadScreen() -> $errorMessage")
+//                    callback?.onError(
+//                        QonversionError(
+//                            QonversionErrorCode.UnknownError,
+//                            errorMessage
+//                        )
+//                    )
+//                }
             },
             {
                 val errorMessage =

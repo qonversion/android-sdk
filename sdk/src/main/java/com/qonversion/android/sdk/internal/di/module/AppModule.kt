@@ -2,7 +2,8 @@ package com.qonversion.android.sdk.internal.di.module
 
 import android.app.Application
 import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
+import android.preference.PreferenceManager
+//import androidx.preference.PreferenceManager
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
