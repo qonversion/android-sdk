@@ -182,7 +182,6 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        launchResultCache.clearPermissionsCache()
         unhandledLogoutAvailable = false
 
         pendingPartnersIdentityId = userID
@@ -225,6 +224,7 @@ internal class QProductCenterManager internal constructor(
                 } else {
                     internalConfig.uid = identityID
 
+                    launchResultCache.clearPermissionsCache()
                     launch()
                 }
             }
