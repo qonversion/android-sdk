@@ -220,7 +220,7 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 if (currentUserID == identityID) {
-                    handleEntitlementRequestsAfterIdentityChanges()
+                    handlePendingRequests()
                 } else {
                     internalConfig.uid = identityID
 
@@ -456,7 +456,7 @@ internal class QProductCenterManager internal constructor(
     fun checkEntitlements(callback: QonversionEntitlementsCallback) {
         entitlementCallbacks.add(callback)
 
-        handleEntitlementRequestsAfterIdentityChanges()
+        handlePendingRequests()
     }
 
     fun restore(callback: QonversionEntitlementsCallback? = null) {
@@ -803,7 +803,7 @@ internal class QProductCenterManager internal constructor(
 
                 launchError = null
 
-                handleEntitlementRequestsAfterIdentityChanges()
+                handlePendingRequests()
 
                 loadStoreProductsIfPossible()
 
@@ -815,7 +815,7 @@ internal class QProductCenterManager internal constructor(
             override fun onError(error: QonversionError, httpCode: Int?) {
                 launchError = error
 
-                handleEntitlementRequestsAfterIdentityChanges(error)
+                handlePendingRequests(error)
 
                 loadStoreProductsIfPossible()
 
@@ -910,7 +910,7 @@ internal class QProductCenterManager internal constructor(
      * Executes identity changing operations (identify or logout) if pending requests exist.
      * Else executes awaiting entitlements requests.
      */
-    private fun handleEntitlementRequestsAfterIdentityChanges(lastError: QonversionError? = null) {
+    private fun handlePendingRequests(lastError: QonversionError? = null) {
         if (!isLaunchingFinished || isRestoreInProgress || processingPartnersIdentityId != null) {
             return
         }
@@ -1000,7 +1000,7 @@ internal class QProductCenterManager internal constructor(
 
         callbacks.forEach { callback -> callback.onSuccess(entitlements) }
 
-        handleEntitlementRequestsAfterIdentityChanges()
+        handlePendingRequests()
     }
 
     private fun executeRestoreBlocksOnError(error: QonversionError) {
@@ -1011,7 +1011,7 @@ internal class QProductCenterManager internal constructor(
 
         callbacks.forEach { callback -> callback.onError(error) }
 
-        handleEntitlementRequestsAfterIdentityChanges(error)
+        handlePendingRequests(error)
     }
 
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
