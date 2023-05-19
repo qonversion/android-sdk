@@ -367,6 +367,7 @@
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
+    <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion</ID>
