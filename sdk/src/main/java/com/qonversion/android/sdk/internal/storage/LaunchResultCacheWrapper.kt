@@ -46,6 +46,11 @@ internal class LaunchResultCacheWrapper(
         }
     }
 
+    fun resetSessionCache() {
+        sessionLaunchResult = null
+        permissions = null
+    }
+
     fun clearPermissionsCache() {
         permissions = null
         cache.remove(PERMISSIONS_KEY)

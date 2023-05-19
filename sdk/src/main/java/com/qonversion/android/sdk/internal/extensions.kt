@@ -97,3 +97,6 @@ internal fun Map<String, QPermission>.toEntitlementsMap(): Map<String, QEntitlem
     forEach { (id, permission) -> res[id] = QEntitlement(permission) }
     return res
 }
+
+internal infix fun <T> List<T>.equalsIgnoreOrder(other: List<T>) =
+    this.size == other.size && this.toSet() == other.toSet()
