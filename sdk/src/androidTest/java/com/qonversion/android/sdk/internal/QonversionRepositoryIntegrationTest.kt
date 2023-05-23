@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
@@ -873,6 +874,7 @@ internal class QonversionRepositoryIntegrationTest {
         assertEquals(error.code, QonversionErrorCode.BackendError)
         assertTrue(listOf(
             "HTTP status code=400, . ",
+            "HTTP status code=401, error=Authorization error: project not found. ",
             "HTTP status code=401, error=User with specified access token does not exist. "
         ).contains(error.additionalMessage))
     }
