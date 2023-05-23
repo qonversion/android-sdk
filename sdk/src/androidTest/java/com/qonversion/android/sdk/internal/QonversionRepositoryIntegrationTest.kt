@@ -873,6 +873,7 @@ internal class QonversionRepositoryIntegrationTest {
         assertEquals(error.code, QonversionErrorCode.BackendError)
         assertTrue(listOf(
             "HTTP status code=400, . ",
+            "HTTP status code=401, error=Authorization error: project not found. ",
             "HTTP status code=401, error=User with specified access token does not exist. "
         ).contains(error.additionalMessage))
     }
