@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.api
 
+import com.qonversion.android.sdk.internal.Constants.CRASH_LOGS_URL
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.EligibilityResult
 import com.qonversion.android.sdk.internal.dto.identity.IdentityResult
@@ -9,6 +10,7 @@ import com.qonversion.android.sdk.internal.dto.Data
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.Response
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
+import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.EventRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
@@ -22,8 +24,10 @@ import retrofit2.Call
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.http.Body
+import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.QueryMap
+import retrofit2.http.Url
 
 internal interface Api {
 
@@ -65,4 +69,8 @@ internal interface Api {
 
     @POST("v2/events")
     fun events(@Body request: EventRequest): Call<Void>
+
+    @Headers("Content-Type: application/json")
+    @POST
+    fun crashLogs(@Body request: CrashRequest, @Url url: String = CRASH_LOGS_URL): Call<Void>
 }
