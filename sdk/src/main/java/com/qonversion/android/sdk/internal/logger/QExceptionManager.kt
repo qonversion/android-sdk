@@ -25,7 +25,7 @@ internal class QExceptionManager @Inject constructor(
     private val repository: QonversionRepository,
     private val headersProvider: ApiHeadersProvider,
     moshi: Moshi
-): ExceptionManager {
+) : ExceptionManager {
 
     private val exceptionAdapter: JsonAdapter<CrashRequest.ExceptionInfo> =
         moshi.adapter(CrashRequest.ExceptionInfo::class.java)

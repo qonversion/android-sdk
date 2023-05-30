@@ -117,7 +117,8 @@ internal class QonversionInternal(
     }
 
     override fun syncHistoricalData() {
-        val isHistoricalDataSynced: Boolean = sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
+        val isHistoricalDataSynced: Boolean =
+            sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
         if (isHistoricalDataSynced) {
             return
         }

@@ -31,7 +31,7 @@ internal class ExceptionHandler(
         val exceptionJson = exception.toJSON()
         val uuid = UUID.randomUUID().toString()
         val timestamp = System.currentTimeMillis()
-        val file = File(reportsDir,  "$uuid-$timestamp$CRASH_LOG_FILE_SUFFIX")
+        val file = File(reportsDir, "$uuid-$timestamp$CRASH_LOG_FILE_SUFFIX")
         var writer: BufferedWriter? = null
         try {
             writer = BufferedWriter(FileWriter(file))
