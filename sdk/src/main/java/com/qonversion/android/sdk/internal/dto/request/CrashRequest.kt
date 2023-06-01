@@ -37,6 +37,7 @@ internal data class CrashRequest(
         @Json(name = "platform_version") val platformVersion: String,
         @Json(name = "source") val source: String,
         @Json(name = "source_version") val sourceVersion: String,
-        @Json(name = "project_key") val projectKey: String
+        @Json(name = "project_key") val projectKey: String,
+        @Json(name = "uid") val uid: String
     )
 }

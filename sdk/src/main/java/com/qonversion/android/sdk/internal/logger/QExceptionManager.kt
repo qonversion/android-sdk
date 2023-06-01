@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.internal.logger
 import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.internal.Constants.CRASH_LOG_FILE_SUFFIX
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionRepository
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
@@ -23,6 +24,7 @@ private const val TAG = "QExceptionManager"
 
 internal class QExceptionManager @Inject constructor(
     private val repository: QonversionRepository,
+    private val intervalConfig: InternalConfig,
     private val headersProvider: ApiHeadersProvider,
     moshi: Moshi
 ) : ExceptionManager {
@@ -107,7 +109,8 @@ internal class QExceptionManager @Inject constructor(
             headersProvider.getPlatformVersion(),
             headersProvider.getSource(),
             headersProvider.getSourceVersion(),
-            headersProvider.getProjectKey()
+            headersProvider.getProjectKey(),
+            intervalConfig.uid
         ))
     }
 }
