@@ -348,7 +348,6 @@ internal class QonversionRepositoryIntegrationTest {
                 // then
                 assertEquals(launchResult.uid, uid)
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                Log.d("GGGGG", launchResult.permissions.toString())
                 assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
                 assertTrue(
@@ -361,7 +360,6 @@ internal class QonversionRepositoryIntegrationTest {
             }
 
             override fun onError(error: QonversionError, httpCode: Int?) {
-                Log.d("GGGGG", error.toString())
                 fail("Shouldn't fail")
             }
         }
