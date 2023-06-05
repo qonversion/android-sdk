@@ -61,7 +61,7 @@ internal class ExceptionHandler(
 
         data.put("traces", traces)
         data.put("title", this)
-        data.put("place", stackTrace[0] ?: "")
+        data.put("place", stackTrace.firstOrNull() ?: "")
         return data
     }
 
