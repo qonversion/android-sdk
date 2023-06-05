@@ -87,18 +87,6 @@ internal class QonversionRepositoryIntegrationTest {
         "test_inapp" to listOf("noAds")
     )
 
-    private val expectedPermissions = mapOf(
-        "premium" to QPermission(
-            "premium",
-            "test_monthly",
-            QProductRenewState.Canceled,
-            Date(1679933171000),
-            Date(1679935273000),
-            QEntitlementSource.PlayStore,
-            0
-        )
-    )
-
     private val purchase = Purchase(
         detailsToken = "AEuhp4Kd9cZ3ZlkS2MylEXHBcZVLjwwllncPBm4a6lrVvj3uYGICnsE5w87i81qNsa38DPOW08BcZfLxJFxIWeISVwoBkT55tA2Bb6cKGsip724=",
         title = "DONT CHANGE! Sub for integration tests. (Qonversion Sample)",
@@ -253,6 +241,18 @@ internal class QonversionRepositoryIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
+        val expectedPermissions = mapOf(
+            "premium" to QPermission(
+                "premium",
+                "test_monthly",
+                QProductRenewState.Canceled,
+                Date(1679933171000),
+                Date(1679935273000),
+                QEntitlementSource.PlayStore,
+                0
+            )
+        )
+
         val uid = "QON_test_uid1679992132407"
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
@@ -321,11 +321,23 @@ internal class QonversionRepositoryIntegrationTest {
 
         val history = listOf(
             History(
-                "google_monthly",
-                "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-                1679933171,
-                "SGD",
-                "6.99"
+                "google_inapp",
+                "lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo",
+                1685953401,
+                "GBP",
+                "48.9"
+            )
+        )
+
+        val expectedPermissions = mapOf(
+            "noAds" to QPermission(
+                "noAds",
+                "test_inapp",
+                QProductRenewState.NonRenewable,
+                Date(1685953401000),
+                null,
+                QEntitlementSource.PlayStore,
+                1
             )
         )
 
