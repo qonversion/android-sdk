@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
@@ -40,6 +41,7 @@ internal class QonversionInternal(
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache? = null
+    private var exceptionManager: ExceptionManager? = null
 
     override var appState = AppState.Background
 
@@ -48,6 +50,10 @@ internal class QonversionInternal(
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
         QDependencyInjector.buildAppComponent(application, internalConfig, this)
+
+        exceptionManager = QDependencyInjector.appComponent.exceptionManager().also {
+            it.initialize(application)
+        }
 
         val repository = QDependencyInjector.appComponent.repository()
         val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
@@ -111,7 +117,8 @@ internal class QonversionInternal(
     }
 
     override fun syncHistoricalData() {
-        val isHistoricalDataSynced: Boolean = sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
+        val isHistoricalDataSynced: Boolean =
+            sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
         if (isHistoricalDataSynced) {
             return
         }

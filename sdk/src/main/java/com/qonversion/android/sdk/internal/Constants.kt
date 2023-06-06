@@ -14,4 +14,6 @@ internal object Constants {
     const val INTERNAL_SERVER_ERROR_MIN = 500
     const val INTERNAL_SERVER_ERROR_MAX = 599
     const val PRICE_MICROS_DIVIDER: Double = 1000000.0
+    const val CRASH_LOGS_URL = "https://sdk-logs.qonversion.io/sdk.log"
+    const val CRASH_LOG_FILE_SUFFIX = ".qonversion.stacktrace"
 }

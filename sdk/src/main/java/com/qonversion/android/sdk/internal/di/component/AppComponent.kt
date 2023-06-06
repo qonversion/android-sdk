@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.internal.di.module.RepositoryModule
 import com.qonversion.android.sdk.internal.di.module.NetworkModule
 import com.qonversion.android.sdk.internal.di.module.ManagersModule
 import com.qonversion.android.sdk.internal.di.module.ServicesModule
+import com.qonversion.android.sdk.internal.logger.QExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
@@ -40,4 +41,5 @@ internal interface AppComponent {
     fun internalConfig(): InternalConfig
     fun appStateProvider(): AppStateProvider
     fun sharedPreferencesCache(): SharedPreferencesCache
+    fun exceptionManager(): QExceptionManager
 }

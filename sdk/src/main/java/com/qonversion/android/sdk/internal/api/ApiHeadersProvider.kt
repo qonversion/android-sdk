@@ -31,19 +31,25 @@ internal class ApiHeadersProvider @Inject constructor(
 
     private fun getHeadersMap() = mapOf(
         CONTENT_TYPE to "application/json",
-        AUTHORIZATION to getBearer(projectKey),
+        AUTHORIZATION to getBearer(getProjectKey()),
         USER_LOCALE to getLocale(),
         SOURCE to getSource(),
         SOURCE_VERSION to getSourceVersion(),
-        PLATFORM to ANDROID_PLATFORM,
-        PLATFORM_VERSION to Build.VERSION.RELEASE,
+        PLATFORM to getPlatform(),
+        PLATFORM_VERSION to getPlatformVersion(),
         UID to config.uid
     )
 
-    private fun getSource() =
+    fun getProjectKey() = projectKey
+
+    fun getPlatform() = ANDROID_PLATFORM
+
+    fun getPlatformVersion(): String = Build.VERSION.RELEASE
+
+    fun getSource() =
         sharedPreferencesCache.getString(PREFS_SOURCE_KEY, null) ?: ANDROID_PLATFORM
 
-    private fun getSourceVersion() =
+    fun getSourceVersion() =
         sharedPreferencesCache.getString(PREFS_SOURCE_VERSION_KEY, null) ?: config.primaryConfig.sdkVersion
 
     companion object {
