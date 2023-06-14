@@ -118,7 +118,7 @@ interface Qonversion {
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 
@@ -152,7 +152,7 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 

@@ -11,7 +11,7 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.*;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.qonversion.android.sdk.Qonversion;
@@ -28,6 +28,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
     private BillingClient client;
 
+    @SuppressWarnings("deprecation")
     private final Map<String, SkuDetails> skuDetails = new HashMap<>();
 
     @Override
@@ -57,12 +58,14 @@ public class ManualTrackingActivity extends AppCompatActivity {
             public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
 
+                    @SuppressWarnings("deprecation")
                     final SkuDetailsParams params = SkuDetailsParams
                             .newBuilder()
                             .setSkusList(Collections.singletonList(SKU_ID))
                             .setType(BillingClient.SkuType.INAPP)
                             .build();
 
+                    //noinspection deprecation
                     client.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
                         @Override
                         public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> list) {
@@ -86,6 +89,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
     }
 
     private void launchBillingFlow() {
+        @SuppressWarnings("deprecation")
         final BillingFlowParams params = BillingFlowParams
                 .newBuilder()
                 .setSkuDetails(Objects.requireNonNull(skuDetails.get(SKU_ID)))
