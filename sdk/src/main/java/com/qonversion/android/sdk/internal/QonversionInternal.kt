@@ -7,27 +7,19 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
-import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.*
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
-import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.*
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
-import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -42,6 +34,7 @@ internal class QonversionInternal(
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache? = null
     private var exceptionManager: ExceptionManager? = null
+    private var remoteConfigManager: QRemoteConfigManager? = null
 
     override var appState = AppState.Background
 
@@ -70,6 +63,8 @@ internal class QonversionInternal(
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
+
+        remoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
 
         attributionManager = QAttributionManager(repository, this)
 
@@ -205,6 +200,18 @@ internal class QonversionInternal(
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
+        remoteConfigManager?.loadRemoteConfig(object: QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) {
+                postToMainThread { callback.onSuccess(remoteConfig) }
+            }
+
+            override fun onError(error: QonversionError) {
+                postToMainThread { callback.onError(error) }
+            }
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 

@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.api
 
+import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.internal.Constants.CRASH_LOGS_URL
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.EligibilityResult
@@ -12,7 +13,6 @@ import com.qonversion.android.sdk.internal.dto.Response
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
-import com.qonversion.android.sdk.internal.dto.request.EventRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
@@ -67,10 +67,12 @@ internal interface Api {
         @QueryMap params: Map<String, String>
     ): Call<Data<ActionPoints>>
 
-    @POST("v2/events")
-    fun events(@Body request: EventRequest): Call<Void>
-
     @Headers("Content-Type: application/json")
     @POST
     fun crashLogs(@Body request: CrashRequest, @Url url: String = CRASH_LOGS_URL): Call<Void>
+
+    @GET("v3/remote-config")
+    fun remoteConfig(
+        @QueryMap params: Map<String, String>
+    ): Call<QRemoteConfig>
 }

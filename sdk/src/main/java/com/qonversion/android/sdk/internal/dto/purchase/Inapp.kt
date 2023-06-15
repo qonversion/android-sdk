@@ -21,7 +21,6 @@ internal data class PurchaseDetails(
     @Json(name = "period_unit") val periodUnit: Int?,
     @Json(name = "period_number_of_units") val periodUnitsCount: Int?,
     @Json(name = "country") val country: String?,
-    @Json(name = "experiment") val experiment: Map<String, String>,
     @Json(name = "product_id") val qProductId: String
 )
 

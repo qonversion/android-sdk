@@ -8,12 +8,7 @@ import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
-import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.*
 
 interface Qonversion {
 
@@ -173,6 +168,8 @@ interface Qonversion {
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     fun offerings(callback: QonversionOfferingsCallback)
+
+    fun remoteConfig(callback: QonversionRemoteConfigCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
