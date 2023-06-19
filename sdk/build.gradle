@@ -63,12 +63,12 @@ tasks.withType(Test) {
 
 ext {
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
-    PUBLISH_ARTIFACT_ID = 'sdk_local'
+    PUBLISH_ARTIFACT_ID = 'sdk'
 
     moshiVersion = '1.14.0'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.13'
-    billing = '4.0.0'
+    billing = '6.0.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
@@ -120,9 +120,8 @@ dependencies {
     kapt moshi.koltin_codegen
 
     // UI
-//    implementation 'androidx.appcompat:appcompat:1.2.0'
-//    implementation 'androidx.fragment:fragment-ktx:1.2.0'
-//    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
     // Billing
     api billing.billingClient
@@ -142,7 +141,7 @@ dependencies {
     kapt dagger.compiler
 
     // Preference
-//    implementation "androidx.preference:preference:1.2.0"
+    implementation "androidx.preference:preference:1.1.1"
 
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"

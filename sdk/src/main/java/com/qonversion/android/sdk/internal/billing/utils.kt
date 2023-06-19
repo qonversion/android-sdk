@@ -18,9 +18,11 @@ internal fun PurchaseHistoryRecord.getDescription() =
 internal fun Purchase.getDescription() =
     "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
+@Suppress("DEPRECATION")
 internal val Purchase.sku: String?
     get() = skus.firstOrNull()
 
+@Suppress("DEPRECATION")
 internal val PurchaseHistoryRecord.sku: String?
     get() = skus.firstOrNull()
 
@@ -34,7 +36,7 @@ private fun Long.convertLongToTime(): String {
 
 private fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {
     return when (this) {
-        BillingClient.BillingResponseCode.SERVICE_TIMEOUT -> "SERVICE_TIMEOUT"
+        BillingClient.BillingResponseCode.NETWORK_ERROR -> "NETWORK_ERROR"
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> "FEATURE_NOT_SUPPORTED"
         BillingClient.BillingResponseCode.SERVICE_DISCONNECTED -> "SERVICE_DISCONNECTED"
         BillingClient.BillingResponseCode.OK -> "OK"

@@ -4,5 +4,5 @@ import com.android.billingclient.api.BillingFlowParams
 
 internal data class UpdatePurchaseInfo(
     val purchaseToken: String,
-    @BillingFlowParams.ProrationMode val prorationMode: Int? = null
+    @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode val prorationMode: Int? = null
 )

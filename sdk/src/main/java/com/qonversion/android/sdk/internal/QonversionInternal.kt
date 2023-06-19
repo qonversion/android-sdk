@@ -7,24 +7,25 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.dto.QonversionError
-import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QEntitlement
-import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
+import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
@@ -40,6 +41,7 @@ internal class QonversionInternal(
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache? = null
+    private var exceptionManager: ExceptionManager? = null
 
     override var appState = AppState.Background
 
@@ -48,6 +50,10 @@ internal class QonversionInternal(
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
         QDependencyInjector.buildAppComponent(application, internalConfig, this)
+
+        exceptionManager = QDependencyInjector.appComponent.exceptionManager().also {
+            it.initialize(application)
+        }
 
         val repository = QDependencyInjector.appComponent.repository()
         val purchasesCache = QDependencyInjector.appComponent.purchasesCache()
@@ -111,7 +117,8 @@ internal class QonversionInternal(
     }
 
     override fun syncHistoricalData() {
-        val isHistoricalDataSynced: Boolean = sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
+        val isHistoricalDataSynced: Boolean =
+            sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
         if (isHistoricalDataSynced) {
             return
         }
@@ -152,7 +159,7 @@ internal class QonversionInternal(
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
@@ -169,7 +176,7 @@ internal class QonversionInternal(
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(

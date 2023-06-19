@@ -65,7 +65,8 @@ interface Qonversion {
     }
 
     /**
-    Call this function to sync the subscriber data with the first launch when Qonversion is implemented.
+     * Call this function to sync the subscriber data with the first launch
+     * when Qonversion is implemented.
      */
     fun syncHistoricalData()
 
@@ -117,7 +118,7 @@ interface Qonversion {
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 
@@ -151,7 +152,7 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 
@@ -199,7 +200,7 @@ interface Qonversion {
     fun restore(callback: QonversionEntitlementsCallback)
 
     /**
-     * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by you own implementation.
+     * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by your own implementation.
      * @warning This function should only be called if you're using Qonversion SDK in analytics mode.
      * @see [Analytics mode](https://qonversion.io/docs/observer-mode)
      */

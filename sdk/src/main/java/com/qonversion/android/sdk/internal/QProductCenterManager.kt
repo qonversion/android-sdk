@@ -7,7 +7,8 @@ import android.os.Build
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
+import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
@@ -64,8 +65,11 @@ internal class QProductCenterManager internal constructor(
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResultCache.sessionLaunchResult != null
 
+    private var isRestoreInProgress = false
+
     private var loadProductsState = NotStartedYet
 
+    @Suppress("DEPRECATION")
     private var skuDetails = mapOf<String, SkuDetails>()
 
     private var launchError: QonversionError? = null
@@ -73,6 +77,7 @@ internal class QProductCenterManager internal constructor(
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
     private var entitlementCallbacks = mutableListOf<QonversionEntitlementsCallback>()
     private var purchasingCallbacks = mutableMapOf<String, QonversionEntitlementsCallback>()
+    private var restoreCallbacks = mutableListOf<QonversionEntitlementsCallback>()
 
     private var processingPartnersIdentityId: String? = null
     private var pendingPartnersIdentityId: String? = null
@@ -82,6 +87,7 @@ internal class QProductCenterManager internal constructor(
     private var advertisingID: String? = null
     private var pendingInitRequestData: InitRequestData? = null
 
+    @Suppress("DEPRECATION")
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
@@ -130,6 +136,8 @@ internal class QProductCenterManager internal constructor(
         callback: QonversionLaunchCallback? = null
     ) {
         val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
+        launchError = null
+        launchResultCache.resetSessionCache()
 
         if (!internalConfig.primaryConfig.isKidsMode) {
             val adProvider = AdvertisingProvider()
@@ -176,11 +184,10 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        launchResultCache.clearPermissionsCache()
         unhandledLogoutAvailable = false
 
         pendingPartnersIdentityId = userID
-        if (!isLaunchingFinished) {
+        if (!isLaunchingFinished || isRestoreInProgress) {
             return
         }
 
@@ -215,10 +222,11 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 if (currentUserID == identityID) {
-                    executeEntitlementsBlock()
+                    handlePendingRequests()
                 } else {
                     internalConfig.uid = identityID
 
+                    launchResultCache.clearPermissionsCache()
                     launch()
                 }
             }
@@ -286,7 +294,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         product: QProduct,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         purchaseProduct(
@@ -303,7 +311,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         productId: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -339,7 +347,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         id: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -369,7 +377,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         productId: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -435,7 +443,7 @@ internal class QProductCenterManager internal constructor(
         if (offeringId != null) {
             val offering = getOfferings()?.offeringForID(offeringId)
             product = offering?.productForID(productId)
-            if (product != null && offering != null) {
+            if (offering != null && product != null) {
                 product.storeID?.let {
                     productPurchaseModel[it] = Pair(product, offering)
                 }
@@ -450,46 +458,44 @@ internal class QProductCenterManager internal constructor(
     fun checkEntitlements(callback: QonversionEntitlementsCallback) {
         entitlementCallbacks.add(callback)
 
-        if (!isLaunchingFinished || processingPartnersIdentityId != null) {
-            return
-        }
-
-        val pendingIdentityID = pendingPartnersIdentityId
-        if (!pendingIdentityID.isNullOrEmpty()) {
-            identify(pendingIdentityID)
-            return
-        }
-
-        executeEntitlementsBlock()
+        handlePendingRequests()
     }
 
     fun restore(callback: QonversionEntitlementsCallback? = null) {
-        billingService.queryPurchasesHistory(onQueryHistoryCompleted = { historyRecords ->
-            consumer.consumeHistoryRecords(historyRecords)
-            val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
-            val loadedSkuDetails =
-                skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
-            val resultSkuIds = (skuIds - loadedSkuDetails.keys).toSet()
+        callback?.let { restoreCallbacks.add(it) }
 
-            if (resultSkuIds.isNotEmpty()) {
-                billingService.loadProducts(resultSkuIds, onLoadCompleted = {
-                    it.forEach { singleSkuDetails ->
-                        run {
-                            loadedSkuDetails[singleSkuDetails.sku] = singleSkuDetails
-                            skuDetails = skuDetails + (singleSkuDetails.sku to singleSkuDetails)
+        if (isRestoreInProgress) {
+            return
+        }
+        isRestoreInProgress = true
+
+        billingService.queryPurchasesHistory(
+            onQueryHistoryCompleted = { historyRecords ->
+                consumer.consumeHistoryRecords(historyRecords)
+                val skuIds = historyRecords.mapNotNull { it.historyRecord.sku }
+                val loadedSkuDetails =
+                    skuDetails.filter { skuIds.contains(it.value.sku) }.toMutableMap()
+                val resultSkuIds = (skuIds - loadedSkuDetails.keys).toSet()
+
+                if (resultSkuIds.isNotEmpty()) {
+                    billingService.loadProducts(resultSkuIds, onLoadCompleted = {
+                        it.forEach { singleSkuDetails ->
+                            run {
+                                loadedSkuDetails[singleSkuDetails.sku] = singleSkuDetails
+                                skuDetails = skuDetails + (singleSkuDetails.sku to singleSkuDetails)
+                            }
                         }
-                    }
 
-                    processRestore(historyRecords, loadedSkuDetails, callback)
-                }, onLoadFailed = {
-                    processRestore(historyRecords, loadedSkuDetails, callback)
-                })
-            } else {
-                processRestore(historyRecords, loadedSkuDetails, callback)
-            }
-        },
+                        processRestore(historyRecords, loadedSkuDetails)
+                    }, onLoadFailed = {
+                        processRestore(historyRecords, loadedSkuDetails)
+                    })
+                } else {
+                    processRestore(historyRecords, loadedSkuDetails)
+                }
+            },
             onQueryHistoryFailed = {
-                callback?.onError(it.toQonversionError())
+                executeRestoreBlocksOnError(it.toQonversionError())
             })
     }
 
@@ -520,8 +526,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun processRestore(
         purchaseHistoryRecords: List<PurchaseHistory>,
-        loadedSkuDetails: Map<String, SkuDetails>,
-        callback: QonversionEntitlementsCallback? = null
+        @Suppress("DEPRECATION") loadedSkuDetails: Map<String, SkuDetails>
     ) {
         purchaseHistoryRecords.forEach { purchaseHistory ->
             val skuDetails = loadedSkuDetails[purchaseHistory.historyRecord.sku]
@@ -534,14 +539,14 @@ internal class QProductCenterManager internal constructor(
             object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
                     updateLaunchResult(launchResult)
-                    callback?.onSuccess(launchResult.permissions.toEntitlementsMap())
+                    executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
                 }
 
                 override fun onError(error: QonversionError, httpCode: Int?) {
                     if (shouldCalculatePermissionsLocally(error, httpCode)) {
-                        calculateRestorePermissionsLocally(purchaseHistoryRecords, callback, error)
+                        calculateRestorePermissionsLocally(purchaseHistoryRecords, error)
                     } else {
-                        callback?.onError(error)
+                        executeRestoreBlocksOnError(error)
                     }
                 }
             })
@@ -549,12 +554,10 @@ internal class QProductCenterManager internal constructor(
 
     private fun calculateRestorePermissionsLocally(
         purchaseHistoryRecords: List<PurchaseHistory>,
-        callback: QonversionEntitlementsCallback?,
         restoreError: QonversionError
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {
-            failLocallyGrantingPermissionsWithError(
-                callback,
+            failLocallyGrantingRestorePermissionsWithError(
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
             return
@@ -571,8 +574,8 @@ internal class QProductCenterManager internal constructor(
                 it
             )
 
-            callback?.onSuccess(permissions.toEntitlementsMap())
-        } ?: failLocallyGrantingPermissionsWithError(callback, restoreError)
+            executeRestoreBlocksOnSuccess(permissions.toEntitlementsMap())
+        } ?: failLocallyGrantingRestorePermissionsWithError(restoreError)
     }
 
     private fun calculatePurchasePermissionsLocally(
@@ -581,7 +584,7 @@ internal class QProductCenterManager internal constructor(
         purchaseError: QonversionError
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {
-            failLocallyGrantingPermissionsWithError(
+            failLocallyGrantingPurchasePermissionsWithError(
                 purchaseCallback,
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
@@ -596,7 +599,7 @@ internal class QProductCenterManager internal constructor(
             val purchasedProduct = launchResult.products.values.find { product ->
                 product.skuDetail?.sku == purchase.sku
             } ?: run {
-                failLocallyGrantingPermissionsWithError(purchaseCallback, purchaseError)
+                failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
                 return
             }
 
@@ -606,15 +609,22 @@ internal class QProductCenterManager internal constructor(
                 it
             )
             purchaseCallback?.onSuccess(permissions.toEntitlementsMap())
-        } ?: failLocallyGrantingPermissionsWithError(purchaseCallback, purchaseError)
+        } ?: failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
     }
 
-    private fun failLocallyGrantingPermissionsWithError(
+    private fun failLocallyGrantingPurchasePermissionsWithError(
         callback: QonversionEntitlementsCallback?,
         error: QonversionError
     ) {
         launchResultCache.clearPermissionsCache()
         callback?.onError(error)
+    }
+
+    private fun failLocallyGrantingRestorePermissionsWithError(
+        error: QonversionError
+    ) {
+        launchResultCache.clearPermissionsCache()
+        executeRestoreBlocksOnError(error)
     }
 
     private fun grantPermissionsAfterFailedPurchaseTracking(
@@ -795,16 +805,7 @@ internal class QProductCenterManager internal constructor(
 
                 launchError = null
 
-                if (processingPartnersIdentityId == null) {
-                    val pendingIdentityId = pendingPartnersIdentityId
-                    if (!pendingIdentityId.isNullOrEmpty()) {
-                        identify(pendingIdentityId)
-                    } else if (unhandledLogoutAvailable) {
-                        handleLogout()
-                    } else {
-                        executeEntitlementsBlock()
-                    }
-                }
+                handlePendingRequests()
 
                 loadStoreProductsIfPossible()
 
@@ -816,8 +817,9 @@ internal class QProductCenterManager internal constructor(
             override fun onError(error: QonversionError, httpCode: Int?) {
                 launchError = error
 
+                handlePendingRequests(error)
+
                 loadStoreProductsIfPossible()
-                executeEntitlementsBlock(error.takeIf { pendingPartnersIdentityId != null })
 
                 callback?.onError(error, httpCode)
             }
@@ -857,7 +859,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun loadStoreProductsIfPossible(
-        onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
+        @Suppress("DEPRECATION") onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
         onLoadFailed: ((error: QonversionError) -> Unit)? = null
     ) {
         when (loadProductsState) {
@@ -902,7 +904,27 @@ internal class QProductCenterManager internal constructor(
                 })
         } else {
             executeProductsBlocks()
+            @Suppress("DEPRECATION")
             onLoadCompleted?.let { listOf<SkuDetails>() }
+        }
+    }
+
+    /**
+     * Executes identity changing operations (identify or logout) if pending requests exist.
+     * Else executes awaiting entitlements requests.
+     */
+    private fun handlePendingRequests(lastError: QonversionError? = null) {
+        if (!isLaunchingFinished || isRestoreInProgress || processingPartnersIdentityId != null) {
+            return
+        }
+
+        val pendingIdentityId = pendingPartnersIdentityId
+        if (!pendingIdentityId.isNullOrEmpty()) {
+            identify(pendingIdentityId)
+        } else if (unhandledLogoutAvailable) {
+            handleLogout()
+        } else {
+            executeEntitlementsBlock(lastError)
         }
     }
 
@@ -971,6 +993,28 @@ internal class QProductCenterManager internal constructor(
                     }
                 })
         }
+    }
+
+    private fun executeRestoreBlocksOnSuccess(entitlements: Map<String, QEntitlement>) {
+        val callbacks = restoreCallbacks.toList()
+        restoreCallbacks.clear()
+
+        isRestoreInProgress = false
+
+        callbacks.forEach { callback -> callback.onSuccess(entitlements) }
+
+        handlePendingRequests()
+    }
+
+    private fun executeRestoreBlocksOnError(error: QonversionError) {
+        val callbacks = restoreCallbacks.toList()
+        restoreCallbacks.clear()
+
+        isRestoreInProgress = false
+
+        callbacks.forEach { callback -> callback.onError(error) }
+
+        handlePendingRequests(error)
     }
 
     private fun retryLaunchForProducts(onCompleted: () -> Unit) {
@@ -1096,7 +1140,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun purchase(
-        purchaseInfo: Pair<SkuDetails, Purchase>,
+        @Suppress("DEPRECATION") purchaseInfo: Pair<SkuDetails, Purchase>,
         callback: QonversionLaunchCallback
     ) {
         val sku = purchaseInfo.first.sku

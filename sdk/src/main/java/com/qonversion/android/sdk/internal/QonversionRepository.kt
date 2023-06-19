@@ -30,6 +30,7 @@ import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.EventRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
+import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
@@ -276,6 +277,29 @@ internal class QonversionRepository internal constructor(
         eventRequest(EXPERIMENT_STARTED_EVENT_NAME, payload)
     }
 
+    fun crashReport(
+        crashData: CrashRequest,
+        onSuccess: () -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        api.crashLogs(crashData).enqueue {
+            onResponse = {
+                logger.release("crashReportRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.release("crashReportRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
+            }
+        }
+    }
+
+    // Private functions
+
     private fun eventRequest(eventName: String, payload: Map<String, Any>) {
         val eventRequest = EventRequest(
             userId = uid,
@@ -292,8 +316,6 @@ internal class QonversionRepository internal constructor(
             }
         }
     }
-
-    // Private functions
 
     private fun createAttributionRequest(
         conversionInfo: Map<String, Any>,
