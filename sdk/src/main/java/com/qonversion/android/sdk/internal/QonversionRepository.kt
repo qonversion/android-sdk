@@ -21,21 +21,22 @@ import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
-import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
-import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
-import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
+import com.qonversion.android.sdk.internal.dto.request.*
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
-import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
-import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
-import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
+import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
+import com.qonversion.android.sdk.internal.dto.request.InitRequest
+import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
+import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
+import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
+import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import retrofit2.Response
 import java.lang.RuntimeException
@@ -82,6 +83,45 @@ internal class QonversionRepository internal constructor(
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
                     callback.onSuccess(body)
+                }
+            }
+
+            onFailure = {
+                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun attachUserToExperiment(experimentId: String, groupId: String, userId: String, callback: QonversionExperimentAttachCallback) {
+        val request = AttachUserRequest(groupId)
+        api.attachUserToExperiment(experimentId, userId, request).enqueue {
+            onResponse = {
+                logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body == null) {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                } else {
+                    callback.onSuccess()
+                }
+            }
+
+            onFailure = {
+                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun detachUserToExperiment(experimentId: String, userId: String, callback: QonversionExperimentAttachCallback) {
+        api.detachUserToExperiment(experimentId, userId).enqueue {
+            onResponse = {
+                logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body == null) {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                } else {
+                    callback.onSuccess()
                 }
             }
 

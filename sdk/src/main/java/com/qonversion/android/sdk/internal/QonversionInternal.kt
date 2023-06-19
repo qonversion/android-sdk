@@ -215,6 +215,14 @@ internal class QonversionInternal(
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
+    override fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
+        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)  ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        remoteConfigManager?.detachUserToExperiment(experimentId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
     override fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback

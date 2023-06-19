@@ -4,8 +4,10 @@ import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
 import com.qonversion.android.sdk.internal.services.QUserInfoService
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import javax.inject.Inject
+import kotlin.math.exp
 
 class QRemoteConfigManager @Inject internal constructor(
     private val remoteConfigService: QRemoteConfigService,
@@ -52,6 +54,16 @@ class QRemoteConfigManager @Inject internal constructor(
             }
 
         })
+    }
+
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
+        val userId = userInfoService.obtainUserID()
+        remoteConfigService.attachUserToExperiment(experimentId, groupId, userId, callback)
+    }
+
+    fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        val userId = userInfoService.obtainUserID()
+        remoteConfigService.detachUserToExperiment(experimentId, userId, callback)
     }
 
     fun executeRemoteConfigCompletions(config: QRemoteConfig?, error: QonversionError?) {

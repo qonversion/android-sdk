@@ -171,6 +171,10 @@ interface Qonversion {
 
     fun remoteConfig(callback: QonversionRemoteConfigCallback)
 
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback)
+
+    fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback)
+
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
      * You can show only a regular price for users who are not eligible for an introductory offer.

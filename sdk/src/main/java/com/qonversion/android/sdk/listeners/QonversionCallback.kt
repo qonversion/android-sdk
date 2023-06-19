@@ -28,6 +28,11 @@ interface QonversionRemoteConfigCallback {
    fun onError(error: QonversionError)
 }
 
+interface QonversionExperimentAttachCallback {
+   fun onSuccess()
+   fun onError(error: QonversionError)
+}
+
 interface QonversionEntitlementsCallback {
    fun onSuccess(entitlements: Map<String, QEntitlement>)
    fun onError(error: QonversionError)
