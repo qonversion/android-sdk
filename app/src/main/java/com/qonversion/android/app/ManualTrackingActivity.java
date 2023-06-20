@@ -64,8 +64,8 @@ public class ManualTrackingActivity extends AppCompatActivity {
                             .build();
 
                     //noinspection deprecation
-                    client.querySkuDetailsAsync(params, (queryBillingResult1, list) -> {
-                        if (queryBillingResult1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    client.querySkuDetailsAsync(params, (queryBillingResult, list) -> {
+                        if (queryBillingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                             if (list != null && !list.isEmpty()) {
                                 skuDetails.put(SKU_ID, list.get(0));
                             }
