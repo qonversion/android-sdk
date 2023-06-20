@@ -9,7 +9,8 @@ import javax.inject.Inject
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
-    private val userInfoService: QUserInfoService
+    private val userInfoService: QUserInfoService,
+    private val internalConfig: InternalConfig
 ) {
     private var currentRemoteConfig: QRemoteConfig? = null
     private var isLaunchFinished: Boolean = false
@@ -38,42 +39,24 @@ internal class QRemoteConfigManager @Inject constructor(
         }
 
         isRequestInProgress = true
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.loadRemoteConfig(userId, object : QonversionRemoteConfigCallback {
+        remoteConfigService.loadRemoteConfig(internalConfig.uid, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 isRequestInProgress = false
                 currentRemoteConfig = remoteConfig
-                executeRemoteConfigCallbacks(remoteConfig, null)
+                fireToCallbacks { onSuccess(remoteConfig) }
             }
 
             override fun onError(error: QonversionError) {
                 isRequestInProgress = false
-                executeRemoteConfigCallbacks(null, error)
+                fireToCallbacks { onError(error) }
             }
 
         })
     }
 
-    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.attachUserToExperiment(experimentId, groupId, userId, callback)
-    }
-
-    fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.detachUserToExperiment(experimentId, userId, callback)
-    }
-
-    fun executeRemoteConfigCompletions(config: QRemoteConfig?, error: QonversionError?) {
+    private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {
         val callbacks = remoteConfigCallbacks.toList()
+        callbacks.forEach { it.action() }
         remoteConfigCallbacks.clear()
-
-        config?.let {
-            callbacks.forEach { it.onSuccess(config)}
-        }
-
-        error?.let {
-            callbacks.forEach { it.onError(error) }
-        }
     }
 }
