@@ -7,7 +7,7 @@ import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import javax.inject.Inject
 
-class QRemoteConfigManager @Inject internal constructor(
+internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
     private val userInfoService: QUserInfoService
 ) {
@@ -16,10 +16,10 @@ class QRemoteConfigManager @Inject internal constructor(
     private var remoteConfigCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
     private var isRequestInProgress: Boolean = false
 
-    fun launchFinished(finished: Boolean) {
-        isLaunchFinished = finished
+    fun onLaunchFinished(success: Boolean) {
+        isLaunchFinished = success
 
-        if (finished && remoteConfigCallbacks.isNotEmpty() && !isRequestInProgress) {
+        if (success && remoteConfigCallbacks.isNotEmpty() && !isRequestInProgress) {
             loadRemoteConfig(null)
         }
     }
@@ -43,15 +43,25 @@ class QRemoteConfigManager @Inject internal constructor(
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 isRequestInProgress = false
                 currentRemoteConfig = remoteConfig
-                executeRemoteConfigCompletions(remoteConfig, null)
+                executeRemoteConfigCallbacks(remoteConfig, null)
             }
 
             override fun onError(error: QonversionError) {
                 isRequestInProgress = false
-                executeRemoteConfigCompletions(null, error)
+                executeRemoteConfigCallbacks(null, error)
             }
 
         })
+    }
+
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
+        val userId = userInfoService.obtainUserID()
+        remoteConfigService.attachUserToExperiment(experimentId, groupId, userId, callback)
+    }
+
+    fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        val userId = userInfoService.obtainUserID()
+        remoteConfigService.detachUserToExperiment(experimentId, userId, callback)
     }
 
     fun executeRemoteConfigCompletions(config: QRemoteConfig?, error: QonversionError?) {
