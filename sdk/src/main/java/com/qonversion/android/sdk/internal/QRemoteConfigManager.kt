@@ -9,19 +9,20 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import javax.inject.Inject
 import kotlin.math.exp
 
-class QRemoteConfigManager @Inject internal constructor(
+internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
-    private val userInfoService: QUserInfoService
+    private val userInfoService: QUserInfoService,
+    private val internalConfig: InternalConfig
 ) {
     private var currentRemoteConfig: QRemoteConfig? = null
     private var isLaunchFinished: Boolean = false
     private var remoteConfigCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
     private var isRequestInProgress: Boolean = false
 
-    fun launchFinished(finished: Boolean) {
-        isLaunchFinished = finished
+    fun onLaunchFinished(success: Boolean) {
+        isLaunchFinished = success
 
-        if (finished && remoteConfigCallbacks.isNotEmpty() && !isRequestInProgress) {
+        if (success && remoteConfigCallbacks.isNotEmpty() && !isRequestInProgress) {
             loadRemoteConfig(null)
         }
     }
@@ -40,17 +41,16 @@ class QRemoteConfigManager @Inject internal constructor(
         }
 
         isRequestInProgress = true
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.loadRemoteConfig(userId, object : QonversionRemoteConfigCallback {
+        remoteConfigService.loadRemoteConfig(internalConfig.uid, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 isRequestInProgress = false
                 currentRemoteConfig = remoteConfig
-                executeRemoteConfigCompletions(remoteConfig, null)
+                fireToCallbacks { onSuccess(remoteConfig) }
             }
 
             override fun onError(error: QonversionError) {
                 isRequestInProgress = false
-                executeRemoteConfigCompletions(null, error)
+                fireToCallbacks { onError(error) }
             }
 
         })
@@ -66,16 +66,9 @@ class QRemoteConfigManager @Inject internal constructor(
         remoteConfigService.detachUserToExperiment(experimentId, userId, callback)
     }
 
-    fun executeRemoteConfigCompletions(config: QRemoteConfig?, error: QonversionError?) {
+    private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {
         val callbacks = remoteConfigCallbacks.toList()
+        callbacks.forEach { it.action() }
         remoteConfigCallbacks.clear()
-
-        config?.let {
-            callbacks.forEach { it.onSuccess(config)}
-        }
-
-        error?.let {
-            callbacks.forEach { it.onError(error) }
-        }
     }
 }

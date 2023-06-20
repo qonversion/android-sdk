@@ -23,6 +23,7 @@ interface QonversionOfferingsCallback {
    fun onSuccess(offerings: QOfferings)
    fun onError(error: QonversionError)
 }
+
 interface QonversionRemoteConfigCallback {
    fun onSuccess(remoteConfig: QRemoteConfig)
    fun onError(error: QonversionError)

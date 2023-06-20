@@ -23,11 +23,13 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 
 private const val TAG = "HomeFragment"
 
@@ -69,15 +71,39 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonInApp.setOnClickListener {
+            Qonversion.shared.logout()
+            Qonversion.shared.identify("test_user_12062023_alice_2")
+            return@setOnClickListener
             purchase(productIdInApp)
         }
 
         binding.buttonRestore.setOnClickListener {
+            Qonversion.shared.remoteConfig(object: QonversionRemoteConfigCallback {
+                override fun onSuccess(remoteConfig: QRemoteConfig) {
+                    print("la")
+                }
+
+                override fun onError(error: QonversionError) {
+                    print("err")
+                }
+
+            })
+            return@setOnClickListener
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
+            Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    print(entitlements)
+                }
+
+                override fun onError(error: QonversionError) {
+                    // Handle the error
+                }
+            })
+            return@setOnClickListener
             Firebase.auth.signOut()
             Qonversion.shared.logout()
 
