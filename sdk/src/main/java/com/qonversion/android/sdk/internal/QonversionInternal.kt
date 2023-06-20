@@ -64,7 +64,8 @@ internal class QonversionInternal(
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
-        remoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
+        val localRemoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
+        remoteConfigManager = localRemoteConfigManager
 
         attributionManager = QAttributionManager(repository, this)
 
@@ -78,7 +79,8 @@ internal class QonversionInternal(
             userInfoService,
             identityManager,
             internalConfig,
-            this
+            this,
+            localRemoteConfigManager
         )
 
         userPropertiesManager?.productCenterManager = productCenterManager

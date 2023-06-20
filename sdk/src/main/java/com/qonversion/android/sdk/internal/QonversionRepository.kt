@@ -98,11 +98,10 @@ internal class QonversionRepository internal constructor(
         api.attachUserToExperiment(experimentId, userId, request).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
-                val body = it.body()
-                if (body == null) {
-                    callback.onError(errorMapper.getErrorFromResponse(it))
-                } else {
+                if (it.isSuccessful) {
                     callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
                 }
             }
 
@@ -117,11 +116,10 @@ internal class QonversionRepository internal constructor(
         api.detachUserToExperiment(experimentId, userId).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
-                val body = it.body()
-                if (body == null) {
-                    callback.onError(errorMapper.getErrorFromResponse(it))
-                } else {
+                if (it.isSuccessful) {
                     callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
                 }
             }
 
