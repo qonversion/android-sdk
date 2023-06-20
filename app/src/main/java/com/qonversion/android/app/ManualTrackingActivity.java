@@ -13,12 +13,10 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.*;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.qonversion.android.sdk.Qonversion;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -66,15 +64,12 @@ public class ManualTrackingActivity extends AppCompatActivity {
                             .build();
 
                     //noinspection deprecation
-                    client.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
-                        @Override
-                        public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> list) {
-                            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                                if (!list.isEmpty()) {
-                                    skuDetails.put(SKU_ID, list.get(0));
-                                }
-                                launchBillingFlow();
+                    client.querySkuDetailsAsync(params, (queryBillingResult1, list) -> {
+                        if (queryBillingResult1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                            if (list != null && !list.isEmpty()) {
+                                skuDetails.put(SKU_ID, list.get(0));
                             }
+                            launchBillingFlow();
                         }
                     });
                 }
