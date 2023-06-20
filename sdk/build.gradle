@@ -63,7 +63,7 @@ tasks.withType(Test) {
 
 ext {
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
-    PUBLISH_ARTIFACT_ID = 'sdk-local'
+    PUBLISH_ARTIFACT_ID = 'sdk'
 
     moshiVersion = '1.14.0'
     retrofit_version = '2.3.0'
