@@ -29,7 +29,6 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
@@ -40,6 +39,7 @@ import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
@@ -59,9 +59,15 @@ internal class QProductCenterManager internal constructor(
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
     private val internalConfig: InternalConfig,
-    private val appStateProvider: AppStateProvider
-) : QonversionBillingService.PurchasesListener {
+    private val appStateProvider: AppStateProvider,
+    private val remoteConfigManager: QRemoteConfigManager
+) : QonversionBillingService.PurchasesListener, UserStateProvider {
 
+    override val isUserStable: Boolean
+    get() = isLaunchingFinished &&
+            processingPartnersIdentityId == null &&
+            pendingPartnersIdentityId.isNullOrEmpty() &&
+            !unhandledLogoutAvailable
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResultCache.sessionLaunchResult != null
 
@@ -190,6 +196,7 @@ internal class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError, httpCode: Int?) {
                     processingPartnersIdentityId = null
 
+                    remoteConfigManager.userChangingRequestsFailedWithError(error)
                     executeEntitlementsBlock(error)
                 }
             }
@@ -213,7 +220,7 @@ internal class QProductCenterManager internal constructor(
                     handlePendingRequests()
                 } else {
                     internalConfig.uid = identityID
-
+                    remoteConfigManager.onUserUpdate()
                     launchResultCache.clearPermissionsCache()
                     launch()
                 }
@@ -223,6 +230,7 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 executeEntitlementsBlock(error)
+                remoteConfigManager.userChangingRequestsFailedWithError(error)
             }
         })
     }
@@ -803,6 +811,7 @@ internal class QProductCenterManager internal constructor(
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
+            remoteConfigManager.onUserUpdate()
             launchResultCache.clearPermissionsCache()
 
             unhandledLogoutAvailable = true
@@ -896,6 +905,7 @@ internal class QProductCenterManager internal constructor(
             handleLogout()
         } else {
             executeEntitlementsBlock(lastError)
+            remoteConfigManager.handlePendingRequests()
         }
     }
 

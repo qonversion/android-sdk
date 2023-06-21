@@ -74,7 +74,7 @@ internal class QonversionRepository internal constructor(
     }
 
     fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
-        val queryParams =  mapOf("user_id" to userID)
+        val queryParams = mapOf("user_id" to userID)
         api.remoteConfig(queryParams).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
@@ -93,7 +93,12 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun attachUserToExperiment(experimentId: String, groupId: String, userId: String, callback: QonversionExperimentAttachCallback) {
+    fun attachUserToExperiment(
+        experimentId: String,
+        groupId: String,
+        userId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
         val request = AttachUserRequest(groupId)
         api.attachUserToExperiment(experimentId, userId, request).enqueue {
             onResponse = {
@@ -112,8 +117,8 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun detachUserToExperiment(experimentId: String, userId: String, callback: QonversionExperimentAttachCallback) {
-        api.detachUserToExperiment(experimentId, userId).enqueue {
+    fun detachUserFromExperiment(experimentId: String, userId: String, callback: QonversionExperimentAttachCallback) {
+        api.detachUserFromExperiment(experimentId, userId).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {

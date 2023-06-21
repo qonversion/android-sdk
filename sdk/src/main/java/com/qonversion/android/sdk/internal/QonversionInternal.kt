@@ -65,7 +65,6 @@ internal class QonversionInternal(
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
         val localRemoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
-        remoteConfigManager = localRemoteConfigManager
 
         attributionManager = QAttributionManager(repository, this)
 
@@ -81,7 +80,11 @@ internal class QonversionInternal(
             internalConfig,
             this,
             localRemoteConfigManager
-        )
+        ).also {
+            localRemoteConfigManager.userStateProvider = it
+        }
+
+        remoteConfigManager = localRemoteConfigManager
 
         userPropertiesManager?.productCenterManager = productCenterManager
         userPropertiesManager?.sendFacebookAttribution()
@@ -206,7 +209,7 @@ internal class QonversionInternal(
     }
 
     override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
-        remoteConfigManager?.loadRemoteConfig(object: QonversionRemoteConfigCallback {
+        remoteConfigManager?.loadRemoteConfig(object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 postToMainThread { callback.onSuccess(remoteConfig) }
             }
@@ -217,12 +220,16 @@ internal class QonversionInternal(
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
-        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)  ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    override fun attachUserToExperiment(
+        experimentId: String,
+        groupId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
+        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun detachUserToExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
-        remoteConfigManager?.detachUserToExperiment(experimentId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        remoteConfigManager?.detachUserFromExperiment(experimentId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun checkTrialIntroEligibility(

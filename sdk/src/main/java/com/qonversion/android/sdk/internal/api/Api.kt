@@ -21,13 +21,7 @@ import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import retrofit2.Call
-import retrofit2.http.POST
-import retrofit2.http.GET
-import retrofit2.http.Body
-import retrofit2.http.Headers
-import retrofit2.http.Path
-import retrofit2.http.QueryMap
-import retrofit2.http.Url
+import retrofit2.http.*
 
 internal interface Api {
 
@@ -78,11 +72,14 @@ internal interface Api {
 
     @POST("v3/experiments/{id}/users/{user_id}")
     fun attachUserToExperiment(
-        @Path("id") experimentId: String, @Path("user_id") userId: String, @Body request: AttachUserRequest
+        @Path("id") experimentId: String,
+        @Path("user_id") userId: String,
+        @Body request: AttachUserRequest
     ): Call<Void>
 
-    @POST("v3/experiments/{id}/users/{user_id}")
-    fun detachUserToExperiment(
-        @Path("id") experimentId: String, @Path("user_id") userId: String
+    @DELETE("v3/experiments/{id}/users/{user_id}")
+    fun detachUserFromExperiment(
+        @Path("id") experimentId: String,
+        @Path("user_id") userId: String
     ): Call<Void>
 }
