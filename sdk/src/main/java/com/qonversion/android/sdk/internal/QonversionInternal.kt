@@ -10,7 +10,11 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
-import com.qonversion.android.sdk.dto.*
+import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.QAttributionProvider
+import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -18,8 +22,15 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
-import com.qonversion.android.sdk.listeners.*
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -140,7 +151,6 @@ internal class QonversionInternal(
             id,
             null,
             null,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -225,11 +235,13 @@ internal class QonversionInternal(
         groupId: String,
         callback: QonversionExperimentAttachCallback
     ) {
-        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
-        remoteConfigManager?.detachUserFromExperiment(experimentId, callback) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager?.detachUserFromExperiment(experimentId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun checkTrialIntroEligibility(

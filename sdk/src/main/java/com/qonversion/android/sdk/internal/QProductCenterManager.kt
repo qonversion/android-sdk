@@ -296,7 +296,6 @@ internal class QProductCenterManager internal constructor(
             product.qonversionID,
             oldProductId,
             prorationMode,
-            product.offeringID,
             callback
         )
     }
@@ -306,7 +305,6 @@ internal class QProductCenterManager internal constructor(
         productId: String,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         if (launchError != null) {
@@ -317,7 +315,6 @@ internal class QProductCenterManager internal constructor(
                         productId,
                         oldProductId,
                         prorationMode,
-                        offeringId,
                         callback
                     )
                 },
@@ -327,13 +324,12 @@ internal class QProductCenterManager internal constructor(
                         productId,
                         oldProductId,
                         prorationMode,
-                        offeringId,
                         callback
                     )
                 }
             )
         } else {
-            tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
+            tryToPurchase(context, productId, oldProductId, prorationMode, callback)
         }
     }
 
@@ -342,7 +338,6 @@ internal class QProductCenterManager internal constructor(
         id: String,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         when (loadProductsState) {
@@ -354,7 +349,6 @@ internal class QProductCenterManager internal constructor(
                             id,
                             oldProductId,
                             prorationMode,
-                            offeringId,
                             callback
                         )
 
@@ -362,7 +356,7 @@ internal class QProductCenterManager internal constructor(
                 })
             }
             Loaded, Failed -> {
-                processPurchase(context, id, oldProductId, prorationMode, offeringId, callback)
+                processPurchase(context, id, oldProductId, prorationMode, callback)
             }
         }
     }
@@ -372,7 +366,6 @@ internal class QProductCenterManager internal constructor(
         productId: String,
         oldProductId: String?,
         @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {

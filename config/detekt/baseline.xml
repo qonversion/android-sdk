@@ -60,7 +60,7 @@
     <ID>ForbiddenComment:RequestValidatorTest.kt$RequestValidatorTest$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ForbiddenComment:util.kt$Util.Companion$// TODO: Update test for new AttributionRequest format</ID>
     <ID>ImplicitDefaultLocale:GooglePurchaseConverter.kt$GooglePurchaseConverter$String.format("%.2f", divideResult)</ID>
-    <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
+    <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongMethod:QonversionBillingServiceTest.kt$QonversionBillingServiceTest.Purchase$@Test fun `purchase with oldSkuDetails billing flow params is correct`()</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QonversionRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QonversionRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
@@ -323,7 +323,7 @@
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun loadStoreProductsIfPossible( onLoadCompleted: ((products: List&lt;SkuDetails&gt;) -&gt; Unit)? = null, onLoadFailed: ((error: QonversionError) -&gt; Unit)? = null )</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, offeringId: String?, callback: QonversionEntitlementsCallback )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun processPurchase( context: Activity, productId: String, oldProductId: String?, @BillingFlowParams.ProrationMode prorationMode: Int?, callback: QonversionEntitlementsCallback )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ReturnCount:SkuDetailsTokenExtractor.kt$SkuDetailsTokenExtractor$override fun extract(response: String?): String</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
@@ -374,7 +374,7 @@
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
-    <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerOfferingsDelegate</ID>
+    <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion</ID>
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerBillingClientStateListenerBillingService</ID>
     <ID>TooManyFunctions:QonversionInternal.kt$QonversionInternal : QonversionLifecycleDelegateAppStateProvider</ID>
@@ -390,8 +390,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEntitlementSourceAdapter$@ToJson private fun toJson(enum: QEntitlementSource): String</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): Int</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentsAdapter$@ToJson private fun toJson(experiments: Map&lt;String, QExperimentInfo&gt;): List&lt;QExperimentInfo&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingsAdapter$@ToJson private fun toJson(offerings: QOfferings?): List&lt;QOffering&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>

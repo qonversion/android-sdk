@@ -10,7 +10,8 @@ import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.Data
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.Response
-import com.qonversion.android.sdk.internal.dto.request.*
+import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
+import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
@@ -21,7 +22,14 @@ import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.POST
+import retrofit2.http.GET
+import retrofit2.http.DELETE
+import retrofit2.http.Path
+import retrofit2.http.QueryMap
+import retrofit2.http.Headers
+import retrofit2.http.Url
 
 internal interface Api {
 

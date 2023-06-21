@@ -21,7 +21,8 @@ import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
-import com.qonversion.android.sdk.internal.dto.request.*
+import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
+import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
@@ -117,7 +118,11 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun detachUserFromExperiment(experimentId: String, userId: String, callback: QonversionExperimentAttachCallback) {
+    fun detachUserFromExperiment(
+        experimentId: String,
+        userId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
         api.detachUserFromExperiment(experimentId, userId).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
@@ -525,7 +530,8 @@ internal class QonversionRepository internal constructor(
                     it.historyRecord.purchaseToken,
                     it.historyRecord.purchaseTime.milliSecondsToSeconds(),
                     it.skuDetails?.priceCurrencyCode,
-                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }.toString()
+                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }
+                        .toString()
                 )
             }
         }
