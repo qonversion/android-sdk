@@ -43,7 +43,6 @@ internal class QProductCenterManagerTest {
     private val mockConsumer = mockk<Consumer>(relaxed = true)
     private val mockConfig = mockk<InternalConfig>(relaxed = true)
     private val mockAppStateProvider = mockk<AppStateProvider>(relaxed = true)
-    private val mockRemoteConfigManager = mockk<QRemoteConfigManager>(relaxed = true)
 
     private lateinit var productCenterManager: QProductCenterManager
 
@@ -71,8 +70,7 @@ internal class QProductCenterManagerTest {
             mockUserInfoService,
             mockIdentityManager,
             mockConfig,
-            mockAppStateProvider,
-            mockRemoteConfigManager
+            mockAppStateProvider
         )
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
@@ -138,6 +136,7 @@ internal class QProductCenterManagerTest {
             mockRepository.purchase(
                 capture(installDateSlot),
                 capture(entityPurchaseSlot),
+                null,
                 null,
                 capture(callbackSlot)
             )

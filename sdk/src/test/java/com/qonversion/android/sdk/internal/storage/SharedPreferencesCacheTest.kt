@@ -217,11 +217,13 @@ internal class SharedPreferencesCacheTest {
                 "LaunchResult contains invalid fields.",
                 { Assert.assertEquals("Wrong permissions value", expectedValue.permissions, realValue?.permissions) },
                 { Assert.assertEquals("Wrong date value", expectedValue.date, realValue?.date) },
+                { Assert.assertEquals("Wrong experiments value", expectedValue.experiments, realValue?.experiments) },
                 { Assert.assertEquals("Wrong products value", expectedValue.products, realValue?.products) },
                 { Assert.assertEquals("Wrong uid value", expectedValue.uid, realValue?.uid) },
                 { Assert.assertEquals("Wrong userProducts value", expectedValue.userProducts, realValue?.userProducts) },
                 { Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) },
                 { Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) },
+                { Assert.assertEquals("Wrong experimentInfo value", expectedValue.offerings?.main?.experimentInfo, realValue?.offerings?.main?.experimentInfo) },
                 { Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }
             )
         }

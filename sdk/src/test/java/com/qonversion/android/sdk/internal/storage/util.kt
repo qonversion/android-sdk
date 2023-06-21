@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.internal.dto.QDateAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityStatusAdapter
 import com.qonversion.android.sdk.internal.dto.QExperimentGroupTypeAdapter
+import com.qonversion.android.sdk.internal.dto.QExperimentsAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingsAdapter
@@ -85,6 +86,7 @@ internal class Util {
                     duration = null
                 )
             ),
+            experiments = mapOf(),
             offerings = QOfferings(
                 main = QOffering(
                     offeringID = "main",
@@ -102,7 +104,8 @@ internal class Util {
                             type = QProductType.Trial,
                             duration = QProductDuration.Weekly
                         )
-                    )
+                    ),
+                    experimentInfo = QExperiment("secondary")
                 ),
                 availableOfferings = listOf(
                     QOffering(
@@ -121,7 +124,8 @@ internal class Util {
                                 type = QProductType.Trial,
                                 duration = QProductDuration.Weekly
                             )
-                        )
+                        ),
+                        experimentInfo = QExperiment("secondary")
                     )
                 )
             )
@@ -149,6 +153,7 @@ internal class Util {
                 .add(QOfferingAdapter())
                 .add(QOfferingTagAdapter())
                 .add(QExperimentGroupTypeAdapter())
+                .add(QExperimentsAdapter())
                 .add(QEligibilityStatusAdapter())
                 .add(QEligibilityAdapter())
                 .build()
