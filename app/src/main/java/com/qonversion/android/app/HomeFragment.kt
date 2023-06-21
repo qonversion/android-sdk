@@ -71,9 +71,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonInApp.setOnClickListener {
-            Qonversion.shared.logout()
-            Qonversion.shared.identify("test_user_12062023_alice_2")
-            return@setOnClickListener
             purchase(productIdInApp)
         }
 
