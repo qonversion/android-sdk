@@ -177,7 +177,6 @@ internal class QonversionInternal(
             productId,
             oldProductId,
             prorationMode,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
