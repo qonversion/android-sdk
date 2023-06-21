@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class QExperiment(
-    @Json(name = "Uid") val identifier: String,
-    @Json(name = "Name") val name: String,
-    @Json(name = "Group") val group: QExperimentGroup
+    @Json(name = "uid") val identifier: String,
+    @Json(name = "name") val name: String,
+    @Json(name = "group") val group: QExperimentGroup
 )

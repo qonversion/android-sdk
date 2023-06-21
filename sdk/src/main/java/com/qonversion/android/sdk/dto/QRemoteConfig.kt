@@ -6,6 +6,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class QRemoteConfig internal constructor(
-    @Json(name = "Payload") val payload: Map<String, Any>,
-    @Json(name = "Experiment") val experiment: QExperiment?
+    @Json(name = "payload") val payload: Map<String, Any>,
+    @Json(name = "experiment") val experiment: QExperiment?
 )
