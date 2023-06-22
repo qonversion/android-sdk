@@ -2,10 +2,10 @@ package com.qonversion.android.sdk.internal.purchase
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchaseHistoryRecord
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 
 internal data class PurchaseHistory(
-    @BillingClient.SkuType val type: String,
+    @Suppress("DEPRECATION") @BillingClient.SkuType val type: String,
     val historyRecord: PurchaseHistoryRecord,
-    var skuDetails: SkuDetails? = null
+    @Suppress("DEPRECATION") var skuDetails: SkuDetails? = null
 )

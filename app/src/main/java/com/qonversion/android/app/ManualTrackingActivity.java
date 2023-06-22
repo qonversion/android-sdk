@@ -11,14 +11,12 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.*;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.qonversion.android.sdk.Qonversion;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,6 +26,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
     private BillingClient client;
 
+    @SuppressWarnings("deprecation")
     private final Map<String, SkuDetails> skuDetails = new HashMap<>();
 
     @Override
@@ -57,21 +56,20 @@ public class ManualTrackingActivity extends AppCompatActivity {
             public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
 
+                    @SuppressWarnings("deprecation")
                     final SkuDetailsParams params = SkuDetailsParams
                             .newBuilder()
                             .setSkusList(Collections.singletonList(SKU_ID))
                             .setType(BillingClient.SkuType.INAPP)
                             .build();
 
-                    client.querySkuDetailsAsync(params, new SkuDetailsResponseListener() {
-                        @Override
-                        public void onSkuDetailsResponse(@NonNull BillingResult billingResult, List<SkuDetails> list) {
-                            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                                if (!list.isEmpty()) {
-                                    skuDetails.put(SKU_ID, list.get(0));
-                                }
-                                launchBillingFlow();
+                    //noinspection deprecation
+                    client.querySkuDetailsAsync(params, (queryBillingResult, list) -> {
+                        if (queryBillingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                            if (list != null && !list.isEmpty()) {
+                                skuDetails.put(SKU_ID, list.get(0));
                             }
+                            launchBillingFlow();
                         }
                     });
                 }
@@ -86,6 +84,7 @@ public class ManualTrackingActivity extends AppCompatActivity {
     }
 
     private void launchBillingFlow() {
+        @SuppressWarnings("deprecation")
         final BillingFlowParams params = BillingFlowParams
                 .newBuilder()
                 .setSkuDetails(Objects.requireNonNull(skuDetails.get(SKU_ID)))

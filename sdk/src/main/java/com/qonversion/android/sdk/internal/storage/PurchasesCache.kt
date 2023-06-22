@@ -21,6 +21,7 @@ internal class PurchasesCache(
         moshi.adapter(collectionPurchaseType)
 
     fun savePurchase(purchase: Purchase) {
+        @Suppress("DEPRECATION")
         if (purchase.type == BillingClient.SkuType.INAPP) {
             val purchases = loadPurchases().toMutableSet()
             purchases.add(purchase)

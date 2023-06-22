@@ -5,7 +5,6 @@ import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.internal.Constants.EXPERIMENT_STARTED_EVENT_NAME
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
@@ -18,28 +17,28 @@ import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
-import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
-import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
-import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
-import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
-import com.qonversion.android.sdk.internal.dto.request.EventRequest
+import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
+import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
-import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
-import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
-import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
+import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
+import com.qonversion.android.sdk.internal.dto.request.InitRequest
+import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
+import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
+import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
+import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import retrofit2.Response
 import java.lang.RuntimeException
 import java.util.Timer
@@ -75,14 +74,79 @@ internal class QonversionRepository internal constructor(
         initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
+    fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
+        val queryParams = mapOf("user_id" to userID)
+        api.remoteConfig(queryParams).enqueue {
+            onResponse = {
+                logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body == null) {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                } else {
+                    callback.onSuccess(body)
+                }
+            }
+
+            onFailure = {
+                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun attachUserToExperiment(
+        experimentId: String,
+        groupId: String,
+        userId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
+        val request = AttachUserRequest(groupId)
+        api.attachUserToExperiment(experimentId, userId, request).enqueue {
+            onResponse = {
+                logger.debug("attachUserRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+
+            onFailure = {
+                logger.release("attachUserRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun detachUserFromExperiment(
+        experimentId: String,
+        userId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
+        api.detachUserFromExperiment(experimentId, userId).enqueue {
+            onResponse = {
+                logger.debug("detachUserRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+
+            onFailure = {
+                logger.release("detachUserRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
     fun purchase(
         installDate: Long,
         purchase: Purchase,
-        experimentInfo: QExperimentInfo?,
         qProductId: String?,
         callback: QonversionLaunchCallback
     ) {
-        purchaseRequest(installDate, purchase, experimentInfo, qProductId, callback)
+        purchaseRequest(installDate, purchase, qProductId, callback)
     }
 
     fun restore(
@@ -264,19 +328,6 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun experimentEvents(offering: QOffering) {
-        if (offering.experimentInfo == null) {
-            return
-        }
-
-        val experimentId = offering.experimentInfo.experimentID
-        val payload = mapOf(
-            "experiment_id" to experimentId
-        )
-
-        eventRequest(EXPERIMENT_STARTED_EVENT_NAME, payload)
-    }
-
     fun crashReport(
         crashData: CrashRequest,
         onSuccess: () -> Unit,
@@ -299,24 +350,6 @@ internal class QonversionRepository internal constructor(
     }
 
     // Private functions
-
-    private fun eventRequest(eventName: String, payload: Map<String, Any>) {
-        val eventRequest = EventRequest(
-            userId = uid,
-            eventName = eventName,
-            payload = payload
-        )
-
-        api.events(eventRequest).enqueue {
-            onResponse = {
-                logger.debug("eventRequest - ${it.getLogMessage()}")
-            }
-            onFailure = {
-                logger.debug("eventRequest - failure - ${it.toQonversionError()}")
-            }
-        }
-    }
-
     private fun createAttributionRequest(
         conversionInfo: Map<String, Any>,
         from: String
@@ -336,7 +369,6 @@ internal class QonversionRepository internal constructor(
     private fun purchaseRequest(
         installDate: Long,
         purchase: Purchase,
-        experimentInfo: QExperimentInfo?,
         qProductId: String?,
         callback: QonversionLaunchCallback,
         attemptIndex: Int = 0
@@ -348,7 +380,7 @@ internal class QonversionRepository internal constructor(
             accessToken = key,
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
-            purchase = convertPurchaseDetails(purchase, experimentInfo, qProductId),
+            purchase = convertPurchaseDetails(purchase, qProductId),
             introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
@@ -369,7 +401,6 @@ internal class QonversionRepository internal constructor(
                         purchaseRequest(
                             installDate,
                             purchase,
-                            experimentInfo,
                             qProductId,
                             callback,
                             nextAttemptIndex
@@ -389,7 +420,6 @@ internal class QonversionRepository internal constructor(
                     purchaseRequest(
                         installDate,
                         purchase,
-                        experimentInfo,
                         qProductId,
                         callback,
                         nextAttemptIndex
@@ -471,10 +501,8 @@ internal class QonversionRepository internal constructor(
 
     private fun convertPurchaseDetails(
         purchase: Purchase,
-        experimentInfo: QExperimentInfo? = null,
         qProductId: String? = null
     ): PurchaseDetails {
-        val experimentUid = experimentInfo?.experimentID ?: ""
         return PurchaseDetails(
             purchase.productId,
             purchase.purchaseToken,
@@ -486,7 +514,6 @@ internal class QonversionRepository internal constructor(
             purchase.periodUnit,
             purchase.periodUnitsCount,
             null,
-            mapOf("uid" to experimentUid),
             qProductId ?: ""
         )
     }
@@ -503,7 +530,8 @@ internal class QonversionRepository internal constructor(
                     it.historyRecord.purchaseToken,
                     it.historyRecord.purchaseTime.milliSecondsToSeconds(),
                     it.skuDetails?.priceCurrencyCode,
-                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }.toString()
+                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }
+                        .toString()
                 )
             }
         }

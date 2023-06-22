@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
@@ -43,11 +43,13 @@ internal class QProductCenterManagerTest {
     private val mockConsumer = mockk<Consumer>(relaxed = true)
     private val mockConfig = mockk<InternalConfig>(relaxed = true)
     private val mockAppStateProvider = mockk<AppStateProvider>(relaxed = true)
+    private val mockRemoteConfigManager = mockk<QRemoteConfigManager>(relaxed = true)
 
     private lateinit var productCenterManager: QProductCenterManager
 
     private val fieldSkuDetails = "skuDetails"
 
+    @Suppress("DEPRECATION")
     private val skuTypeInApp = BillingClient.SkuType.INAPP
     private val sku = "sku"
     private val purchaseToken = "purchaseToken"
@@ -70,7 +72,8 @@ internal class QProductCenterManagerTest {
             mockUserInfoService,
             mockIdentityManager,
             mockConfig,
-            mockAppStateProvider
+            mockAppStateProvider,
+            mockRemoteConfigManager
         )
         productCenterManager.billingService = mockBillingService
         productCenterManager.consumer = mockConsumer
@@ -137,7 +140,6 @@ internal class QProductCenterManagerTest {
                 capture(installDateSlot),
                 capture(entityPurchaseSlot),
                 null,
-                null,
                 capture(callbackSlot)
             )
         } just Runs
@@ -160,6 +162,7 @@ internal class QProductCenterManagerTest {
         )
     }
 
+    @Suppress("DEPRECATION")
     private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
         val skuDetails = mockSkuDetails(skuType)
         val mapSkuDetails = mutableMapOf<String, SkuDetails>()
@@ -169,6 +172,7 @@ internal class QProductCenterManagerTest {
         return mapSkuDetails
     }
 
+    @Suppress("DEPRECATION")
     private fun mockSkuDetails(
         @BillingClient.SkuType skuType: String
     ): SkuDetails {

@@ -227,16 +227,15 @@ internal class QUserPropertiesManagerTest {
 
         mockPropertiesStorage(properties)
         mockErrorSendPropertiesResponse(properties)
-        mockIncrementalCounterResponse(calculatedDelay)
-        mockPostDelayed((calculatedDelay * 1000).toLong())
         every { mockAppStateProvider.appState } returns AppState.Foreground
+        every { spykPropertiesManager.retryPropertiesRequest() } just runs
 
         // when
         spykPropertiesManager.forceSendProperties()
 
         // then
-        verify(exactly = 2) {
-            spykPropertiesManager.forceSendProperties()
+        verify(exactly = 1) {
+            spykPropertiesManager.retryPropertiesRequest()
         }
     }
 

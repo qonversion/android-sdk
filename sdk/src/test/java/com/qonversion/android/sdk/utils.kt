@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk
 
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.Constants.DEFAULT_SUBS_PERIOD
 import com.qonversion.android.sdk.Constants.DEFAULT_SUBS_SKU
 import com.qonversion.android.sdk.Constants.INAPP_PURCHASE
@@ -26,6 +26,7 @@ fun <T> Any.getPrivateField(name: String): T {
     return field.get(this) as T
 }
 
+@Suppress("DEPRECATION")
 fun mockSubsSkuDetails(
     sku: String = DEFAULT_SUBS_SKU,
     subsPeriod: String = DEFAULT_SUBS_PERIOD,
@@ -57,6 +58,7 @@ fun mockIncorrectSubsPurchase(): Purchase {
     return Purchase("{$SUBS_PURCHASE_INCOMPLETE}", PURCHASE_SIGNATURE)
 }
 
+@Suppress("DEPRECATION")
 fun mockInAppSkuDetails(): SkuDetails {
     return SkuDetails(mockInAppSkuDetailsJson())
 }

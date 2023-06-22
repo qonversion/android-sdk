@@ -7,27 +7,30 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.dto.QonversionError
-import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QEntitlement
-import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -42,6 +45,7 @@ internal class QonversionInternal(
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache? = null
     private var exceptionManager: ExceptionManager? = null
+    private var remoteConfigManager: QRemoteConfigManager? = null
 
     override var appState = AppState.Background
 
@@ -71,6 +75,8 @@ internal class QonversionInternal(
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
+        val localRemoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
+
         attributionManager = QAttributionManager(repository, this)
 
         val factory = QonversionFactory(application, logger)
@@ -83,8 +89,13 @@ internal class QonversionInternal(
             userInfoService,
             identityManager,
             internalConfig,
-            this
-        )
+            this,
+            localRemoteConfigManager
+        ).also {
+            localRemoteConfigManager.userStateProvider = it
+        }
+
+        remoteConfigManager = localRemoteConfigManager
 
         userPropertiesManager?.productCenterManager = productCenterManager
         userPropertiesManager?.sendFacebookAttribution()
@@ -140,7 +151,6 @@ internal class QonversionInternal(
             id,
             null,
             null,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -159,7 +169,7 @@ internal class QonversionInternal(
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
@@ -167,7 +177,6 @@ internal class QonversionInternal(
             productId,
             oldProductId,
             prorationMode,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -176,7 +185,7 @@ internal class QonversionInternal(
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
@@ -206,6 +215,32 @@ internal class QonversionInternal(
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
+        remoteConfigManager?.loadRemoteConfig(object : QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) {
+                postToMainThread { callback.onSuccess(remoteConfig) }
+            }
+
+            override fun onError(error: QonversionError) {
+                postToMainThread { callback.onError(error) }
+            }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun attachUserToExperiment(
+        experimentId: String,
+        groupId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
+        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        remoteConfigManager?.detachUserFromExperiment(experimentId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun checkTrialIntroEligibility(
