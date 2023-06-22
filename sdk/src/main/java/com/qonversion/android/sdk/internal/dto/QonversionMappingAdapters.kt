@@ -109,22 +109,6 @@ internal class QPermissionsAdapter {
     }
 }
 
-//internal class QExperimentsAdapter {
-//    @ToJson
-//    private fun toJson(experiments: Map<String, QExperiment>): List<QExperiment> {
-//        return experiments.values.toList()
-//    }
-//
-//    @FromJson
-//    fun fromJson(experiments: List<QExperiment>): Map<String, QExperiment> {
-//        val result = mutableMapOf<String, QExperiment>()
-//        experiments.forEach {
-//            result[it.experimentID] = it
-//        }
-//        return result
-//    }
-//}
-
 internal class QExperimentGroupTypeAdapter {
     @ToJson
     private fun toJson(enum: QExperimentGroupType): String {

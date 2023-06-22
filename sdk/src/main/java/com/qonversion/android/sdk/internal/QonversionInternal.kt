@@ -7,19 +7,29 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.dto.QAttributionProvider
+import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.di.QDependencyInjector
+import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
-import com.qonversion.android.sdk.listeners.*
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
+import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -154,7 +164,7 @@ internal class QonversionInternal(
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
@@ -171,7 +181,7 @@ internal class QonversionInternal(
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
@@ -204,7 +214,7 @@ internal class QonversionInternal(
     }
 
     override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
-        remoteConfigManager?.loadRemoteConfig(object: QonversionRemoteConfigCallback {
+        remoteConfigManager?.loadRemoteConfig(object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 postToMainThread { callback.onSuccess(remoteConfig) }
             }

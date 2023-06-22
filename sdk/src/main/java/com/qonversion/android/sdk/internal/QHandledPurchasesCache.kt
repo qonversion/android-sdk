@@ -11,10 +11,12 @@ internal class QHandledPurchasesCache @Inject internal constructor() {
     }
 
     fun saveHandledPurchase(purchase: Purchase) {
-        handledOrderIDs.add(purchase.orderId)
+        purchase.orderId?.let {
+            handledOrderIDs.add(it)
+        }
     }
 
     fun saveHandledPurchases(purchases: Collection<Purchase>) {
-        handledOrderIDs.addAll(purchases.map { it.orderId })
+        handledOrderIDs.addAll(purchases.mapNotNull { it.orderId })
     }
 }

@@ -73,7 +73,7 @@ internal class QonversionRepository internal constructor(
     }
 
     fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
-        val queryParams =  mapOf("user_id" to userID)
+        val queryParams = mapOf("user_id" to userID)
         api.remoteConfig(queryParams).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")

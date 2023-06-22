@@ -3,13 +3,11 @@ package com.qonversion.android.sdk.internal
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
-import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import javax.inject.Inject
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
-    private val userInfoService: QUserInfoService,
     private val internalConfig: InternalConfig
 ) {
     private var currentRemoteConfig: QRemoteConfig? = null
@@ -50,7 +48,6 @@ internal class QRemoteConfigManager @Inject constructor(
                 isRequestInProgress = false
                 fireToCallbacks { onError(error) }
             }
-
         })
     }
 

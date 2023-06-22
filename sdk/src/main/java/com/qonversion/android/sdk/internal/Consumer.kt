@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
@@ -13,7 +13,7 @@ internal class Consumer internal constructor(
 ) {
     fun consumePurchases(
         purchases: List<Purchase>,
-        skuDetails: Map<String, SkuDetails>
+        @Suppress("DEPRECATION") skuDetails: Map<String, SkuDetails>
     ) {
         if (isAnalyticsMode) {
             return
@@ -40,6 +40,7 @@ internal class Consumer internal constructor(
     }
 
     private fun consume(type: String, purchaseToken: String, isAcknowledged: Boolean) {
+        @Suppress("DEPRECATION")
         if (type == BillingClient.SkuType.INAPP) {
             billingService.consume(purchaseToken)
         } else if (type == BillingClient.SkuType.SUBS && !isAcknowledged) {

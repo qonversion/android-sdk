@@ -7,7 +7,7 @@ import android.os.Build
 import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.dto.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
@@ -29,7 +29,6 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
-import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
@@ -69,6 +68,7 @@ internal class QProductCenterManager internal constructor(
 
     private var loadProductsState = NotStartedYet
 
+    @Suppress("DEPRECATION")
     private var skuDetails = mapOf<String, SkuDetails>()
 
     private var launchError: QonversionError? = null
@@ -86,6 +86,7 @@ internal class QProductCenterManager internal constructor(
     private var advertisingID: String? = null
     private var pendingInitRequestData: InitRequestData? = null
 
+    @Suppress("DEPRECATION")
     private var converter: PurchaseConverter<Pair<SkuDetails, Purchase>> =
         GooglePurchaseConverter(SkuDetailsTokenExtractor())
 
@@ -280,7 +281,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         product: QProduct,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         callback: QonversionEntitlementsCallback
     ) {
         purchaseProduct(
@@ -297,7 +298,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         productId: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -333,7 +334,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         id: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -363,7 +364,7 @@ internal class QProductCenterManager internal constructor(
         context: Activity,
         productId: String,
         oldProductId: String?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
         offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
@@ -498,7 +499,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun processRestore(
         purchaseHistoryRecords: List<PurchaseHistory>,
-        loadedSkuDetails: Map<String, SkuDetails>
+        @Suppress("DEPRECATION") loadedSkuDetails: Map<String, SkuDetails>
     ) {
         purchaseHistoryRecords.forEach { purchaseHistory ->
             val skuDetails = loadedSkuDetails[purchaseHistory.historyRecord.sku]
@@ -831,7 +832,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun loadStoreProductsIfPossible(
-        onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
+        @Suppress("DEPRECATION") onLoadCompleted: ((products: List<SkuDetails>) -> Unit)? = null,
         onLoadFailed: ((error: QonversionError) -> Unit)? = null
     ) {
         when (loadProductsState) {
@@ -876,6 +877,7 @@ internal class QProductCenterManager internal constructor(
                 })
         } else {
             executeProductsBlocks()
+            @Suppress("DEPRECATION")
             onLoadCompleted?.let { listOf<SkuDetails>() }
         }
     }
@@ -1111,7 +1113,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun purchase(
-        purchaseInfo: Pair<SkuDetails, Purchase>,
+        @Suppress("DEPRECATION") purchaseInfo: Pair<SkuDetails, Purchase>,
         callback: QonversionLaunchCallback
     ) {
         val sku = purchaseInfo.first.sku
