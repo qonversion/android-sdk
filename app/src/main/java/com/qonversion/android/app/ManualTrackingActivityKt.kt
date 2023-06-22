@@ -9,6 +9,7 @@ import java.util.*
 
 class ManualTrackingActivityKt : AppCompatActivity() {
     private var client: BillingClient? = null
+    @Suppress("DEPRECATION")
     private val skuDetails: MutableMap<String, SkuDetails?> =
         HashMap()
 
@@ -22,7 +23,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
             .enablePendingPurchases()
             .setListener { billingResult, list ->
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    if (list != null && list.isNotEmpty()) {
+                    if (!list.isNullOrEmpty()) {
                         Qonversion.shared.syncPurchases()
                     }
                 }
@@ -45,6 +46,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
     }
 
     private fun querySkuDetailsAsync() {
+        @Suppress("DEPRECATION")
         val params =
             SkuDetailsParams
                 .newBuilder()
@@ -52,6 +54,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
                 .setType(BillingClient.SkuType.INAPP)
                 .build()
 
+        @Suppress("DEPRECATION")
         client!!.querySkuDetailsAsync(
             params
         ) { billingResult, list ->
@@ -65,6 +68,7 @@ class ManualTrackingActivityKt : AppCompatActivity() {
     }
 
     private fun launchBillingFlow() {
+        @Suppress("DEPRECATION")
         val params =
             BillingFlowParams
                 .newBuilder()
