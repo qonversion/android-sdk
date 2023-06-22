@@ -184,7 +184,7 @@ interface Qonversion {
     fun remoteConfig(callback: QonversionRemoteConfigCallback)
 
     /**
-     * This function should be used for the test purpose only. Do not forget to delete the usage of this function before the release.
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
      * Use this function to attach the user to the experiment.
      * @param experimentId identifier of the experiment
      * @param groupId identifier of the experiment group
