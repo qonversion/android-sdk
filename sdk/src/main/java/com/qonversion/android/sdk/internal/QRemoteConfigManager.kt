@@ -4,14 +4,12 @@ import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
-import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import javax.inject.Inject
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
-    private val userInfoService: QUserInfoService,
     private val internalConfig: InternalConfig
 ) {
     lateinit var userStateProvider: UserStateProvider

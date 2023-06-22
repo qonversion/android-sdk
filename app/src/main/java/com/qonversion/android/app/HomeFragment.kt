@@ -75,32 +75,11 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonRestore.setOnClickListener {
-            Qonversion.shared.remoteConfig(object: QonversionRemoteConfigCallback {
-                override fun onSuccess(remoteConfig: QRemoteConfig) {
-                    print("la")
-                }
-
-                override fun onError(error: QonversionError) {
-                    print("err")
-                }
-
-            })
-            return@setOnClickListener
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
         }
 
         binding.buttonLogout.setOnClickListener {
-            Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    print(entitlements)
-                }
-
-                override fun onError(error: QonversionError) {
-                    // Handle the error
-                }
-            })
-            return@setOnClickListener
             Firebase.auth.signOut()
             Qonversion.shared.logout()
 

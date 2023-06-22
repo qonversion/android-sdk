@@ -67,7 +67,7 @@ public class App extends MultiDexApplication {
 
         AppsFlyerLib.getInstance().init("afDevKey", conversionListener, this);
         AppsFlyerLib.getInstance().setDebugLog(true);
-        AppsFlyerLib.getInstance().startTracking(this);
+        AppsFlyerLib.getInstance().start(this);
 
         createNotificationChannel();
     }

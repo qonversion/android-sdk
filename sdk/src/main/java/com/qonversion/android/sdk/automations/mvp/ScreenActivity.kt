@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.automations.internal.getScreenTransactionAnimations
 
 class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
+    @Suppress("DEPRECATION")
     private val presentationStyle get() = intent.getSerializableExtra(
         INTENT_SCREEN_PRESENTATION_STYLE
     ) as? QScreenPresentationStyle

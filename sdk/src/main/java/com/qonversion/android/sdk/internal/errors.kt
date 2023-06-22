@@ -9,11 +9,11 @@ import java.io.IOException
 
 internal fun BillingError.toQonversionError(): QonversionError {
     val errorCode = when (this.billingResponseCode) {
-        BillingClient.BillingResponseCode.SERVICE_TIMEOUT,
         BillingClient.BillingResponseCode.SERVICE_DISCONNECTED,
         BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
         BillingClient.BillingResponseCode.ERROR -> QonversionErrorCode.PlayStoreError
 
+        BillingClient.BillingResponseCode.NETWORK_ERROR -> QonversionErrorCode.NetworkConnectionFailed
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QonversionErrorCode.FeatureNotSupported
         BillingClient.BillingResponseCode.OK -> QonversionErrorCode.UnknownError
         BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.CanceledPurchase
@@ -31,8 +31,6 @@ internal fun BillingError.toQonversionError(): QonversionError {
             "Billing service is not connected to any Google account at the moment."
         QonversionErrorCode.PurchaseInvalid ->
             "Please make sure that you are using the google account where purchases are allowed and the application was correctly signed and properly set up for billing."
-        QonversionErrorCode.SkuDetailsError ->
-            "Please make sure that the products were configured correctly in Google Play Console."
         else -> ""
     }
 

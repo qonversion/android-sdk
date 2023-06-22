@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
@@ -14,7 +14,9 @@ import org.junit.Test
 
 internal class ConsumerTest {
     private val sku = "sku"
+    @Suppress("DEPRECATION")
     private val skuTypeInApp = BillingClient.SkuType.INAPP
+    @Suppress("DEPRECATION")
     private val skuTypeSubs = BillingClient.SkuType.SUBS
     private val purchaseToken = "purchaseToken"
     private val fieldIsAnalyticsMode = "isAnalyticsMode"
@@ -149,6 +151,7 @@ internal class ConsumerTest {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun mockSkuDetailsMap(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
         val skuDetails = mockSkuDetails(skuType)
         val mapSkuDetails = mutableMapOf<String, SkuDetails>()
@@ -157,6 +160,7 @@ internal class ConsumerTest {
         return mapSkuDetails
     }
 
+    @Suppress("DEPRECATION")
     private fun mockSkuDetails(
         @BillingClient.SkuType skuType: String
     ): SkuDetails {
