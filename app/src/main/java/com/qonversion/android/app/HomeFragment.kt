@@ -91,16 +91,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonLogout.setOnClickListener {
-            Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    print(entitlements)
-                }
-
-                override fun onError(error: QonversionError) {
-                    // Handle the error
-                }
-            })
-            return@setOnClickListener
             Firebase.auth.signOut()
             Qonversion.shared.logout()
 
