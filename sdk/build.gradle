@@ -113,7 +113,6 @@ ext {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    compileOnly 'com.github.pengrad:jdk9-deps:1.0'
     // Moshi
     implementation moshi.core
     implementation moshi.adapters
