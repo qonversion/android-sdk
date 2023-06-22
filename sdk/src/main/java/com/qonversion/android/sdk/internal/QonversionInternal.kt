@@ -22,6 +22,7 @@ import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
@@ -74,7 +75,7 @@ internal class QonversionInternal(
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
-        remoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
+        val localRemoteConfigManager = QDependencyInjector.appComponent.remoteConfigManager()
 
         attributionManager = QAttributionManager(repository, this)
 
@@ -88,8 +89,13 @@ internal class QonversionInternal(
             userInfoService,
             identityManager,
             internalConfig,
-            this
-        )
+            this,
+            localRemoteConfigManager
+        ).also {
+            localRemoteConfigManager.userStateProvider = it
+        }
+
+        remoteConfigManager = localRemoteConfigManager
 
         userPropertiesManager?.productCenterManager = productCenterManager
         userPropertiesManager?.sendFacebookAttribution()
@@ -145,7 +151,6 @@ internal class QonversionInternal(
             id,
             null,
             null,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -172,7 +177,6 @@ internal class QonversionInternal(
             productId,
             oldProductId,
             prorationMode,
-            null,
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -223,6 +227,20 @@ internal class QonversionInternal(
                 postToMainThread { callback.onError(error) }
             }
         }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun attachUserToExperiment(
+        experimentId: String,
+        groupId: String,
+        callback: QonversionExperimentAttachCallback
+    ) {
+        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        remoteConfigManager?.detachUserFromExperiment(experimentId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun checkTrialIntroEligibility(

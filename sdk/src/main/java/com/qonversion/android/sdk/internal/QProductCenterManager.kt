@@ -39,6 +39,7 @@ import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.extractor.SkuDetailsTokenExtractor
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
@@ -58,8 +59,15 @@ internal class QProductCenterManager internal constructor(
     private val userInfoService: QUserInfoService,
     private val identityManager: QIdentityManager,
     private val internalConfig: InternalConfig,
-    private val appStateProvider: AppStateProvider
-) : QonversionBillingService.PurchasesListener {
+    private val appStateProvider: AppStateProvider,
+    private val remoteConfigManager: QRemoteConfigManager
+) : QonversionBillingService.PurchasesListener, UserStateProvider {
+
+    override val isUserStable: Boolean
+        get() = isLaunchingFinished &&
+                processingPartnersIdentityId == null &&
+                pendingPartnersIdentityId.isNullOrEmpty() &&
+                !unhandledLogoutAvailable
 
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResultCache.sessionLaunchResult != null
@@ -191,6 +199,7 @@ internal class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError, httpCode: Int?) {
                     processingPartnersIdentityId = null
 
+                    remoteConfigManager.userChangingRequestFailedWithError(error)
                     executeEntitlementsBlock(error)
                 }
             }
@@ -214,7 +223,7 @@ internal class QProductCenterManager internal constructor(
                     handlePendingRequests()
                 } else {
                     internalConfig.uid = identityID
-
+                    remoteConfigManager.onUserUpdate()
                     launchResultCache.clearPermissionsCache()
                     launch()
                 }
@@ -224,6 +233,7 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 executeEntitlementsBlock(error)
+                remoteConfigManager.userChangingRequestFailedWithError(error)
             }
         })
     }
@@ -289,7 +299,6 @@ internal class QProductCenterManager internal constructor(
             product.qonversionID,
             oldProductId,
             prorationMode,
-            product.offeringID,
             callback
         )
     }
@@ -299,7 +308,6 @@ internal class QProductCenterManager internal constructor(
         productId: String,
         oldProductId: String?,
         @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         if (launchError != null) {
@@ -310,7 +318,6 @@ internal class QProductCenterManager internal constructor(
                         productId,
                         oldProductId,
                         prorationMode,
-                        offeringId,
                         callback
                     )
                 },
@@ -320,13 +327,12 @@ internal class QProductCenterManager internal constructor(
                         productId,
                         oldProductId,
                         prorationMode,
-                        offeringId,
                         callback
                     )
                 }
             )
         } else {
-            tryToPurchase(context, productId, oldProductId, prorationMode, offeringId, callback)
+            tryToPurchase(context, productId, oldProductId, prorationMode, callback)
         }
     }
 
@@ -335,7 +341,6 @@ internal class QProductCenterManager internal constructor(
         id: String,
         oldProductId: String?,
         @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         when (loadProductsState) {
@@ -347,7 +352,6 @@ internal class QProductCenterManager internal constructor(
                             id,
                             oldProductId,
                             prorationMode,
-                            offeringId,
                             callback
                         )
 
@@ -355,7 +359,7 @@ internal class QProductCenterManager internal constructor(
                 })
             }
             Loaded, Failed -> {
-                processPurchase(context, id, oldProductId, prorationMode, offeringId, callback)
+                processPurchase(context, id, oldProductId, prorationMode, callback)
             }
         }
     }
@@ -365,7 +369,6 @@ internal class QProductCenterManager internal constructor(
         productId: String,
         oldProductId: String?,
         @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
-        offeringId: String?,
         callback: QonversionEntitlementsCallback
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {
@@ -804,6 +807,7 @@ internal class QProductCenterManager internal constructor(
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
+            remoteConfigManager.onUserUpdate()
             launchResultCache.clearPermissionsCache()
 
             unhandledLogoutAvailable = true
@@ -898,6 +902,7 @@ internal class QProductCenterManager internal constructor(
             handleLogout()
         } else {
             executeEntitlementsBlock(lastError)
+            remoteConfigManager.handlePendingRequests()
         }
     }
 

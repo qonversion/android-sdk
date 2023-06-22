@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -175,7 +176,29 @@ interface Qonversion {
      */
     fun offerings(callback: QonversionOfferingsCallback)
 
+    /**
+     * Returns Qonversion remote config object
+     * Use this function to get the remote config with specific payload and experiment info.
+     * @param callback - callback that will be called when response is received
+     */
     fun remoteConfig(callback: QonversionRemoteConfigCallback)
+
+    /**
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
+     * Use this function to attach the user to the experiment.
+     * @param experimentId identifier of the experiment
+     * @param groupId identifier of the experiment group
+     * @param callback callback that includes information about the result of the action
+     */
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback)
+
+    /**
+     * This function should be used for the test purpose only. Do not forget to delete the usage of this function before the release.
+     * Use this function to detach the user to the experiment.
+     * @param experimentId identifier of the experiment
+     * @param callback callback that includes information about the result of the action
+     */
+    fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
