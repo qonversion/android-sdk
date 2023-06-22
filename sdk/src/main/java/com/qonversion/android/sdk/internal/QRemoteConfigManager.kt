@@ -25,7 +25,7 @@ internal class QRemoteConfigManager @Inject constructor(
         }
     }
 
-    fun userChangingRequestsFailedWithError(error: QonversionError) {
+    fun userChangingRequestFailedWithError(error: QonversionError) {
         fireToCallbacks { onError(error) }
     }
 
@@ -65,14 +65,12 @@ internal class QRemoteConfigManager @Inject constructor(
 
     fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
         currentRemoteConfig = null
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.attachUserToExperiment(experimentId, groupId, userId, callback)
+        remoteConfigService.attachUserToExperiment(experimentId, groupId, internalConfig.uid, callback)
     }
 
     fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
         currentRemoteConfig = null
-        val userId = userInfoService.obtainUserID()
-        remoteConfigService.detachUserFromExperiment(experimentId, userId, callback)
+        remoteConfigService.detachUserFromExperiment(experimentId, internalConfig.uid, callback)
     }
 
     private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {

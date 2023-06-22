@@ -64,10 +64,11 @@ internal class QProductCenterManager internal constructor(
 ) : QonversionBillingService.PurchasesListener, UserStateProvider {
 
     override val isUserStable: Boolean
-    get() = isLaunchingFinished &&
-            processingPartnersIdentityId == null &&
-            pendingPartnersIdentityId.isNullOrEmpty() &&
-            !unhandledLogoutAvailable
+        get() = isLaunchingFinished &&
+                processingPartnersIdentityId == null &&
+                pendingPartnersIdentityId.isNullOrEmpty() &&
+                !unhandledLogoutAvailable
+
     private val isLaunchingFinished: Boolean
         get() = launchError != null || launchResultCache.sessionLaunchResult != null
 
@@ -196,7 +197,7 @@ internal class QProductCenterManager internal constructor(
                 override fun onError(error: QonversionError, httpCode: Int?) {
                     processingPartnersIdentityId = null
 
-                    remoteConfigManager.userChangingRequestsFailedWithError(error)
+                    remoteConfigManager.userChangingRequestFailedWithError(error)
                     executeEntitlementsBlock(error)
                 }
             }
@@ -230,7 +231,7 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 executeEntitlementsBlock(error)
-                remoteConfigManager.userChangingRequestsFailedWithError(error)
+                remoteConfigManager.userChangingRequestFailedWithError(error)
             }
         })
     }

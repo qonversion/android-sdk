@@ -1,5 +1,5 @@
 package com.qonversion.android.sdk.internal.provider
 
-interface UserStateProvider {
+internal interface UserStateProvider {
     val isUserStable: Boolean
 }

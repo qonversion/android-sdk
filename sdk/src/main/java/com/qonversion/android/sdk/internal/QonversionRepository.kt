@@ -103,7 +103,7 @@ internal class QonversionRepository internal constructor(
         val request = AttachUserRequest(groupId)
         api.attachUserToExperiment(experimentId, userId, request).enqueue {
             onResponse = {
-                logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
+                logger.debug("attachUserRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     callback.onSuccess()
                 } else {
@@ -112,7 +112,7 @@ internal class QonversionRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                logger.release("attachUserRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -125,7 +125,7 @@ internal class QonversionRepository internal constructor(
     ) {
         api.detachUserFromExperiment(experimentId, userId).enqueue {
             onResponse = {
-                logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
+                logger.debug("attachUserRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     callback.onSuccess()
                 } else {
@@ -134,7 +134,7 @@ internal class QonversionRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                logger.release("attachUserRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
