@@ -125,7 +125,7 @@ internal class QonversionRepository internal constructor(
     ) {
         api.detachUserFromExperiment(experimentId, userId).enqueue {
             onResponse = {
-                logger.debug("attachUserRequest - ${it.getLogMessage()}")
+                logger.debug("detachUserRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     callback.onSuccess()
                 } else {
@@ -134,7 +134,7 @@ internal class QonversionRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("attachUserRequest - failure - ${it.toQonversionError()}")
+                logger.release("detachUserRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }

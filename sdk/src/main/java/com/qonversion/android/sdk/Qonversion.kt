@@ -193,7 +193,7 @@ interface Qonversion {
     fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback)
 
     /**
-     * This function should be used for the test purpose only. Do not forget to delete the usage of this function before the release.
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
      * Use this function to detach the user to the experiment.
      * @param experimentId identifier of the experiment
      * @param callback callback that includes information about the result of the action
