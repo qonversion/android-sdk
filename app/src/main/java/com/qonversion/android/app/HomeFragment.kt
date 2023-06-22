@@ -75,17 +75,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.buttonRestore.setOnClickListener {
-            Qonversion.shared.remoteConfig(object: QonversionRemoteConfigCallback {
-                override fun onSuccess(remoteConfig: QRemoteConfig) {
-                    print("la")
-                }
-
-                override fun onError(error: QonversionError) {
-                    print("err")
-                }
-
-            })
-            return@setOnClickListener
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
         }
