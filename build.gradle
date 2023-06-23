@@ -6,7 +6,7 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 buildscript {
     ext {
         release = [
-                versionName: "4.4.3",
+                versionName: "5.0.0",
                 versionCode: 1
         ]
     }
