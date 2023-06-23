@@ -26,7 +26,8 @@ internal class QonversionFactory(
         userInfoService: QUserInfoService,
         identityManager: QIdentityManager,
         config: InternalConfig,
-        appStateProvider: AppStateProvider
+        appStateProvider: AppStateProvider,
+        remoteConfigManager: QRemoteConfigManager
     ): QProductCenterManager {
         val productCenterManager = QProductCenterManager(
             context,
@@ -38,7 +39,8 @@ internal class QonversionFactory(
             userInfoService,
             identityManager,
             config,
-            appStateProvider
+            appStateProvider,
+            remoteConfigManager
         )
         val billingService = createBillingService(productCenterManager)
 

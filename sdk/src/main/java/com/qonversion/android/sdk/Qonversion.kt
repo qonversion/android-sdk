@@ -8,11 +8,13 @@ import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
-import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 
 interface Qonversion {
@@ -118,7 +120,7 @@ interface Qonversion {
         context: Activity,
         productId: String,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 
@@ -152,7 +154,7 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         oldProductId: String,
-        @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
         callback: QonversionEntitlementsCallback
     )
 
@@ -173,6 +175,30 @@ interface Qonversion {
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     fun offerings(callback: QonversionOfferingsCallback)
+
+    /**
+     * Returns Qonversion remote config object
+     * Use this function to get the remote config with specific payload and experiment info.
+     * @param callback - callback that will be called when response is received
+     */
+    fun remoteConfig(callback: QonversionRemoteConfigCallback)
+
+    /**
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
+     * Use this function to attach the user to the experiment.
+     * @param experimentId identifier of the experiment
+     * @param groupId identifier of the experiment group
+     * @param callback callback that includes information about the result of the action
+     */
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback)
+
+    /**
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
+     * Use this function to detach the user to the experiment.
+     * @param experimentId identifier of the experiment
+     * @param callback callback that includes information about the result of the action
+     */
+    fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback)
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.

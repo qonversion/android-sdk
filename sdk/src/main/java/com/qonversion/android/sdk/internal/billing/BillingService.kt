@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.billing
 import android.app.Activity
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 
 internal interface BillingService {
@@ -17,6 +17,7 @@ internal interface BillingService {
         onQueryFailed: (error: BillingError) -> Unit
     )
 
+    @Suppress("DEPRECATION")
     fun purchase(
         activity: Activity,
         skuDetails: SkuDetails,
@@ -24,6 +25,7 @@ internal interface BillingService {
         @BillingFlowParams.ProrationMode prorationMode: Int? = null
     )
 
+    @Suppress("DEPRECATION")
     fun loadProducts(
         productIDs: Set<String>,
         onLoadCompleted: (products: List<SkuDetails>) -> Unit,
@@ -38,6 +40,7 @@ internal interface BillingService {
         purchaseToken: String
     )
 
+    @Suppress("DEPRECATION")
     fun getSkuDetailsFromPurchases(
         purchases: List<Purchase>,
         onCompleted: (List<SkuDetails>) -> Unit,

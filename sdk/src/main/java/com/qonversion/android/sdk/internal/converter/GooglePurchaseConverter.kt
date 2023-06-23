@@ -1,13 +1,14 @@
 package com.qonversion.android.sdk.internal.converter
 
 import android.util.Pair
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.*
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.extractor.Extractor
 
+@Suppress("DEPRECATION")
 internal class GooglePurchaseConverter(
     private val extractor: Extractor<String>
 ) : PurchaseConverter<Pair<SkuDetails, com.android.billingclient.api.Purchase>> {
@@ -61,8 +62,8 @@ internal class GooglePurchaseConverter(
                 introductoryPeriodUnitsCount = GoogleBillingPeriodConverter.convertPeriodToDays(
                     details.freeTrialPeriod.takeIf { it.isNotEmpty() } ?: details.introductoryPricePeriod
                 ),
-                orderId = purchase.orderId,
-                originalOrderId = formatOriginalTransactionId(purchase.orderId),
+                orderId = purchase.orderId ?: "",
+                originalOrderId = formatOriginalTransactionId(purchase.orderId ?: ""),
                 packageName = purchase.packageName,
                 purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
                 purchaseState = purchase.purchaseState,

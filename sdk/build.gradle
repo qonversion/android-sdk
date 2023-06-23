@@ -65,10 +65,10 @@ ext {
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
 
-    moshiVersion = '1.9.2'
+    moshiVersion = '1.14.0'
     retrofit_version = '2.3.0'
     okhttp_version = '3.12.13'
-    billing = '4.0.0'
+    billing = '6.0.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
@@ -113,15 +113,14 @@ ext {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    compileOnly 'com.github.pengrad:jdk9-deps:1.0'
     // Moshi
     implementation moshi.core
     implementation moshi.adapters
     kapt moshi.koltin_codegen
 
     // UI
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // Billing
     api billing.billingClient
@@ -141,16 +140,16 @@ dependencies {
     kapt dagger.compiler
 
     // Preference
-    implementation "androidx.preference:preference:1.1.1"
+    implementation "androidx.preference:preference:1.2.0"
 
     // Kotlin Reflect
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     // JUnit
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'junit:junit:4.13.2'
     testImplementation junit.api
     testRuntimeOnly junit.engine
 
@@ -158,25 +157,25 @@ dependencies {
     testImplementation assertj.core
 
     // Robolectric
-    testImplementation "org.robolectric:robolectric:4.3.1"
-    androidTestImplementation "org.robolectric:robolectric:4.4"
+    testImplementation "org.robolectric:robolectric:4.10.3"
+    androidTestImplementation "org.robolectric:robolectric:4.10.3"
 
     // MockK
     testImplementation 'io.mockk:mockk:1.10.0'
     androidTestImplementation 'io.mockk:mockk-android:1.10.0'
 
     // Mockito
-    testImplementation 'org.mockito:mockito-core:2.23.0'
+    testImplementation 'org.mockito:mockito-core:4.3.1'
 
-    testImplementation 'androidx.test:core:1.2.0'
-    androidTestImplementation 'androidx.test:core:1.4.0'
-    androidTestImplementation "androidx.test:runner:1.4.0"
-    androidTestImplementation "androidx.test:rules:1.4.0"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    testImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation "androidx.test:runner:1.5.2"
+    androidTestImplementation "androidx.test:rules:1.5.0"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 
-    testImplementation 'androidx.test.ext:junit:1.1.1'
+    testImplementation 'androidx.test.ext:junit:1.1.5'
 
-    testImplementation "org.json:json:20140107"
+    testImplementation "org.json:json:20180813"
 
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 

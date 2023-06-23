@@ -89,7 +89,7 @@ internal class QExceptionManager @Inject constructor(
             BufferedReader(InputStreamReader(context.openFileInput(filename))).use { reader ->
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
-                    content.appendln(line)
+                    content.appendLine(line)
                 }
             }
         } catch (cause: IOException) {

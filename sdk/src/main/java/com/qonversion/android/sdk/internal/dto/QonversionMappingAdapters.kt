@@ -7,7 +7,6 @@ import com.qonversion.android.sdk.internal.dto.eligibility.ProductEligibility
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.qonversion.android.sdk.dto.experiments.QExperimentGroupType
-import com.qonversion.android.sdk.dto.experiments.QExperimentInfo
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -110,30 +109,14 @@ internal class QPermissionsAdapter {
     }
 }
 
-internal class QExperimentsAdapter {
-    @ToJson
-    private fun toJson(experiments: Map<String, QExperimentInfo>): List<QExperimentInfo> {
-        return experiments.values.toList()
-    }
-
-    @FromJson
-    fun fromJson(experiments: List<QExperimentInfo>): Map<String, QExperimentInfo> {
-        val result = mutableMapOf<String, QExperimentInfo>()
-        experiments.forEach {
-            result[it.experimentID] = it
-        }
-        return result
-    }
-}
-
 internal class QExperimentGroupTypeAdapter {
     @ToJson
-    private fun toJson(enum: QExperimentGroupType): Int {
+    private fun toJson(enum: QExperimentGroupType): String {
         return enum.type
     }
 
     @FromJson
-    fun fromJson(type: Int): QExperimentGroupType {
+    fun fromJson(type: String): QExperimentGroupType {
         return QExperimentGroupType.fromType(type)
     }
 }

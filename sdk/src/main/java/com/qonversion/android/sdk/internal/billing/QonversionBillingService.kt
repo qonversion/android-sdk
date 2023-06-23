@@ -50,7 +50,7 @@ internal class QonversionBillingService internal constructor(
 
     override fun loadProducts(
         productIDs: Set<String>,
-        onLoadCompleted: (products: List<SkuDetails>) -> Unit,
+        @Suppress("DEPRECATION") onLoadCompleted: (products: List<SkuDetails>) -> Unit,
         onLoadFailed: (error: BillingError) -> Unit
     ) {
         loadAllProducts(
@@ -127,6 +127,7 @@ internal class QonversionBillingService internal constructor(
             }
 
             withReadyClient {
+                @Suppress("DEPRECATION")
                 queryPurchasesAsync(BillingClient.SkuType.SUBS) querySubscriptions@{ subsResult, activeSubs ->
                     if (!subsResult.isOk) {
                         handlePurchasesQueryError(subsResult, "subscription", onQueryFailed)
@@ -156,7 +157,7 @@ internal class QonversionBillingService internal constructor(
 
     override fun getSkuDetailsFromPurchases(
         purchases: List<Purchase>,
-        onCompleted: (List<SkuDetails>) -> Unit,
+        @Suppress("DEPRECATION") onCompleted: (List<SkuDetails>) -> Unit,
         onFailed: (BillingError) -> Unit
     ) {
         val skuList = purchases.map { it.sku }
@@ -175,9 +176,9 @@ internal class QonversionBillingService internal constructor(
 
     override fun purchase(
         activity: Activity,
-        skuDetails: SkuDetails,
-        oldSkuDetails: SkuDetails?,
-        @BillingFlowParams.ProrationMode prorationMode: Int?
+        @Suppress("DEPRECATION") skuDetails: SkuDetails,
+        @Suppress("DEPRECATION") oldSkuDetails: SkuDetails?,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
         if (oldSkuDetails != null) {
             replaceOldPurchase(activity, skuDetails, oldSkuDetails, prorationMode)
@@ -207,9 +208,9 @@ internal class QonversionBillingService internal constructor(
 
     private fun replaceOldPurchase(
         activity: Activity,
-        skuDetails: SkuDetails,
-        oldSkuDetails: SkuDetails,
-        @BillingFlowParams.ProrationMode prorationMode: Int?
+        @Suppress("DEPRECATION") skuDetails: SkuDetails,
+        @Suppress("DEPRECATION") oldSkuDetails: SkuDetails,
+        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?
     ) {
         getPurchaseHistoryFromSkuDetails(oldSkuDetails) { billingResult, oldPurchaseHistory ->
             if (billingResult.isOk) {
@@ -244,7 +245,7 @@ internal class QonversionBillingService internal constructor(
     }
 
     private fun getPurchaseHistoryFromSkuDetails(
-        skuDetails: SkuDetails,
+        @Suppress("DEPRECATION") skuDetails: SkuDetails,
         onQueryHistoryCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
     ) = withReadyClient {
         logger.debug(
@@ -252,6 +253,7 @@ internal class QonversionBillingService internal constructor(
                     "Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}"
         )
 
+        @Suppress("DEPRECATION")
         queryPurchaseHistoryAsync(skuDetails.type) { billingResult, purchasesList ->
             onQueryHistoryCompleted(
                 billingResult,
@@ -262,15 +264,17 @@ internal class QonversionBillingService internal constructor(
 
     private fun makePurchase(
         activity: Activity,
-        skuDetails: SkuDetails,
+        @Suppress("DEPRECATION") skuDetails: SkuDetails,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
     ) {
         logger.debug("makePurchase() -> Purchasing for sku: ${skuDetails.sku}")
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                val params = BillingFlowParams.newBuilder()
-                    .setSkuDetails(skuDetails)
+                val builder = BillingFlowParams.newBuilder()
+                @Suppress("DEPRECATION")
+                builder.setSkuDetails(skuDetails)
+                val params = builder
                     .setSubscriptionUpdateParams(updatePurchaseInfo)
                     .build()
 
@@ -283,13 +287,15 @@ internal class QonversionBillingService internal constructor(
         info: UpdatePurchaseInfo? = null
     ): BillingFlowParams.Builder {
         if (info != null) {
-            val updateParams = SubscriptionUpdateParams.newBuilder()
-                .setOldSkuPurchaseToken(info.purchaseToken)
-                .apply {
-                    info.prorationMode?.let {
-                        setReplaceSkusProrationMode(it)
-                    }
+            val updateParamsBuilder = SubscriptionUpdateParams.newBuilder()
+            @Suppress("DEPRECATION")
+            updateParamsBuilder.setOldSkuPurchaseToken(info.purchaseToken)
+            val updateParams = updateParamsBuilder.apply {
+                info.prorationMode?.let {
+                    @Suppress("DEPRECATION")
+                    setReplaceSkusProrationMode(it)
                 }
+            }
                 .build()
 
             setSubscriptionUpdateParams(updateParams)
@@ -315,9 +321,11 @@ internal class QonversionBillingService internal constructor(
         onQueryHistoryFailed: (BillingError) -> Unit
     ) {
         queryPurchaseHistoryAsync(
+            @Suppress("DEPRECATION")
             BillingClient.SkuType.SUBS,
             { subsPurchasesList ->
                 queryPurchaseHistoryAsync(
+                    @Suppress("DEPRECATION")
                     BillingClient.SkuType.INAPP,
                     { inAppPurchasesList ->
                         onQueryHistoryCompleted(
@@ -332,7 +340,7 @@ internal class QonversionBillingService internal constructor(
     }
 
     private fun queryPurchaseHistoryAsync(
-        @BillingClient.SkuType skuType: String,
+        @Suppress("DEPRECATION") @BillingClient.SkuType skuType: String,
         onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
         onQueryHistoryFailed: (BillingError) -> Unit
     ) {
@@ -341,6 +349,7 @@ internal class QonversionBillingService internal constructor(
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
                 withReadyClient {
+                    @Suppress("DEPRECATION")
                     queryPurchaseHistoryAsync(skuType) { billingResult, purchaseHistoryRecords ->
                         if (billingResult.isOk && purchaseHistoryRecords != null) {
                             val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
@@ -370,7 +379,7 @@ internal class QonversionBillingService internal constructor(
     }
 
     private fun getPurchaseHistoryFromHistoryRecords(
-        @BillingClient.SkuType skuType: String,
+        @Suppress("DEPRECATION") @BillingClient.SkuType skuType: String,
         historyRecords: List<PurchaseHistoryRecord>
     ): List<PurchaseHistory> {
         val purchaseHistory = mutableListOf<PurchaseHistory>()
@@ -387,10 +396,11 @@ internal class QonversionBillingService internal constructor(
 
     private fun loadAllProducts(
         productIDs: List<String?>,
-        onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
+        @Suppress("DEPRECATION") onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
         querySkuDetailsAsync(
+            @Suppress("DEPRECATION")
             BillingClient.SkuType.SUBS,
             productIDs,
             { skuDetailsSubs ->
@@ -399,6 +409,7 @@ internal class QonversionBillingService internal constructor(
 
                 if (skuInApp.isNotEmpty()) {
                     querySkuDetailsAsync(
+                        @Suppress("DEPRECATION")
                         BillingClient.SkuType.INAPP,
                         skuInApp,
                         { skuDetailsInApp ->
@@ -415,9 +426,9 @@ internal class QonversionBillingService internal constructor(
     }
 
     private fun querySkuDetailsAsync(
-        @BillingClient.SkuType productType: String,
+        @Suppress("DEPRECATION") @BillingClient.SkuType productType: String,
         skuList: List<String?>,
-        onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
+        @Suppress("DEPRECATION") onQuerySkuCompleted: (List<SkuDetails>) -> Unit,
         onQuerySkuFailed: (BillingError) -> Unit
     ) {
         logger.debug("querySkuDetailsAsync() -> Querying skuDetails for type $productType, identifiers: ${skuList.joinToString()}")
@@ -427,6 +438,7 @@ internal class QonversionBillingService internal constructor(
                 val params = buildSkuDetailsParams(productType, skuList)
 
                 withReadyClient {
+                    @Suppress("DEPRECATION")
                     querySkuDetailsAsync(params) { billingResult, skuDetailsList ->
                         if (billingResult.isOk && skuDetailsList != null) {
                             logSkuDetails(skuDetailsList, skuList)
@@ -452,6 +464,7 @@ internal class QonversionBillingService internal constructor(
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun buildSkuDetailsParams(
         @BillingClient.SkuType productType: String,
         skuList: List<String?>
@@ -463,7 +476,7 @@ internal class QonversionBillingService internal constructor(
     }
 
     private fun logSkuDetails(
-        skuDetailsList: List<SkuDetails>,
+        @Suppress("DEPRECATION") skuDetailsList: List<SkuDetails>,
         skuList: List<String?>
     ) {
         skuDetailsList

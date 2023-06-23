@@ -102,7 +102,8 @@ internal class QUserPropertiesManager @Inject internal constructor(
         }
     }
 
-    private fun retryPropertiesRequest() {
+    @VisibleForTesting
+    fun retryPropertiesRequest() {
         retriesCounter++
         try {
             retryDelay =

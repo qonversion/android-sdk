@@ -1,14 +1,16 @@
 package com.qonversion.android.sdk.dto.experiments
 
-enum class QExperimentGroupType(val type: Int) {
-    A(0),
-    B(1);
+enum class QExperimentGroupType(val type: String) {
+    Control("control"),
+    Treatment("treatment"),
+    Unknown("unknown");
 
     companion object {
-        fun fromType(type: Int): QExperimentGroupType {
+        fun fromType(type: String): QExperimentGroupType {
             return when (type) {
-                1 -> B
-                else -> A
+                "control" -> Control
+                "treatment" -> Treatment
+                else -> Unknown
             }
         }
     }
