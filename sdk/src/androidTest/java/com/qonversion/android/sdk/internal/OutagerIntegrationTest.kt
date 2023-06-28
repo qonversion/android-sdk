@@ -211,7 +211,6 @@ internal class OutagerIntegrationTest {
             repository.purchase(
                 installDate,
                 purchase,
-                null,
                 "test_monthly",
                 callback
             )

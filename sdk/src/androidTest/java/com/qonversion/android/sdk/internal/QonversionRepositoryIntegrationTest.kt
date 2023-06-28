@@ -227,7 +227,6 @@ internal class QonversionRepositoryIntegrationTest {
             repository.purchase(
                 installDate,
                 purchase,
-                null,
                 "test_monthly",
                 callback
             )
@@ -278,7 +277,7 @@ internal class QonversionRepositoryIntegrationTest {
         val repository = initRepository(uid)
 
         // when
-        repository.purchase(installDate, purchase, null, "test_monthly", callback)
+        repository.purchase(installDate, purchase, "test_monthly", callback)
 
         signal.await()
     }
@@ -306,7 +305,6 @@ internal class QonversionRepositoryIntegrationTest {
         repository.purchase(
             installDate,
             purchase,
-            null,
             "test_monthly",
             callback
         )
