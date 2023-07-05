@@ -6,7 +6,7 @@ import com.qonversion.android.sdk.internal.EnvironmentProvider
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import okhttp3.Headers
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 internal class ApiHeadersProvider @Inject constructor(
