@@ -73,9 +73,10 @@ internal class RepositoryModule {
     @Provides
     fun provideHeadersProvider(
         config: InternalConfig,
-        sharedPreferencesCache: SharedPreferencesCache
+        sharedPreferencesCache: SharedPreferencesCache,
+        environmentProvider: EnvironmentProvider
     ): ApiHeadersProvider {
-        return ApiHeadersProvider(config, sharedPreferencesCache)
+        return ApiHeadersProvider(config, sharedPreferencesCache, environmentProvider)
     }
 
     @ApplicationScope

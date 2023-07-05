@@ -32,7 +32,7 @@ internal class EnvironmentProvider(
         idfa
     )
 
-    private fun getVersionName(): String {
+    fun getVersionName(): String {
         return try {
             val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 context.packageManager.getPackageInfo(
