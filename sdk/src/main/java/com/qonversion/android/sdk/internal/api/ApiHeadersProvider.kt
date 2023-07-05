@@ -2,15 +2,17 @@ package com.qonversion.android.sdk.internal.api
 
 import android.os.Build
 import com.qonversion.android.sdk.internal.Constants.PREFS_PREFIX
+import com.qonversion.android.sdk.internal.EnvironmentProvider
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import okhttp3.Headers
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 internal class ApiHeadersProvider @Inject constructor(
     private val config: InternalConfig,
-    private val sharedPreferencesCache: SharedPreferencesCache
+    private val sharedPreferencesCache: SharedPreferencesCache,
+    private val environmentProvider: EnvironmentProvider
 ) {
     private val projectKey: String = if (config.isSandbox) {
         "$DEBUG_MODE_KEY${config.primaryConfig.projectKey}"
@@ -32,6 +34,7 @@ internal class ApiHeadersProvider @Inject constructor(
     private fun getHeadersMap() = mapOf(
         CONTENT_TYPE to "application/json",
         AUTHORIZATION to getBearer(getProjectKey()),
+        APP_VERSION to environmentProvider.getVersionName(),
         USER_LOCALE to getLocale(),
         SOURCE to getSource(),
         SOURCE_VERSION to getSourceVersion(),
@@ -63,6 +66,7 @@ internal class ApiHeadersProvider @Inject constructor(
 
         // Headers
         const val CONTENT_TYPE = "Content-Type"
+        const val APP_VERSION = "app-version"
         const val AUTHORIZATION = "Authorization"
         const val USER_LOCALE = "User-Locale"
         const val SOURCE = "Source"
