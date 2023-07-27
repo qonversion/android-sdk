@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qonversion.android.sdk.dto.QUserProperty
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.getPrivateField
+import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.mockPrivateField
@@ -264,10 +265,15 @@ internal class QUserPropertiesManagerTest {
         // given
         mockPropertiesStorage(properties)
 
+        val propertiesResult = SendPropertiesResult(
+            emptyList(),
+            emptyList()
+        )
+
         every {
             mockRepository.sendProperties(properties, captureLambda(), any())
         } answers {
-            lambda<() -> Unit>().captured.invoke()
+            lambda<(SendPropertiesResult) -> Unit>().captured.invoke(propertiesResult)
         }
 
         // when

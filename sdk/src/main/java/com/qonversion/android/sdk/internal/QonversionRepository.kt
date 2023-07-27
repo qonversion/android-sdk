@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
@@ -28,11 +29,11 @@ import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
-import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
+import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyForApi
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -185,20 +186,21 @@ internal class QonversionRepository internal constructor(
 
     fun sendProperties(
         properties: Map<String, String>,
-        onSuccess: () -> Unit,
-        onError: (error: QonversionError?) -> Unit
+        onSuccess: (SendPropertiesResult) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
-        val propertiesRequest = PropertiesRequest(
-            accessToken = key,
-            clientUid = uid,
-            properties = properties
-        )
+        val propertiesForApi = properties.map { (key, value) -> UserPropertyForApi(key, value) }
 
-        api.properties(propertiesRequest).enqueue {
+        api.sendProperties(uid, propertiesForApi).enqueue {
             onResponse = {
                 logger.debug("propertiesRequest - ${it.getLogMessage()}")
 
-                if (it.isSuccessful) onSuccess() else onError(errorMapper.getErrorFromResponse(it))
+                val body = it.body()
+                if (it.isSuccessful && body != null) {
+                    onSuccess(body)
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
             }
             onFailure = {
                 logger.debug("propertiesRequest - failure - ${it.toQonversionError()}")

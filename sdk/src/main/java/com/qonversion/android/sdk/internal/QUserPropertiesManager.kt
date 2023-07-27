@@ -76,16 +76,22 @@ internal class QUserPropertiesManager @Inject internal constructor(
             isSendingScheduled = false
 
             repository.sendProperties(properties,
-                onSuccess = {
+                onSuccess = { result ->
+                    result.propertyErrors.forEach { propertyError ->
+                        logger.release("Failed to save property ${propertyError.key}: ${propertyError.error}")
+                    }
+
                     isRequestInProgress = false
                     retriesCounter = 0
                     retryDelay = PROPERTY_UPLOAD_MIN_DELAY
+
+                    // Cleaning all the properties (not only succeeded) as we don't want to resend invalid ones again
                     propertiesStorage.clear(properties)
                 },
                 onError = {
                     isRequestInProgress = false
 
-                    if (it?.code === QonversionErrorCode.InvalidClientUid) {
+                    if (it.code === QonversionErrorCode.InvalidClientUid) {
                         productCenterManager?.launch(callback = object : QonversionLaunchCallback {
                             override fun onSuccess(launchResult: QLaunchResult) {
                                 retryPropertiesRequest()

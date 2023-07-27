@@ -31,7 +31,6 @@ import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -510,10 +509,9 @@ internal class QonversionRepositoryIntegrationTest {
         // when and then
         repository.sendProperties(
             testProperties,
-            { fail("Shouldn't fail") },
+            { fail("Shouldn't succeed") },
             { error ->
-                assertNotNull(error)
-                assertIncorrectProjectKeyError(error!!)
+                assertAccessDeniedError(error)
                 signal.countDown()
             }
         )
