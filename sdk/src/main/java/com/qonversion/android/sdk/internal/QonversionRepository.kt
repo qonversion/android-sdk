@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -193,7 +194,7 @@ internal class QonversionRepository internal constructor(
 
         api.sendProperties(uid, propertiesForApi).enqueue {
             onResponse = {
-                logger.debug("propertiesRequest - ${it.getLogMessage()}")
+                logger.debug("sendPropertiesRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (it.isSuccessful && body != null) {
@@ -203,7 +204,29 @@ internal class QonversionRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.debug("propertiesRequest - failure - ${it.toQonversionError()}")
+                logger.debug("sendPropertiesRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun getProperties(
+        onSuccess: (List<QUserProperty>) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        api.getProperties(uid).enqueue {
+            onResponse = {
+                logger.debug("getPropertiesRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (it.isSuccessful && body != null) {
+                    onSuccess(body)
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.debug("getPropertiesRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }

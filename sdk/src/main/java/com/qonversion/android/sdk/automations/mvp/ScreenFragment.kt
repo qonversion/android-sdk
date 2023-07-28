@@ -17,7 +17,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.databinding.QFragmentScreenBinding
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.di.QDependencyInjector

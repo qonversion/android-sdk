@@ -1,6 +1,6 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.properties
 
-enum class QUserProperty(val userPropertyCode: String) {
+enum class QUserPropertyKey(val userPropertyCode: String) {
     Email("_q_email"),
     Name("_q_name"),
     KochavaDeviceId("_q_kochava_device_id"),
@@ -9,5 +9,11 @@ enum class QUserProperty(val userPropertyCode: String) {
     CustomUserId("_q_custom_user_id"),
     FacebookAttribution("_q_fb_attribution"),
     FirebaseAppInstanceId("_q_firebase_instance_id"),
-    AppSetId("_q_app_set_id");
+    AppSetId("_q_app_set_id"),
+    Custom("");
+
+    companion object {
+        internal fun fromString(key: String) =
+            values().find { it.userPropertyCode == key } ?: Custom
+    }
 }

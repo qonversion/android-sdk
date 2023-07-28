@@ -4,14 +4,16 @@ import android.app.Application
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.VisibleForTesting
-import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.dto.properties.QUserProperties
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
+import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 import javax.inject.Inject
 
 internal class QUserPropertiesManager @Inject internal constructor(
@@ -61,7 +63,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
     override fun onFbAttributionIdResult(id: String?) {
         id ?: return
 
-        setUserProperty(QUserProperty.FacebookAttribution.userPropertyCode, id)
+        setCustomUserProperty(QUserPropertyKey.FacebookAttribution.userPropertyCode, id)
     }
 
     fun forceSendProperties() {
@@ -120,11 +122,16 @@ internal class QUserPropertiesManager @Inject internal constructor(
         }
     }
 
-    fun setProperty(key: QUserProperty, value: String) {
-        setUserProperty(key.userPropertyCode, value)
+    fun setUserProperty(key: QUserPropertyKey, value: String) {
+        if (key === QUserPropertyKey.Custom) {
+            logger.release("Can not set user property with the key `QUserPropertyKey.Custom`. " +
+                    "To set custom user property, use the `setCustomUserProperty` method.")
+            return
+        }
+        setCustomUserProperty(key.userPropertyCode, value)
     }
 
-    fun setUserProperty(key: String, value: String) {
+    fun setCustomUserProperty(key: String, value: String) {
         if (value.isEmpty()) {
             return
         }
@@ -133,6 +140,13 @@ internal class QUserPropertiesManager @Inject internal constructor(
         if (!isSendingScheduled) {
             sendPropertiesWithDelay(retryDelay)
         }
+    }
+
+    fun getUserProperties(callback: QonversionUserPropertiesCallback) {
+        repository.getProperties(
+            onSuccess = { properties -> callback.onSuccess(QUserProperties(properties)) },
+            onError = { error -> callback.onError(error) }
+        )
     }
 
     @VisibleForTesting

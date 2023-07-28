@@ -4,7 +4,7 @@ import android.app.Activity
 import android.util.Log
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
@@ -16,6 +16,7 @@ import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
 interface Qonversion {
 
@@ -257,18 +258,29 @@ interface Qonversion {
     fun attribution(data: Map<String, Any>, provider: QAttributionProvider)
 
     /**
-     * Sets Qonversion reserved user properties, like email or one-signal id
+     * Sets Qonversion reserved user properties, like email or one-signal id.
+     * Note that using [QUserPropertyKey.Custom] here will do nothing.
+     * To set custom user property, use [setCustomUserProperty] method instead.
      * @param key defined enum key that will be transformed to string
      * @param value property value
      */
-    fun setProperty(key: QUserProperty, value: String)
+    fun setUserProperty(key: QUserPropertyKey, value: String)
 
     /**
-     * Sets custom user properties
+     * Sets custom user property
      * @param key custom user property key
      * @param value property value
      */
-    fun setUserProperty(key: String, value: String)
+    fun setCustomUserProperty(key: String, value: String)
+
+    /**
+     * This method returns all the properties, set for the current Qonversion user.
+     * All set properties are sent to the server with delay, so if you call
+     * this function right after setting some property, it may not be included
+     * in the result.
+     * @param callback - callback that will be called when response is received
+     */
+    fun getUserProperties(callback: QonversionUserPropertiesCallback)
 
     /**
      * Provide a listener to be notified about asynchronous user entitlements updates.

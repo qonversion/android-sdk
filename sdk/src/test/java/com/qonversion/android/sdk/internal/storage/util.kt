@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.dto.*
-import com.qonversion.android.sdk.dto.experiments.QExperiment
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings

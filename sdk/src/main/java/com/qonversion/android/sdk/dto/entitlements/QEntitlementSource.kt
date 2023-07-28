@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.entitlements
 
 enum class QEntitlementSource(internal val key: String) {
     Unknown("unknown"), // Unable to detect the source

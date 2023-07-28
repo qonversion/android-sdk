@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.api
 
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.Constants.CRASH_LOGS_URL
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.EligibilityResult
@@ -94,4 +95,7 @@ internal interface Api {
         @Path("user_id") userId: String,
         @Body properties: List<UserPropertyForApi>
     ): Call<SendPropertiesResult>
+
+    @GET("v3/users/{user_id}/properties")
+    fun getProperties(@Path("user_id") userId: String): Call<List<QUserProperty>>
 }
