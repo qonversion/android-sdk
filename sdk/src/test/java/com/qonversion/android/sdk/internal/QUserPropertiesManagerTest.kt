@@ -7,6 +7,7 @@ import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -507,7 +508,7 @@ internal class QUserPropertiesManagerTest {
         every {
             mockRepository.sendProperties(properties, any(), captureLambda())
         } answers {
-            lambda<(QonversionError?) -> Unit>().captured.invoke(null)
+            lambda<(QonversionError) -> Unit>().captured.invoke(QonversionError(QonversionErrorCode.BackendError))
         }
     }
 
