@@ -1,31 +1,63 @@
 package com.qonversion.android.sdk.dto.properties
 
+import com.qonversion.android.sdk.Qonversion
+
 data class QUserProperties(
-    private val properties: List<QUserProperty>
+    /**
+     * List of all user properties.
+     */
+    val properties: List<QUserProperty>
 ) {
-    val definedPropertiesList: List<QUserProperty> = properties
+    /**
+     * List of user properties, set for the Qonversion defined keys.
+     * @see [Qonversion.setUserProperty]
+     */
+    val definedProperties: List<QUserProperty> = properties
         .filter { it.definedKey !== QUserPropertyKey.Custom }
 
-    val definedPropertiesMap: Map<QUserPropertyKey, String> = definedPropertiesList
-        .associate { it.definedKey to it.value }
-
-    val customPropertiesList: List<QUserProperty> = properties
+    /**
+     * List of user properties, set for custom keys.
+     * @see [Qonversion.setCustomUserProperty]
+     */
+    val customProperties: List<QUserProperty> = properties
         .filter { it.definedKey === QUserPropertyKey.Custom }
 
-    val customPropertiesMap: Map<String, String> = customPropertiesList
+    /**
+     * Map of all user properties.
+     */
+    val propertiesMap: Map<String, String> = properties
         .associate { it.key to it.value }
 
-    val propertiesList: List<QUserProperty> = properties
+    /**
+     * Map of user properties, set for the Qonversion defined keys.
+     * @see [Qonversion.setUserProperty]
+     */
+    val definedPropertiesMap: Map<QUserPropertyKey, String> = definedProperties
+        .associate { it.definedKey to it.value }
 
-    val propertiesMap: Map<String, String> = propertiesList
+    /**
+     * Map of user properties, set for custom keys.
+     * @see [Qonversion.setCustomUserProperty]
+     */
+    val customPropertiesMap: Map<String, String> = customProperties
         .associate { it.key to it.value }
 
-    fun getCustomProperty(key: String): QUserProperty? =
-        customPropertiesList.find { it.key == key }
-
-    fun getDefinedProperty(key: QUserPropertyKey): QUserProperty? =
-        definedPropertiesList.find { it.definedKey === key }
-
+    /**
+     * Searches for a property with the given property [key] in all properties list.
+     */
     fun getProperty(key: String): QUserProperty? =
-        propertiesList.find { it.key == key }
+        properties.find { it.key == key }
+
+    /**
+     * Searches for a property with the given Qonversion defined property [key]
+     * in defined properties list.
+     */
+    fun getDefinedProperty(key: QUserPropertyKey): QUserProperty? =
+        definedProperties.find { it.definedKey === key }
+
+    /**
+     * Searches for a property with the given custom property [key] in custom properties list.
+     */
+    fun getCustomProperty(key: String): QUserProperty? =
+        customProperties.find { it.key == key }
 }

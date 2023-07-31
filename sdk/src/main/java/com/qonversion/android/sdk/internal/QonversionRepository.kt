@@ -34,7 +34,7 @@ import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyForApi
+import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -190,9 +190,9 @@ internal class QonversionRepository internal constructor(
         onSuccess: (SendPropertiesResult) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val propertiesForApi = properties.map { (key, value) -> UserPropertyForApi(key, value) }
+        val propertiesRequestData = properties.map { (key, value) -> UserPropertyRequestData(key, value) }
 
-        api.sendProperties(uid, propertiesForApi).enqueue {
+        api.sendProperties(uid, propertiesRequestData).enqueue {
             onResponse = {
                 logger.debug("sendPropertiesRequest - ${it.getLogMessage()}")
 

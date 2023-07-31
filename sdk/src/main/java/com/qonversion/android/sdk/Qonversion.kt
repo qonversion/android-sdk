@@ -280,7 +280,7 @@ interface Qonversion {
      * in the result.
      * @param callback - callback that will be called when response is received
      */
-    fun getUserProperties(callback: QonversionUserPropertiesCallback)
+    fun userProperties(callback: QonversionUserPropertiesCallback)
 
     /**
      * Provide a listener to be notified about asynchronous user entitlements updates.

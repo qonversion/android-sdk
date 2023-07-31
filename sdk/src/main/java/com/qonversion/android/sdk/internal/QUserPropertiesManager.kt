@@ -142,7 +142,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
         }
     }
 
-    fun getUserProperties(callback: QonversionUserPropertiesCallback) {
+    fun userProperties(callback: QonversionUserPropertiesCallback) {
         repository.getProperties(
             onSuccess = { properties -> callback.onSuccess(QUserProperties(properties)) },
             onError = { error -> callback.onError(error) }

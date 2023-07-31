@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-internal data class UserPropertyForApi(
+internal data class UserPropertyRequestData(
     @Json(name = "key") val key: String,
     @Json(name = "value") val value: String
 )

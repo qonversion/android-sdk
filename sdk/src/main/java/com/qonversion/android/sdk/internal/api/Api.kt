@@ -22,7 +22,7 @@ import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
-import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyForApi
+import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -93,7 +93,7 @@ internal interface Api {
     @POST("v3/users/{user_id}/properties")
     fun sendProperties(
         @Path("user_id") userId: String,
-        @Body properties: List<UserPropertyForApi>
+        @Body properties: List<UserPropertyRequestData>
     ): Call<SendPropertiesResult>
 
     @GET("v3/users/{user_id}/properties")

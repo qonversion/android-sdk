@@ -303,8 +303,8 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun getUserProperties(callback: QonversionUserPropertiesCallback) {
-        userPropertiesManager?.getUserProperties(callback)
+    override fun userProperties(callback: QonversionUserPropertiesCallback) {
+        userPropertiesManager?.userProperties(callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
