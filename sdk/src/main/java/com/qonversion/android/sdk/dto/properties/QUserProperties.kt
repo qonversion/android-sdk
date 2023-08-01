@@ -10,6 +10,7 @@ data class QUserProperties(
 ) {
     /**
      * List of user properties, set for the Qonversion defined keys.
+     * This is a subset of all [properties] list.
      * @see [Qonversion.setUserProperty]
      */
     val definedProperties: List<QUserProperty> = properties
@@ -17,6 +18,7 @@ data class QUserProperties(
 
     /**
      * List of user properties, set for custom keys.
+     * This is a subset of all [properties] list.
      * @see [Qonversion.setCustomUserProperty]
      */
     val customProperties: List<QUserProperty> = properties
@@ -24,22 +26,25 @@ data class QUserProperties(
 
     /**
      * Map of all user properties.
+     * This is a flattened version of the [properties] list as a key-value map.
      */
-    val propertiesMap: Map<String, String> = properties
+    val flatPropertiesMap: Map<String, String> = properties
         .associate { it.key to it.value }
 
     /**
      * Map of user properties, set for the Qonversion defined keys.
+     * This is a flattened version of the [definedProperties] list as a key-value map.
      * @see [Qonversion.setUserProperty]
      */
-    val definedPropertiesMap: Map<QUserPropertyKey, String> = definedProperties
+    val flatDefinedPropertiesMap: Map<QUserPropertyKey, String> = definedProperties
         .associate { it.definedKey to it.value }
 
     /**
      * Map of user properties, set for custom keys.
+     * This is a flattened version of the [customProperties] list as a key-value map.
      * @see [Qonversion.setCustomUserProperty]
      */
-    val customPropertiesMap: Map<String, String> = customProperties
+    val flatCustomPropertiesMap: Map<String, String> = customProperties
         .associate { it.key to it.value }
 
     /**
@@ -54,10 +59,4 @@ data class QUserProperties(
      */
     fun getDefinedProperty(key: QUserPropertyKey): QUserProperty? =
         definedProperties.find { it.definedKey === key }
-
-    /**
-     * Searches for a property with the given custom property [key] in custom properties list.
-     */
-    fun getCustomProperty(key: String): QUserProperty? =
-        customProperties.find { it.key == key }
 }
