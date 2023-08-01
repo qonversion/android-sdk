@@ -10,6 +10,7 @@ enum class QUserPropertyKey(val userPropertyCode: String) {
     FacebookAttribution("_q_fb_attribution"),
     FirebaseAppInstanceId("_q_firebase_instance_id"),
     AppSetId("_q_app_set_id"),
+    AdvertisingID("_q_advertising_id"), // iOS only
     Custom("");
 
     companion object {
