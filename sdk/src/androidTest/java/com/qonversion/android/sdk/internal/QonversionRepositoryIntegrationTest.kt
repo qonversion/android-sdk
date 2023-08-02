@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductDuration
 import com.qonversion.android.sdk.dto.products.QProductType
+import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -509,6 +510,68 @@ internal class QonversionRepositoryIntegrationTest {
         // when and then
         repository.sendProperties(
             testProperties,
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertAccessDeniedError(error)
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
+    @Test
+    fun getProperties() {
+        // given
+        val signal = CountDownLatch(1)
+        val testProperties = mapOf(
+            "customProperty" to "custom property value",
+            QUserPropertyKey.CustomUserId.userPropertyCode to "custom user id"
+        )
+        val expRes = listOf(
+            QUserProperty("customProperty", "customProperty"),
+            QUserProperty(QUserPropertyKey.CustomUserId.userPropertyCode, "custom user id"),
+        )
+
+        val uid = UID_PREFIX + "_getProperties"
+        val repository = initRepository(uid)
+
+        // when and then
+        withNewUserCreated(repository) { error ->
+            error?.let {
+                fail("Failed to create user")
+            }
+
+            repository.sendProperties(
+                testProperties,
+                {
+                    repository.getProperties(
+                        { properties ->
+                            properties.equalsIgnoreOrder(expRes)
+                            signal.countDown()
+                        },
+                        {
+                            fail("Shouldn't fail")
+                        }
+                    )
+                },
+                { fail("Failed to send properties") }
+            )
+        }
+
+        signal.await()
+    }
+
+    @Test
+    fun getPropertiesError() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_getProperties"
+        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
+
+        // when and then
+        repository.getProperties(
             { fail("Shouldn't succeed") },
             { error ->
                 assertAccessDeniedError(error)

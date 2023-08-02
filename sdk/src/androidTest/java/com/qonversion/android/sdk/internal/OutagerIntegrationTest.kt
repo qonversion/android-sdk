@@ -344,6 +344,27 @@ internal class OutagerIntegrationTest {
     }
 
     @Test
+    fun getProperties() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_sendProperties"
+        val repository = initRepository(uid)
+
+        // when and then
+        repository.getProperties(
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertEquals(error.code, QonversionErrorCode.BackendError)
+                assertTrue("HTTP status code=503, error=Service Unavailable. " == error.additionalMessage)
+                signal.countDown()
+            }
+        )
+
+        signal.await()
+    }
+
+    @Test
     fun eligibilityForProductIds() {
         // given
         val signal = CountDownLatch(1)
