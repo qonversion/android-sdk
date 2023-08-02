@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal
 import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.internal.dto.QPermission
 import org.json.JSONArray
 import org.json.JSONObject

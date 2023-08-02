@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.dto
 
-import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.dto.eligibility.ProductEligibility

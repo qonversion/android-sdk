@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.entitlements
 
 enum class QEntitlementsCacheLifetime(val days: Int) {
     Week(7),

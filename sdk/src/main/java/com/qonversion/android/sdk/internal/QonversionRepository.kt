@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -14,6 +15,7 @@ import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
@@ -28,11 +30,11 @@ import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
-import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
+import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -185,23 +187,46 @@ internal class QonversionRepository internal constructor(
 
     fun sendProperties(
         properties: Map<String, String>,
-        onSuccess: () -> Unit,
-        onError: (error: QonversionError?) -> Unit
+        onSuccess: (SendPropertiesResult) -> Unit,
+        onError: (error: QonversionError) -> Unit
     ) {
-        val propertiesRequest = PropertiesRequest(
-            accessToken = key,
-            clientUid = uid,
-            properties = properties
-        )
+        val propertiesRequestData = properties.map { (key, value) -> UserPropertyRequestData(key, value) }
 
-        api.properties(propertiesRequest).enqueue {
+        api.sendProperties(uid, propertiesRequestData).enqueue {
             onResponse = {
-                logger.debug("propertiesRequest - ${it.getLogMessage()}")
+                logger.debug("sendPropertiesRequest - ${it.getLogMessage()}")
 
-                if (it.isSuccessful) onSuccess() else onError(errorMapper.getErrorFromResponse(it))
+                val body = it.body()
+                if (it.isSuccessful && body != null) {
+                    onSuccess(body)
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
             }
             onFailure = {
-                logger.debug("propertiesRequest - failure - ${it.toQonversionError()}")
+                logger.debug("sendPropertiesRequest - failure - ${it.toQonversionError()}")
+                onError(it.toQonversionError())
+            }
+        }
+    }
+
+    fun getProperties(
+        onSuccess: (List<QUserProperty>) -> Unit,
+        onError: (error: QonversionError) -> Unit
+    ) {
+        api.getProperties(uid).enqueue {
+            onResponse = {
+                logger.debug("getPropertiesRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (it.isSuccessful && body != null) {
+                    onSuccess(body)
+                } else {
+                    onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.debug("getPropertiesRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }

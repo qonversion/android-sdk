@@ -7,9 +7,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
 import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.QLaunchMode
-import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -321,7 +321,7 @@ internal class OutagerIntegrationTest {
         val signal = CountDownLatch(1)
         val testProperties = mapOf(
             "customProperty" to "custom property value",
-            QUserProperty.CustomUserId.userPropertyCode to "custom user id"
+            QUserPropertyKey.CustomUserId.userPropertyCode to "custom user id"
         )
 
         val uid = UID_PREFIX + "_sendProperties"
@@ -339,6 +339,27 @@ internal class OutagerIntegrationTest {
                 { fail("Shouldn't fail") }
             )
         }
+
+        signal.await()
+    }
+
+    @Test
+    fun getProperties() {
+        // given
+        val signal = CountDownLatch(1)
+
+        val uid = UID_PREFIX + "_sendProperties"
+        val repository = initRepository(uid)
+
+        // when and then
+        repository.getProperties(
+            { fail("Shouldn't succeed") },
+            { error ->
+                assertEquals(error.code, QonversionErrorCode.BackendError)
+                assertTrue("HTTP status code=503, error=Service Unavailable. " == error.additionalMessage)
+                signal.countDown()
+            }
+        )
 
         signal.await()
     }

@@ -9,9 +9,9 @@ import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
-import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -31,6 +31,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -292,13 +293,18 @@ internal class QonversionInternal(
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun setProperty(key: QUserProperty, value: String) {
-        userPropertiesManager?.setProperty(key, value)
+    override fun setUserProperty(key: QUserPropertyKey, value: String) {
+        userPropertiesManager?.setUserProperty(key, value)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
-    override fun setUserProperty(key: String, value: String) {
-        userPropertiesManager?.setUserProperty(key, value)
+    override fun setCustomUserProperty(key: String, value: String) {
+        userPropertiesManager?.setCustomUserProperty(key, value)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun userProperties(callback: QonversionUserPropertiesCallback) {
+        userPropertiesManager?.userProperties(callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
