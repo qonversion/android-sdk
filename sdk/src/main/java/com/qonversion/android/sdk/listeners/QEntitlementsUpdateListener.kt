@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.listeners
 
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 
 /**
  * The listener of user entitlements updates.

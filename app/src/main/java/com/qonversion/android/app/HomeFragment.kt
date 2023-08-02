@@ -22,14 +22,12 @@ import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
-import com.qonversion.android.sdk.dto.QEntitlement
-import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 
 private const val TAG = "HomeFragment"
 

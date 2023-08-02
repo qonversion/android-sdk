@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.app.databinding.TableRowEntitlementBinding
 
 class EntitlementsAdapter(private val entitlements: List<QEntitlement>) :

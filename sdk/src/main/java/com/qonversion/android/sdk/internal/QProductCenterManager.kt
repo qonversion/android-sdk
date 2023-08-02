@@ -8,7 +8,7 @@ import android.util.Pair
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.*
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
@@ -26,7 +26,7 @@ import com.qonversion.android.sdk.internal.converter.GooglePurchaseConverter
 import com.qonversion.android.sdk.internal.converter.PurchaseConverter
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
-import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings

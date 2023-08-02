@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.internal.dto
 
-import com.qonversion.android.sdk.dto.QEntitlementSource
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.internal.toBoolean
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

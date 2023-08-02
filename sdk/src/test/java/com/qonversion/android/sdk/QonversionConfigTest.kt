@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.dto.QEnvironment
 import com.qonversion.android.sdk.dto.QLaunchMode
-import com.qonversion.android.sdk.dto.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig

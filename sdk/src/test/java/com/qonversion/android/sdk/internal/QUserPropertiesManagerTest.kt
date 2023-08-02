@@ -5,9 +5,11 @@ import android.content.ContentResolver
 import android.os.Handler
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.qonversion.android.sdk.dto.QUserProperty
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.getPrivateField
+import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.mockPrivateField
@@ -73,7 +75,7 @@ internal class QUserPropertiesManagerTest {
 
         // then
         verify(exactly = 1) {
-            spykPropertiesManager.setUserProperty(
+            spykPropertiesManager.setCustomUserProperty(
                 "_q_fb_attribution",
                 fbAttributionId
             )
@@ -90,7 +92,7 @@ internal class QUserPropertiesManagerTest {
 
         // then
         verify(exactly = 0) {
-            spykPropertiesManager.setUserProperty(
+            spykPropertiesManager.setCustomUserProperty(
                 any(),
                 any()
             )
@@ -264,10 +266,15 @@ internal class QUserPropertiesManagerTest {
         // given
         mockPropertiesStorage(properties)
 
+        val propertiesResult = SendPropertiesResult(
+            emptyList(),
+            emptyList()
+        )
+
         every {
             mockRepository.sendProperties(properties, captureLambda(), any())
         } answers {
-            lambda<() -> Unit>().captured.invoke()
+            lambda<(SendPropertiesResult) -> Unit>().captured.invoke(propertiesResult)
         }
 
         // when
@@ -298,16 +305,16 @@ internal class QUserPropertiesManagerTest {
     @Test
     fun setProperty() {
         // given
-        val key = QUserProperty.Email
+        val key = QUserPropertyKey.Email
         val value = "me@qonversion.io"
         val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
 
         // when
-        spykPropertiesManager.setProperty(key, value)
+        spykPropertiesManager.setUserProperty(key, value)
 
         // then
         verify {
-            spykPropertiesManager.setUserProperty("_q_email", value)
+            spykPropertiesManager.setCustomUserProperty("_q_email", value)
         }
     }
 
@@ -318,7 +325,7 @@ internal class QUserPropertiesManagerTest {
         val value = ""
 
         // when
-        propertiesManager.setUserProperty(key, value)
+        propertiesManager.setCustomUserProperty(key, value)
 
         // then
         verify {
@@ -341,7 +348,7 @@ internal class QUserPropertiesManagerTest {
         mockPostDelayed(handlerDelay)
 
         // when
-        spykPropertiesManager.setUserProperty(key, value)
+        spykPropertiesManager.setCustomUserProperty(key, value)
 
         // then
         verify(exactly = 0) {
@@ -363,7 +370,7 @@ internal class QUserPropertiesManagerTest {
         } just Runs
 
         // when
-        propertiesManager.setUserProperty(key, value)
+        propertiesManager.setCustomUserProperty(key, value)
 
         // then
         verifyOrder {
@@ -384,7 +391,7 @@ internal class QUserPropertiesManagerTest {
         every { mockAppStateProvider.appState } returns AppState.Background
 
         // when
-        propertiesManager.setUserProperty(key, value)
+        propertiesManager.setCustomUserProperty(key, value)
 
         // then
         val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
@@ -501,7 +508,7 @@ internal class QUserPropertiesManagerTest {
         every {
             mockRepository.sendProperties(properties, any(), captureLambda())
         } answers {
-            lambda<(QonversionError?) -> Unit>().captured.invoke(null)
+            lambda<(QonversionError) -> Unit>().captured.invoke(QonversionError(QonversionErrorCode.BackendError))
         }
     }
 
