@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal.api
 
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.Constants.CRASH_LOGS_URL
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.EligibilityResult
@@ -10,6 +11,7 @@ import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.Data
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.Response
+import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
@@ -17,10 +19,10 @@ import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
-import com.qonversion.android.sdk.internal.dto.request.PropertiesRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
+import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -47,9 +49,6 @@ internal interface Api {
 
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>
-
-    @POST("v1/properties")
-    fun properties(@Body request: PropertiesRequest): Call<BaseResponse<Response>>
 
     @POST("v1/products/get")
     fun eligibility(@Body request: EligibilityRequest): Call<BaseResponse<EligibilityResult>>
@@ -90,4 +89,13 @@ internal interface Api {
         @Path("id") experimentId: String,
         @Path("user_id") userId: String
     ): Call<Void>
+
+    @POST("v3/users/{user_id}/properties")
+    fun sendProperties(
+        @Path("user_id") userId: String,
+        @Body properties: List<UserPropertyRequestData>
+    ): Call<SendPropertiesResult>
+
+    @GET("v3/users/{user_id}/properties")
+    fun getProperties(@Path("user_id") userId: String): Call<List<QUserProperty>>
 }

@@ -1,6 +1,6 @@
 package com.qonversion.android.sdk.listeners
 
-import com.qonversion.android.sdk.dto.QEntitlement
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.properties.QUserProperties
 
 internal interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -51,5 +52,10 @@ interface QonversionShowScreenCallback {
 
 interface QonversionUserCallback {
    fun onSuccess(user: QUser)
+   fun onError(error: QonversionError)
+}
+
+interface QonversionUserPropertiesCallback {
+   fun onSuccess(userProperties: QUserProperties)
    fun onError(error: QonversionError)
 }

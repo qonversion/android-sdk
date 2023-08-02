@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.dto
+package com.qonversion.android.sdk.dto.entitlements
 
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
 
