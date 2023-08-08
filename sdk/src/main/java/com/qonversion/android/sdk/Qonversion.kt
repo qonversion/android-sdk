@@ -258,7 +258,7 @@ interface Qonversion {
     fun attribution(data: Map<String, Any>, provider: QAttributionProvider)
 
     /**
-     * Sets Qonversion reserved user properties, like email or one-signal id.
+     * Sets Qonversion reserved user properties, like email or user id.
      * Note that using [QUserPropertyKey.Custom] here will do nothing.
      * To set custom user property, use [setCustomUserProperty] method instead.
      * @param key defined enum key that will be transformed to string
