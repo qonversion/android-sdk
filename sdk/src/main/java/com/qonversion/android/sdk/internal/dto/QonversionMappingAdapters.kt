@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.internal.dto
 
+import com.qonversion.android.sdk.dto.QRemoteConfigurationAssignmentType
+import com.qonversion.android.sdk.dto.QRemoteConfigurationSourceType
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
@@ -118,6 +120,30 @@ internal class QExperimentGroupTypeAdapter {
     @FromJson
     fun fromJson(type: String): QExperimentGroupType {
         return QExperimentGroupType.fromType(type)
+    }
+}
+
+internal class QRemoteConfigurationSourceAssignmentTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QRemoteConfigurationAssignmentType): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QRemoteConfigurationAssignmentType {
+        return QRemoteConfigurationAssignmentType.fromType(type)
+    }
+}
+
+internal class QRemoteConfigurationSourceTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QRemoteConfigurationSourceType): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QRemoteConfigurationSourceType {
+        return QRemoteConfigurationSourceType.fromType(type)
     }
 }
 

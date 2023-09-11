@@ -5,6 +5,7 @@ import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
@@ -85,7 +86,11 @@ internal class QonversionRepository internal constructor(
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
-                    callback.onSuccess(body)
+                    if (body.payload.isEmpty() && body.source == null) {
+                        callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
+                    } else {
+                        callback.onSuccess(body)
+                    }
                 }
             }
 
