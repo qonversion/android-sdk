@@ -43,4 +43,5 @@ enum class QonversionErrorCode(val specification: String) {
     FraudPurchase("Fraud purchase was detected"),
     ProjectConfigError("The project is not configured or configured incorrectly in the Qonversion Dashboard"),
     InvalidStoreCredentials("This account does not have access to the requested application"),
+    ApiRateLimitExceeded("API requests rate limit exceeded")
 }

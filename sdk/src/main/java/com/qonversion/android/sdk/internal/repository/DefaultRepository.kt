@@ -64,7 +64,7 @@ internal class DefaultRepository internal constructor(
     private val errorMapper: ApiErrorMapper,
     private val preferences: SharedPreferences,
     private val delayCalculator: IncrementalDelayCalculator
-): QRepository {
+) : QRepository {
     private var advertisingId: String? = null
     private var installDate: Long = 0
 

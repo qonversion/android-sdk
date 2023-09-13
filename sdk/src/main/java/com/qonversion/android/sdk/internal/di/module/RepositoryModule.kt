@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.internal.repository.DefaultRepository
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
 import com.qonversion.android.sdk.internal.api.ApiHelper
+import com.qonversion.android.sdk.internal.api.RateLimiter
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.repository.QRepository
@@ -36,7 +37,8 @@ internal class RepositoryModule {
         purchasesCache: PurchasesCache,
         apiErrorMapper: ApiErrorMapper,
         sharedPreferences: SharedPreferences,
-        delayCalculator: IncrementalDelayCalculator
+        delayCalculator: IncrementalDelayCalculator,
+        rateLimiter: RateLimiter
     ): QRepository {
         return RepositoryWithRateLimits(
             provideQonversionRepository(
@@ -48,7 +50,8 @@ internal class RepositoryModule {
                 apiErrorMapper,
                 sharedPreferences,
                 delayCalculator
-            )
+            ),
+            rateLimiter
         )
     }
 

@@ -1,44 +1,41 @@
 package com.qonversion.android.sdk.internal.api
 
-import android.util.Log
-import java.lang.RuntimeException
-import java.util.*
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.BlockingQueue
+import com.qonversion.android.sdk.internal.toInt
 
-internal class RateLimiter(maxRequestsPerSecond: Int) {
-    private val tokens: BlockingQueue<Any> = ArrayBlockingQueue(maxRequestsPerSecond)
-    private val refillIntervalMs: Long = 1000
-    private val tokensPerRefill = maxRequestsPerSecond
-    private var lastRefillTime = System.currentTimeMillis()
-    private var refillScheduleTimer: Timer? = null
+private const val MS_IN_SEC = 10000
 
-    private fun refillTokens() {
-        val now = System.currentTimeMillis()
-        val elapsedTime = now - lastRefillTime
-        val tokensToAdd = (elapsedTime / refillIntervalMs).toInt() * tokensPerRefill
-        if (tokensToAdd > 0) {
-            repeat(tokensToAdd) {
-                tokens.offer(Any())
-            }
-            lastRefillTime = now
+internal class RateLimiter(private val maxRequestsPerSecond: Int) {
+    private val requests = mutableMapOf<RequestType, MutableList<Request>>()
+
+    fun saveRequest(requestType: RequestType, hash: Int) {
+        val ts = System.currentTimeMillis()
+
+        if (!requests.containsKey(requestType)) {
+            requests[requestType] = mutableListOf()
         }
 
-        scheduleTokensRefilling()
+        val request = Request(hash, ts)
+        requests[requestType]?.add(request)
     }
 
-    private fun scheduleTokensRefilling() {
-        try {
-            refillScheduleTimer?.cancel()
-            refillScheduleTimer = Timer("Tokens refilling timer", false).apply {
-                schedule(object : TimerTask() {
-                    override fun run() {
-                        refillTokens()
-                    }
-                }, refillIntervalMs)
+    fun isRateLimitExceeded(requestType: RequestType, hash: Int): Boolean {
+        val requestsPerEndpoint = requests[requestType] ?: emptyList()
+
+        var matchCount = 0
+        val ts = System.currentTimeMillis()
+        for (request in requestsPerEndpoint.reversed()) {
+            if (ts - request.timestamp >= MS_IN_SEC || matchCount >= maxRequestsPerSecond) {
+                break
             }
-        } catch (_: RuntimeException) {
-            Log.e("Qonversion", "Failed to manage rate limits refreshing")
+
+            matchCount += (request.hash == hash).toInt()
         }
+
+        return matchCount >= maxRequestsPerSecond
     }
+
+    private class Request(
+        val hash: Int,
+        val timestamp: Long
+    )
 }
