@@ -41,6 +41,7 @@ import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
@@ -51,7 +52,7 @@ import java.util.Date
 @SuppressWarnings("LongParameterList")
 internal class QProductCenterManager internal constructor(
     private val context: Application,
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val logger: Logger,
     private val purchasesCache: PurchasesCache,
     private val handledPurchasesCache: QHandledPurchasesCache,

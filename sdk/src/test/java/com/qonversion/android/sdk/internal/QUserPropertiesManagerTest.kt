@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.mockPrivateField
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
 import io.mockk.*
@@ -24,7 +25,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 internal class QUserPropertiesManagerTest {
     private val mockContext = mockk<Application>(relaxed = true)
-    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockRepository = mockk<QRepository>(relaxed = true)
     private val mockContentResolver = mockk<ContentResolver>(relaxed = true)
     private val mockPropertiesStorage = mockk<PropertiesStorage>(relaxed = true)
     private val mockIncrementalCalculator = mockk<IncrementalDelayCalculator>(relaxed = true)

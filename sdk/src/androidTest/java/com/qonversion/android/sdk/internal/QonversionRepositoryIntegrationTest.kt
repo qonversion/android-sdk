@@ -29,6 +29,7 @@ import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.repository.DefaultRepository
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import org.junit.Assert.assertEquals
@@ -895,7 +896,7 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     private fun withNewUserCreated(
-        repository: QonversionRepository,
+        repository: DefaultRepository,
         onComplete: (error: QonversionError?) -> Unit
     ) {
         val data = InitRequestData(
@@ -915,7 +916,7 @@ internal class QonversionRepositoryIntegrationTest {
         repository.init(data)
     }
 
-    private fun initRepository(uid: String, projectKey: String = PROJECT_KEY): QonversionRepository {
+    private fun initRepository(uid: String, projectKey: String = PROJECT_KEY): DefaultRepository {
         val qonversionConfig = QonversionConfig.Builder(
             ApplicationProvider.getApplicationContext(),
             projectKey,
@@ -929,7 +930,7 @@ internal class QonversionRepositoryIntegrationTest {
             appStateProvider
         )
 
-        return QDependencyInjector.appComponent.repository()
+        return QDependencyInjector.appComponent.qonversionRepository()
     }
 
     private fun assertIncorrectProjectKeyError(error: QonversionError) {

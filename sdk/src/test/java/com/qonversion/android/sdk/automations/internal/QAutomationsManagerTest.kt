@@ -18,7 +18,7 @@ import com.qonversion.android.sdk.automations.mvp.ScreenActivity
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.AppState
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 import java.lang.ref.WeakReference
 
 internal class QAutomationsManagerTest {
-    private val mockRepository: QonversionRepository = mockk(relaxed = true)
+    private val mockRepository: QRepository = mockk(relaxed = true)
     private val mockActivity: Activity = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
     private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)

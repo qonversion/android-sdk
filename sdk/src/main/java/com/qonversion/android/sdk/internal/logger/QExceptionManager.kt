@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.qonversion.android.sdk.internal.Constants.CRASH_LOG_FILE_SUFFIX
 import com.qonversion.android.sdk.internal.InternalConfig
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.isDebuggable
@@ -23,7 +23,7 @@ import java.util.concurrent.Executors
 private const val TAG = "QExceptionManager"
 
 internal class QExceptionManager @Inject constructor(
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val intervalConfig: InternalConfig,
     private val headersProvider: ApiHeadersProvider,
     moshi: Moshi

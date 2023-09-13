@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.internal.billing.sku
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.mockPrivateField
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
@@ -36,7 +37,7 @@ internal class QProductCenterManagerTest {
     private val mockHandledPurchasesCache = mockk<QHandledPurchasesCache>(relaxed = true)
     private val mockLaunchResultCacheWrapper = mockk<LaunchResultCacheWrapper>(relaxed = true)
     private val mockContext = mockk<Application>(relaxed = true)
-    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockRepository = mockk<QRepository>(relaxed = true)
     private val mockUserInfoService = mockk<QUserInfoService>(relaxed = true)
     private val mockIdentityManager = mockk<QIdentityManager>(relaxed = true)
     private val mockBillingService = mockk<QonversionBillingService>()

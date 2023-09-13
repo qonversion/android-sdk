@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.*
 
 internal class QIdentityManagerTest {
     private val mockUserInfoService = mockk<QUserInfoService>(relaxed = true)
-    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockRepository = mockk<QRepository>(relaxed = true)
 
     private val currentUserID = "currentUserID"
     private val newUserID = "newUserID"
