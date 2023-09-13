@@ -15,4 +15,3 @@ enum class QRemoteConfigurationAssignmentType(val type: String) {
         }
     }
 }
-
