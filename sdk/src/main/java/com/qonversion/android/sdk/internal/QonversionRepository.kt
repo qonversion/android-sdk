@@ -86,7 +86,7 @@ internal class QonversionRepository internal constructor(
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
-                    if (body.payload.isEmpty() && body.source == null) {
+                    if (body.payload.isEmpty() && body._source == null) {
                         callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
                     } else {
                         callback.onSuccess(body)
