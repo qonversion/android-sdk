@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.api
 
 import com.qonversion.android.sdk.internal.toInt
 
-private const val MS_IN_SEC = 10000
+private const val MS_IN_SEC = 1000
 
 internal class RateLimiter(private val maxRequestsPerSecond: Int) {
     private val requests = mutableMapOf<RequestType, MutableList<Request>>()
