@@ -19,11 +19,11 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
     }
 
     fun isRateLimitExceeded(requestType: RequestType, hash: Int): Boolean {
-        val requestsPerEndpoint = requests[requestType] ?: emptyList()
+        val requestsPerType = requests[requestType] ?: emptyList()
 
         var matchCount = 0
         val ts = System.currentTimeMillis()
-        for (request in requestsPerEndpoint.reversed()) {
+        for (request in requestsPerType.reversed()) {
             if (ts - request.timestamp >= MS_IN_SEC || matchCount >= maxRequestsPerSecond) {
                 break
             }
