@@ -20,6 +20,8 @@ import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
 import com.qonversion.android.sdk.internal.dto.QProductTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
+import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceAssignmentTypeAdapter
+import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceTypeAdapter
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -60,6 +62,8 @@ internal class NetworkModule {
             .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())
             .add(QExperimentGroupTypeAdapter())
+            .add(QRemoteConfigurationSourceTypeAdapter())
+            .add(QRemoteConfigurationSourceAssignmentTypeAdapter())
             .add(QEligibilityStatusAdapter())
             .add(QEligibilityAdapter())
             .build()

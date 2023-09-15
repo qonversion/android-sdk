@@ -7,6 +7,7 @@
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ComplexMethod:errors.kt$internal fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
+    <ID>ConstructorParameterNaming:QRemoteConfig.kt$QRemoteConfig$@Json(name = "source") internal val _source: QRemoteConfigurationSource?</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
@@ -394,6 +395,8 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductTypeAdapter$@ToJson private fun toJson(enum: QProductType): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct&gt;): List&lt;QProduct&gt;</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceAssignmentTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationAssignmentType): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationSourceType): String</ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:BillingService.kt$import com.android.billingclient.api.*</ID>
