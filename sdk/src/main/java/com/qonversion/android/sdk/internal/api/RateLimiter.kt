@@ -19,12 +19,14 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
     }
 
     fun isRateLimitExceeded(requestType: RequestType, hash: Int): Boolean {
+        val ts = System.currentTimeMillis()
+        removeOutdatedRequests(requestType, ts)
+
         val requestsPerType = requests[requestType] ?: emptyList()
 
         var matchCount = 0
-        val ts = System.currentTimeMillis()
-        for (request in requestsPerType.reversed()) {
-            if (ts - request.timestamp >= MS_IN_SEC || matchCount >= maxRequestsPerSecond) {
+        for (request in requestsPerType) {
+            if (matchCount >= maxRequestsPerSecond) {
                 break
             }
 
@@ -32,6 +34,24 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
         }
 
         return matchCount >= maxRequestsPerSecond
+    }
+
+    private fun removeOutdatedRequests(requestType: RequestType, ts: Long) {
+        val requestsPerType = requests[requestType] ?: emptyList()
+
+        var i = 0;
+        while (i < requestsPerType.size && ts - requestsPerType[i].timestamp >= MS_IN_SEC) {
+            ++i
+        }
+
+        if (i > 0) {
+            if (i == requestsPerType.size) {
+                requests[requestType] = mutableListOf()
+            } else {
+                val filteredRequests = requestsPerType.subList(i, requestsPerType.size)
+                requests[requestType] = filteredRequests.toMutableList()
+            }
+        }
     }
 
     private class Request(
