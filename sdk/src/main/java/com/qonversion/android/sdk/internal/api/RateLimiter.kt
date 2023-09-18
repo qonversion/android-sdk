@@ -19,8 +19,7 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
     }
 
     fun isRateLimitExceeded(requestType: RequestType, hash: Int): Boolean {
-        val ts = System.currentTimeMillis()
-        removeOutdatedRequests(requestType, ts)
+        removeOutdatedRequests(requestType)
 
         val requestsPerType = requests[requestType] ?: emptyList()
 
@@ -36,10 +35,12 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
         return matchCount >= maxRequestsPerSecond
     }
 
-    private fun removeOutdatedRequests(requestType: RequestType, ts: Long) {
+    private fun removeOutdatedRequests(requestType: RequestType) {
         val requestsPerType = requests[requestType] ?: emptyList()
 
-        var i = 0;
+        var i = 0
+        val ts = System.currentTimeMillis()
+
         while (i < requestsPerType.size && ts - requestsPerType[i].timestamp >= MS_IN_SEC) {
             ++i
         }
