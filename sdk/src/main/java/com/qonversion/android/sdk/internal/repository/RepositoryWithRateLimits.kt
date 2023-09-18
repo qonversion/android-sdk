@@ -23,7 +23,7 @@ internal class RepositoryWithRateLimits(
 ) : QRepository {
     override fun init(initRequestData: InitRequestData) {
         withRateLimitCheck(
-            RequestType.RemoteConfig,
+            RequestType.Init,
             initRequestData.hashCode(),
             { error -> initRequestData.callback?.onError(error, null) }
         ) {
