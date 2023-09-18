@@ -22,7 +22,13 @@ internal class RepositoryWithRateLimits(
     private val rateLimiter: RateLimiter,
 ) : QRepository {
     override fun init(initRequestData: InitRequestData) {
-        repository.init(initRequestData)
+        withRateLimitCheck(
+            RequestType.RemoteConfig,
+            initRequestData.hashCode(),
+            { error -> initRequestData.callback?.onError(error, null) }
+        ) {
+            repository.init(initRequestData)
+        }
     }
 
     override fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
