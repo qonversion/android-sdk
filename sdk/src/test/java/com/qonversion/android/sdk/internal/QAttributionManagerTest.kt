@@ -4,6 +4,7 @@ import android.os.Looper
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.mockPrivateField
 import io.mockk.*
 import org.junit.Assert
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 internal class QAttributionManagerTest {
-    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockRepository = mockk<QRepository>(relaxed = true)
     private val appStateProvider = mockk<AppStateProvider>()
 
     private lateinit var attributionManager: QAttributionManager

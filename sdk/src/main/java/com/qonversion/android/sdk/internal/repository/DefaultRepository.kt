@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal
+package com.qonversion.android.sdk.internal.repository
 
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
@@ -10,6 +10,9 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
+import com.qonversion.android.sdk.internal.EnvironmentProvider
+import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
+import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
 import com.qonversion.android.sdk.internal.billing.sku
@@ -36,10 +39,15 @@ import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
+import com.qonversion.android.sdk.internal.enqueue
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.milliSecondsToSeconds
+import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.internal.stringValue
+import com.qonversion.android.sdk.internal.toQonversionError
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import retrofit2.Response
@@ -48,7 +56,7 @@ import java.util.Timer
 import java.util.TimerTask
 
 @SuppressWarnings("LongParameterList")
-internal class QonversionRepository internal constructor(
+internal class DefaultRepository internal constructor(
     private val api: Api,
     private val environmentProvider: EnvironmentProvider,
     private val config: InternalConfig,
@@ -57,7 +65,7 @@ internal class QonversionRepository internal constructor(
     private val errorMapper: ApiErrorMapper,
     private val preferences: SharedPreferences,
     private val delayCalculator: IncrementalDelayCalculator
-) {
+) : QRepository {
     private var advertisingId: String? = null
     private var installDate: Long = 0
 
@@ -68,16 +76,14 @@ internal class QonversionRepository internal constructor(
 
     // Public functions
 
-    fun init(
-        initRequestData: InitRequestData
-    ) {
+    override fun init(initRequestData: InitRequestData) {
         advertisingId = initRequestData.idfa
         this.installDate = initRequestData.installDate
 
         initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
-    fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
+    override fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
         val queryParams = mapOf("user_id" to userID)
         api.remoteConfig(queryParams).enqueue {
             onResponse = {
@@ -101,7 +107,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun attachUserToExperiment(
+    override fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
         userId: String,
@@ -125,7 +131,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun detachUserFromExperiment(
+    override fun detachUserFromExperiment(
         experimentId: String,
         userId: String,
         callback: QonversionExperimentAttachCallback
@@ -147,7 +153,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun purchase(
+    override fun purchase(
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
@@ -156,7 +162,7 @@ internal class QonversionRepository internal constructor(
         purchaseRequest(installDate, purchase, qProductId, callback)
     }
 
-    fun restore(
+    override fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
         callback: QonversionLaunchCallback?
@@ -166,11 +172,11 @@ internal class QonversionRepository internal constructor(
         restoreRequest(installDate, history, callback)
     }
 
-    fun attribution(
+    override fun attribution(
         conversionInfo: Map<String, Any>,
         from: String,
-        onSuccess: (() -> Unit)? = null,
-        onError: ((error: QonversionError) -> Unit)? = null
+        onSuccess: (() -> Unit)?,
+        onError: ((error: QonversionError) -> Unit)?
     ) {
         val attributionRequest = createAttributionRequest(conversionInfo, from)
         api.attribution(attributionRequest).enqueue {
@@ -190,7 +196,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun sendProperties(
+    override fun sendProperties(
         properties: Map<String, String>,
         onSuccess: (SendPropertiesResult) -> Unit,
         onError: (error: QonversionError) -> Unit
@@ -215,7 +221,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun getProperties(
+    override fun getProperties(
         onSuccess: (List<QUserProperty>) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
@@ -237,7 +243,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun eligibilityForProductIds(
+    override fun eligibilityForProductIds(
         productIds: List<String>,
         installDate: Long,
         callback: QonversionEligibilityCallback
@@ -271,7 +277,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun identify(
+    override fun identify(
         userID: String,
         currentUserID: String,
         onSuccess: (identityID: String) -> Unit,
@@ -296,11 +302,11 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun sendPushToken(token: String) {
+    override fun sendPushToken(token: String) {
         sendPushTokenRequest(token)
     }
 
-    fun screens(
+    override fun screens(
         screenId: String,
         onSuccess: (screen: Screen) -> Unit,
         onError: (error: QonversionError) -> Unit
@@ -323,7 +329,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun views(screenId: String) {
+    override fun views(screenId: String) {
         val viewsRequest = ViewsRequest(uid)
 
         api.views(screenId, viewsRequest).enqueue {
@@ -336,7 +342,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun actionPoints(
+    override fun actionPoints(
         queryParams: Map<String, String>,
         onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
         onError: (error: QonversionError) -> Unit
@@ -358,7 +364,7 @@ internal class QonversionRepository internal constructor(
         }
     }
 
-    fun crashReport(
+    override fun crashReport(
         crashData: CrashRequest,
         onSuccess: () -> Unit,
         onError: (error: QonversionError) -> Unit

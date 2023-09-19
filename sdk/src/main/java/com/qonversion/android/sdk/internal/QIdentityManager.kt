@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import javax.inject.Inject
 
@@ -10,7 +11,7 @@ interface IdentityManagerCallback {
 }
 
 internal class QIdentityManager @Inject constructor(
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val userInfoService: QUserInfoService
 ) {
     val currentPartnersIdentityId: String? get() = userInfoService.getPartnersIdentityId()

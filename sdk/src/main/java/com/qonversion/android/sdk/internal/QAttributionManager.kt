@@ -2,9 +2,10 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 
 internal class QAttributionManager internal constructor(
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val appStateProvider: AppStateProvider
 ) {
     private var pendingAttributionProvider: QAttributionProvider? = null

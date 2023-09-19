@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.automations.mvp
 import android.os.Build
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -19,7 +19,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
 internal class ScreenPresenterTest {
-    private val mockRepository = mockk<QonversionRepository>(relaxed = true)
+    private val mockRepository = mockk<QRepository>(relaxed = true)
     private val mockView = mockk<ScreenContract.View>(relaxed = true)
     private lateinit var screenPresenter: ScreenPresenter
 

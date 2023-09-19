@@ -1,13 +1,13 @@
 package com.qonversion.android.sdk.automations.mvp
 
 import android.net.Uri
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.dto.QActionResultType
 import javax.inject.Inject
 
 internal class ScreenPresenter @Inject constructor(
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val view: ScreenContract.View
 ) : ScreenContract.Presenter {
 
