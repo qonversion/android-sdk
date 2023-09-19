@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.internal.ActivityProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.QIdentityManager
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.services.QUserInfoService
@@ -25,7 +25,7 @@ internal class ManagersModule {
     @ApplicationScope
     @Provides
     fun provideAutomationsManager(
-        repository: QonversionRepository,
+        repository: QRepository,
         preferences: SharedPreferences,
         eventMapper: AutomationsEventMapper,
         appContext: Application,
@@ -53,7 +53,7 @@ internal class ManagersModule {
     @ApplicationScope
     @Provides
     fun provideIdentityManager(
-        repository: QonversionRepository,
+        repository: QRepository,
         userInfoService: QUserInfoService
     ): QIdentityManager {
         return QIdentityManager(repository, userInfoService)
@@ -63,7 +63,7 @@ internal class ManagersModule {
     @Provides
     fun provideUserPropertiesManager(
         appContext: Application,
-        repository: QonversionRepository,
+        repository: QRepository,
         propertiesStorage: UserPropertiesStorage,
         incrementalDelayCalculator: IncrementalDelayCalculator,
         appStateProvider: AppStateProvider,

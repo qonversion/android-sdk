@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.ApiHeadersProvider
 import com.qonversion.android.sdk.internal.api.ApiHelper
 import com.qonversion.android.sdk.internal.api.NetworkInterceptor
+import com.qonversion.android.sdk.internal.api.RateLimiter
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.dto.QDateAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityAdapter
@@ -100,8 +101,15 @@ internal class NetworkModule {
         return ApiHelper(internalConfig.apiUrl)
     }
 
+    @ApplicationScope
+    @Provides
+    fun provideRateLimiter(): RateLimiter {
+        return RateLimiter(MAX_SIMILAR_API_REQUESTS_PER_SECOND)
+    }
+
     companion object {
         private const val TIMEOUT = 30L
         private const val CACHE_SIZE = 10485776L // 10 MB
+        private const val MAX_SIMILAR_API_REQUESTS_PER_SECOND = 5
     }
 }

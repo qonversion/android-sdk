@@ -12,13 +12,14 @@ import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 import javax.inject.Inject
 
 internal class QUserPropertiesManager @Inject internal constructor(
     private val context: Application,
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private var propertiesStorage: PropertiesStorage,
     private val delayCalculator: IncrementalDelayCalculator,
     private val appStateProvider: AppStateProvider,

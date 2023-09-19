@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
@@ -19,7 +20,7 @@ internal class QonversionFactory(
     private val logger: Logger
 ) {
     fun createProductCenterManager(
-        repository: QonversionRepository,
+        repository: QRepository,
         purchasesCache: PurchasesCache,
         handledPurchasesCache: QHandledPurchasesCache,
         launchResultCacheWrapper: LaunchResultCacheWrapper,

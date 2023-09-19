@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
-import com.qonversion.android.sdk.internal.QonversionRepository
+import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.toBoolean
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
@@ -27,7 +27,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 internal class QAutomationsManager @Inject constructor(
-    private val repository: QonversionRepository,
+    private val repository: QRepository,
     private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,
     private val appContext: Application,
