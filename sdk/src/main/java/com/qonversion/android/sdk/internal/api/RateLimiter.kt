@@ -7,6 +7,7 @@ private const val MS_IN_SEC = 1000
 internal class RateLimiter(private val maxRequestsPerSecond: Int) {
     private val requests = mutableMapOf<RequestType, MutableList<Request>>()
 
+    @Synchronized
     fun saveRequest(requestType: RequestType, hash: Int) {
         val ts = System.currentTimeMillis()
 
@@ -18,6 +19,7 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
         requests[requestType]?.add(request)
     }
 
+    @Synchronized
     fun isRateLimitExceeded(requestType: RequestType, hash: Int): Boolean {
         removeOutdatedRequests(requestType)
 
@@ -35,6 +37,7 @@ internal class RateLimiter(private val maxRequestsPerSecond: Int) {
         return matchCount >= maxRequestsPerSecond
     }
 
+    @Synchronized
     private fun removeOutdatedRequests(requestType: RequestType) {
         val ts = System.currentTimeMillis()
         val requestsPerType = requests[requestType] ?: emptyList()
