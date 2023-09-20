@@ -79,7 +79,7 @@ internal class QRemoteConfigManager @Inject constructor(
 
     fun detachUserFromRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback) {
         currentRemoteConfig = null
-        remoteConfigService.detachUserFromRemoteConfiguration(experimentId, internalConfig.uid, callback)
+        remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, internalConfig.uid, callback)
     }
 
     private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {
