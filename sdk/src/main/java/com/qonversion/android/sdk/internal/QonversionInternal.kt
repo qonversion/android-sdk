@@ -31,6 +31,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
 internal class QonversionInternal(
@@ -241,6 +242,15 @@ internal class QonversionInternal(
 
     override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
         remoteConfigManager?.detachUserFromExperiment(experimentId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun attachUserToRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback) {
+        remoteConfigManager?.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
+            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+    override fun detachUserFromRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback) {
+        remoteConfigManager?.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 

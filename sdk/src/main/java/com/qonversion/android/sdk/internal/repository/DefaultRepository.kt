@@ -50,6 +50,7 @@ import com.qonversion.android.sdk.internal.stringValue
 import com.qonversion.android.sdk.internal.toQonversionError
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import retrofit2.Response
 import java.lang.RuntimeException
 import java.util.Timer
@@ -116,7 +117,7 @@ internal class DefaultRepository internal constructor(
         val request = AttachUserRequest(groupId)
         api.attachUserToExperiment(experimentId, userId, request).enqueue {
             onResponse = {
-                logger.debug("attachUserRequest - ${it.getLogMessage()}")
+                logger.debug("attachUserToExperimentRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     callback.onSuccess()
                 } else {
@@ -125,7 +126,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("attachUserRequest - failure - ${it.toQonversionError()}")
+                logger.release("attachUserToExperimentRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -138,7 +139,51 @@ internal class DefaultRepository internal constructor(
     ) {
         api.detachUserFromExperiment(experimentId, userId).enqueue {
             onResponse = {
-                logger.debug("detachUserRequest - ${it.getLogMessage()}")
+                logger.debug("detachUserFromExperimentRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+
+            onFailure = {
+                logger.release("detachUserFromExperimentRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    override fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        api.attachUserToRemoteConfiguration(remoteConfigurationId, userId).enqueue {
+            onResponse = {
+                logger.debug("attachUserToRemoteConfigurationRequest - ${it.getLogMessage()}")
+                if (it.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+
+            onFailure = {
+                logger.release("attachUserToRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    override fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        api.detachUserFromRemoteConfiguration(remoteConfigurationId, userId).enqueue {
+            onResponse = {
+                logger.debug("detachUserFromRemoteConfigurationRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     callback.onSuccess()
                 } else {

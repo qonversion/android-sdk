@@ -16,6 +16,7 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 
 internal class RepositoryWithRateLimits(
     private val repository: QRepository,
@@ -67,6 +68,34 @@ internal class RepositoryWithRateLimits(
             { error -> callback.onError(error) }
         ) {
             repository.detachUserFromExperiment(experimentId, userId, callback)
+        }
+    }
+
+    override fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        withRateLimitCheck(
+            RequestType.AttachUserToRemoteConfiguration,
+            (remoteConfigurationId + userId).hashCode(),
+            { error -> callback.onError(error) }
+        ) {
+            repository.attachUserToRemoteConfiguration(remoteConfigurationId, userId, callback)
+        }
+    }
+
+    override fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        withRateLimitCheck(
+            RequestType.DetachUserFromRemoteConfiguration,
+            (remoteConfigurationId + userId).hashCode(),
+            { error -> callback.onError(error) }
+        ) {
+            repository.detachUserFromRemoteConfiguration(remoteConfigurationId, userId, callback)
         }
     }
 

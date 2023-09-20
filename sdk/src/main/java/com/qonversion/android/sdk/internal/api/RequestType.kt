@@ -11,4 +11,6 @@ internal enum class RequestType {
     GetProperties,
     EligibilityForProductIds,
     Identify,
+    AttachUserToRemoteConfiguration,
+    DetachUserFromRemoteConfiguration,
 }
