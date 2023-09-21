@@ -192,7 +192,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("detachUserRequest - failure - ${it.toQonversionError()}")
+                logger.release("detachUserFromRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
