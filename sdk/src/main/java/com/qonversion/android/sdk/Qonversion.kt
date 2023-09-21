@@ -208,7 +208,10 @@ interface Qonversion {
      * @param remoteConfigurationId identifier of the remote configuration
      * @param callback callback that includes information about the result of the action
      */
-    fun attachUserToRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback)
+    fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    )
 
     /**
      * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
@@ -216,7 +219,10 @@ interface Qonversion {
      * @param remoteConfigurationId identifier of the remote configuration
      * @param callback callback that includes information about the result of the action
      */
-    fun detachUserFromRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback)
+    fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    )
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.
