@@ -249,6 +249,7 @@ internal class QonversionInternal(
         remoteConfigManager?.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
+
     override fun detachUserFromRemoteConfiguration(remoteConfigurationId: String, callback: QonversionRemoteConfigurationAttachCallback) {
         remoteConfigManager?.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
             ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
