@@ -15,6 +15,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
@@ -200,6 +201,28 @@ interface Qonversion {
      * @param callback callback that includes information about the result of the action
      */
     fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback)
+
+    /**
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
+     * Use this function to attach the user to the remote configuration.
+     * @param remoteConfigurationId identifier of the remote configuration
+     * @param callback callback that includes information about the result of the action
+     */
+    fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    )
+
+    /**
+     * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
+     * Use this function to detach the user from the remote configuration.
+     * @param remoteConfigurationId identifier of the remote configuration
+     * @param callback callback that includes information about the result of the action
+     */
+    fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    )
 
     /**
      * You can check if a user is eligible for an introductory offer, including a free trial.

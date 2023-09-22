@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import javax.inject.Inject
 
 internal class QRemoteConfigManager @Inject constructor(
@@ -69,6 +70,22 @@ internal class QRemoteConfigManager @Inject constructor(
     fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
         currentRemoteConfig = null
         remoteConfigService.detachUserFromExperiment(experimentId, internalConfig.uid, callback)
+    }
+
+    fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        currentRemoteConfig = null
+        remoteConfigService.attachUserToRemoteConfiguration(remoteConfigurationId, internalConfig.uid, callback)
+    }
+
+    fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    ) {
+        currentRemoteConfig = null
+        remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, internalConfig.uid, callback)
     }
 
     private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {
