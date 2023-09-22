@@ -90,13 +90,13 @@ internal interface Api {
         @Path("user_id") userId: String
     ): Call<Void>
 
-    @POST("v3/remote-configuration/{id}/users/{user_id}")
+    @POST("v3/remote-configurations/{id}/users/{user_id}")
     fun attachUserToRemoteConfiguration(
         @Path("id") experimentId: String,
         @Path("user_id") userId: String
     ): Call<Void>
 
-    @DELETE("v3/remote-configuration/{id}/users/{user_id}")
+    @DELETE("v3/remote-configurations/{id}/users/{user_id}")
     fun detachUserFromRemoteConfiguration(
         @Path("id") experimentId: String,
         @Path("user_id") userId: String
