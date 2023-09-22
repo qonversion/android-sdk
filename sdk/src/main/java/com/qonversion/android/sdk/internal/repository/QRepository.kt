@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 
 internal interface QRepository {
 
@@ -31,6 +32,18 @@ internal interface QRepository {
         experimentId: String,
         userId: String,
         callback: QonversionExperimentAttachCallback
+    )
+
+    fun attachUserToRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
+    )
+
+    fun detachUserFromRemoteConfiguration(
+        remoteConfigurationId: String,
+        userId: String,
+        callback: QonversionRemoteConfigurationAttachCallback
     )
 
     fun purchase(
