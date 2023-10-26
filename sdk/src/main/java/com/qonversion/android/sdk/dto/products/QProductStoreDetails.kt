@@ -9,34 +9,34 @@ import com.android.billingclient.api.ProductDetails
  */
 data class QProductStoreDetails(
     /**
-     * Original [ProductDetails] received from Google Play Billing Library
+     * Original [ProductDetails] received from Google Play Billing Library.
      */
     val originalProductDetails: ProductDetails,
 
     /**
-     * Identifier of the base plan which this details relate to.
+     * Identifier of the base plan to which these details relate.
      * Null for in-app products.
      */
     val basePlanId: String?,
 ) {
     /**
-     * Identifier of a subscription or an in-app product
+     * Identifier of a subscription or an in-app product.
      */
     val productId: String = originalProductDetails.productId
 
     /**
-     * Name of a subscription or an in-app product
+     * Name of a subscription or an in-app product.
      */
     val name: String = originalProductDetails.name
 
     /**
-     * Title of a subscription or an in-app product
+     * Title of a subscription or an in-app product.
      * The title includes the name of the app.
      */
     val title: String = originalProductDetails.title
 
     /**
-     * Description of a subscription or an in-app product
+     * Description of a subscription or an in-app product.
      */
     val description: String = originalProductDetails.description
 
@@ -61,10 +61,18 @@ data class QProductStoreDetails(
             QProductInAppDetails(it)
         }
 
+    /**
+     * True if there is any eligible offer with trial
+     * for this subscription and base plan combination.
+     * False otherwise or for an in-app product.
+     */
     val hasTrialOffer: Boolean = subscriptionOfferDetails?.any { it.hasTrial } ?: false
 
     /**
-     *
+     * The type of the current product. The difference from [QProduct.type] is that current field
+     * represents the information from Google Play Billing Library and depends on current client
+     * trial eligibility (in case of a subscription product), while the [QProduct.type]
+     * depends on the value from Qonversion Product Center.
      */
     val productType: QProductType = when (originalProductDetails.productType) {
         ProductType.SUBS -> if (hasTrialOffer) {

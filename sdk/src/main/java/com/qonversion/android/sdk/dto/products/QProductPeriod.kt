@@ -1,8 +1,22 @@
 package com.qonversion.android.sdk.dto.products
 
+/**
+ * A class describing a product period
+ */
 data class QProductPeriod(
+    /**
+     * A count of subsequent intervals.
+     */
     val count: Int,
+
+    /**
+     * Interval unit.
+     */
     val unit: Unit,
+
+    /**
+     * ISO 8601 representation of the period.
+     */
     val iso: String
 ) {
     companion object {
