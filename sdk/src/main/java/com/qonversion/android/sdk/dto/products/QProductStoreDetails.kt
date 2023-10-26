@@ -69,6 +69,20 @@ data class QProductStoreDetails(
     val hasTrialOffer: Boolean = subscriptionOfferDetails?.any { it.hasTrial } ?: false
 
     /**
+     * True if there is any eligible offer with intro price
+     * for this subscription and base plan combination.
+     * False otherwise or for an in-app product.
+     */
+    val hasIntroOffer: Boolean = subscriptionOfferDetails?.any { it.hasIntro } ?: false
+
+    /**
+     * True if there is any eligible offer with trial or intro price
+     * for this subscription and base plan combination.
+     * False otherwise or for an in-app product.
+     */
+    val hasTrialOrIntroOffer: Boolean = subscriptionOfferDetails?.any { it.hasTrialOrIntro } ?: false
+
+    /**
      * The type of the current product. The difference from [QProduct.type] is that current field
      * represents the information from Google Play Billing Library and depends on current client
      * trial eligibility (in case of a subscription product), while the [QProduct.type]
