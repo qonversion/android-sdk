@@ -31,11 +31,11 @@ enum class QonversionErrorCode(val specification: String) {
     ProductUnavailable("Requested product is not available for purchase or its SKU was not found"),
     NetworkConnectionFailed("There was a network issue. " +
             "Please make sure that the Internet connection is available on the device"),
-    ParseResponseFailed("A problem occurred when serializing or deserializing data"),
+    ParseResponseFailed("A problem occurred while serializing or deserializing data"),
     BackendError("There was a backend error"),
     ProductNotFound("Failed to purchase since the Qonversion product was not found"),
     OfferingsNotFound("No offerings found"),
-    LaunchError("There was an error on launching Qonversion SDK"),
+    LaunchError("There was an error while launching Qonversion SDK"),
     SkuDetailsError("Failed to retrieve SkuDetails for the in-app product ID"),
     InvalidCredentials("Access token is invalid or not set"),
     InvalidClientUid("Client Uid is invalid or not set"),
