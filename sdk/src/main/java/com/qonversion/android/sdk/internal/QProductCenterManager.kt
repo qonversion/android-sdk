@@ -249,7 +249,7 @@ internal class QProductCenterManager internal constructor(
             override fun onSuccess(products: Map<String, QProduct>) {
                 val result: MutableMap<String, QEligibility> = mutableMapOf()
                 products.forEach {
-                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOffer ?: false
+                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOrIntroOffer ?: false
                     val isInApp = it.value.storeDetails?.productType == QProductType.InApp
                     if (hasTrialOrIntroOffer) {
                         result[it.key] = QEligibility(status = QIntroEligibilityStatus.Eligible)
