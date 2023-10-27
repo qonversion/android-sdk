@@ -33,13 +33,13 @@ internal val PurchaseHistoryRecord.sku: String?
 
 internal fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
 
-private const val MaxBillingPhasesDurationYears = 55
+private const val MAX_BILLING_PHASES_DURATION_YEARS = 55
 
 // Calculates total price for a client if he would use this concrete offer.
 // 55 years is the maximum length of all the offer phases
 // (3 years max trial and 52 years max recurrent discount payments).
 internal val QProductOfferDetails.pricePerMaxDuration: Double get() {
-    var totalDays = QProductPeriod.Unit.Year.inDays * MaxBillingPhasesDurationYears
+    var totalDays = QProductPeriod.Unit.Year.inDays * MAX_BILLING_PHASES_DURATION_YEARS
     var totalPrice = .0
 
     for (pricingPhase in pricingPhases) {
