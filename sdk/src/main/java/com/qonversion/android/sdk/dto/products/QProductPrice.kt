@@ -32,7 +32,7 @@ data class QProductPrice(
      */
     val currency: Currency? = try {
         Currency.getInstance(priceCurrencyCode)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         null
     }
 
