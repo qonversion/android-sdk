@@ -38,13 +38,29 @@ data class QProductPricingPhase(
     /**
      * Type of the pricing phase.
      */
-    val type: PricingPhaseType = when {
-        recurrenceMode != RecurrenceMode.FiniteRecurring -> PricingPhaseType.Regular
-        price.isFree -> PricingPhaseType.FreeTrial
-        billingCycleCount == 1 -> PricingPhaseType.SinglePayment
-        billingCycleCount > 1 -> PricingPhaseType.DiscountedRecurringPayment
-        else -> PricingPhaseType.Unknown
+    val type: Type = when {
+        recurrenceMode != RecurrenceMode.FiniteRecurring -> Type.Regular
+        price.isFree -> Type.FreeTrial
+        billingCycleCount == 1 -> Type.SinglePayment
+        billingCycleCount > 1 -> Type.DiscountedRecurringPayment
+        else -> Type.Unknown
     }
+
+    /**
+     * True if the current phase is a trial period. False otherwise.
+     */
+    val isTrial: Boolean = type == Type.FreeTrial
+
+    /**
+     * True if the current phase is an intro period. False otherwise.
+     * Intro phase is one of single or recurrent discounted payments.
+     */
+    val isIntro: Boolean = type == Type.SinglePayment || type == Type.DiscountedRecurringPayment
+
+    /**
+     * True if the current phase represents the base plan. False otherwise.
+     */
+    val isBasePlan: Boolean = type == Type.Regular
 
     /**
      * Recurrence mode of the pricing phase.
@@ -79,7 +95,7 @@ data class QProductPricingPhase(
     /**
      * Type of the pricing phase.
      */
-    enum class PricingPhaseType {
+    enum class Type {
         /**
          * Regular subscription without any discounts like trial or intro offers.
          */

@@ -4,8 +4,13 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.dto.products.QProductOfferDetails
+import com.qonversion.android.sdk.dto.products.QProductPeriod
+import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
 
@@ -27,6 +32,54 @@ internal val PurchaseHistoryRecord.sku: String?
     get() = skus.firstOrNull()
 
 internal fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
+
+private const val MaxBillingPhasesDurationYears = 55
+
+// Calculates total price for a client if he would use this concrete offer.
+// 55 years is the maximum length of all the offer phases
+// (3 years max trial and 52 years max recurrent discount payments).
+internal val QProductOfferDetails.pricePerMaxDuration: Double get() {
+    var totalDays = QProductPeriod.Unit.Year.inDays * MaxBillingPhasesDurationYears
+    var totalPrice = .0
+
+    for (pricingPhase in pricingPhases) {
+        // Base plan is the last phase, so we just calculate the price of the remaining time
+        // of base plan usage.
+        if (pricingPhase.isBasePlan) {
+            val remainingPeriodCount = totalDays / pricingPhase.billingPeriod.durationDays
+            totalPrice += pricingPhase.price.priceAmountMicros * remainingPeriodCount
+            break
+        }
+
+        // For any trial or intro offer we decrease the amount of days left by its duration
+        totalDays -= pricingPhase.durationDays
+
+        // And also add the price for that offer for its total duration.
+        if (!pricingPhase.isTrial) {
+            totalPrice += pricingPhase.price.priceAmountMicros * pricingPhase.billingCycleCount
+        }
+    }
+
+    return totalPrice
+}
+
+internal val QProductPricingPhase.durationDays get() = when (type) {
+    QProductPricingPhase.Type.FreeTrial,
+    QProductPricingPhase.Type.DiscountedRecurringPayment,
+    QProductPricingPhase.Type.SinglePayment ->
+        billingPeriod.durationDays * billingCycleCount
+    else -> 0
+}
+
+internal val QProductPeriod.durationDays get() = unit.inDays * count
+
+internal val QProductPeriod.Unit.inDays get() = when (this) {
+    QProductPeriod.Unit.Day -> 1
+    QProductPeriod.Unit.Week -> 7
+    QProductPeriod.Unit.Month -> 30
+    QProductPeriod.Unit.Year -> 365
+    QProductPeriod.Unit.Unknown -> 0
+}
 
 private fun Long.convertLongToTime(): String {
     val date = Date(this)
