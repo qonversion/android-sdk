@@ -40,18 +40,21 @@ internal class Util {
                 "main" to QProduct(
                     qonversionID = "main",
                     storeID = "qonversion_subs_weekly",
+                    basePlanID = null,
                     type = QProductType.Trial,
                     duration = QProductDuration.Weekly
                 ),
                 "in_app" to QProduct(
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
+                    basePlanID = null,
                     type = QProductType.InApp,
                     duration = null
                 ),
                 "annual" to QProduct(
                     qonversionID = "annual",
                     storeID = "qonversion_subs_annual",
+                    basePlanID = null,
                     type = QProductType.Trial,
                     duration = QProductDuration.Annual
                 )
@@ -80,6 +83,7 @@ internal class Util {
                 "in_app" to QProduct(
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
+                    basePlanID = null,
                     type = QProductType.InApp,
                     duration = null
                 )
@@ -92,12 +96,14 @@ internal class Util {
                         QProduct(
                             qonversionID = "in_app",
                             storeID = "qonversion_inapp_consumable",
+                            basePlanID = null,
                             type = QProductType.InApp,
                             duration = null
                         ),
                         QProduct(
                             qonversionID = "main",
                             storeID = "qonversion_subs_weekly",
+                            basePlanID = null,
                             type = QProductType.Trial,
                             duration = QProductDuration.Weekly
                         )
@@ -111,12 +117,14 @@ internal class Util {
                             QProduct(
                                 qonversionID = "in_app",
                                 storeID = "qonversion_inapp_consumable",
+                                basePlanID = null,
                                 type = QProductType.InApp,
                                 duration = null
                             ),
                             QProduct(
                                 qonversionID = "main",
                                 storeID = "qonversion_subs_weekly",
+                                basePlanID = null,
                                 type = QProductType.Trial,
                                 duration = QProductDuration.Weekly
                             )

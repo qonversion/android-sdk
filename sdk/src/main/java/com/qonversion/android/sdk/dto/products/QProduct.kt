@@ -9,10 +9,12 @@ import com.squareup.moshi.JsonClass
 data class QProduct(
     @Json(name = "id") val qonversionID: String,
     @Json(name = "store_id") val storeID: String?,
+    @Json(name = "base_plan_id") val basePlanID: String?,
     @Json(name = "type") val type: QProductType,
     @Json(name = "duration") val duration: QProductDuration?
 ) {
     @Transient
+    @Deprecated("Consider using storeDetails instead") // todo maybe a Q documentation link for basePlanID usage info
     @Suppress("DEPRECATION")
     var skuDetail: SkuDetails? = null
         set(value) {
@@ -21,12 +23,20 @@ data class QProduct(
             field = value
         }
 
+    var storeDetails: QProductStoreDetails? = null
+
     @Transient
     var offeringID: String? = null
 
     @Transient
+    @Deprecated("Consider using storeDetails instead")
     var prettyPrice: String? = null
 
     @Transient
+    @Deprecated("Consider using storeDetails instead")
     var trialDuration: QTrialDuration = QTrialDuration.Unknown
+
+    internal fun setStoreProductDetails(productDetails: ProductDetails) {
+        storeDetails = QProductStoreDetails(productDetails, basePlanID)
+    }
 }
