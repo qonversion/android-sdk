@@ -37,7 +37,7 @@ data class QProductPrice(
     }
 
     /**
-     * Price currency symbol. Empty string if failed to parse.
+     * Price currency symbol. Null if failed to parse.
      */
-    val currencySymbol = currency?.symbol ?: ""
+    val currencySymbol = currency?.symbol
 }
