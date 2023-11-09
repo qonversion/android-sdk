@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.dto.products
 
 import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.ProductDetails
+import com.qonversion.android.sdk.internal.billing.pricePerMaxDuration
 
 /**
  * This class contains all the information about the concrete Google product,
@@ -51,6 +52,14 @@ data class QProductStoreDetails(
         originalProductDetails.subscriptionOfferDetails
             ?.filter { it.basePlanId == basePlanId }
             ?.map { QProductOfferDetails(it) }
+
+    /**
+     * The most profitable offer for the client in our opinion from all the available offers.
+     * We calculate the cheapest price for the client by comparing all the trial or intro phases
+     * along with base plans.
+     */
+    val defaultOfferDetails: QProductOfferDetails? =
+        subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
 
     /**
      * Offer details for an in-app product.

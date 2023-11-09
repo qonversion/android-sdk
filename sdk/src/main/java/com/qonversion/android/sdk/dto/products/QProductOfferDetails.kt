@@ -42,18 +42,13 @@ data class QProductOfferDetails(
     /**
      * A trial phase details, if exists.
      */
-    val trialPhase: QProductPricingPhase? = pricingPhases.find {
-        it.type === QProductPricingPhase.PricingPhaseType.FreeTrial
-    }
+    val trialPhase: QProductPricingPhase? = pricingPhases.find { it.isTrial }
 
     /**
      * An intro phase details, if exists.
      * Intro phase is one of single or recurrent discounted payments.
      */
-    val introPhase: QProductPricingPhase? = pricingPhases.find {
-        it.type === QProductPricingPhase.PricingPhaseType.SinglePayment ||
-        it.type === QProductPricingPhase.PricingPhaseType.DiscountedRecurringPayment
-    }
+    val introPhase: QProductPricingPhase? = pricingPhases.find { it.isIntro }
 
     /**
      * True if there is a trial phase in the current offer. False otherwise.

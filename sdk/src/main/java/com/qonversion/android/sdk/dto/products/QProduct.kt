@@ -36,7 +36,7 @@ data class QProduct(
     @Deprecated("Consider using storeDetails instead")
     var trialDuration: QTrialDuration = QTrialDuration.Unknown
 
-    private fun setStoreProductDetails(productDetails: ProductDetails) {
+    internal fun setStoreProductDetails(productDetails: ProductDetails) {
         storeDetails = QProductStoreDetails(productDetails, basePlanID)
     }
 }

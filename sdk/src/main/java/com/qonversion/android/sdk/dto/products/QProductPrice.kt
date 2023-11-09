@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.dto.products
 
+import java.util.Currency
+
 /**
  * Information about product's price.
  */
@@ -24,4 +26,18 @@ data class QProductPrice(
      * True, if the price is zero. False otherwise.
      */
     val isFree: Boolean = priceAmountMicros == 0L
+
+    /**
+     * [Currency] object from the [priceCurrencyCode]. Null if failed to parse.
+     */
+    val currency: Currency? = try {
+        Currency.getInstance(priceCurrencyCode)
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+
+    /**
+     * Price currency symbol. Null if failed to parse.
+     */
+    val currencySymbol = currency?.symbol
 }
