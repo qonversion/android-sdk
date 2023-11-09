@@ -29,8 +29,10 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.BillingService
@@ -245,19 +247,26 @@ internal class QProductCenterManager internal constructor(
     ) {
         loadProducts(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
-                val storeIds = products.map { it.value.skuDetail?.sku }.filterNotNull()
-                repository.eligibilityForProductIds(
-                    storeIds,
-                    installDate,
-                    object : QonversionEligibilityCallback {
-                        override fun onSuccess(eligibilities: Map<String, QEligibility>) {
-                            val resultForRequiredProductIds =
-                                eligibilities.filter { it.key in productIds }
-                            callback.onSuccess(resultForRequiredProductIds)
-                        }
+                val result: MutableMap<String, QEligibility> = mutableMapOf()
+                products.forEach {
+                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOrIntroOffer ?: false
+                    val isInApp = it.value.storeDetails?.productType == QProductType.InApp
+                    if (hasTrialOrIntroOffer) {
+                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.Eligible)
+                    }
 
-                        override fun onError(error: QonversionError) = callback.onError(error)
-                    })
+                    if (isInApp) {
+                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.NonIntroProduct)
+                    }
+
+                    if (it.value.type == QProductType.Trial && !hasTrialOrIntroOffer) {
+                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.Ineligible)
+                    }
+                }
+
+                val resultForRequiredProductIds =
+                    result.filter { it.key in productIds }
+                callback.onSuccess(resultForRequiredProductIds)
             }
 
             override fun onError(error: QonversionError) = callback.onError(error)

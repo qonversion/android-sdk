@@ -38,6 +38,7 @@ data class QProductPricingPhase(
     /**
      * Type of the pricing phase.
      */
+
     val type: Type = when {
         recurrenceMode != RecurrenceMode.FiniteRecurring -> Type.Regular
         price.isFree -> Type.FreeTrial
