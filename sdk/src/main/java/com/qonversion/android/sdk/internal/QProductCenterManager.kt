@@ -247,26 +247,21 @@ internal class QProductCenterManager internal constructor(
     ) {
         loadProducts(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
-                val result: MutableMap<String, QEligibility> = mutableMapOf()
-                products.forEach {
-                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOrIntroOffer ?: false
-                    val isInApp = it.value.storeDetails?.productType == QProductType.InApp
-                    if (hasTrialOrIntroOffer) {
-                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.Eligible)
+                val result = products.filter { it.key in productIds }.map {
+                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOrIntroOffer == true
+                    val isInApp = it.value.storeDetails?.isInApp == true
+                    val ineligible = it.value.type == QProductType.Trial && !hasTrialOrIntroOffer
+                    val status = when {
+                        hasTrialOrIntroOffer -> QEligibility(status = QIntroEligibilityStatus.Eligible)
+                        isInApp -> QEligibility(status = QIntroEligibilityStatus.NonIntroProduct)
+                        ineligible -> QEligibility(status = QIntroEligibilityStatus.Ineligible)
+                        else -> QEligibility(status = QIntroEligibilityStatus.Unknown)
                     }
 
-                    if (isInApp) {
-                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.NonIntroProduct)
-                    }
+                    it.key to status
+                }.associate { it.first to it.second }
 
-                    if (it.value.type == QProductType.Trial && !hasTrialOrIntroOffer) {
-                        result[it.key] = QEligibility(status = QIntroEligibilityStatus.Ineligible)
-                    }
-                }
-
-                val resultForRequiredProductIds =
-                    result.filter { it.key in productIds }
-                callback.onSuccess(resultForRequiredProductIds)
+                callback.onSuccess(result)
             }
 
             override fun onError(error: QonversionError) = callback.onError(error)

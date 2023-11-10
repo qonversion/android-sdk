@@ -106,4 +106,9 @@ data class QProductStoreDetails(
         ProductType.INAPP -> QProductType.InApp
         else -> QProductType.InApp
     }
+
+    /**
+     * True if the product type is InApp.
+     */
+    val isInApp: Boolean = productType == QProductType.InApp
 }
