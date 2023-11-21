@@ -8,7 +8,7 @@ internal enum class QStoreProductType {
 
     @BillingClient.ProductType
     fun toProductType(): String {
-        return when(this) {
+        return when (this) {
             InApp -> BillingClient.ProductType.INAPP
             Subscription -> BillingClient.ProductType.SUBS
         }
@@ -17,7 +17,7 @@ internal enum class QStoreProductType {
     @Suppress("DEPRECATION")
     @BillingClient.SkuType
     fun toSkuType(): String {
-        return when(this) {
+        return when (this) {
             InApp -> BillingClient.SkuType.INAPP
             Subscription -> BillingClient.SkuType.SUBS
         }

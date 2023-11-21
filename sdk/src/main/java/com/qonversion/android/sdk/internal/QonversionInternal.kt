@@ -5,13 +5,11 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
-import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey

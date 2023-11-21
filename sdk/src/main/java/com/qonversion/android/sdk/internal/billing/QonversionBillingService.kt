@@ -47,7 +47,7 @@ internal class QonversionBillingService internal constructor(
 
         fun fetchProductDetails() {
             // Fetching ProductDetails
-            val actualStoreIds = products.filter {it.storeID != null}
+            val actualStoreIds = products.filter { it.storeID != null }
                 .map { SubscriptionStoreId(
                     it.storeID!!,
                     it.basePlanID
@@ -63,7 +63,7 @@ internal class QonversionBillingService internal constructor(
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError != null) {
-                logger.release("withEnrichedStoreData() -> $billingSetupError")
+                logger.release("enrichStoreDataAsync() -> $billingSetupError")
                 onFailed(billingSetupError)
                 return@executeOnMainThread
             }
@@ -116,7 +116,7 @@ internal class QonversionBillingService internal constructor(
         } else {
             enrichStoreDataAsync(
                 listOfNotNull(product, oldProduct),
-                {error -> purchasesListener.onPurchasesFailed(error) }
+                { error -> purchasesListener.onPurchasesFailed(error) }
             ) {
                 handlePurchase()
             }
@@ -242,7 +242,7 @@ internal class QonversionBillingService internal constructor(
 
             if (purchaseHistoryRecord != null) {
                 logger.debug(
-                    "replaceOldPurchase() -> Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"
+                    "updatePurchase() -> Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"
                 )
 
                 makePurchase(
@@ -256,7 +256,7 @@ internal class QonversionBillingService internal constructor(
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
-                logger.release("replaceOldPurchase() -> $errorMessage")
+                logger.release("updatePurchase() -> $errorMessage")
             }
         }
     }

@@ -7,8 +7,6 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.internal.billing.ActualBillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.BillingClientHolder
-import com.qonversion.android.sdk.internal.billing.BillingClientWrapper
-import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.LegacyBillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.logger.Logger

@@ -11,7 +11,7 @@ import com.qonversion.android.sdk.internal.logger.Logger
 internal class BillingClientHolder(
     private val mainHandler: Handler,
     private val logger: Logger
-): BillingClientStateListener, PurchasesUpdatedListener {
+) : BillingClientStateListener, PurchasesUpdatedListener {
 
     private var billingClient: BillingClient? = null
 

@@ -2,13 +2,10 @@ package com.qonversion.android.sdk
 
 import android.app.Activity
 import android.util.Log
-import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
-import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
-import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
