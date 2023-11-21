@@ -1,8 +1,8 @@
 package com.qonversion.android.sdk.internal.billing
 
-import com.android.billingclient.api.BillingFlowParams
+import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 
 internal data class UpdatePurchaseInfo(
     val purchaseToken: String,
-    @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode val prorationMode: Int? = null
+    val updatePolicy: QPurchaseUpdatePolicy? = null
 )

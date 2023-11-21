@@ -4,6 +4,9 @@ import android.app.Activity
 import android.util.Log
 import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.dto.QAttributionProvider
+import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
+import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -77,86 +80,23 @@ interface Qonversion {
     /**
      * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
-     * @param id Qonversion product identifier for purchase
+     * @param purchaseModel necessary information for purchase
      * @param callback - callback that will be called when response is received
-     * @see [Product Center](https://qonversion.io/docs/product-center)
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
-    fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback)
-
-    /**
-     * Make a purchase and validate it through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param product Qonversion product for purchase
-     * @param callback - callback that will be called when response is received
-     * @see [Product Center](https://qonversion.io/docs/product-center)
-     */
-    fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback)
+    fun purchase(context: Activity, purchaseModel: QPurchaseModel, callback: QonversionEntitlementsCallback)
 
     /**
      * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
-     * @param productId Qonversion product identifier for purchase
-     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
+     * @param purchaseUpdateModel necessary information for purchase update
      * @param callback - callback that will be called when response is received
-     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
-     * @see [Product Center](https://qonversion.io/docs/product-center)
+     * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
     fun updatePurchase(
         context: Activity,
-        productId: String,
-        oldProductId: String,
-        callback: QonversionEntitlementsCallback
-    ) = updatePurchase(context, productId, oldProductId, null, callback)
-
-    /**
-     * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param productId Qonversion product identifier for purchase
-     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
-     * @param prorationMode proration mode
-     * @param callback - callback that will be called when response is received
-     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
-     * @see [Product Center](https://qonversion.io/docs/product-center)
-     */
-    fun updatePurchase(
-        context: Activity,
-        productId: String,
-        oldProductId: String,
-        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
-        callback: QonversionEntitlementsCallback
-    )
-
-    /**
-     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param product Qonversion product for purchase
-     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
-     * @param callback - callback that will be called when response is received
-     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
-     * @see [Product Center](https://qonversion.io/docs/product-center)
-     */
-    fun updatePurchase(
-        context: Activity,
-        product: QProduct,
-        oldProductId: String,
-        callback: QonversionEntitlementsCallback
-    ) = updatePurchase(context, product, oldProductId, null, callback)
-
-    /**
-     * Update (upgrade/downgrade) subscription and validate that through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param product Qonversion product for purchase
-     * @param oldProductId Qonversion product identifier from which the upgrade/downgrade will be initialized
-     * @param prorationMode proration mode
-     * @param callback - callback that will be called when response is received
-     * @see [Proration mode](https://developer.android.com/google/play/billing/subscriptions#proration)
-     * @see [Product Center](https://qonversion.io/docs/product-center)
-     */
-    fun updatePurchase(
-        context: Activity,
-        product: QProduct,
-        oldProductId: String,
-        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int? = null,
+        purchaseUpdateModel: QPurchaseUpdateModel,
         callback: QonversionEntitlementsCallback
     )
 

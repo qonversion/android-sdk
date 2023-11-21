@@ -4,6 +4,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QProductPeriod
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
@@ -18,18 +19,16 @@ internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
 internal fun PurchaseHistoryRecord.getDescription() =
-    "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
 
 internal fun Purchase.getDescription() =
-    "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: ${this.productId}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
-@Suppress("DEPRECATION")
-internal val Purchase.sku: String?
-    get() = skus.firstOrNull()
+internal val Purchase.productId: String?
+    get() = products.firstOrNull()
 
-@Suppress("DEPRECATION")
-internal val PurchaseHistoryRecord.sku: String?
-    get() = skus.firstOrNull()
+internal val PurchaseHistoryRecord.productId: String?
+    get() = products.firstOrNull()
 
 internal fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
 
@@ -80,6 +79,9 @@ internal val QProductPeriod.Unit.inDays get() = when (this) {
     QProductPeriod.Unit.Year -> 365
     QProductPeriod.Unit.Unknown -> 0
 }
+
+@Suppress("DEPRECATION")
+internal val QProduct.hasAnyStoreDetails get() = skuDetail != null || storeDetails != null
 
 private fun Long.convertLongToTime(): String {
     val date = Date(this)
