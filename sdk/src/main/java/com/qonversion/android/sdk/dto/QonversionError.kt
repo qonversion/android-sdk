@@ -28,7 +28,7 @@ enum class QonversionErrorCode(val specification: String) {
     ProductNotOwned("Failed to consume purchase since item is not owned"),
     ProductAlreadyOwned("Failed to purchase since item is already owned"),
     FeatureNotSupported("The requested feature is not supported"),
-    ProductUnavailable("Requested product is not available for purchase or its SKU was not found"),
+    ProductUnavailable("Requested product is not available for purchase or its product id was not found"),
     NetworkConnectionFailed("There was a network issue. " +
             "Please make sure that the Internet connection is available on the device"),
     ParseResponseFailed("A problem occurred while serializing or deserializing data"),
@@ -36,7 +36,6 @@ enum class QonversionErrorCode(val specification: String) {
     ProductNotFound("Failed to purchase since the Qonversion product was not found"),
     OfferingsNotFound("No offerings found"),
     LaunchError("There was an error while launching Qonversion SDK"),
-    SkuDetailsError("Failed to retrieve SkuDetails for the in-app product ID"),
     InvalidCredentials("Access token is invalid or not set"),
     InvalidClientUid("Client Uid is invalid or not set"),
     UnknownClientPlatform("The current platform is not supported"),

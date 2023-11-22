@@ -329,6 +329,7 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
+        purchasingCallbacks[product.storeID] = callback
         billingService.purchase(context, product, offerId, oldProduct, updatePolicy)
     }
 
@@ -495,7 +496,7 @@ internal class QProductCenterManager internal constructor(
             .asSequence()
             .flatMap { record ->
                 products
-                    .filter { it.storeID === record.historyRecord.productId }
+                    .filter { it.storeID == record.historyRecord.productId }
                     .flatMap {
                         val permissionIds = productPermissions[it.qonversionID] ?: emptyList()
                         permissionIds.map { permissionId ->
@@ -902,7 +903,6 @@ internal class QProductCenterManager internal constructor(
 
             if (!handledPurchasesCache.shouldHandlePurchase(purchase)) return@forEach
 
-            // todo check that old purchase flow still has subscriptionId
             val product: QProduct? = launchResultCache.getLaunchResult()?.products?.values?.find {
                 it.storeID == purchase.productId
             }

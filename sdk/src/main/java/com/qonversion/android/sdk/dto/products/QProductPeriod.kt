@@ -21,15 +21,19 @@ data class QProductPeriod(
 ) {
     companion object {
         fun from(isoPeriod: String): QProductPeriod {
+            fun String.toPeriodCount() = takeIf { isNotEmpty() }
+                ?.substring(0, length - 1)
+                ?.toIntOrNull() ?: 0
+
             val regex = "^P(?!\$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?\$".toRegex()
             val parts = regex.matchEntire(isoPeriod)
                 ?: return QProductPeriod(0, Unit.Unknown, isoPeriod)
 
             val (sYear, sMonth, sWeek, sDay) = parts.destructured
-            val year = sYear.toIntOrNull() ?: 0
-            val month = sMonth.toIntOrNull() ?: 0
-            val week = sWeek.toIntOrNull() ?: 0
-            val day = sDay.toIntOrNull() ?: 0
+            val year = sYear.toPeriodCount()
+            val month = sMonth.toPeriodCount()
+            val week = sWeek.toPeriodCount()
+            val day = sDay.toPeriodCount()
 
             return when {
                 year > 0 -> QProductPeriod(year, Unit.Year, isoPeriod)

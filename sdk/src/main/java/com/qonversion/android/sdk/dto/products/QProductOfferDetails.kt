@@ -40,6 +40,11 @@ data class QProductOfferDetails(
         originalOfferDetails.pricingPhases.pricingPhaseList.map { QProductPricingPhase(it) }
 
     /**
+     * A base plan phase details.
+     */
+    val basePlan: QProductPricingPhase? = pricingPhases.find { it.isBasePlan }
+
+    /**
      * A trial phase details, if exists.
      */
     val trialPhase: QProductPricingPhase? = pricingPhases.find { it.isTrial }

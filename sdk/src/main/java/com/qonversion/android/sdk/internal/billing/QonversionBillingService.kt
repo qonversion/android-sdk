@@ -131,20 +131,20 @@ internal class QonversionBillingService internal constructor(
         purchases
             .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
             .forEach { purchase ->
-                products.find { it.storeID == purchase.productId }?.let { product ->
-                    @Suppress("DEPRECATION")
-                    val isInApp = product.storeDetails?.isInApp == true ||
-                            product.skuDetail?.type == BillingClient.SkuType.INAPP
-
-                    @Suppress("DEPRECATION")
-                    val isSubscription = product.storeDetails?.isSubscription == true ||
-                            product.skuDetail?.type == BillingClient.SkuType.SUBS
-
-                    if (isInApp) {
-                        consume(purchase.purchaseToken)
-                    } else if (isSubscription && !purchase.isAcknowledged) {
-                        acknowledge(purchase.purchaseToken)
-                    }
+                val productId = purchase.productId ?: return
+                getStoreProductType(
+                    productId,
+                    { error -> logger.release("Failed to fetch product type for purchase $productId - " + error.message) }
+                ) { productType ->
+                    when (productType) {
+                        QStoreProductType.InApp -> {
+                            consume(purchase.purchaseToken)
+                        }
+                        QStoreProductType.Subscription -> {
+                            if (!purchase.isAcknowledged) {
+                                acknowledge(purchase.purchaseToken)
+                            }
+                        }}
                 }
             }
     }
@@ -321,27 +321,25 @@ internal class QonversionBillingService internal constructor(
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                billingClientHolder.withReadyClient {
-                    actualBillingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
-                        if (billingResult.isOk && purchaseHistoryRecords != null) {
-                            val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
-                                productType,
-                                purchaseHistoryRecords
-                            )
-                            onQueryHistoryCompleted(purchaseHistory)
-                        } else {
-                            var errorMessage = "Failed to retrieve purchase history. "
-                            if (purchaseHistoryRecords == null) {
-                                errorMessage += "Purchase history for $productType is null. "
-                            }
-
-                            onQueryHistoryFailed(
-                                BillingError(
-                                    billingResult.responseCode,
-                                    "$errorMessage ${billingResult.getDescription()}"
-                                )
-                            )
+                actualBillingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
+                    if (billingResult.isOk && purchaseHistoryRecords != null) {
+                        val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
+                            productType,
+                            purchaseHistoryRecords
+                        )
+                        onQueryHistoryCompleted(purchaseHistory)
+                    } else {
+                        var errorMessage = "Failed to retrieve purchase history. "
+                        if (purchaseHistoryRecords == null) {
+                            errorMessage += "Purchase history for $productType is null. "
                         }
+
+                        onQueryHistoryFailed(
+                            BillingError(
+                                billingResult.responseCode,
+                                "$errorMessage ${billingResult.getDescription()}"
+                            )
+                        )
                     }
                 }
             } else {
@@ -436,8 +434,9 @@ internal class QonversionBillingService internal constructor(
         // -- storeDetails are loaded
         // -- base plan id is specified
         // -- offer for that base plan exists
+        val storeDetails = product.storeDetails
         return when {
-            product.storeDetails != null && product.basePlanID != null -> actualBillingClientWrapper
+            storeDetails != null && (product.basePlanID != null || storeDetails.isInApp) -> actualBillingClientWrapper
             @Suppress("DEPRECATION") product.skuDetail != null -> legacyBillingClientWrapper
             else -> return null
         }

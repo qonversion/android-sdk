@@ -35,7 +35,7 @@ private const val TAG = "HomeFragment"
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
 
-    private val productIdSubs = "main"
+    private val productIdSubs = "weekly"
     private val productIdInApp = "in_app"
     private val entitlementPlus = "plus"
     private val entitlementStandart = "standart"
@@ -136,18 +136,21 @@ class HomeFragment : Fragment() {
         binding.buttonRestore.text = getStr(R.string.restore_purchases)
 
         val subscription = products[productIdSubs]
-        if (subscription != null) {
+        subscription?.storeDetails?.defaultSubscriptionOfferDetails?.let {
             binding.buttonSubscribe.text = String.format(
-                "%s %s / %s", getStr(R.string.subscribe_for),
-                subscription.prettyPrice, subscription.duration?.name
+                "%s %s / %d %s",
+                getStr(R.string.subscribe_for),
+                it.basePlan?.price?.formattedPrice,
+                it.basePlan?.billingPeriod?.count,
+                it.basePlan?.billingPeriod?.unit?.name,
             )
         }
 
         val inApp = products[productIdInApp]
-        if (inApp != null) {
+        inApp?.storeDetails?.inAppOfferDetails?.let {
             binding.buttonInApp.text = String.format(
                 "%s %s", getStr(R.string.buy_for),
-                inApp.prettyPrice
+                it.price.formattedPrice
             )
         }
     }

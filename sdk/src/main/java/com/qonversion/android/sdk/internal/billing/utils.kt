@@ -45,7 +45,11 @@ internal val QProductOfferDetails.pricePerMaxDuration: Double get() {
         // Base plan is the last phase, so we just calculate the price of the remaining time
         // of base plan usage.
         if (pricingPhase.isBasePlan) {
-            val remainingPeriodCount = totalDays / pricingPhase.billingPeriod.durationDays
+            val remainingPeriodCount = if (pricingPhase.billingPeriod.durationDays != 0) {
+                totalDays.toDouble() / pricingPhase.billingPeriod.durationDays
+            } else {
+                Double.MAX_VALUE
+            }
             totalPrice += pricingPhase.price.priceAmountMicros * remainingPeriodCount
             break
         }

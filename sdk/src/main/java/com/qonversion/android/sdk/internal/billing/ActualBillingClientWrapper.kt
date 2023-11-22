@@ -74,7 +74,7 @@ internal class ActualBillingClientWrapper(
                 return@run null
             }
 
-            storeDetails.defaultOfferDetails ?: run {
+            storeDetails.defaultSubscriptionOfferDetails ?: run {
                 onFailed(BillingError(
                     BillingResponseCode.ITEM_UNAVAILABLE,
                     "No offer found for purchasing Qonversion subscription product ${product.qonversionID}"
