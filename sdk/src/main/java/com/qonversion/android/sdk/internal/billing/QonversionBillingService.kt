@@ -17,8 +17,8 @@ internal class QonversionBillingService internal constructor(
     private val logger: Logger,
     private val isAnalyticsMode: Boolean,
     private val billingClientHolder: BillingClientHolder,
-    private val legacyBillingClientWrapper: LegacyBillingClientWrapper,
-    private val actualBillingClientWrapper: ActualBillingClientWrapper
+    private val billingClientWrapper: BillingClientWrapper,
+    private val legacyBillingClientWrapper: LegacyBillingClientWrapper
 ) : PurchasesUpdatedListener, BillingClientHolder.ConnectionListener, BillingService {
 
     private val requestsQueue = ConcurrentLinkedQueue<(billingSetupError: BillingError?) -> Unit>()
@@ -52,7 +52,7 @@ internal class QonversionBillingService internal constructor(
                     it.storeID!!,
                     it.basePlanID
                 ) }
-            actualBillingClientWrapper.withStoreDataLoaded(
+            billingClientWrapper.withStoreDataLoaded(
                 actualStoreIds,
                 onFailed,
             ) {
@@ -89,7 +89,7 @@ internal class QonversionBillingService internal constructor(
                     storeId,
                     product.basePlanID
                 )
-                actualBillingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
+                billingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
                     product.setStoreProductDetails(storeData)
                 }
             }
@@ -200,7 +200,7 @@ internal class QonversionBillingService internal constructor(
                 return@executeOnMainThread
             }
 
-            actualBillingClientWrapper.queryPurchases(onFailed, onCompleted)
+            billingClientWrapper.queryPurchases(onFailed, onCompleted)
         }
     }
 
@@ -209,7 +209,7 @@ internal class QonversionBillingService internal constructor(
         onFailed: (error: BillingError) -> Unit,
         onSuccess: (type: QStoreProductType) -> Unit
     ) {
-        actualBillingClientWrapper.getStoreProductType(
+        billingClientWrapper.getStoreProductType(
             storeId,
             { actualError ->
                 legacyBillingClientWrapper.getStoreProductType(
@@ -297,7 +297,7 @@ internal class QonversionBillingService internal constructor(
         logger.debug("consume() -> Consuming purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                actualBillingClientWrapper.consume(purchaseToken)
+                billingClientWrapper.consume(purchaseToken)
             }
         }
     }
@@ -308,7 +308,7 @@ internal class QonversionBillingService internal constructor(
         logger.debug("acknowledge() -> Acknowledging purchase with token $purchaseToken")
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                actualBillingClientWrapper.acknowledge(purchaseToken)
+                billingClientWrapper.acknowledge(purchaseToken)
             }
         }
     }
@@ -322,7 +322,7 @@ internal class QonversionBillingService internal constructor(
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError == null) {
-                actualBillingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
+                billingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
                     if (billingResult.isOk && purchaseHistoryRecords != null) {
                         val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
                             productType,
@@ -430,14 +430,14 @@ internal class QonversionBillingService internal constructor(
 
     private fun chooseBillingClientWrapperForProductPurchase(
         product: QProduct
-    ): BillingClientWrapper<*, *>? {
+    ): IBillingClientWrapper<*, *>? {
         // Use new billing for the products, where
         // -- storeDetails are loaded
         // -- base plan id is specified
         // -- offer for that base plan exists
         val storeDetails = product.storeDetails
         return when {
-            storeDetails != null && (product.basePlanID != null || storeDetails.isInApp) -> actualBillingClientWrapper
+            storeDetails != null && (product.basePlanID != null || storeDetails.isInApp) -> billingClientWrapper
             @Suppress("DEPRECATION") product.skuDetail != null -> legacyBillingClientWrapper
             else -> return null
         }

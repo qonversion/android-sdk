@@ -12,7 +12,7 @@ internal class LegacyBillingClientWrapper(
     billingClientHolder: BillingClientHolder,
     logger: Logger,
 ) : BillingClientWrapperBase(billingClientHolder, logger),
-    @Suppress("DEPRECATION") BillingClientWrapper<LegacyStoreId, SkuDetails> {
+    @Suppress("DEPRECATION") IBillingClientWrapper<LegacyStoreId, SkuDetails> {
 
     @Suppress("DEPRECATION")
     private var skuDetails = mapOf<LegacyStoreId, SkuDetails>()

@@ -5,7 +5,7 @@ import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchasesUpdatedListener
-import com.qonversion.android.sdk.internal.billing.ActualBillingClientWrapper
+import com.qonversion.android.sdk.internal.billing.BillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.BillingClientHolder
 import com.qonversion.android.sdk.internal.billing.LegacyBillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
@@ -63,8 +63,8 @@ internal class QonversionFactory(
             logger,
             isAnalyticsMode,
             billingClientHolder,
-            createLegacyBillingClientWrapper(billingClientHolder),
-            createActualBillingClientWrapper(billingClientHolder)
+            createBillingClientWrapper(billingClientHolder),
+            createLegacyBillingClientWrapper(billingClientHolder)
         )
     }
 
@@ -86,10 +86,10 @@ internal class QonversionFactory(
         return LegacyBillingClientWrapper(billingClientHolder, logger)
     }
 
-    private fun createActualBillingClientWrapper(
+    private fun createBillingClientWrapper(
         billingClientHolder: BillingClientHolder
-    ): ActualBillingClientWrapper {
-        return ActualBillingClientWrapper(billingClientHolder, logger)
+    ): BillingClientWrapper {
+        return BillingClientWrapper(billingClientHolder, logger)
     }
 
     @UiThread
