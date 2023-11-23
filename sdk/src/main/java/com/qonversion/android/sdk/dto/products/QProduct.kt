@@ -18,7 +18,7 @@ data class QProduct(
     @Json(name = "duration") val duration: QProductDuration?
 ) {
     @Transient
-    @Deprecated("Consider using storeDetails instead") // todo maybe a Q documentation link for basePlanID usage info
+    @Deprecated("Consider using `storeDetails` instead")
     @Suppress("DEPRECATION")
     var skuDetail: SkuDetails? = null
         set(value) {
@@ -52,6 +52,15 @@ data class QProduct(
      */
     fun toPurchaseModel(offerId: String? = null): QPurchaseModel {
         return QPurchaseModel(qonversionID, offerId)
+    }
+
+    /**
+     * Converts this product to purchase model to pass to [Qonversion.purchase].
+     * @param offer concrete offer which you'd like to purchase.
+     * @return purchase model to pass to the purchase method.
+     */
+    fun toPurchaseModel(offer: QProductOfferDetails): QPurchaseModel {
+        return toPurchaseModel(offer.offerId)
     }
 
     /**

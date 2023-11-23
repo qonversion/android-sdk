@@ -24,18 +24,12 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.api.ApiHelperTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.AppRequestTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.AttributionRequestTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.EnvironmentRequestTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.InitRequestTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.OsRequestTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
-    <ID>ForbiddenComment:AttributionRequestTest.kt$AttributionRequestTest$// TODO: Update test for new AttributionRequest format</ID>
-    <ID>ForbiddenComment:EnvironmentRequestTest.kt$EnvironmentRequestTest$// TODO: Update test for new Environment format</ID>
-    <ID>ForbiddenComment:InitRequestTest.kt$InitRequestTest$// TODO: Update test for new InitRequest format</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
@@ -200,11 +194,8 @@
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:AttributionRequestTest.kt$com.qonversion.android.sdk.internal.requests.AttributionRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
-    <ID>NewLineAtEndOfFile:EnvironmentRequestTest.kt$com.qonversion.android.sdk.internal.requests.EnvironmentRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt</ID>
-    <ID>NewLineAtEndOfFile:InitRequestTest.kt$com.qonversion.android.sdk.internal.requests.InitRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.internal.requests.OsRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt</ID>
