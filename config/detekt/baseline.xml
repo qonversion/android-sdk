@@ -31,8 +31,11 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
+    <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, withoutOffer: Boolean, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
+    <ID>LongParameterList:PurchaseModelInternalEnriched.kt$PurchaseModelInternalEnriched$( productId: String, val product: QProduct, offerId: String?, withoutOffer: Boolean, oldProductId: String?, val oldProduct: QProduct?, updatePolicy: QPurchaseUpdatePolicy?, )</ID>
+    <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, withoutOffer: Boolean, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( private val mainHandler: Handler, private val purchasesListener: PurchasesListener, private val logger: Logger, private val isAnalyticsMode: Boolean, private val billingClientHolder: BillingClientHolder, private val billingClientWrapper: BillingClientWrapper, private val legacyBillingClientWrapper: LegacyBillingClientWrapper )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
@@ -176,9 +179,9 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.BillingClientWrapperBase.kt:59</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:137</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:246</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:361</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:143</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:253</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:371</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.utils.kt:22</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.errors.kt:33</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:165</ID>
@@ -245,7 +248,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
-    <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
+    <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, withoutOffer: Boolean, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
