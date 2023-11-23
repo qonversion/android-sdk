@@ -123,7 +123,7 @@ internal class QonversionBillingService internal constructor(
         }
     }
 
-    override fun consumePurchases(purchases: List<Purchase>, products: List<QProduct>) {
+    override fun consumePurchases(purchases: List<Purchase>) {
         if (isAnalyticsMode) {
             return
         }

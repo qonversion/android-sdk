@@ -25,7 +25,7 @@ internal interface BillingService {
         updatePolicy: QPurchaseUpdatePolicy? = null
     )
 
-    fun consumePurchases(purchases: List<Purchase>, products: List<QProduct>)
+    fun consumePurchases(purchases: List<Purchase>)
 
     fun consumeHistoryRecords(historyRecords: List<PurchaseHistory>)
 

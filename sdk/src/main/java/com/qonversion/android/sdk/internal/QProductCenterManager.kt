@@ -443,7 +443,6 @@ internal class QProductCenterManager internal constructor(
         }
 
         launchResultCache.productPermissions?.let {
-            // todo check that old flow still has subscriptionId
             val purchasedProduct = launchResult.products.values.find { product ->
                 product.storeID == purchase.productId
             } ?: run {
@@ -780,7 +779,11 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        callbacks.forEach { it.onSuccess(launchResult.products) }
+        val products = launchResult.products.values.toList()
+        billingService.enrichStoreData(products)
+        callbacks.forEach { callback ->
+            callback.onSuccess(products.associateBy { it.qonversionID })
+        }
     }
 
     @Synchronized
@@ -882,9 +885,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun handlePurchases(purchases: List<Purchase>) {
-        val products = launchResultCache.getLaunchResult()?.products?.values?.toList()
-            ?: emptyList()
-        billingService.consumePurchases(purchases, products)
+        billingService.consumePurchases(purchases)
 
         purchases.forEach { purchase ->
             val purchaseCallback = purchasingCallbacks[purchase.productId]
