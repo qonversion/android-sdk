@@ -6,7 +6,7 @@ import com.android.billingclient.api.*
 import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
-import com.qonversion.android.sdk.internal.dto.SubscriptionStoreId
+import com.qonversion.android.sdk.internal.dto.ProductStoreId
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -48,7 +48,7 @@ internal class QonversionBillingService internal constructor(
         fun fetchProductDetails() {
             // Fetching ProductDetails
             val actualStoreIds = products.filter { it.storeID != null }
-                .map { SubscriptionStoreId(
+                .map { ProductStoreId(
                     it.storeID!!,
                     it.basePlanID
                 ) }
@@ -85,11 +85,11 @@ internal class QonversionBillingService internal constructor(
                 @Suppress("DEPRECATION")
                 product.skuDetail = legacyBillingClientWrapper.getStoreData(storeId)
 
-                val subscriptionStoreId = SubscriptionStoreId(
+                val productStoreId = ProductStoreId(
                     storeId,
                     product.basePlanID
                 )
-                actualBillingClientWrapper.getStoreData(subscriptionStoreId)?.let { storeData ->
+                actualBillingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
                     product.setStoreProductDetails(storeData)
                 }
             }
@@ -144,7 +144,8 @@ internal class QonversionBillingService internal constructor(
                             if (!purchase.isAcknowledged) {
                                 acknowledge(purchase.purchaseToken)
                             }
-                        }}
+                        }
+                    }
                 }
             }
     }

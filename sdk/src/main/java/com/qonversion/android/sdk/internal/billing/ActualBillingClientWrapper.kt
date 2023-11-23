@@ -14,23 +14,23 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
-import com.qonversion.android.sdk.internal.dto.SubscriptionStoreId
+import com.qonversion.android.sdk.internal.dto.ProductStoreId
 import com.qonversion.android.sdk.internal.logger.Logger
 
 internal class ActualBillingClientWrapper(
     billingClientHolder: BillingClientHolder,
     logger: Logger
 ) : BillingClientWrapperBase(billingClientHolder, logger),
-    BillingClientWrapper<SubscriptionStoreId, ProductDetails> {
+    BillingClientWrapper<ProductStoreId, ProductDetails> {
 
     private var productDetails = mapOf<String, ProductDetails>()
 
     override fun withStoreDataLoaded(
-        storeIds: List<SubscriptionStoreId>,
+        storeIds: List<ProductStoreId>,
         onFailed: (error: BillingError) -> Unit,
         onReady: () -> Unit
     ) {
-        val productIds = storeIds.map { it.subscriptionId }
+        val productIds = storeIds.map { it.productId }
 
         val idsToLoad = productIds.filterNot { productDetails.containsKey(it) }
         if (idsToLoad.isEmpty()) {
@@ -46,8 +46,8 @@ internal class ActualBillingClientWrapper(
         }
     }
 
-    override fun getStoreData(storeId: SubscriptionStoreId): ProductDetails? {
-        return productDetails[storeId.subscriptionId]
+    override fun getStoreData(storeId: ProductStoreId): ProductDetails? {
+        return productDetails[storeId.productId]
     }
 
     override fun makePurchase(
@@ -57,7 +57,15 @@ internal class ActualBillingClientWrapper(
         updatePurchaseInfo: UpdatePurchaseInfo?,
         onFailed: (error: BillingError) -> Unit
     ) {
-        val storeDetails = product.storeDetails ?: return
+        val storeDetails = product.storeDetails ?: run {
+            onFailed(
+                BillingError(
+                    BillingResponseCode.ITEM_UNAVAILABLE,
+                    "Store details not found for purchase"
+                )
+            )
+            return
+        }
 
         logger.debug("makePurchase() -> Purchasing the product: ${storeDetails.productId}")
 
@@ -176,13 +184,13 @@ internal class ActualBillingClientWrapper(
         onSuccess: (type: QStoreProductType) -> Unit
     ) {
         productDetails[storeId]?.let {
-            onSuccess(QStoreProductType.fromSkuType(it.productType))
+            onSuccess(QStoreProductType.fromProductType(it.productType))
             return
         }
 
         loadProducts(listOf(storeId), onFailed) { details ->
             details.firstOrNull()?.takeIf { it.productId == storeId }?.let {
-                onSuccess(QStoreProductType.fromSkuType(it.productType))
+                onSuccess(QStoreProductType.fromProductType(it.productType))
             } ?: onFailed(
                 BillingError(
                     BillingResponseCode.ITEM_UNAVAILABLE,
