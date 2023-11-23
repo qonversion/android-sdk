@@ -39,7 +39,7 @@
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
-    <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( private val mainHandler: Handler, private val purchasesListener: PurchasesListener, private val logger: Logger, private val isAnalyticsMode: Boolean, private val billingClientHolder: BillingClientHolder, private val legacyBillingClientWrapper: LegacyBillingClientWrapper, private val actualBillingClientWrapper: ActualBillingClientWrapper )</ID>
+    <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( private val mainHandler: Handler, private val purchasesListener: PurchasesListener, private val logger: Logger, private val isAnalyticsMode: Boolean, private val billingClientHolder: BillingClientHolder, private val billingClientWrapper: BillingClientWrapper, private val legacyBillingClientWrapper: LegacyBillingClientWrapper )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
@@ -253,8 +253,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:27</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>ReturnCount:ActualBillingClientWrapper.kt$ActualBillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
+    <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
@@ -290,13 +290,13 @@
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QExceptionManager.kt$QExceptionManager$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
-    <ID>TooManyFunctions:ActualBillingClientWrapper.kt$ActualBillingClientWrapper : BillingClientWrapperBaseBillingClientWrapper</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
+    <ID>TooManyFunctions:BillingClientWrapper.kt$BillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:DefaultRepository.kt$DefaultRepository : QRepository</ID>
     <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
-    <ID>TooManyFunctions:LegacyBillingClientWrapper.kt$LegacyBillingClientWrapper : BillingClientWrapperBaseBillingClientWrapper</ID>
+    <ID>TooManyFunctions:LegacyBillingClientWrapper.kt$LegacyBillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>TooManyFunctions:QRepository.kt$QRepository</ID>
