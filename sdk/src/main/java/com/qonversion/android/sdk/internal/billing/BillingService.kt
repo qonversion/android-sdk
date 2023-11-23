@@ -2,9 +2,9 @@ package com.qonversion.android.sdk.internal.billing
 
 import android.app.Activity
 import com.android.billingclient.api.Purchase
-import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 
 internal interface BillingService {
@@ -19,10 +19,7 @@ internal interface BillingService {
 
     fun purchase(
         activity: Activity,
-        product: QProduct,
-        offerId: String?,
-        oldProduct: QProduct? = null,
-        updatePolicy: QPurchaseUpdatePolicy? = null
+        purchaseModel: PurchaseModelInternalEnriched,
     )
 
     fun consumePurchases(purchases: List<Purchase>)

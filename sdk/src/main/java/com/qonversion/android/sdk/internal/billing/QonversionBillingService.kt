@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
 import com.qonversion.android.sdk.internal.dto.ProductStoreId
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -96,26 +97,31 @@ internal class QonversionBillingService internal constructor(
         }
     }
 
-    override fun purchase(
-        activity: Activity,
-        product: QProduct,
-        offerId: String?,
-        oldProduct: QProduct?,
-        updatePolicy: QPurchaseUpdatePolicy?
-    ) {
+    override fun purchase(activity: Activity, purchaseModel: PurchaseModelInternalEnriched) {
         fun handlePurchase() {
-            if (oldProduct != null && oldProduct.hasAnyStoreDetails) {
-                updatePurchase(activity, product, offerId, oldProduct, updatePolicy)
+            if (purchaseModel.oldProduct != null && purchaseModel.oldProduct.hasAnyStoreDetails) {
+                updatePurchase(
+                    activity,
+                    purchaseModel.product,
+                    purchaseModel.offerId,
+                    purchaseModel.withoutOffer,
+                    purchaseModel.oldProduct,
+                    purchaseModel.updatePolicy)
             } else {
-                makePurchase(activity, product, offerId)
+                makePurchase(
+                    activity,
+                    purchaseModel.product,
+                    purchaseModel.offerId,
+                    purchaseModel.withoutOffer
+                )
             }
         }
 
-        if (product.hasAnyStoreDetails) {
+        if (purchaseModel.product.hasAnyStoreDetails) {
             handlePurchase()
         } else {
             enrichStoreDataAsync(
-                listOfNotNull(product, oldProduct),
+                listOfNotNull(purchaseModel.product, purchaseModel.oldProduct),
                 { error -> purchasesListener.onPurchasesFailed(error) }
             ) {
                 handlePurchase()
@@ -226,6 +232,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
+        withoutOffer: Boolean,
         oldProduct: QProduct,
         updatePolicy: QPurchaseUpdatePolicy?
     ) {
@@ -250,6 +257,7 @@ internal class QonversionBillingService internal constructor(
                     activity,
                     product,
                     offerId,
+                    withoutOffer,
                     UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, updatePolicy)
                 )
             } else {
@@ -266,6 +274,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
+        withoutOffer: Boolean,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
     ) {
         executeOnMainThread { billingSetupError ->
@@ -288,6 +297,7 @@ internal class QonversionBillingService internal constructor(
                 activity,
                 product,
                 offerId,
+                withoutOffer,
                 updatePurchaseInfo,
             ) { error -> purchasesListener.onPurchasesFailed(error) }
         }

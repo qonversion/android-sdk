@@ -32,6 +32,8 @@ import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -266,14 +268,11 @@ internal class QProductCenterManager internal constructor(
 
     fun purchaseProduct(
         context: Activity,
-        productId: String,
-        offerId: String?,
-        oldProductId: String?,
-        updatePolicy: QPurchaseUpdatePolicy?,
+        purchaseModel: PurchaseModelInternal,
         callback: QonversionEntitlementsCallback
     ) {
         fun tryToPurchase() {
-            tryToPurchase(context, productId, offerId, oldProductId, updatePolicy, callback)
+            tryToPurchase(context, purchaseModel, callback)
         }
 
         if (launchError != null) {
@@ -288,10 +287,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun tryToPurchase(
         context: Activity,
-        productId: String,
-        offerId: String?,
-        oldProductId: String?,
-        updatePolicy: QPurchaseUpdatePolicy?,
+        purchaseModel: PurchaseModelInternal,
         callback: QonversionEntitlementsCallback
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {
@@ -299,38 +295,36 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        val product: QProduct = getProductForPurchase(productId, launchResult) ?: run {
+        val product: QProduct = getProductForPurchase(purchaseModel.productId, launchResult) ?: run {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
-        val oldProduct: QProduct? = getProductForPurchase(oldProductId, launchResult)
-        processPurchase(context, product, offerId, oldProduct, updatePolicy, callback)
+        val oldProduct: QProduct? = getProductForPurchase(purchaseModel.oldProductId, launchResult)
+        val purchaseModelEnriched = purchaseModel.enrich(product, oldProduct)
+        processPurchase(context, purchaseModelEnriched, callback)
     }
 
     private fun processPurchase(
         context: Activity,
-        product: QProduct,
-        offerId: String?,
-        oldProduct: QProduct?,
-        updatePolicy: QPurchaseUpdatePolicy?,
+        purchaseModel: PurchaseModelInternalEnriched,
         callback: QonversionEntitlementsCallback
     ) {
-        if (product.storeID == null) {
+        if (purchaseModel.product.storeID == null) {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
 
-        val purchasingCallback = purchasingCallbacks[product.storeID]
+        val purchasingCallback = purchasingCallbacks[purchaseModel.product.storeID]
         purchasingCallback?.let {
             logger.release(
                 "purchaseProduct() -> Purchase of the product " +
-                        "${product.qonversionID} is already in progress. This call will be ignored"
+                        "${purchaseModel.product.qonversionID} is already in progress. This call will be ignored"
             )
             return
         }
 
-        purchasingCallbacks[product.storeID] = callback
-        billingService.purchase(context, product, offerId, oldProduct, updatePolicy)
+        purchasingCallbacks[purchaseModel.product.storeID] = callback
+        billingService.purchase(context, purchaseModel)
     }
 
     private fun getProductForPurchase(

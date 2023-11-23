@@ -54,9 +54,14 @@ internal class BillingClientWrapper(
         activity: Activity,
         product: QProduct,
         offerId: String?,
+        withoutOffer: Boolean,
         updatePurchaseInfo: UpdatePurchaseInfo?,
         onFailed: (error: BillingError) -> Unit
     ) {
+        fun fireError(message: String) {
+            onFailed(BillingError(BillingResponseCode.ITEM_UNAVAILABLE, message))
+        }
+
         val storeDetails = product.storeDetails ?: run {
             onFailed(
                 BillingError(
@@ -69,25 +74,25 @@ internal class BillingClientWrapper(
 
         logger.debug("makePurchase() -> Purchasing the product: ${storeDetails.productId}")
 
-        val offerDetails = offerId?.let {
-            storeDetails.findOffer(offerId) ?: run {
-                onFailed(BillingError(
-                    BillingResponseCode.ITEM_UNAVAILABLE,
-                    "Failed to find offer $offerId for Qonversion product ${product.qonversionID}"
-                ))
-                return
+        val offerDetails: QProductOfferDetails? = when {
+            storeDetails.isInApp -> null
+            withoutOffer -> {
+                storeDetails.basePlanSubscriptionOfferDetails ?: run {
+                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionID}")
+                    return
+                }
             }
-        } ?: run {
-            if (storeDetails.isInApp) {
-                return@run null
+            offerId != null -> {
+                storeDetails.findOffer(offerId) ?: run {
+                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionID}")
+                    return
+                }
             }
-
-            storeDetails.defaultSubscriptionOfferDetails ?: run {
-                onFailed(BillingError(
-                    BillingResponseCode.ITEM_UNAVAILABLE,
-                    "No offer found for purchasing Qonversion subscription product ${product.qonversionID}"
-                ))
-                return
+            else -> {
+                storeDetails.defaultSubscriptionOfferDetails ?: run {
+                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionID}")
+                    return
+                }
             }
         }
 

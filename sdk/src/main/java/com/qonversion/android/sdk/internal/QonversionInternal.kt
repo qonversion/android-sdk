@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -155,10 +156,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager?.purchaseProduct(
             context,
-            purchaseModel.qonversionProductId,
-            purchaseModel.offerId,
-            null,
-            null,
+            PurchaseModelInternal(purchaseModel),
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
@@ -170,10 +168,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager?.purchaseProduct(
             context,
-            purchaseUpdateModel.qonversionProductId,
-            purchaseUpdateModel.offerId,
-            purchaseUpdateModel.oldQonversionProductId,
-            purchaseUpdateModel.updatePolicy,
+            PurchaseModelInternal(purchaseUpdateModel),
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }

@@ -62,6 +62,12 @@ data class QProductStoreDetails(
         subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
 
     /**
+     * Subscription offer details containing only the base plan without any offer.
+     */
+    val basePlanSubscriptionOfferDetails: QProductOfferDetails? =
+        subscriptionOfferDetails?.firstOrNull { it.pricingPhases.size == 1 }
+
+    /**
      * Offer details for an in-app product.
      * Null for subscriptions.
      */

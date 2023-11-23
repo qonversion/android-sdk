@@ -59,8 +59,14 @@ data class QProduct(
      * @param offer concrete offer which you'd like to purchase.
      * @return purchase model to pass to the purchase method.
      */
-    fun toPurchaseModel(offer: QProductOfferDetails): QPurchaseModel {
-        return toPurchaseModel(offer.offerId)
+    fun toPurchaseModel(offer: QProductOfferDetails?): QPurchaseModel {
+        val model = toPurchaseModel(offer?.offerId)
+        // Remove offer for the case when provided offer details are for bare base plan.
+        if (offer != null && offer.offerId == null) {
+            model.removeOffer()
+        }
+
+        return model
     }
 
     /**

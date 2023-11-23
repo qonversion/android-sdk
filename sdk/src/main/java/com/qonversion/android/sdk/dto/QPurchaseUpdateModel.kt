@@ -5,4 +5,10 @@ data class QPurchaseUpdateModel(
     var oldQonversionProductId: String,
     var updatePolicy: QPurchaseUpdatePolicy? = null,
     var offerId: String? = null
-)
+) {
+    internal var withoutOffer = false
+
+    fun removeOffer(): QPurchaseUpdateModel = apply {
+        withoutOffer = true
+    }
+}
