@@ -286,10 +286,11 @@ internal class QUserInfoServiceTest {
         verifySequence {
             mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
             mockSharedPreferencesCache.getString(prefsUserIdKey, null)
+            mockSharedPreferencesCache.putString(prefsPartnerIdentityUserIdKey, null)
         }
 
         verify(exactly = 0) {
-            mockSharedPreferencesCache.putString(any(), any())
+            mockSharedPreferencesCache.putString(prefsUserIdKey, any())
         }
 
         assertEquals("must be false", false, isLogoutNeeded)
@@ -316,8 +317,8 @@ internal class QUserInfoServiceTest {
         verifySequence {
             mockSharedPreferencesCache.getString(prefsOriginalUserIdKey, null)
             mockSharedPreferencesCache.getString(prefsUserIdKey, null)
-            mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
             mockSharedPreferencesCache.putString(prefsPartnerIdentityUserIdKey, null)
+            mockSharedPreferencesCache.putString(prefsUserIdKey, originalUserID)
         }
 
         assertEquals("must be true", true, isLogoutNeeded)
