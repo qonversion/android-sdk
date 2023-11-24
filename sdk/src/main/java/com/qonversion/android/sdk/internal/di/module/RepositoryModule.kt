@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.repository.RepositoryWithRateLimits
-import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.internal.storage.TokenStorage
 import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
@@ -34,7 +33,6 @@ internal class RepositoryModule {
         environmentProvider: EnvironmentProvider,
         config: InternalConfig,
         logger: Logger,
-        purchasesCache: PurchasesCache,
         apiErrorMapper: ApiErrorMapper,
         sharedPreferences: SharedPreferences,
         delayCalculator: IncrementalDelayCalculator,
@@ -46,7 +44,6 @@ internal class RepositoryModule {
                 environmentProvider,
                 config,
                 logger,
-                purchasesCache,
                 apiErrorMapper,
                 sharedPreferences,
                 delayCalculator
@@ -62,7 +59,6 @@ internal class RepositoryModule {
         environmentProvider: EnvironmentProvider,
         config: InternalConfig,
         logger: Logger,
-        purchasesCache: PurchasesCache,
         apiErrorMapper: ApiErrorMapper,
         sharedPreferences: SharedPreferences,
         delayCalculator: IncrementalDelayCalculator
@@ -72,7 +68,6 @@ internal class RepositoryModule {
             environmentProvider,
             config,
             logger,
-            purchasesCache,
             apiErrorMapper,
             sharedPreferences,
             delayCalculator

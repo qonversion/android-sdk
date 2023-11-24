@@ -23,7 +23,7 @@ data class QProductPricingPhase(
     /**
      * Billing period for which the given price applies.
      */
-    val billingPeriod: QProductPeriod = QProductPeriod.from(originalPricingPhase.billingPeriod)
+    val billingPeriod: QSubscriptionPeriod = QSubscriptionPeriod.from(originalPricingPhase.billingPeriod)
 
     /**
      * Number of cycles for which the billing period is applied.

@@ -5,10 +5,11 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.android.billingclient.api.BillingFlowParams
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
+import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
@@ -18,6 +19,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -147,54 +149,26 @@ internal class QonversionInternal(
         })
     }
 
-    override fun purchase(context: Activity, id: String, callback: QonversionEntitlementsCallback) {
+    override fun purchase(
+        context: Activity,
+        purchaseModel: QPurchaseModel,
+        callback: QonversionEntitlementsCallback
+    ) {
         productCenterManager?.purchaseProduct(
             context,
-            id,
-            null,
-            null,
-            mainEntitlementsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun purchase(context: Activity, product: QProduct, callback: QonversionEntitlementsCallback) {
-        productCenterManager?.purchaseProduct(
-            context,
-            product,
-            null,
-            null,
+            PurchaseModelInternal(purchaseModel),
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun updatePurchase(
         context: Activity,
-        productId: String,
-        oldProductId: String,
-        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
+        purchaseUpdateModel: QPurchaseUpdateModel,
         callback: QonversionEntitlementsCallback
     ) {
         productCenterManager?.purchaseProduct(
             context,
-            productId,
-            oldProductId,
-            prorationMode,
-            mainEntitlementsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
-    }
-
-    override fun updatePurchase(
-        context: Activity,
-        product: QProduct,
-        oldProductId: String,
-        @Suppress("DEPRECATION") @BillingFlowParams.ProrationMode prorationMode: Int?,
-        callback: QonversionEntitlementsCallback
-    ) {
-        productCenterManager?.purchaseProduct(
-            context,
-            product,
-            oldProductId,
-            prorationMode,
+            PurchaseModelInternal(purchaseUpdateModel),
             mainEntitlementsCallback(callback)
         ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }

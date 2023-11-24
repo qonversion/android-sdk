@@ -4,8 +4,9 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
-import com.qonversion.android.sdk.dto.products.QProductPeriod
+import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -18,18 +19,16 @@ internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
 
 internal fun PurchaseHistoryRecord.getDescription() =
-    "ProductId: ${this.sku}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
 
 internal fun Purchase.getDescription() =
-    "ProductId: ${this.sku}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
+    "ProductId: ${this.productId}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
 
-@Suppress("DEPRECATION")
-internal val Purchase.sku: String?
-    get() = skus.firstOrNull()
+internal val Purchase.productId: String?
+    get() = products.firstOrNull()
 
-@Suppress("DEPRECATION")
-internal val PurchaseHistoryRecord.sku: String?
-    get() = skus.firstOrNull()
+internal val PurchaseHistoryRecord.productId: String?
+    get() = products.firstOrNull()
 
 internal fun getCurrentTimeInMillis(): Long = Calendar.getInstance().timeInMillis
 
@@ -39,14 +38,18 @@ private const val MAX_BILLING_PHASES_DURATION_YEARS = 55
 // 55 years is the maximum length of all the offer phases
 // (3 years max trial and 52 years max recurrent discount payments).
 internal val QProductOfferDetails.pricePerMaxDuration: Double get() {
-    var totalDays = QProductPeriod.Unit.Year.inDays * MAX_BILLING_PHASES_DURATION_YEARS
+    var totalDays = QSubscriptionPeriod.Unit.Year.inDays * MAX_BILLING_PHASES_DURATION_YEARS
     var totalPrice = .0
 
     for (pricingPhase in pricingPhases) {
         // Base plan is the last phase, so we just calculate the price of the remaining time
         // of base plan usage.
         if (pricingPhase.isBasePlan) {
-            val remainingPeriodCount = totalDays / pricingPhase.billingPeriod.durationDays
+            val remainingPeriodCount = if (pricingPhase.billingPeriod.durationDays != 0) {
+                totalDays.toDouble() / pricingPhase.billingPeriod.durationDays
+            } else {
+                Double.MAX_VALUE
+            }
             totalPrice += pricingPhase.price.priceAmountMicros * remainingPeriodCount
             break
         }
@@ -71,15 +74,18 @@ internal val QProductPricingPhase.durationDays get() = when (type) {
     else -> 0
 }
 
-internal val QProductPeriod.durationDays get() = unit.inDays * count
+internal val QSubscriptionPeriod.durationDays get() = unit.inDays * unitCount
 
-internal val QProductPeriod.Unit.inDays get() = when (this) {
-    QProductPeriod.Unit.Day -> 1
-    QProductPeriod.Unit.Week -> 7
-    QProductPeriod.Unit.Month -> 30
-    QProductPeriod.Unit.Year -> 365
-    QProductPeriod.Unit.Unknown -> 0
+internal val QSubscriptionPeriod.Unit.inDays get() = when (this) {
+    QSubscriptionPeriod.Unit.Day -> 1
+    QSubscriptionPeriod.Unit.Week -> 7
+    QSubscriptionPeriod.Unit.Month -> 30
+    QSubscriptionPeriod.Unit.Year -> 365
+    QSubscriptionPeriod.Unit.Unknown -> 0
 }
+
+@Suppress("DEPRECATION")
+internal val QProduct.hasAnyStoreDetails get() = skuDetail != null || storeDetails != null
 
 private fun Long.convertLongToTime(): String {
     val date = Date(this)

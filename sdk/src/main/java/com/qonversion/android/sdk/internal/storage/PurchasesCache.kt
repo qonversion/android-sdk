@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
 import android.content.SharedPreferences
-import com.android.billingclient.api.BillingClient
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -21,23 +20,20 @@ internal class PurchasesCache(
         moshi.adapter(collectionPurchaseType)
 
     fun savePurchase(purchase: Purchase) {
-        @Suppress("DEPRECATION")
-        if (purchase.type == BillingClient.SkuType.INAPP) {
-            val purchases = loadPurchases().toMutableSet()
-            purchases.add(purchase)
+        val purchases = loadPurchases().toMutableSet()
+        purchases.add(purchase)
 
-            if (purchases.size >= MAX_PURCHASES_NUMBER) {
-                val oldPurchases = purchases.toMutableList().take(MAX_OLD_PURCHASES_NUMBER).toSet()
-                purchases.removeAll(oldPurchases)
-            }
-
-            savePurchasesAsJson(purchases)
+        if (purchases.size >= MAX_PURCHASES_NUMBER) {
+            val oldPurchases = purchases.toMutableList().take(MAX_OLD_PURCHASES_NUMBER).toSet()
+            purchases.removeAll(oldPurchases)
         }
+
+        savePurchasesAsJson(purchases)
     }
 
     fun loadPurchases(): Set<Purchase> {
         val json = preferences.getString(PURCHASE_KEY, "")
-        if (json == null || json.isEmpty()) {
+        if (json.isNullOrEmpty()) {
             return setOf()
         }
         return try {

@@ -54,12 +54,18 @@ data class QProductStoreDetails(
             ?.map { QProductOfferDetails(it) }
 
     /**
-     * The most profitable offer for the client in our opinion from all the available offers.
+     * The most profitable subscription offer for the client in our opinion from all the available offers.
      * We calculate the cheapest price for the client by comparing all the trial or intro phases
-     * along with base plans.
+     * along with base plan.
      */
-    val defaultOfferDetails: QProductOfferDetails? =
+    val defaultSubscriptionOfferDetails: QProductOfferDetails? =
         subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
+
+    /**
+     * Subscription offer details containing only the base plan without any offer.
+     */
+    val basePlanSubscriptionOfferDetails: QProductOfferDetails? =
+        subscriptionOfferDetails?.firstOrNull { it.pricingPhases.size == 1 }
 
     /**
      * Offer details for an in-app product.
@@ -111,4 +117,18 @@ data class QProductStoreDetails(
      * True if the product type is InApp.
      */
     val isInApp: Boolean = productType == QProductType.InApp
+
+    /**
+     * True if the product type is Subscription.
+     */
+    val isSubscription: Boolean = productType == QProductType.Trial || productType == QProductType.Subscription
+
+    /**
+     * Find an offer with the specified id.
+     * @param offerId identifier of the searching offer.
+     * @return found offer or null, if an offer with the specified id doesn't exist.
+     */
+    fun findOffer(offerId: String): QProductOfferDetails? {
+        return subscriptionOfferDetails?.find { it.offerId == offerId }
+    }
 }

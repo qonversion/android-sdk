@@ -17,6 +17,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.databinding.QFragmentScreenBinding
+import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
@@ -116,7 +117,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         activity?.let {
             Qonversion.shared.purchase(
                 it,
-                productId,
+                QPurchaseModel(productId),
                 object : QonversionEntitlementsCallback {
                     override fun onSuccess(entitlements: Map<String, QEntitlement>) =
                         close(actionResult)

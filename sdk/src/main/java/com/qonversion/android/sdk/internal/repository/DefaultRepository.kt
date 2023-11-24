@@ -8,14 +8,13 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
-import com.qonversion.android.sdk.internal.Constants.PRICE_MICROS_DIVIDER
 import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.EnvironmentProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
-import com.qonversion.android.sdk.internal.billing.sku
+import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -25,7 +24,6 @@ import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
-import com.qonversion.android.sdk.internal.dto.purchase.IntroductoryOfferDetails
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
 import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
@@ -45,7 +43,6 @@ import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
-import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.internal.stringValue
 import com.qonversion.android.sdk.internal.toQonversionError
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
@@ -63,7 +60,6 @@ internal class DefaultRepository internal constructor(
     private val environmentProvider: EnvironmentProvider,
     private val config: InternalConfig,
     private val logger: Logger,
-    private val purchasesCache: PurchasesCache,
     private val errorMapper: ApiErrorMapper,
     private val preferences: SharedPreferences,
     private val delayCalculator: IncrementalDelayCalculator
@@ -463,7 +459,6 @@ internal class DefaultRepository internal constructor(
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
             purchase = convertPurchaseDetails(purchase, qProductId),
-            introductoryOffer = convertIntroductoryPurchaseDetail(purchase)
         )
 
         api.purchase(purchaseRequest).enqueue {
@@ -474,7 +469,6 @@ internal class DefaultRepository internal constructor(
                     callback.onSuccess(body.data)
                 } else {
                     handlePurchaseError(
-                        purchase,
                         callback,
                         errorMapper.getErrorFromResponse(it),
                         it.code(),
@@ -493,7 +487,6 @@ internal class DefaultRepository internal constructor(
             onFailure = {
                 logger.release("purchaseRequest - failure - ${it.toQonversionError()}")
                 handlePurchaseError(
-                    purchase,
                     callback,
                     it.toQonversionError(),
                     null,
@@ -512,7 +505,6 @@ internal class DefaultRepository internal constructor(
     }
 
     private fun handlePurchaseError(
-        purchase: Purchase,
         callback: QonversionLaunchCallback,
         error: QonversionError,
         errorCode: Int?,
@@ -540,7 +532,6 @@ internal class DefaultRepository internal constructor(
             }
         } else {
             callback.onError(error, errorCode)
-            purchasesCache.savePurchase(purchase)
         }
     }
 
@@ -548,37 +539,11 @@ internal class DefaultRepository internal constructor(
         val inapps: MutableList<Inapp> = mutableListOf()
 
         purchases?.forEach {
-            val inapp = convertPurchase(it)
-            inapps.add(inapp)
+            val inapp = convertPurchaseDetails(it)
+            inapps.add(Inapp(inapp))
         }
 
         return inapps.toList()
-    }
-
-    private fun convertPurchase(purchase: Purchase): Inapp {
-        val purchaseDetails = convertPurchaseDetails(purchase)
-        val introductoryOfferDetails = convertIntroductoryPurchaseDetail(purchase)
-
-        return Inapp(purchaseDetails, introductoryOfferDetails)
-    }
-
-    private fun convertIntroductoryPurchaseDetail(purchase: Purchase): IntroductoryOfferDetails? {
-        var introductoryOfferDetails: IntroductoryOfferDetails? = null
-
-        if ((purchase.freeTrialPeriod.isNotEmpty() || purchase.introductoryAvailable) &&
-            purchase.introductoryPeriodUnit != null &&
-            purchase.introductoryPeriodUnitsCount != null
-        ) {
-            introductoryOfferDetails = IntroductoryOfferDetails(
-                purchase.introductoryPrice,
-                purchase.introductoryPeriodUnit,
-                purchase.introductoryPeriodUnitsCount,
-                purchase.introductoryPriceCycles,
-                purchase.paymentMode
-            )
-        }
-
-        return introductoryOfferDetails
     }
 
     private fun convertPurchaseDetails(
@@ -586,34 +551,25 @@ internal class DefaultRepository internal constructor(
         qProductId: String? = null
     ): PurchaseDetails {
         return PurchaseDetails(
-            purchase.productId,
             purchase.purchaseToken,
             purchase.purchaseTime,
-            purchase.priceCurrencyCode,
-            purchase.price,
             purchase.orderId,
             purchase.originalOrderId,
-            purchase.periodUnit,
-            purchase.periodUnitsCount,
-            null,
             qProductId ?: ""
         )
     }
 
     private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
         return historyRecords.mapNotNull {
-            val sku = it.historyRecord.sku
+            val productId = it.historyRecord.productId
 
-            if (sku == null) {
+            if (productId == null) {
                 null
             } else {
                 History(
-                    sku,
+                    productId,
                     it.historyRecord.purchaseToken,
-                    it.historyRecord.purchaseTime.milliSecondsToSeconds(),
-                    it.skuDetails?.priceCurrencyCode,
-                    it.skuDetails?.priceAmountMicros?.let { micros -> micros / PRICE_MICROS_DIVIDER }
-                        .toString()
+                    it.historyRecord.purchaseTime.milliSecondsToSeconds()
                 )
             }
         }
