@@ -176,7 +176,7 @@ class HomeFragment : Fragment() {
     private fun purchase(productId: String) {
         Qonversion.shared.purchase(
             requireActivity(),
-            QPurchaseModel(productId),
+            QPurchaseModel(productId, "trial-plus-intro"),
             callback = object : QonversionEntitlementsCallback {
                 override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                     when (productId) {

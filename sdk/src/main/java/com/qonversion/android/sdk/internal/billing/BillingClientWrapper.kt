@@ -54,7 +54,7 @@ internal class BillingClientWrapper(
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        withoutOffer: Boolean,
+        applyOffer: Boolean,
         updatePurchaseInfo: UpdatePurchaseInfo?,
         onFailed: (error: BillingError) -> Unit
     ) {
@@ -76,7 +76,7 @@ internal class BillingClientWrapper(
 
         val offerDetails: QProductOfferDetails? = when {
             storeDetails.isInApp -> null
-            withoutOffer -> {
+            !applyOffer -> {
                 storeDetails.basePlanSubscriptionOfferDetails ?: run {
                     fireError("Failed to find base plan offer for Qonversion product ${product.qonversionID}")
                     return

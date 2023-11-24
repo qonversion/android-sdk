@@ -104,7 +104,7 @@ internal class QonversionBillingService internal constructor(
                     activity,
                     purchaseModel.product,
                     purchaseModel.offerId,
-                    purchaseModel.withoutOffer,
+                    purchaseModel.applyOffer,
                     purchaseModel.oldProduct,
                     purchaseModel.updatePolicy)
             } else {
@@ -112,7 +112,7 @@ internal class QonversionBillingService internal constructor(
                     activity,
                     purchaseModel.product,
                     purchaseModel.offerId,
-                    purchaseModel.withoutOffer
+                    purchaseModel.applyOffer
                 )
             }
         }
@@ -232,7 +232,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        withoutOffer: Boolean,
+        applyOffer: Boolean,
         oldProduct: QProduct,
         updatePolicy: QPurchaseUpdatePolicy?
     ) {
@@ -257,7 +257,7 @@ internal class QonversionBillingService internal constructor(
                     activity,
                     product,
                     offerId,
-                    withoutOffer,
+                    applyOffer,
                     UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, updatePolicy)
                 )
             } else {
@@ -274,7 +274,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        withoutOffer: Boolean,
+        applyOffer: Boolean,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
     ) {
         executeOnMainThread { billingSetupError ->
@@ -297,7 +297,7 @@ internal class QonversionBillingService internal constructor(
                 activity,
                 product,
                 offerId,
-                withoutOffer,
+                applyOffer,
                 updatePurchaseInfo,
             ) { error -> purchasesListener.onPurchasesFailed(error) }
         }

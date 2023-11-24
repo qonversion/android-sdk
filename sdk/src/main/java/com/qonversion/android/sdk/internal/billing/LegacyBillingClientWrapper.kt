@@ -46,7 +46,7 @@ internal class LegacyBillingClientWrapper(
         activity: Activity,
         product: QProduct,
         offerId: String?, // ignored
-        withoutOffer: Boolean, // ignored
+        applyOffer: Boolean, // ignored
         updatePurchaseInfo: UpdatePurchaseInfo?,
         onFailed: (error: BillingError) -> Unit
     ) {

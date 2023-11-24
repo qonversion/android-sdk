@@ -17,9 +17,9 @@ data class QPurchaseModel(
     val qonversionProductId: String,
     var offerId: String? = null
 ) {
-    internal var withoutOffer = false
+    internal var applyOffer = true
 
     fun removeOffer(): QPurchaseModel = apply {
-        withoutOffer = true
+        applyOffer = false
     }
 }

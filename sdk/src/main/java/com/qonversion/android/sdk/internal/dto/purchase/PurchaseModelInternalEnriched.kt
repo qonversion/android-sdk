@@ -7,11 +7,11 @@ internal class PurchaseModelInternalEnriched(
     productId: String,
     val product: QProduct,
     offerId: String?,
-    withoutOffer: Boolean,
+    applyOffer: Boolean,
     oldProductId: String?,
     val oldProduct: QProduct?,
     updatePolicy: QPurchaseUpdatePolicy?,
-) : PurchaseModelInternal(productId, offerId, withoutOffer, oldProductId, updatePolicy) {
+) : PurchaseModelInternal(productId, offerId, applyOffer, oldProductId, updatePolicy) {
 
     constructor(
         purchaseModel: PurchaseModelInternal,
@@ -21,7 +21,7 @@ internal class PurchaseModelInternalEnriched(
         purchaseModel.productId,
         product,
         purchaseModel.offerId,
-        purchaseModel.withoutOffer,
+        purchaseModel.applyOffer,
         purchaseModel.oldProductId,
         oldProduct,
         purchaseModel.updatePolicy

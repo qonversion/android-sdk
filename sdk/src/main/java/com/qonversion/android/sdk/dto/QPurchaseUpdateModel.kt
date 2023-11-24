@@ -22,9 +22,9 @@ data class QPurchaseUpdateModel(
     var updatePolicy: QPurchaseUpdatePolicy? = null,
     var offerId: String? = null
 ) {
-    internal var withoutOffer = false
+    internal var applyOffer = true
 
     fun removeOffer(): QPurchaseUpdateModel = apply {
-        withoutOffer = true
+        applyOffer = false
     }
 }
