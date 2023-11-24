@@ -1,13 +1,13 @@
 package com.qonversion.android.sdk.dto.products
 
 /**
- * A class describing a product period
+ * A class describing a subscription period
  */
-data class QProductPeriod(
+data class QSubscriptionPeriod(
     /**
      * A count of subsequent intervals.
      */
-    val count: Int,
+    val unitCount: Int,
 
     /**
      * Interval unit.
@@ -20,14 +20,14 @@ data class QProductPeriod(
     val iso: String
 ) {
     companion object {
-        fun from(isoPeriod: String): QProductPeriod {
+        fun from(isoPeriod: String): QSubscriptionPeriod {
             fun String.toPeriodCount() = takeIf { isNotEmpty() }
                 ?.substring(0, length - 1)
                 ?.toIntOrNull() ?: 0
 
             val regex = "^P(?!\$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?\$".toRegex()
             val parts = regex.matchEntire(isoPeriod)
-                ?: return QProductPeriod(0, Unit.Unknown, isoPeriod)
+                ?: return QSubscriptionPeriod(0, Unit.Unknown, isoPeriod)
 
             val (sYear, sMonth, sWeek, sDay) = parts.destructured
             val year = sYear.toPeriodCount()
@@ -36,11 +36,11 @@ data class QProductPeriod(
             val day = sDay.toPeriodCount()
 
             return when {
-                year > 0 -> QProductPeriod(year, Unit.Year, isoPeriod)
-                month > 0 -> QProductPeriod(month, Unit.Month, isoPeriod)
-                week > 0 -> QProductPeriod(week, Unit.Week, isoPeriod)
-                day > 0 -> QProductPeriod(day, Unit.Day, isoPeriod)
-                else -> QProductPeriod(0, Unit.Unknown, isoPeriod)
+                year > 0 -> QSubscriptionPeriod(year, Unit.Year, isoPeriod)
+                month > 0 -> QSubscriptionPeriod(month, Unit.Month, isoPeriod)
+                week > 0 -> QSubscriptionPeriod(week, Unit.Week, isoPeriod)
+                day > 0 -> QSubscriptionPeriod(day, Unit.Day, isoPeriod)
+                else -> QSubscriptionPeriod(0, Unit.Unknown, isoPeriod)
             }
         }
     }

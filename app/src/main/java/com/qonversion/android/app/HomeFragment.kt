@@ -141,7 +141,7 @@ class HomeFragment : Fragment() {
                 "%s %s / %d %s",
                 getStr(R.string.subscribe_for),
                 it.basePlan?.price?.formattedPrice,
-                it.basePlan?.billingPeriod?.count,
+                it.basePlan?.billingPeriod?.unitCount,
                 it.basePlan?.billingPeriod?.unit?.name,
             )
         }
