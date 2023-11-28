@@ -23,6 +23,9 @@ data class QProduct(
      * The store details of this product containing all the information from Google Play including
      * the offers for purchasing the base plan of this product (specified by [basePlanID])
      * in case of a subscription.
+     * Null, if the product was not found. If the [basePlanID] is not specified for a subscription
+     * product, this field will be presented but the [QProductStoreDetails.subscriptionOfferDetails]
+     * will be empty.
      */
     @Transient
     var storeDetails: QProductStoreDetails? = null
