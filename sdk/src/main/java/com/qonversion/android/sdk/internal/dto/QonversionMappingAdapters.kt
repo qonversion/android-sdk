@@ -31,18 +31,6 @@ internal class QProductDurationAdapter {
     }
 }
 
-internal class QProductTypeAdapter {
-    @ToJson
-    private fun toJson(enum: QProductType): Int {
-        return enum.type
-    }
-
-    @FromJson
-    fun fromJson(type: Int): QProductType {
-        return QProductType.fromType(type)
-    }
-}
-
 internal class QProductRenewStateAdapter {
     @ToJson
     private fun toJson(enum: QProductRenewState): Int {
