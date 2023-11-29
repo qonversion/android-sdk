@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.dto.products
 enum class QProductType {
     Unknown,
     Trial,
+    Intro,
     Subscription,
     InApp;
 

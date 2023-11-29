@@ -66,7 +66,7 @@ data class QProduct(
      */
     val type: QProductType get() {
         val productType = storeDetails?.let {
-            if (it.subscriptionOfferDetails?.isNotEmpty() == true) {
+            if (it.subscriptionOfferDetails?.isNotEmpty() == true || it.inAppOfferDetails != null) {
                 it.productType
             } else {
                 null
@@ -81,6 +81,7 @@ data class QProduct(
             // the old subscription products, where basePlanId is not specified.
             skuDetail?.type == BillingClient.SkuType.INAPP -> QProductType.InApp
             trialPeriod != null -> QProductType.Trial
+            skuDetail?.introductoryPricePeriod?.isNotBlank() == true -> QProductType.Intro
             subscriptionPeriod != null -> QProductType.Subscription
             else -> QProductType.Unknown
         }
@@ -102,6 +103,7 @@ data class QProduct(
      *                If the products' base plan id is specified, but offer id is not provided for
      *                purchase, then default offer will be used.
      *                Ignored if base plan id is not specified.
+     * To know how we choose the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
      * @return purchase model to pass to the purchase method.
      */
     fun toPurchaseModel(offerId: String? = null): QPurchaseModel {

@@ -102,14 +102,14 @@ data class QProductStoreDetails(
      */
     val productType: QProductType = when (originalProductDetails.productType) {
         ProductType.SUBS -> defaultSubscriptionOfferDetails?.let {
-            if (it.hasTrial) {
-                QProductType.Trial
-            } else {
-                QProductType.Subscription
+            when {
+                it.hasTrial -> QProductType.Trial
+                it.hasIntro -> QProductType.Intro
+                else -> QProductType.Subscription
             }
         } ?: QProductType.Unknown
         ProductType.INAPP -> QProductType.InApp
-        else -> QProductType.InApp
+        else -> QProductType.Unknown
     }
 
     /**

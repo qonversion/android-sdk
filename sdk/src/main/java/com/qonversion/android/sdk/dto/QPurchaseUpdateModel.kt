@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.dto
 
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductStoreDetails
 
 /**
  * Used to provide all the necessary purchase data to the [Qonversion.updatePurchase] method.
@@ -12,6 +13,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
  *
  * To prevent applying any offer to the purchase (use only bare base plan),
  * call the [QPurchaseModel.removeOffer] method.
+ * To know how we choose the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
  *
  * If the [updatePolicy] is not provided, then default one
  * will be selected - [QPurchaseUpdatePolicy.WithTimeProration].
