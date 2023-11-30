@@ -8,7 +8,7 @@ import com.qonversion.android.sdk.Qonversion
  * A policy used for purchase updates, which describes
  * how to migrate from purchased plan to a new one.
  *
- * Used in [QPurchaseUpdatePolicy] class for purchase updates.
+ * Used in [QPurchaseUpdateModel] class for purchase updates.
  */
 enum class QPurchaseUpdatePolicy {
     /**
