@@ -2,7 +2,6 @@ package com.qonversion.android.sdk.dto
 
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
-import com.qonversion.android.sdk.Qonversion
 
 /**
  * A policy used for purchase updates, which describes
