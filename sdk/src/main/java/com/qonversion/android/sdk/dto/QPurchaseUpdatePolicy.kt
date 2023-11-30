@@ -2,13 +2,12 @@ package com.qonversion.android.sdk.dto
 
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
-import com.qonversion.android.sdk.Qonversion
 
 /**
  * A policy used for purchase updates, which describes
  * how to migrate from purchased plan to a new one.
  *
- * Used in [Qonversion.updatePurchase] methods.
+ * Used in [QPurchaseUpdateModel] class for purchase updates.
  */
 enum class QPurchaseUpdatePolicy {
     /**

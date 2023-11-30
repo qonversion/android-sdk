@@ -56,7 +56,7 @@ data class QProductStoreDetails(
     /**
      * The most profitable subscription offer for the client in our opinion from all the available offers.
      * We calculate the cheapest price for the client by comparing all the trial or intro phases
-     * along with base plan.
+     * along with the base plan.
      */
     val defaultSubscriptionOfferDetails: QProductOfferDetails? =
         subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
@@ -98,19 +98,18 @@ data class QProductStoreDetails(
     val hasTrialOrIntroOffer: Boolean = subscriptionOfferDetails?.any { it.hasTrialOrIntro } ?: false
 
     /**
-     * The type of the current product. The difference from [QProduct.type] is that current field
-     * represents the information from Google Play Billing Library and depends on current client
-     * trial eligibility (in case of a subscription product), while the [QProduct.type]
-     * depends on the value from Qonversion Product Center.
+     * The calculated type of the current product.
      */
     val productType: QProductType = when (originalProductDetails.productType) {
-        ProductType.SUBS -> if (hasTrialOffer) {
-            QProductType.Trial
-        } else {
-            QProductType.Subscription
-        }
+        ProductType.SUBS -> defaultSubscriptionOfferDetails?.let {
+            when {
+                it.hasTrial -> QProductType.Trial
+                it.hasIntro -> QProductType.Intro
+                else -> QProductType.Subscription
+            }
+        } ?: QProductType.Unknown
         ProductType.INAPP -> QProductType.InApp
-        else -> QProductType.InApp
+        else -> QProductType.Unknown
     }
 
     /**
