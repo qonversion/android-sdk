@@ -18,8 +18,8 @@ import com.qonversion.android.sdk.dto.products.QProductStoreDetails
  * will be selected - [QPurchaseUpdatePolicy.WithTimeProration].
  */
 data class QPurchaseUpdateModel(
-    val qonversionProductId: String,
-    var oldQonversionProductId: String,
+    val productId: String,
+    var oldProductId: String,
     var updatePolicy: QPurchaseUpdatePolicy? = null,
     var offerId: String? = null
 ) {

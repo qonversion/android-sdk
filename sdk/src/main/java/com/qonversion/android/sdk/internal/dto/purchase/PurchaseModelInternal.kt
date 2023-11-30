@@ -13,7 +13,7 @@ internal open class PurchaseModelInternal(
     val updatePolicy: QPurchaseUpdatePolicy?,
 ) {
     constructor(purchaseModel: QPurchaseModel) : this(
-        purchaseModel.qonversionProductId,
+        purchaseModel.productId,
         purchaseModel.offerId,
         purchaseModel.applyOffer,
         null,
@@ -21,10 +21,10 @@ internal open class PurchaseModelInternal(
     )
 
     constructor(purchaseModel: QPurchaseUpdateModel) : this(
-        purchaseModel.qonversionProductId,
+        purchaseModel.productId,
         purchaseModel.offerId,
         purchaseModel.applyOffer,
-        purchaseModel.oldQonversionProductId,
+        purchaseModel.oldProductId,
         purchaseModel.updatePolicy,
     )
 
