@@ -8,6 +8,9 @@ import com.qonversion.android.sdk.dto.products.QProductStoreDetails
  * Used to provide all the necessary purchase data to the [Qonversion.updatePurchase] method.
  * Can be created manually or using the [QProduct.toPurchaseUpdateModel] method.
  *
+ * Requires Qonversion product identifiers - [productId] for the purchasing one and
+ * [oldProductId] for the purchased one.
+ *
  * If [offerId] is not specified, then the default offer will be applied. To know how we choose
  * the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
  *
