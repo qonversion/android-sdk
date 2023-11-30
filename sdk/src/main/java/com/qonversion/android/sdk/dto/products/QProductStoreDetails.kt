@@ -56,7 +56,7 @@ data class QProductStoreDetails(
     /**
      * The most profitable subscription offer for the client in our opinion from all the available offers.
      * We calculate the cheapest price for the client by comparing all the trial or intro phases
-     * along with base plan.
+     * along with the base plan.
      */
     val defaultSubscriptionOfferDetails: QProductOfferDetails? =
         subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
