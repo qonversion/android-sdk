@@ -82,7 +82,7 @@ internal class BillingClientWrapper(
                     return
                 }
             }
-            offerId != null -> {
+            offerId?.isNotEmpty() == true -> {
                 storeDetails.findOffer(offerId) ?: run {
                     fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionID}")
                     return
