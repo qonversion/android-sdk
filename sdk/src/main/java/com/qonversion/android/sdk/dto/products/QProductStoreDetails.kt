@@ -21,28 +21,28 @@ data class QProductStoreDetails(
     val basePlanId: String?,
 ) {
     /**
-     * Identifier of a subscription or an in-app product.
+     * Identifier of the subscription or the in-app product.
      */
     val productId: String = originalProductDetails.productId
 
     /**
-     * Name of a subscription or an in-app product.
+     * Name of the subscription or the in-app product.
      */
     val name: String = originalProductDetails.name
 
     /**
-     * Title of a subscription or an in-app product.
+     * Title of the subscription or the in-app product.
      * The title includes the name of the app.
      */
     val title: String = originalProductDetails.title
 
     /**
-     * Description of a subscription or an in-app product.
+     * Description of the subscription or the in-app product.
      */
     val description: String = originalProductDetails.description
 
     /**
-     * Offer details for a subscription.
+     * Offer details for the subscription.
      * Offer details contain all the available variations of purchase offers,
      * including both base plan and eligible base plan + offer combinations
      * from Google Play Console for current [basePlanId].
@@ -68,7 +68,7 @@ data class QProductStoreDetails(
         subscriptionOfferDetails?.firstOrNull { it.pricingPhases.size == 1 }
 
     /**
-     * Offer details for an in-app product.
+     * Offer details for the in-app product.
      * Null for subscriptions.
      */
     val inAppOfferDetails: QProductInAppDetails? =
