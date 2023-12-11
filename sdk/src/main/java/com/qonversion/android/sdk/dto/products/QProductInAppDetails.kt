@@ -12,7 +12,7 @@ data class QProductInAppDetails(
     val originalOneTimePurchaseOfferDetails: OneTimePurchaseOfferDetails
 ) {
     /**
-     * The price of an in-app product.
+     * The price of the in-app product.
      */
     val price: QProductPrice = originalOneTimePurchaseOfferDetails.let {
         QProductPrice(it.priceAmountMicros, it.priceCurrencyCode, it.formattedPrice)
