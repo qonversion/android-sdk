@@ -17,7 +17,6 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
-import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
 import com.squareup.moshi.Moshi
@@ -126,7 +125,6 @@ internal class Util {
 
         fun buildMoshi(): Moshi =
             Moshi.Builder()
-                .add(QProductDurationAdapter())
                 .add(QDateAdapter())
                 .add(QProductsAdapter())
                 .add(QPermissionsAdapter())

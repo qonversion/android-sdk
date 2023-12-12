@@ -555,6 +555,7 @@ internal class DefaultRepository internal constructor(
             purchase.purchaseTime,
             purchase.orderId,
             purchase.originalOrderId,
+            purchase.storeProductId ?: "",
             qProductId ?: ""
         )
     }
