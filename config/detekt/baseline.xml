@@ -127,6 +127,7 @@
     <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
+    <ID>MaxLineLength:QProductStoreDetails.kt$QProductStoreDetails$basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"updatePurchase() -&gt; Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"</ID>
