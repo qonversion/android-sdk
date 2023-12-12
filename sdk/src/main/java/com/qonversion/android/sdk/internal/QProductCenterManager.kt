@@ -229,14 +229,12 @@ internal class QProductCenterManager internal constructor(
         loadProducts(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 val result = products.filter { it.key in productIds }.mapValues {
-                    val hasTrialOrIntroOffer = it.value.storeDetails?.hasTrialOrIntroOffer == true
-                    val isInApp = it.value.storeDetails?.isInApp == true
-                    val ineligible = it.value.type == QProductType.Trial && !hasTrialOrIntroOffer
-                    when {
-                        hasTrialOrIntroOffer -> QEligibility(status = QIntroEligibilityStatus.Eligible)
-                        isInApp -> QEligibility(status = QIntroEligibilityStatus.NonIntroProduct)
-                        ineligible -> QEligibility(status = QIntroEligibilityStatus.Ineligible)
-                        else -> QEligibility(status = QIntroEligibilityStatus.Unknown)
+                    val product = it.value
+
+                    if (product.storeDetails?.isPrepaid == true) {
+                        QEligibility(QIntroEligibilityStatus.NonIntroProduct)
+                    } else {
+                        QEligibility(QIntroEligibilityStatus.fromProductType(product.type))
                     }
                 }
 
