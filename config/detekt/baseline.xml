@@ -105,6 +105,7 @@
     <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
+    <ID>MaxLineLength:QProductStoreDetails.kt$QProductStoreDetails$basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"updatePurchase() -&gt; Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"</ID>
@@ -139,6 +140,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:135</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:142</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:204</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:353</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:412</ID>
@@ -159,8 +161,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:371</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.utils.kt:22</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.errors.kt:33</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:165</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:187</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:166</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:188</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:21</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:72</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:219</ID>
