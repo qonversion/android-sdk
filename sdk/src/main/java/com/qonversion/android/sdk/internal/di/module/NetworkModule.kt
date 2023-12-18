@@ -16,7 +16,6 @@ import com.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingsAdapter
 import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
-import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
 import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceAssignmentTypeAdapter
@@ -50,7 +49,6 @@ internal class NetworkModule {
     @Provides
     fun provideMoshi(): Moshi {
         return Moshi.Builder()
-            .add(QProductDurationAdapter())
             .add(QDateAdapter())
             .add(QProductsAdapter())
             .add(QPermissionsAdapter())

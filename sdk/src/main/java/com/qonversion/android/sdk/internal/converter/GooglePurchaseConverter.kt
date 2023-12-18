@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.converter
 
+import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.purchase.Purchase
 
@@ -13,6 +14,7 @@ internal class GooglePurchaseConverter : PurchaseConverter {
 
     override fun convertPurchase(purchase: com.android.billingclient.api.Purchase): Purchase {
         return Purchase(
+            storeProductId = purchase.productId,
             orderId = purchase.orderId ?: "",
             originalOrderId = formatOriginalTransactionId(purchase.orderId ?: ""),
             purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
