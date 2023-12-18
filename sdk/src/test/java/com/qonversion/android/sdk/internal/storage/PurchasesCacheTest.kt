@@ -159,6 +159,7 @@ internal class PurchasesCacheTest {
 
     private fun mockPurchase(originalOrderId: String = ""): Purchase {
         return Purchase(
+            storeProductId = "article-test-trial",
             orderId = "GPA.3375-4436-3573-53474",
             originalOrderId = "GPA.3375-4436-3573-53474$originalOrderId",
             purchaseTime = 1611323804,
