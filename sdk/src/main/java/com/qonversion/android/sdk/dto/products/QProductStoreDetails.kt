@@ -123,6 +123,13 @@ data class QProductStoreDetails(
     val isSubscription: Boolean = productType == QProductType.Trial || productType == QProductType.Subscription
 
     /**
+     * True if the subscription product is prepaid, which means that users pay in advance -
+     * they will need to make a new payment to extend their plan.
+     */
+    val isPrepaid: Boolean = isSubscription &&
+            basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring
+
+    /**
      * Find an offer with the specified id.
      * @param offerId identifier of the searching offer.
      * @return found offer or null, if an offer with the specified id doesn't exist.
