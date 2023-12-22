@@ -123,7 +123,7 @@ data class QProductStoreDetails(
     val isSubscription: Boolean = productType == QProductType.Trial || productType == QProductType.Subscription
 
     /**
-     * True if the subscription product is prepaid, which means that users pay in advance -
+     * True, if the subscription product is prepaid, which means that users pay in advance -
      * they will need to make a new payment to extend their plan.
      */
     val isPrepaid: Boolean = isSubscription &&
