@@ -40,6 +40,7 @@ import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.enqueue
+import com.qonversion.android.sdk.internal.isInternalServerError
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -468,7 +469,7 @@ internal class DefaultRepository internal constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-                logger.release("purchaseRequest - ${it.getLogMessage()}")
+//                logger.release("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
@@ -520,7 +521,7 @@ internal class DefaultRepository internal constructor(
         retry: (attemptIndex: Int) -> Unit
     ) {
         // Retrying only errors caused by client network connection problems (errorCode == null) or server side problems
-        if (attemptIndex < MAX_RETRIES_COUNT) {
+        if (attemptIndex < MAX_RETRIES_COUNT && (errorCode == null || errorCode.isInternalServerError())) {
             val nextAttemptIndex = attemptIndex + 1
             // For the first error retry instantly.
             if (attemptIndex == 0) {
