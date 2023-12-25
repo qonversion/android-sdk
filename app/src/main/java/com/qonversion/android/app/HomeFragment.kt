@@ -136,21 +136,21 @@ class HomeFragment : Fragment() {
         binding.buttonRestore.text = getStr(R.string.restore_purchases)
 
         val subscription = products[productIdSubs]
-        subscription?.storeDetails?.defaultSubscriptionOfferDetails?.let {
+        if (subscription != null) {
             binding.buttonSubscribe.text = String.format(
                 "%s %s / %d %s",
                 getStr(R.string.subscribe_for),
-                it.basePlan?.price?.formattedPrice,
-                it.basePlan?.billingPeriod?.unitCount,
-                it.basePlan?.billingPeriod?.unit?.name,
+                subscription.prettyPrice,
+                subscription.subscriptionPeriod?.unitCount,
+                subscription.subscriptionPeriod?.unit?.name,
             )
         }
 
         val inApp = products[productIdInApp]
-        inApp?.storeDetails?.inAppOfferDetails?.let {
+        if (inApp != null) {
             binding.buttonInApp.text = String.format(
                 "%s %s", getStr(R.string.buy_for),
-                it.price.formattedPrice
+                inApp.prettyPrice
             )
         }
     }

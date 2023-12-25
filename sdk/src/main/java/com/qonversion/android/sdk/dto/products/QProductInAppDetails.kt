@@ -7,7 +7,7 @@ import com.android.billingclient.api.ProductDetails.OneTimePurchaseOfferDetails
  */
 data class QProductInAppDetails(
     /**
-     * Original [OneTimePurchaseOfferDetails] received from Google Play Billing Library
+     * Original [OneTimePurchaseOfferDetails] received from Google Play Billing Library.
      */
     val originalOneTimePurchaseOfferDetails: OneTimePurchaseOfferDetails
 ) {

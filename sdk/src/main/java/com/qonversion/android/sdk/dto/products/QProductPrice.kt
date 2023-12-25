@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.dto.products
 import java.util.Currency
 
 /**
- * Information about product's price.
+ * Information about the product's price.
  */
 data class QProductPrice(
     /**
@@ -39,5 +39,5 @@ data class QProductPrice(
     /**
      * Price currency symbol. Null if failed to parse.
      */
-    val currencySymbol = currency?.symbol
+    val currencySymbol: String? = currency?.symbol
 }

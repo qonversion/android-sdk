@@ -56,7 +56,7 @@ data class QProductStoreDetails(
     /**
      * The most profitable subscription offer for the client in our opinion from all the available offers.
      * We calculate the cheapest price for the client by comparing all the trial or intro phases
-     * along with the base plan.
+     * and the base plan.
      */
     val defaultSubscriptionOfferDetails: QProductOfferDetails? =
         subscriptionOfferDetails?.minByOrNull { it.pricePerMaxDuration }
@@ -77,21 +77,21 @@ data class QProductStoreDetails(
         }
 
     /**
-     * True if there is any eligible offer with trial
+     * True, if there is any eligible offer with a trial
      * for this subscription and base plan combination.
      * False otherwise or for an in-app product.
      */
     val hasTrialOffer: Boolean = subscriptionOfferDetails?.any { it.hasTrial } ?: false
 
     /**
-     * True if there is any eligible offer with intro price
+     * True, if there is any eligible offer with an intro price
      * for this subscription and base plan combination.
      * False otherwise or for an in-app product.
      */
     val hasIntroOffer: Boolean = subscriptionOfferDetails?.any { it.hasIntro } ?: false
 
     /**
-     * True if there is any eligible offer with trial or intro price
+     * True, if there is any eligible offer with a trial or an intro price
      * for this subscription and base plan combination.
      * False otherwise or for an in-app product.
      */
@@ -113,17 +113,17 @@ data class QProductStoreDetails(
     }
 
     /**
-     * True if the product type is InApp.
+     * True, if the product type is InApp.
      */
     val isInApp: Boolean = productType == QProductType.InApp
 
     /**
-     * True if the product type is Subscription.
+     * True, if the product type is Subscription.
      */
     val isSubscription: Boolean = productType == QProductType.Trial || productType == QProductType.Subscription
 
     /**
-     * True if the subscription product is prepaid, which means that users pay in advance -
+     * True, if the subscription product is prepaid, which means that users pay in advance -
      * they will need to make a new payment to extend their plan.
      */
     val isPrepaid: Boolean = isSubscription &&

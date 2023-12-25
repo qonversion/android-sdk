@@ -21,7 +21,7 @@ data class QProductPricingPhase(
     )
 
     /**
-     * Billing period for which the given price applies.
+     * The billing period for which the given price applies.
      */
     val billingPeriod: QSubscriptionPeriod = QSubscriptionPeriod.from(originalPricingPhase.billingPeriod)
 
@@ -47,18 +47,18 @@ data class QProductPricingPhase(
     }
 
     /**
-     * True if the current phase is a trial period. False otherwise.
+     * True, if the current phase is a trial period. False otherwise.
      */
     val isTrial: Boolean = type == Type.FreeTrial
 
     /**
-     * True if the current phase is an intro period. False otherwise.
-     * Intro phase is one of single or recurrent discounted payments.
+     * True, if the current phase is an intro period. False otherwise.
+     * The intro phase is one of single or recurrent discounted payments.
      */
     val isIntro: Boolean = type == Type.SinglePayment || type == Type.DiscountedRecurringPayment
 
     /**
-     * True if the current phase represents the base plan. False otherwise.
+     * True, if the current phase represents the base plan. False otherwise.
      */
     val isBasePlan: Boolean = type == Type.Regular
 
@@ -67,18 +67,18 @@ data class QProductPricingPhase(
      */
     enum class RecurrenceMode(private val code: Int) {
         /**
-         * The billing plan payment recurs for infinite billing periods unless cancelled.
+         * The billing plan payment recurs for infinite billing periods unless canceled.
          */
         InfiniteRecurring(1),
 
         /**
-         * The billing plan payment recurs for a fixed number of billing period
+         * The billing plan payment recurs for a fixed number of billing periods
          * set in [billingCycleCount].
          */
         FiniteRecurring(2),
 
         /**
-         * The billing plan payment is a one time charge that does not repeat.
+         * The billing plan payment is a one-time charge that does not repeat.
          */
         NonRecurring(3),
 

@@ -14,13 +14,13 @@ import com.qonversion.android.sdk.dto.products.QProductStoreDetails
  * If [offerId] is not specified, then the default offer will be applied. To know how we choose
  * the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
  *
- * If you want to remove any intro/trial offer from the purchase (use only bare base plan),
+ * If you want to remove any intro/trial offer from the purchase (use only a bare base plan),
  * call the [QPurchaseModel.removeOffer] method.
  *
  * If the [updatePolicy] is not provided, then default one
  * will be selected - [QPurchaseUpdatePolicy.WithTimeProration].
  */
-data class QPurchaseUpdateModel(
+data class QPurchaseUpdateModel @JvmOverloads constructor(
     val productId: String,
     var oldProductId: String,
     var updatePolicy: QPurchaseUpdatePolicy? = null,

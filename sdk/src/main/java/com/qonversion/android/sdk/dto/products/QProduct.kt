@@ -88,7 +88,7 @@ data class QProduct(
     }
 
     /**
-     * Formatted price of for this product, including the currency sign.
+     * Formatted price for this product, including the currency sign.
      */
     val prettyPrice: String? get() = when {
         type == QProductType.InApp -> storeDetails?.inAppOfferDetails?.price?.formattedPrice
@@ -106,6 +106,7 @@ data class QProduct(
      * To know how we choose the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
      * @return purchase model to pass to the purchase method.
      */
+    @JvmOverloads
     fun toPurchaseModel(offerId: String? = null): QPurchaseModel {
         return QPurchaseModel(qonversionID, offerId)
     }
@@ -133,6 +134,7 @@ data class QProduct(
      * @param updatePolicy purchase update policy.
      * @return purchase model to pass to the update purchase method.
      */
+    @JvmOverloads
     fun toPurchaseUpdateModel(
         oldProductId: String,
         updatePolicy: QPurchaseUpdatePolicy? = null
