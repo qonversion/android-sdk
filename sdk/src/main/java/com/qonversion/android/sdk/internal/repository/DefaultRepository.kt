@@ -469,7 +469,7 @@ internal class DefaultRepository internal constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-//                logger.release("purchaseRequest - ${it.getLogMessage()}")
+                logger.release("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
