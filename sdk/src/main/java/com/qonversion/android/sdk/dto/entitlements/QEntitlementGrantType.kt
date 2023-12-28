@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.dto.entitlements
 
-import com.qonversion.android.sdk.internal.dto.QProductRenewState
-
 enum class QEntitlementGrantType(val type: String) {
     Purchase("purchase"),
     FamilySharing("family_sharing"),

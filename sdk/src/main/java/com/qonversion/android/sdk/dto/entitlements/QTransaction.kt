@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.dto.entitlements
 
-import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductType
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.util.Date
