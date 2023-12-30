@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.dto.entitlements
 
 enum class QTransactionType(val type: String) {
+    Unknown("unknown"),
     SubscriptionStarted("subscription_started"),
     SubscriptionRenewed("subscription_renewed"),
     TrialStrated("trial_started"),
@@ -17,7 +18,7 @@ enum class QTransactionType(val type: String) {
                 "intro_started" -> IntroStarted
                 "intro_renewed" -> IntroRenewed
                 "non_consumable_purchase" -> NonConsumablePurchase
-                else -> SubscriptionRenewed
+                else -> Unknown
             }
         }
     }

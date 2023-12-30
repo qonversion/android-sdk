@@ -8,7 +8,7 @@ import java.util.Date
 data class QTransaction(
     @Json(name = "original_transaction_id") val originalTransactionId: String,
     @Json(name = "transaction_id") val transactionId: String,
-    @Json(name = "offer_code") val offerCode: String,
+    @Json(name = "offer_code") val offerCode: String?,
     @Json(name = "transaction_timestamp") val transactionDate: Date,
     @Json(name = "expiration_timestamp") val expirationDate: Date?,
     @Json(name = "transaction_revoke_timestamp") val transactionRevocationDate: Date?,
