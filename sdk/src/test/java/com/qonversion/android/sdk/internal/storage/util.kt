@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
@@ -64,7 +65,14 @@ internal class Util {
                     startedDate = Date(1612880300000),
                     expirationDate = null,
                     source = QEntitlementSource.PlayStore,
-                    active = 1
+                    active = 1,
+                    0,
+                    null,
+                    null,
+                    null,
+                    null,
+                    QEntitlementGrantType.Purchase,
+                    null
                 ),
                 "Test Permission" to QPermission(
                     permissionID = "Test Permission",
@@ -73,7 +81,14 @@ internal class Util {
                     startedDate = Date(1612880300000),
                     expirationDate = null,
                     source = QEntitlementSource.AppStore,
-                    active = 1
+                    active = 1,
+                    0,
+                    null,
+                    null,
+                    null,
+                    null,
+                    QEntitlementGrantType.Purchase,
+                    null
                 )
             ),
             userProducts = mapOf(
