@@ -29,6 +29,7 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
@@ -655,7 +656,14 @@ internal class QProductCenterManager internal constructor(
                 Date(purchaseTime),
                 expirationDate,
                 QEntitlementSource.PlayStore,
-                1
+                1,
+                0,
+                null,
+                null,
+                null,
+                null,
+                QEntitlementGrantType.Purchase,
+                null
             )
         } else null
     }

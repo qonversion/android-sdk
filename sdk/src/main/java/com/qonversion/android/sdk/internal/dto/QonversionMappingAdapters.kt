@@ -8,6 +8,10 @@ import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.dto.eligibility.ProductEligibility
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
+import com.qonversion.android.sdk.dto.entitlements.QTransactionEnvironment
+import com.qonversion.android.sdk.dto.entitlements.QTransactionOwnershipType
+import com.qonversion.android.sdk.dto.entitlements.QTransactionType
 import com.qonversion.android.sdk.dto.experiments.QExperimentGroupType
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
@@ -64,6 +68,54 @@ internal class QEntitlementSourceAdapter {
     @FromJson
     fun fromJson(key: String): QEntitlementSource {
         return QEntitlementSource.fromKey(key)
+    }
+}
+
+internal class QEntitlementGrantTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QEntitlementGrantType): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QEntitlementGrantType {
+        return QEntitlementGrantType.fromType(type)
+    }
+}
+
+internal class QTransactionEnvironmentAdapter {
+    @ToJson
+    private fun toJson(enum: QTransactionEnvironment): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QTransactionEnvironment {
+        return QTransactionEnvironment.fromType(type)
+    }
+}
+
+internal class QTransactionOwnershipTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QTransactionOwnershipType): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QTransactionOwnershipType {
+        return QTransactionOwnershipType.fromType(type)
+    }
+}
+
+internal class QTransactionTypeAdapter {
+    @ToJson
+    private fun toJson(enum: QTransactionType): String {
+        return enum.type
+    }
+
+    @FromJson
+    fun fromJson(type: String): QTransactionType {
+        return QTransactionType.fromType(type)
     }
 }
 
