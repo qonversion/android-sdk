@@ -34,7 +34,7 @@ private const val TAG = "HomeFragment"
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
 
-    private val productIdSubs = "annual"
+    private val productIdSubs = "weekly"
     private val productIdInApp = "in_app"
     private val entitlementPlus = "plus"
     private val entitlementStandart = "standart"
