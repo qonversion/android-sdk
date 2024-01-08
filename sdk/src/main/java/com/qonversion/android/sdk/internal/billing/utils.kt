@@ -69,7 +69,7 @@ internal val QProductOfferDetails.pricePerMaxDuration: Double get() {
 internal val QProductPricingPhase.durationDays get() = when (type) {
     QProductPricingPhase.Type.FreeTrial,
     QProductPricingPhase.Type.DiscountedRecurringPayment,
-    QProductPricingPhase.Type.SinglePayment ->
+    QProductPricingPhase.Type.DiscountedSinglePayment ->
         billingPeriod.durationDays * billingCycleCount
     else -> 0
 }
