@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.qonversion.android.app.HomeFragment"
+        android:name="io.qonversion.android.app.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -19,12 +19,12 @@
     </fragment>
     <fragment
         android:id="@+id/entitlementsFragment"
-        android:name="com.qonversion.android.app.EntitlementsFragment"
+        android:name="io.qonversion.android.app.EntitlementsFragment"
         android:label="fragment_entitlements"
         tools:layout="@layout/fragment_entitlements" />
     <fragment
         android:id="@+id/offeringsFragment"
-        android:name="com.qonversion.android.app.OfferingsFragment"
+        android:name="io.qonversion.android.app.OfferingsFragment"
         android:label="fragment_offerings"
         tools:layout="@layout/fragment_offerings" />
 </navigation>

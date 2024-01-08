@@ -1,0 +1,115 @@
+package io.qonversion.android.sdk.internal.di.module
+
+import android.app.Application
+import io.qonversion.android.sdk.internal.InternalConfig
+import io.qonversion.android.sdk.internal.api.ApiHeadersProvider
+import io.qonversion.android.sdk.internal.api.ApiHelper
+import io.qonversion.android.sdk.internal.api.NetworkInterceptor
+import io.qonversion.android.sdk.internal.api.RateLimiter
+import io.qonversion.android.sdk.internal.di.scope.ApplicationScope
+import io.qonversion.android.sdk.internal.dto.QDateAdapter
+import io.qonversion.android.sdk.internal.dto.QEligibilityAdapter
+import io.qonversion.android.sdk.internal.dto.QEligibilityStatusAdapter
+import io.qonversion.android.sdk.internal.dto.QExperimentGroupTypeAdapter
+import io.qonversion.android.sdk.internal.dto.QOfferingAdapter
+import io.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
+import io.qonversion.android.sdk.internal.dto.QOfferingsAdapter
+import io.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
+import io.qonversion.android.sdk.internal.dto.QPermissionsAdapter
+import io.qonversion.android.sdk.internal.dto.QProductDurationAdapter
+import io.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
+import io.qonversion.android.sdk.internal.dto.QProductTypeAdapter
+import io.qonversion.android.sdk.internal.dto.QProductsAdapter
+import io.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceAssignmentTypeAdapter
+import io.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceTypeAdapter
+import com.squareup.moshi.Moshi
+import dagger.Module
+import dagger.Provides
+import okhttp3.Cache
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
+
+@Module
+internal class NetworkModule {
+    @ApplicationScope
+    @Provides
+    fun provideRetrofit(
+        client: OkHttpClient,
+        moshi: Moshi,
+        internalConfig: InternalConfig
+    ): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .baseUrl(internalConfig.apiUrl)
+            .client(client)
+            .build()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .add(QProductDurationAdapter())
+            .add(QDateAdapter())
+            .add(QProductsAdapter())
+            .add(QPermissionsAdapter())
+            .add(QProductTypeAdapter())
+            .add(QProductRenewStateAdapter())
+            .add(QEntitlementSourceAdapter())
+            .add(QOfferingsAdapter())
+            .add(QOfferingAdapter())
+            .add(QOfferingTagAdapter())
+            .add(QExperimentGroupTypeAdapter())
+            .add(QRemoteConfigurationSourceTypeAdapter())
+            .add(QRemoteConfigurationSourceAssignmentTypeAdapter())
+            .add(QEligibilityStatusAdapter())
+            .add(QEligibilityAdapter())
+            .build()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideOkHttpClient(
+        context: Application,
+        interceptor: NetworkInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .cache(Cache(context.cacheDir, CACHE_SIZE))
+            .readTimeout(TIMEOUT, TimeUnit.SECONDS)
+            .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
+            .addInterceptor(interceptor)
+            .build()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideHeadersInterceptor(
+        apiHeadersProvider: ApiHeadersProvider,
+        config: InternalConfig,
+        apiHelper: ApiHelper
+    ): NetworkInterceptor {
+        return NetworkInterceptor(apiHeadersProvider, apiHelper, config)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideApiHelper(
+        internalConfig: InternalConfig
+    ): ApiHelper {
+        return ApiHelper(internalConfig.apiUrl)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideRateLimiter(): RateLimiter {
+        return RateLimiter(MAX_SIMILAR_API_REQUESTS_PER_SECOND)
+    }
+
+    companion object {
+        private const val TIMEOUT = 30L
+        private const val CACHE_SIZE = 10485776L // 10 MB
+        private const val MAX_SIMILAR_API_REQUESTS_PER_SECOND = 5
+    }
+}

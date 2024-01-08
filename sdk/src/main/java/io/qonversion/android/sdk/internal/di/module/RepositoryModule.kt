@@ -1,0 +1,120 @@
+package io.qonversion.android.sdk.internal.di.module
+
+import android.app.Application
+import android.content.SharedPreferences
+import io.qonversion.android.sdk.internal.api.ApiErrorMapper
+import io.qonversion.android.sdk.internal.EnvironmentProvider
+import io.qonversion.android.sdk.internal.IncrementalDelayCalculator
+import io.qonversion.android.sdk.internal.InternalConfig
+import io.qonversion.android.sdk.internal.repository.DefaultRepository
+import io.qonversion.android.sdk.internal.api.Api
+import io.qonversion.android.sdk.internal.api.ApiHeadersProvider
+import io.qonversion.android.sdk.internal.api.ApiHelper
+import io.qonversion.android.sdk.internal.api.RateLimiter
+import io.qonversion.android.sdk.internal.di.scope.ApplicationScope
+import io.qonversion.android.sdk.internal.logger.Logger
+import io.qonversion.android.sdk.internal.repository.QRepository
+import io.qonversion.android.sdk.internal.repository.RepositoryWithRateLimits
+import io.qonversion.android.sdk.internal.storage.PurchasesCache
+import io.qonversion.android.sdk.internal.storage.TokenStorage
+import io.qonversion.android.sdk.internal.storage.UserPropertiesStorage
+import io.qonversion.android.sdk.internal.storage.SharedPreferencesCache
+import io.qonversion.android.sdk.internal.validator.TokenValidator
+import dagger.Module
+import dagger.Provides
+import retrofit2.Retrofit
+
+@Module
+internal class RepositoryModule {
+
+    @ApplicationScope
+    @Provides
+    fun provideRepository(
+        retrofit: Retrofit,
+        environmentProvider: EnvironmentProvider,
+        config: InternalConfig,
+        logger: Logger,
+        purchasesCache: PurchasesCache,
+        apiErrorMapper: ApiErrorMapper,
+        sharedPreferences: SharedPreferences,
+        delayCalculator: IncrementalDelayCalculator,
+        rateLimiter: RateLimiter
+    ): QRepository {
+        return RepositoryWithRateLimits(
+            provideQonversionRepository(
+                retrofit,
+                environmentProvider,
+                config,
+                logger,
+                purchasesCache,
+                apiErrorMapper,
+                sharedPreferences,
+                delayCalculator
+            ),
+            rateLimiter
+        )
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideQonversionRepository(
+        retrofit: Retrofit,
+        environmentProvider: EnvironmentProvider,
+        config: InternalConfig,
+        logger: Logger,
+        purchasesCache: PurchasesCache,
+        apiErrorMapper: ApiErrorMapper,
+        sharedPreferences: SharedPreferences,
+        delayCalculator: IncrementalDelayCalculator
+    ): DefaultRepository {
+        return DefaultRepository(
+            retrofit.create(Api::class.java),
+            environmentProvider,
+            config,
+            logger,
+            purchasesCache,
+            apiErrorMapper,
+            sharedPreferences,
+            delayCalculator
+        )
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideTokenStorage(preferences: SharedPreferences): TokenStorage {
+        return TokenStorage(
+            preferences,
+            TokenValidator()
+        )
+    }
+
+    @ApplicationScope
+    @Provides
+    fun providePropertiesStorage(): UserPropertiesStorage {
+        return UserPropertiesStorage()
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideEnvironment(context: Application): EnvironmentProvider {
+        return EnvironmentProvider(context)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideHeadersProvider(
+        config: InternalConfig,
+        sharedPreferencesCache: SharedPreferencesCache,
+        environmentProvider: EnvironmentProvider
+    ): ApiHeadersProvider {
+        return ApiHeadersProvider(config, sharedPreferencesCache, environmentProvider)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideApiErrorMapper(
+        apiHelper: ApiHelper
+    ): ApiErrorMapper {
+        return ApiErrorMapper(apiHelper)
+    }
+}
