@@ -4,7 +4,7 @@ enum class QTransactionType(val type: String) {
     Unknown("unknown"),
     SubscriptionStarted("subscription_started"),
     SubscriptionRenewed("subscription_renewed"),
-    TrialStrated("trial_started"),
+    TrialStarted("trial_started"),
     IntroStarted("intro_started"),
     IntroRenewed("intro_renewed"),
     NonConsumablePurchase("non_consumable_purchase");
@@ -14,7 +14,7 @@ enum class QTransactionType(val type: String) {
             return when (type) {
                 "subscription_started" -> SubscriptionStarted
                 "subscription_renewed" -> SubscriptionRenewed
-                "trial_started" -> TrialStrated
+                "trial_started" -> TrialStarted
                 "intro_started" -> IntroStarted
                 "intro_renewed" -> IntroRenewed
                 "non_consumable_purchase" -> NonConsumablePurchase
