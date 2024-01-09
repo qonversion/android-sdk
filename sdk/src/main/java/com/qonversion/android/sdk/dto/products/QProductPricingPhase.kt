@@ -41,7 +41,7 @@ data class QProductPricingPhase(
     val type: Type = when {
         recurrenceMode != RecurrenceMode.FiniteRecurring -> Type.Regular
         price.isFree -> Type.FreeTrial
-        billingCycleCount == 1 -> Type.SinglePayment
+        billingCycleCount == 1 -> Type.DiscountedSinglePayment
         billingCycleCount > 1 -> Type.DiscountedRecurringPayment
         else -> Type.Unknown
     }
@@ -55,7 +55,7 @@ data class QProductPricingPhase(
      * True, if the current phase is an intro period. False otherwise.
      * The intro phase is one of single or recurrent discounted payments.
      */
-    val isIntro: Boolean = type == Type.SinglePayment || type == Type.DiscountedRecurringPayment
+    val isIntro: Boolean = type == Type.DiscountedSinglePayment || type == Type.DiscountedRecurringPayment
 
     /**
      * True, if the current phase represents the base plan. False otherwise.
@@ -109,7 +109,7 @@ data class QProductPricingPhase(
         /**
          * A phase with a discounted payment for a single period.
          */
-        SinglePayment,
+        DiscountedSinglePayment,
 
         /**
          * A phase with a discounted payment for several periods, described in [billingCycleCount].
