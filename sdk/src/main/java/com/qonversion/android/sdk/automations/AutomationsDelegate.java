@@ -1,15 +1,11 @@
 package com.qonversion.android.sdk.automations;
 
-import android.content.Context;
-
 import com.qonversion.android.sdk.automations.dto.AutomationsEvent;
 import com.qonversion.android.sdk.automations.dto.QActionResult;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-
-import kotlin.Deprecated;
 
 public interface AutomationsDelegate {
 
@@ -67,13 +63,5 @@ public interface AutomationsDelegate {
      */
     default Boolean shouldHandleEvent(@NotNull AutomationsEvent event, @NotNull Map<String, String> payload) {
         return true;
-    }
-
-    /**
-     * Returns the context for screen intent
-     */
-    @Deprecated(message = "Is not used anymore")
-    default Context contextForScreenIntent() {
-        return null;
     }
 }
