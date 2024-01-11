@@ -17,7 +17,7 @@ internal data class QPermission(
     @Json(name = "expiration_timestamp") val expirationDate: Date?,
     @Json(name = "source") val source: QEntitlementSource = QEntitlementSource.Unknown,
     @Json(name = "active") internal val active: Int,
-    @Json(name = "renewsCount") val renewsCount: Int = 0,
+    @Json(name = "renews_count") val renewsCount: Int = 0,
     @Json(name = "trial_start_timestamp") val trialStartDate: Date?,
     @Json(name = "first_purchase_timestamp") val firstPurchaseDate: Date?,
     @Json(name = "last_purchase_timestamp") val lastPurchaseDate: Date?,
