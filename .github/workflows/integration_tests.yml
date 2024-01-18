@@ -26,3 +26,10 @@ jobs:
       with:
         api-level: 28
         script: ./gradlew sdk:connectedAndroidTest
+
+    - name: Unit tests results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: sdk/build/reports/androidTests/connected/index.html

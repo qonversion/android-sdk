@@ -10,7 +10,15 @@ data class QEntitlement(
     internal val active: Boolean,
     val source: QEntitlementSource,
     val productId: String,
-    val renewState: QEntitlementRenewState
+    val renewState: QEntitlementRenewState,
+    val renewsCount: Int,
+    val trialStartDate: Date?,
+    val firstPurchaseDate: Date?,
+    val lastPurchaseDate: Date?,
+    val lastActivatedOfferCode: String?,
+    val grantType: QEntitlementGrantType,
+    val autoRenewDisableDate: Date?,
+    val transactions: List<QTransaction>
 ) {
     internal constructor(permission: QPermission) : this(
         permission.permissionID,
@@ -19,7 +27,15 @@ data class QEntitlement(
         permission.isActive(),
         permission.source,
         permission.productID,
-        QEntitlementRenewState.fromProductRenewState(permission.renewState)
+        QEntitlementRenewState.fromProductRenewState(permission.renewState),
+        permission.renewsCount,
+        permission.trialStartDate,
+        permission.firstPurchaseDate,
+        permission.lastPurchaseDate,
+        permission.lastActivatedOfferCode,
+        permission.grantType,
+        permission.autoRenewDisableDate,
+        permission.transactions
     )
 
     val isActive get() = active

@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.dto.QDateAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityStatusAdapter
+import com.qonversion.android.sdk.internal.dto.QEntitlementGrantTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QExperimentGroupTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingAdapter
 import com.qonversion.android.sdk.internal.dto.QOfferingTagAdapter
@@ -20,6 +21,9 @@ import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
 import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceAssignmentTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceTypeAdapter
+import com.qonversion.android.sdk.internal.dto.QTransactionEnvironmentAdapter
+import com.qonversion.android.sdk.internal.dto.QTransactionOwnershipTypeAdapter
+import com.qonversion.android.sdk.internal.dto.QTransactionTypeAdapter
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -62,6 +66,10 @@ internal class NetworkModule {
             .add(QRemoteConfigurationSourceAssignmentTypeAdapter())
             .add(QEligibilityStatusAdapter())
             .add(QEligibilityAdapter())
+            .add(QTransactionOwnershipTypeAdapter())
+            .add(QTransactionTypeAdapter())
+            .add(QTransactionEnvironmentAdapter())
+            .add(QEntitlementGrantTypeAdapter())
             .build()
     }
 

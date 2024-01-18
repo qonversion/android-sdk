@@ -284,6 +284,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEntitlementGrantTypeAdapter$@ToJson private fun toJson(enum: QEntitlementGrantType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEntitlementSourceAdapter$@ToJson private fun toJson(enum: QEntitlementSource): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QExperimentGroupTypeAdapter$@ToJson private fun toJson(enum: QExperimentGroupType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QOfferingTagAdapter$@ToJson private fun toJson(enum: QOfferingTag): Int?</ID>
@@ -293,6 +294,9 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct&gt;): List&lt;QProduct&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceAssignmentTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationAssignmentType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationSourceType): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionEnvironmentAdapter$@ToJson private fun toJson(enum: QTransactionEnvironment): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionOwnershipTypeAdapter$@ToJson private fun toJson(enum: QTransactionOwnershipType): String</ID>
+    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionTypeAdapter$@ToJson private fun toJson(enum: QTransactionType): String</ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:LegacyBillingClientWrapper.kt$import com.android.billingclient.api.*</ID>

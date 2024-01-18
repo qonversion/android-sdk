@@ -206,7 +206,7 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun purchase_for_existing_user() {
+    fun purchaseForExistingUser() {
         // given
         val signal = CountDownLatch(1)
 
