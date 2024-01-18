@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -242,15 +243,7 @@ internal class QonversionRepositoryIntegrationTest {
         val signal = CountDownLatch(1)
 
         val expectedPermissions = mapOf(
-            "premium" to QPermission(
-                "premium",
-                "test_monthly",
-                QProductRenewState.Canceled,
-                Date(1679933171000),
-                Date(1679935273000),
-                QEntitlementSource.PlayStore,
-                0
-            )
+            "premium" to expectedPremiumPermission()
         )
 
         val uid = "QON_test_uid1679992132407"
@@ -336,7 +329,15 @@ internal class QonversionRepositoryIntegrationTest {
                 Date(1685953401000),
                 null,
                 QEntitlementSource.PlayStore,
-                1
+                1,
+                0,
+                null,
+                null,
+                null,
+                null,
+                QEntitlementGrantType.Purchase,
+                null,
+                emptyList()
             )
         )
 
@@ -948,5 +949,25 @@ internal class QonversionRepositoryIntegrationTest {
             "HTTP status code=401, error=Authorization error: project not found. ",
             "HTTP status code=401, error=User with specified access token does not exist. "
         ).contains(error.additionalMessage))
+    }
+
+    private fun expectedPremiumPermission(): QPermission {
+        return QPermission(
+            "premium",
+            "test_monthly",
+            QProductRenewState.Canceled,
+            Date(1679933171000),
+            Date(1679935273000),
+            QEntitlementSource.PlayStore,
+            0,
+            0,
+            null,
+            null,
+            null,
+            null,
+            QEntitlementGrantType.Purchase,
+            null,
+            emptyList()
+        )
     }
 }

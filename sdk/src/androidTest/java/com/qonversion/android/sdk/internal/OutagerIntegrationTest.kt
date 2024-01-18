@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
@@ -173,7 +174,15 @@ internal class OutagerIntegrationTest {
                 Date(1679933171000),
                 Date(1682525171000), // plus month
                 QEntitlementSource.Unknown,
-                1
+                1,
+                2,
+                null,
+                null,
+                null,
+                null,
+                QEntitlementGrantType.Purchase,
+                null,
+                emptyList()
             )
         )
 
@@ -240,9 +249,17 @@ internal class OutagerIntegrationTest {
                 "test_monthly",
                 QProductRenewState.Unknown,
                 Date(1679933171000),
-                Date(1680537971000), // plus seven days
+                Date(1682525171000), // plus month
                 QEntitlementSource.Unknown,
-                1
+                1,
+                2,
+                null,
+                null,
+                null,
+                null,
+                QEntitlementGrantType.Purchase,
+                null,
+                emptyList()
             )
         )
 
