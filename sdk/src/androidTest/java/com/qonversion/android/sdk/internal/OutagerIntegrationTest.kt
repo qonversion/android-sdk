@@ -249,7 +249,7 @@ internal class OutagerIntegrationTest {
                 "test_monthly",
                 QProductRenewState.Unknown,
                 Date(1679933171000),
-                Date(1682525171000), // plus month
+                Date(1680537971000), // plus seven days
                 QEntitlementSource.Unknown,
                 1,
                 0,
