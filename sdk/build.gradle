@@ -3,10 +3,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 33
+    compileSdk 33
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 33
 
         consumerProguardFiles 'consumer-rules.pro'
@@ -68,7 +68,7 @@ ext {
     moshiVersion = '1.14.0'
     retrofit_version = '2.9.0'
     okhttp_version = '3.12.13'
-    billing = '6.0.1'
+    billing = '6.1.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'

@@ -15,10 +15,10 @@ buildscript {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdk 33
     defaultConfig {
         applicationId "com.qonversion.sample"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 33
         versionCode 1
         versionName "1.0.0"
