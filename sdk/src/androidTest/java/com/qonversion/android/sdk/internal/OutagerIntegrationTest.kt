@@ -252,7 +252,7 @@ internal class OutagerIntegrationTest {
                 Date(1682525171000), // plus month
                 QEntitlementSource.Unknown,
                 1,
-                2,
+                0,
                 null,
                 null,
                 null,
