@@ -11,8 +11,8 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.*;
-import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
 import com.qonversion.android.sdk.Qonversion;
 
 import java.util.Collections;
@@ -22,12 +22,11 @@ import java.util.Objects;
 
 public class ManualTrackingActivity extends AppCompatActivity {
 
-    private static final String SKU_ID = "your_sku_id";
+    private static final String PRODUCT_ID = "your_product_id";
 
     private BillingClient client;
 
-    @SuppressWarnings("deprecation")
-    private final Map<String, SkuDetails> skuDetails = new HashMap<>();
+    private final Map<String, ProductDetails> productDetails = new HashMap<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
@@ -36,18 +35,16 @@ public class ManualTrackingActivity extends AppCompatActivity {
         client = BillingClient
                 .newBuilder(this)
                 .enablePendingPurchases()
-                .setListener((billingResult, list) -> {
+                .setListener((billingResult, purchases) -> {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        if (list != null && !list.isEmpty()) {
+                        if (purchases != null && !purchases.isEmpty()) {
                             Qonversion.getSharedInstance().syncPurchases();
                         }
                     }
                 })
                 .build();
 
-
         launchBilling();
-
     }
 
     private void launchBilling() {
@@ -56,18 +53,21 @@ public class ManualTrackingActivity extends AppCompatActivity {
             public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
 
-                    @SuppressWarnings("deprecation")
-                    final SkuDetailsParams params = SkuDetailsParams
+                    final QueryProductDetailsParams.Product product = QueryProductDetailsParams.Product
                             .newBuilder()
-                            .setSkusList(Collections.singletonList(SKU_ID))
-                            .setType(BillingClient.SkuType.INAPP)
+                            .setProductId(PRODUCT_ID)
+                            .setProductType(BillingClient.ProductType.INAPP)
                             .build();
 
-                    //noinspection deprecation
-                    client.querySkuDetailsAsync(params, (queryBillingResult, list) -> {
+                    final QueryProductDetailsParams params = QueryProductDetailsParams
+                            .newBuilder()
+                            .setProductList(Collections.singletonList(product))
+                            .build();
+
+                    client.queryProductDetailsAsync(params, (queryBillingResult, details) -> {
                         if (queryBillingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                            if (list != null && !list.isEmpty()) {
-                                skuDetails.put(SKU_ID, list.get(0));
+                            if (!details.isEmpty()) {
+                                productDetails.put(PRODUCT_ID, details.get(0));
                             }
                             launchBillingFlow();
                         }
@@ -84,11 +84,16 @@ public class ManualTrackingActivity extends AppCompatActivity {
     }
 
     private void launchBillingFlow() {
-        @SuppressWarnings("deprecation")
+        final BillingFlowParams.ProductDetailsParams productDetailsParams = BillingFlowParams.ProductDetailsParams
+                .newBuilder()
+                .setProductDetails(Objects.requireNonNull(productDetails.get(PRODUCT_ID)))
+                .build();
+
         final BillingFlowParams params = BillingFlowParams
                 .newBuilder()
-                .setSkuDetails(Objects.requireNonNull(skuDetails.get(SKU_ID)))
+                .setProductDetailsParamsList(Collections.singletonList(productDetailsParams))
                 .build();
+
         client.launchBillingFlow(this, params);
     }
 }

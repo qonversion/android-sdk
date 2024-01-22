@@ -5,7 +5,9 @@ import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.PurchasesUpdatedListener
-import com.qonversion.android.sdk.internal.billing.BillingService
+import com.qonversion.android.sdk.internal.billing.BillingClientWrapper
+import com.qonversion.android.sdk.internal.billing.BillingClientHolder
+import com.qonversion.android.sdk.internal.billing.LegacyBillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -43,23 +45,51 @@ internal class QonversionFactory(
             appStateProvider,
             remoteConfigManager
         )
-        val billingService = createBillingService(productCenterManager)
+        val billingService = createBillingService(productCenterManager, config.isAnalyticsMode)
 
         productCenterManager.billingService = billingService
-        productCenterManager.consumer = createConsumer(billingService, config.isAnalyticsMode)
 
         return productCenterManager
     }
 
-    private fun createBillingService(listener: QonversionBillingService.PurchasesListener): QonversionBillingService {
-        val billingService = QonversionBillingService(
+    private fun createBillingService(
+        listener: QonversionBillingService.PurchasesListener,
+        isAnalyticsMode: Boolean
+    ): QonversionBillingService {
+        val billingClientHolder = createBillingClientHolder()
+        return QonversionBillingService(
             Handler(context.mainLooper),
             listener,
+            logger,
+            isAnalyticsMode,
+            billingClientHolder,
+            createBillingClientWrapper(billingClientHolder),
+            createLegacyBillingClientWrapper(billingClientHolder)
+        )
+    }
+
+    private fun createBillingClientHolder(): BillingClientHolder {
+        val clientHolder = BillingClientHolder(
+            Handler(context.mainLooper),
             logger
         )
-        billingService.billingClient = createBillingClient(billingService)
 
-        return billingService
+        val billingClient = createBillingClient(clientHolder)
+        clientHolder.setBillingClient(billingClient)
+
+        return clientHolder
+    }
+
+    private fun createLegacyBillingClientWrapper(
+        billingClientHolder: BillingClientHolder
+    ): LegacyBillingClientWrapper {
+        return LegacyBillingClientWrapper(billingClientHolder, logger)
+    }
+
+    private fun createBillingClientWrapper(
+        billingClientHolder: BillingClientHolder
+    ): BillingClientWrapper {
+        return BillingClientWrapper(billingClientHolder, logger)
     }
 
     @UiThread
@@ -68,9 +98,5 @@ internal class QonversionFactory(
         builder.enablePendingPurchases()
         builder.setListener(listener)
         return builder.build()
-    }
-
-    private fun createConsumer(billingService: BillingService, isAnalyticsMode: Boolean): Consumer {
-        return Consumer(billingService, isAnalyticsMode)
     }
 }

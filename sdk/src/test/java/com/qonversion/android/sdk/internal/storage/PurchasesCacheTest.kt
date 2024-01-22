@@ -32,18 +32,8 @@ internal class PurchasesCacheTest {
     @Nested
     inner class SavePurchase {
         @Test
-        fun `should not save purchase when sku type is subs`() {
-            val purchase = mockPurchase(BillingClient.SkuType.SUBS)
-
-            purchasesCache.savePurchase(purchase)
-            verify(exactly = 0) {
-                mockEditor.putString(purchaseKey, any()).apply()
-            }
-        }
-
-        @Test
-        fun `should save purchase when sku type is inapp`() {
-            val purchase = mockPurchase(BillingClient.SkuType.INAPP)
+        fun `should save purchase`() {
+            val purchase = mockPurchase()
 
             purchasesCache.savePurchase(purchase)
 
@@ -58,7 +48,7 @@ internal class PurchasesCacheTest {
             every {
                 mockPrefs.getString(purchaseKey, "")
             } returns onePurchaseStr
-            val purchase = mockPurchase(BillingClient.SkuType.INAPP)
+            val purchase = mockPurchase()
 
             purchasesCache.savePurchase(purchase)
 
@@ -76,7 +66,7 @@ internal class PurchasesCacheTest {
                 mockPrefs.getString(purchaseKey, "")
             } returns fourPurchasesStr
 
-            val fifthPurchase = mockPurchase(BillingClient.SkuType.INAPP, "5")
+            val fifthPurchase = mockPurchase("5")
             purchasesCache.savePurchase(fifthPurchase)
             val fourNewestPurchasesStr =
                 "[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"
@@ -109,7 +99,7 @@ internal class PurchasesCacheTest {
                 mockPrefs.getString(purchaseKey, "")
             } returns onePurchaseStr
 
-            val purchase = mockPurchase(BillingClient.SkuType.INAPP)
+            val purchase = mockPurchase()
 
             val purchases = purchasesCache.loadPurchases()
             verify(exactly = 1) {
@@ -139,7 +129,7 @@ internal class PurchasesCacheTest {
         @Test
         fun `should delete purchase from set when it is existed`() {
             val emptyList = "[]"
-            val purchase = mockPurchase(BillingClient.SkuType.INAPP)
+            val purchase = mockPurchase()
 
             every {
                 mockPrefs.getString(purchaseKey, any())
@@ -156,7 +146,7 @@ internal class PurchasesCacheTest {
         @Test
         fun `should not delete purchase from set when it is not existed`() {
             val emptyList = "[]"
-            val purchase = mockPurchase(BillingClient.SkuType.INAPP)
+            val purchase = mockPurchase()
 
             purchasesCache.clearPurchase(purchase)
 
@@ -167,39 +157,13 @@ internal class PurchasesCacheTest {
         }
     }
 
-    private fun mockPurchase(
-        @BillingClient.SkuType skuType: String,
-        originalOrderId: String = ""
-    ): Purchase {
+    private fun mockPurchase(originalOrderId: String = ""): Purchase {
         return Purchase(
-            detailsToken = "AEuhp4IOz4jzn7ZFK222oIkBaHcEBKYQYmJ6QqguRvyulBm0yv0ntS6hJQx97euC1dBW",
-            title = "Qonversion In-app Consumable (Qonversion Sample)",
-            description = "Qonversion In-app Consumable",
-            productId = "qonversion_inapp_consumable",
-            type = skuType,
-            originalPrice = "RUB 75.00",
-            originalPriceAmountMicros = 75000000,
-            priceCurrencyCode = "RUB",
-            price = "75.00",
-            priceAmountMicros = 75000000,
-            periodUnit = 0,
-            periodUnitsCount = 0,
-            freeTrialPeriod = "",
-            introductoryAvailable = false,
-            introductoryPriceAmountMicros = 0,
-            introductoryPrice = "0.00",
-            introductoryPriceCycles = 0,
-            introductoryPeriodUnit = 0,
-            introductoryPeriodUnitsCount = 0,
+            storeProductId = "article-test-trial",
             orderId = "GPA.3375-4436-3573-53474",
             originalOrderId = "GPA.3375-4436-3573-53474$originalOrderId",
-            packageName = "com.qonversion.sample",
             purchaseTime = 1611323804,
-            purchaseState = 1,
             purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g",
-            acknowledged = false,
-            autoRenewing = false,
-            paymentMode = 0
         )
     }
 
@@ -218,33 +182,9 @@ internal class PurchasesCacheTest {
     }
 
     private fun generatePurchaseJson(originalOrderId: String = ""): String {
-        return "{\"detailsToken\":\"AEuhp4IOz4jzn7ZFK222oIkBaHcEBKYQYmJ6QqguRvyulBm0yv0ntS6hJQx97euC1dBW\"," +
-                "\"title\":\"Qonversion In-app Consumable (Qonversion Sample)\"," +
-                "\"description\":\"Qonversion In-app Consumable\"," +
-                "\"productId\":\"qonversion_inapp_consumable\"," +
-                "\"type\":\"inapp\"," +
-                "\"originalPrice\":\"RUB 75.00\"," +
-                "\"originalPriceAmountMicros\":75000000," +
-                "\"priceCurrencyCode\":\"RUB\"," +
-                "\"price\":\"75.00\"," +
-                "\"priceAmountMicros\":75000000," +
-                "\"periodUnit\":0," +
-                "\"periodUnitsCount\":0," +
-                "\"freeTrialPeriod\":\"\"," +
-                "\"introductoryAvailable\":false," +
-                "\"introductoryPriceAmountMicros\":0," +
-                "\"introductoryPrice\":\"0.00\"," +
-                "\"introductoryPriceCycles\":0," +
-                "\"introductoryPeriodUnit\":0," +
-                "\"introductoryPeriodUnitsCount\":0," +
-                "\"orderId\":\"GPA.3375-4436-3573-53474\"," +
+        return "{\"orderId\":\"GPA.3375-4436-3573-53474\"," +
                 "\"originalOrderId\":\"GPA.3375-4436-3573-53474$originalOrderId\"," +
-                "\"packageName\":\"com.qonversion.sample\"," +
                 "\"purchaseTime\":1611323804," +
-                "\"purchaseState\":1," +
-                "\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\"," +
-                "\"acknowledged\":false," +
-                "\"autoRenewing\":false," +
-                "\"paymentMode\":0}"
+                "\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\"}"
     }
 }
