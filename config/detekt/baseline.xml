@@ -141,18 +141,18 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:142</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:204</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:353</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:412</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:89</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:213</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:370</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:429</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:90</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:147</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:148</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:175</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:293</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:354</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:683</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:88</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:904</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:286</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:355</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:684</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:89</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:905</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:117</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.BillingClientWrapperBase.kt:59</ID>
@@ -169,8 +169,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:220</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:221</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:222</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:122</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:123</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
@@ -222,7 +222,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:8</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:23</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
