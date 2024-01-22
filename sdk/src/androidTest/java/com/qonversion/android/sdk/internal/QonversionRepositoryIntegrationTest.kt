@@ -14,12 +14,11 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
+import com.qonversion.android.sdk.dto.entitlements.QEntitlementGrantType
 import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -56,15 +55,9 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val noCodeScreenId = "lsarjYcU"
 
-    private val monthlyProduct = QProduct(
-        "test_monthly",
-        "google_monthly",
-        QProductType.Subscription,
-        QProductDuration.Monthly
-    )
-    private val annualProduct =
-        QProduct("test_annual", "google_annual", QProductType.Trial, QProductDuration.Annual)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", QProductType.InApp, null)
+    private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
+    private val annualProduct = QProduct("test_annual", "google_annual", null)
+    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,
@@ -89,34 +82,11 @@ internal class QonversionRepositoryIntegrationTest {
     )
 
     private val purchase = Purchase(
-        detailsToken = "AEuhp4Kd9cZ3ZlkS2MylEXHBcZVLjwwllncPBm4a6lrVvj3uYGICnsE5w87i81qNsa38DPOW08BcZfLxJFxIWeISVwoBkT55tA2Bb6cKGsip724=",
-        title = "DONT CHANGE! Sub for integration tests. (Qonversion Sample)",
-        description = "",
-        productId = "google_monthly",
-        type = "subs",
-        originalPrice = "$6.99",
-        originalPriceAmountMicros = 6990000,
-        priceCurrencyCode = "SGD",
-        price = "6.99",
-        priceAmountMicros = 6990000,
-        periodUnit = 2,
-        periodUnitsCount = 1,
-        freeTrialPeriod = "",
-        introductoryAvailable = false,
-        introductoryPriceAmountMicros = 0,
-        introductoryPrice = "0.00",
-        introductoryPriceCycles = 0,
-        introductoryPeriodUnit = 0,
-        introductoryPeriodUnitsCount = null,
+        storeProductId = "google_monthly",
         orderId = "GPA.3307-0767-0668-99058",
         originalOrderId = "GPA.3307-0767-0668-99058",
-        packageName = "com.qonversion.sample",
         purchaseTime = 1679933171,
-        purchaseState = 1,
         purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-        acknowledged = false,
-        autoRenewing = true,
-        paymentMode = 0
     )
 
     @Test
@@ -242,15 +212,7 @@ internal class QonversionRepositoryIntegrationTest {
         val signal = CountDownLatch(1)
 
         val expectedPermissions = mapOf(
-            "premium" to QPermission(
-                "premium",
-                "test_monthly",
-                QProductRenewState.Canceled,
-                Date(1679933171000),
-                Date(1679935273000),
-                QEntitlementSource.PlayStore,
-                0
-            )
+            "premium" to expectedPremiumPermission()
         )
 
         val uid = "QON_test_uid1679992132407"
@@ -323,8 +285,6 @@ internal class QonversionRepositoryIntegrationTest {
                 "google_inapp",
                 "lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo",
                 1685953401,
-                "GBP",
-                "48.9"
             )
         )
 
@@ -336,7 +296,15 @@ internal class QonversionRepositoryIntegrationTest {
                 Date(1685953401000),
                 null,
                 QEntitlementSource.PlayStore,
-                1
+                1,
+                0,
+                null,
+                null,
+                null,
+                null,
+                QEntitlementGrantType.Purchase,
+                null,
+                emptyList()
             )
         )
 
@@ -386,8 +354,6 @@ internal class QonversionRepositoryIntegrationTest {
                 "google_monthly",
                 "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
                 1679933171,
-                "SGD",
-                "6.99"
             )
         )
 
@@ -948,5 +914,25 @@ internal class QonversionRepositoryIntegrationTest {
             "HTTP status code=401, error=Authorization error: project not found. ",
             "HTTP status code=401, error=User with specified access token does not exist. "
         ).contains(error.additionalMessage))
+    }
+
+    private fun expectedPremiumPermission(): QPermission {
+        return QPermission(
+            "premium",
+            "test_monthly",
+            QProductRenewState.Canceled,
+            Date(1679933171000),
+            Date(1679935273000),
+            QEntitlementSource.PlayStore,
+            0,
+            0,
+            null,
+            null,
+            null,
+            null,
+            QEntitlementGrantType.Purchase,
+            null,
+            emptyList()
+        )
     }
 }

@@ -17,35 +17,9 @@ import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductType
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import java.util.Date
-
-internal class QProductDurationAdapter {
-    @ToJson
-    private fun toJson(enum: QProductDuration): Int {
-        return enum.type
-    }
-
-    @FromJson
-    fun fromJson(type: Int): QProductDuration? {
-        return QProductDuration.fromType(type)
-    }
-}
-
-internal class QProductTypeAdapter {
-    @ToJson
-    private fun toJson(enum: QProductType): Int {
-        return enum.type
-    }
-
-    @FromJson
-    fun fromJson(type: Int): QProductType {
-        return QProductType.fromType(type)
-    }
-}
 
 internal class QProductRenewStateAdapter {
     @ToJson

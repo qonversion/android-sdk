@@ -6,9 +6,7 @@ import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductDuration
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
-import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.internal.dto.QDateAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityAdapter
 import com.qonversion.android.sdk.internal.dto.QEligibilityStatusAdapter
@@ -20,9 +18,7 @@ import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
-import com.qonversion.android.sdk.internal.dto.QProductDurationAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
-import com.qonversion.android.sdk.internal.dto.QProductTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
 import com.squareup.moshi.Moshi
 import java.util.*
@@ -41,20 +37,17 @@ internal class Util {
                 "main" to QProduct(
                     qonversionID = "main",
                     storeID = "qonversion_subs_weekly",
-                    type = QProductType.Trial,
-                    duration = QProductDuration.Weekly
+                    basePlanID = null,
                 ),
                 "in_app" to QProduct(
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
-                    type = QProductType.InApp,
-                    duration = null
+                    basePlanID = null,
                 ),
                 "annual" to QProduct(
                     qonversionID = "annual",
                     storeID = "qonversion_subs_annual",
-                    type = QProductType.Trial,
-                    duration = QProductDuration.Annual
+                    basePlanID = null,
                 )
             ),
             permissions = mapOf(
@@ -95,8 +88,7 @@ internal class Util {
                 "in_app" to QProduct(
                     qonversionID = "in_app",
                     storeID = "qonversion_inapp_consumable",
-                    type = QProductType.InApp,
-                    duration = null
+                    basePlanID = null,
                 )
             ),
             offerings = QOfferings(
@@ -107,14 +99,12 @@ internal class Util {
                         QProduct(
                             qonversionID = "in_app",
                             storeID = "qonversion_inapp_consumable",
-                            type = QProductType.InApp,
-                            duration = null
+                            basePlanID = null,
                         ),
                         QProduct(
                             qonversionID = "main",
                             storeID = "qonversion_subs_weekly",
-                            type = QProductType.Trial,
-                            duration = QProductDuration.Weekly
+                            basePlanID = null,
                         )
                     )
                 ),
@@ -126,14 +116,12 @@ internal class Util {
                             QProduct(
                                 qonversionID = "in_app",
                                 storeID = "qonversion_inapp_consumable",
-                                type = QProductType.InApp,
-                                duration = null
+                                basePlanID = null,
                             ),
                             QProduct(
                                 qonversionID = "main",
                                 storeID = "qonversion_subs_weekly",
-                                type = QProductType.Trial,
-                                duration = QProductDuration.Weekly
+                                basePlanID = null,
                             )
                         )
                     )
@@ -146,17 +134,15 @@ internal class Util {
                 "\"products\":[{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}," +
                 "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}," +
                 "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\",\"type\":0,\"duration\":4}]," +
-                "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],\"experiments\":[]," +
-                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}],\"experiment\":{\"uid\":\"secondary\",\"attached\":false}" +
+                "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}]," +
+                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}]" +
                 "}]}"
 
         fun buildMoshi(): Moshi =
             Moshi.Builder()
-                .add(QProductDurationAdapter())
                 .add(QDateAdapter())
                 .add(QProductsAdapter())
                 .add(QPermissionsAdapter())
-                .add(QProductTypeAdapter())
                 .add(QProductRenewStateAdapter())
                 .add(QEntitlementSourceAdapter())
                 .add(QOfferingsAdapter())

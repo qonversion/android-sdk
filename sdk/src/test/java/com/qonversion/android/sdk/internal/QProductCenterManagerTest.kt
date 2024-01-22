@@ -10,12 +10,11 @@ import com.android.billingclient.api.*
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
-import com.qonversion.android.sdk.internal.billing.sku
+import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.repository.QRepository
-import com.qonversion.android.sdk.mockPrivateField
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
@@ -41,18 +40,13 @@ internal class QProductCenterManagerTest {
     private val mockUserInfoService = mockk<QUserInfoService>(relaxed = true)
     private val mockIdentityManager = mockk<QIdentityManager>(relaxed = true)
     private val mockBillingService = mockk<QonversionBillingService>()
-    private val mockConsumer = mockk<Consumer>(relaxed = true)
     private val mockConfig = mockk<InternalConfig>(relaxed = true)
     private val mockAppStateProvider = mockk<AppStateProvider>(relaxed = true)
     private val mockRemoteConfigManager = mockk<QRemoteConfigManager>(relaxed = true)
 
     private lateinit var productCenterManager: QProductCenterManager
 
-    private val fieldSkuDetails = "skuDetails"
-
-    @Suppress("DEPRECATION")
-    private val skuTypeInApp = BillingClient.SkuType.INAPP
-    private val sku = "sku"
+    private val productId = "productId"
     private val purchaseToken = "purchaseToken"
     private val installDate: Long = 1605608753
 
@@ -77,7 +71,6 @@ internal class QProductCenterManagerTest {
             mockRemoteConfigManager
         )
         productCenterManager.billingService = mockBillingService
-        productCenterManager.consumer = mockConsumer
         mockLaunchResult()
     }
 
@@ -99,7 +92,7 @@ internal class QProductCenterManagerTest {
     @Test
     fun `handle pending purchases when launching is finished and query purchases failed`() {
         every {
-            mockBillingService.queryPurchases(any(), captureLambda())
+            mockBillingService.queryPurchases(captureLambda(), any())
         } answers {
             lambda<(BillingError) -> Unit>().captured.invoke(
                 BillingError(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE, "")
@@ -112,21 +105,16 @@ internal class QProductCenterManagerTest {
             mockBillingService.queryPurchases(any(), any())
         }
 
-        verify {
-            listOf(
-                mockConsumer,
-                mockRepository
-            ) wasNot Called
-        }
+        verify { mockRepository wasNot Called }
+        verify(exactly = 0) { mockBillingService.consumePurchases(any()) }
     }
 
     @Test
     fun `handle pending purchases when launching is finished and query purchases completed`() {
         val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
         val purchases = listOf(purchase)
-        val skuDetails = mockSkuDetailsField(skuTypeInApp)
         every {
-            mockBillingService.queryPurchases(captureLambda(), any())
+            mockBillingService.queryPurchases(any(), captureLambda())
         } answers {
             lambda<(List<Purchase>) -> Unit>().captured.invoke(
                 purchases
@@ -145,43 +133,20 @@ internal class QProductCenterManagerTest {
             )
         } just Runs
 
-        every { mockBillingService.consume(any()) } just Runs
+        every { mockBillingService.consumePurchases(any()) } just Runs
 
         productCenterManager.onAppForeground()
 
         verify(exactly = 1) {
             mockBillingService.queryPurchases(any(), any())
-            mockConsumer.consumePurchases(purchases, skuDetails)
+            mockBillingService.consumePurchases(purchases)
         }
 
         assertAll(
             "Repository purchase() method was called with invalid arguments",
-            { Assert.assertEquals("Wrong sku value", sku, entityPurchaseSlot.captured.productId) },
             { Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) },
-            { Assert.assertEquals("Wrong type value", skuTypeInApp, entityPurchaseSlot.captured.type) },
             { Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }
         )
-    }
-
-    @Suppress("DEPRECATION")
-    private fun mockSkuDetailsField(@BillingClient.SkuType skuType: String): Map<String, SkuDetails> {
-        val skuDetails = mockSkuDetails(skuType)
-        val mapSkuDetails = mutableMapOf<String, SkuDetails>()
-        mapSkuDetails[sku] = skuDetails
-        productCenterManager.mockPrivateField(fieldSkuDetails, mapSkuDetails)
-
-        return mapSkuDetails
-    }
-
-    @Suppress("DEPRECATION")
-    private fun mockSkuDetails(
-        @BillingClient.SkuType skuType: String
-    ): SkuDetails {
-
-        return mockk<SkuDetails>(relaxed = true).also {
-            every { it.sku } returns sku
-            every { it.type } returns skuType
-        }
     }
 
     private fun mockPurchase(
@@ -191,7 +156,7 @@ internal class QProductCenterManagerTest {
 
         val purchase = mockk<Purchase>(relaxed = true)
 
-        every { purchase.sku } returns sku
+        every { purchase.productId } returns productId
         every { purchase.purchaseToken } returns purchaseToken
         every { purchase.purchaseState } returns purchaseState
         every { purchase.isAcknowledged } returns isAcknowledged
