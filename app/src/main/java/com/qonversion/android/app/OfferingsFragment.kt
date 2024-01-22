@@ -58,7 +58,7 @@ class OfferingsFragment : Fragment() {
     }
 
     private fun purchase(product: QProduct) {
-        Qonversion.shared.purchase(requireActivity(), product, callback = object :
+        Qonversion.shared.purchase(requireActivity(), product.toPurchaseModel(), callback = object :
             QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()

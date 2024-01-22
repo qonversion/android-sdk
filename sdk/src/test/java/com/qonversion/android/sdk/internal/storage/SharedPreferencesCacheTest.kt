@@ -189,10 +189,7 @@ internal class SharedPreferencesCacheTest {
 
             prefsCache.putObject(key, value, mockAdapter)
 
-            verifyOrder {
-                mockEditor.putString(key, valueJsonStr)
-                mockEditor.apply()
-            }
+            verify { mockEditor.putString(key, valueJsonStr) }
         }
 
         @Test

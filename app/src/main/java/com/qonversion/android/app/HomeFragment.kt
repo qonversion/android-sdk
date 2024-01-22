@@ -22,6 +22,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
+import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
@@ -137,8 +138,11 @@ class HomeFragment : Fragment() {
         val subscription = products[productIdSubs]
         if (subscription != null) {
             binding.buttonSubscribe.text = String.format(
-                "%s %s / %s", getStr(R.string.subscribe_for),
-                subscription.prettyPrice, subscription.duration?.name
+                "%s %s / %d %s",
+                getStr(R.string.subscribe_for),
+                subscription.prettyPrice,
+                subscription.subscriptionPeriod?.unitCount,
+                subscription.subscriptionPeriod?.unit?.name,
             )
         }
 
@@ -172,7 +176,7 @@ class HomeFragment : Fragment() {
     private fun purchase(productId: String) {
         Qonversion.shared.purchase(
             requireActivity(),
-            productId,
+            QPurchaseModel(productId),
             callback = object : QonversionEntitlementsCallback {
                 override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                     when (productId) {

@@ -17,8 +17,6 @@ import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductDuration
-import com.qonversion.android.sdk.dto.products.QProductType
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -56,12 +54,10 @@ internal class OutagerIntegrationTest {
     private val monthlyProduct = QProduct(
         "test_monthly",
         "google_monthly",
-        QProductType.Subscription,
-        QProductDuration.Monthly
+        null,
     )
-    private val annualProduct =
-        QProduct("test_annual", "google_annual", QProductType.Trial, QProductDuration.Annual)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", QProductType.InApp, null)
+    private val annualProduct = QProduct("test_annual", "google_annual", null)
+    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,
@@ -86,34 +82,11 @@ internal class OutagerIntegrationTest {
     )
 
     private val purchase = Purchase(
-        detailsToken = "AEuhp4Kd9cZ3ZlkS2MylEXHBcZVLjwwllncPBm4a6lrVvj3uYGICnsE5w87i81qNsa38DPOW08BcZfLxJFxIWeISVwoBkT55tA2Bb6cKGsip724=",
-        title = "DONT CHANGE! Sub for integration tests. (Qonversion Sample)",
-        description = "",
-        productId = "google_monthly",
-        type = "subs",
-        originalPrice = "$6.99",
-        originalPriceAmountMicros = 6990000,
-        priceCurrencyCode = "SGD",
-        price = "6.99",
-        priceAmountMicros = 6990000,
-        periodUnit = 2,
-        periodUnitsCount = 1,
-        freeTrialPeriod = "",
-        introductoryAvailable = false,
-        introductoryPriceAmountMicros = 0,
-        introductoryPrice = "0.00",
-        introductoryPriceCycles = 0,
-        introductoryPeriodUnit = 0,
-        introductoryPeriodUnitsCount = null,
+        storeProductId = "google_monthly",
         orderId = "GPA.3307-0767-0668-99058",
         originalOrderId = "GPA.3307-0767-0668-99058",
-        packageName = "com.qonversion.sample",
         purchaseTime = 1679933171,
-        purchaseState = 1,
         purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-        acknowledged = false,
-        autoRenewing = true,
-        paymentMode = 0
     )
 
     @Test
@@ -171,7 +144,7 @@ internal class OutagerIntegrationTest {
                 "test_monthly",
                 QProductRenewState.Unknown,
                 Date(1679933171000),
-                Date(1682525171000), // plus month
+                Date(1680537971000), // plus week, as we don't send duration
                 QEntitlementSource.Unknown,
                 1
             )
@@ -230,8 +203,6 @@ internal class OutagerIntegrationTest {
                 "google_monthly",
                 "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
                 1679933171,
-                "SGD",
-                "6.99"
             )
         )
         val expectedPermissions = mapOf(
