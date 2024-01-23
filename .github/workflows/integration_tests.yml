@@ -32,4 +32,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-results
-        path: sdk/build/reports/androidTests/connected/index.html
+        path: sdk/build/reports/androidTests/connected/**
