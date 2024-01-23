@@ -148,7 +148,7 @@ internal class OutagerIntegrationTest {
                 Date(1680537971000), // plus week, as we don't send duration
                 QEntitlementSource.Unknown,
                 1,
-                2,
+                0,
                 null,
                 null,
                 null,
