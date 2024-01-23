@@ -563,7 +563,7 @@ internal class OutagerIntegrationTest {
             projectKey,
             QLaunchMode.SubscriptionManagement
         )
-            .setProxyURL("outager.qonversion.workers.dev")
+            .setProxyURL("<paste outager link here>")
             .build()
         val internalConfig = InternalConfig(qonversionConfig)
         internalConfig.uid = uid
