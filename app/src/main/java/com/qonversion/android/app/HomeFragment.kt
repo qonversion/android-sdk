@@ -26,9 +26,12 @@ import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.properties.QUserProperties
+import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
 private const val TAG = "HomeFragment"
 
@@ -66,11 +69,23 @@ class HomeFragment : Fragment() {
         })
 
         binding.buttonSubscribe.setOnClickListener {
-            purchase(productIdSubs)
+            Qonversion.shared.setUserProperty(QUserPropertyKey.AppMetricaDeviceId, "testDeviceId")
+            Qonversion.shared.setUserProperty(QUserPropertyKey.AppMetricaUserProfileId, "testProfileId")
+            Qonversion.shared.setUserProperty(QUserPropertyKey.PushWooshUserId, "testUserId")
+            Qonversion.shared.setUserProperty(QUserPropertyKey.PushWooshHwId, "testHwId")
+//            purchase(productIdSubs)
         }
 
         binding.buttonInApp.setOnClickListener {
-            purchase(productIdInApp)
+            Qonversion.shared.userProperties(object : QonversionUserPropertiesCallback {
+                override fun onSuccess(userProperties: QUserProperties) {
+
+                }
+
+                override fun onError(error: QonversionError) {
+                }
+            })
+//            purchase(productIdInApp)
         }
 
         binding.buttonRestore.setOnClickListener {
