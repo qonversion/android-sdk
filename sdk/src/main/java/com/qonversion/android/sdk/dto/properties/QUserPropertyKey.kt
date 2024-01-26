@@ -11,10 +11,10 @@ enum class QUserPropertyKey(val userPropertyCode: String) {
     FirebaseAppInstanceId("_q_firebase_instance_id"),
     AppSetId("_q_app_set_id"),
     AdvertisingId("_q_advertising_id"), // iOS only
-    PushWooshUserId("_q_pushwoosh_user_id"),
-    PushWooshHwId("_q_pushwoosh_hwid"),
     AppMetricaDeviceId("_q_appmetrica_device_id"),
     AppMetricaUserProfileId("_q_appmetrica_user_profile_id"),
+    PushWooshHwId("_q_pushwoosh_hwid"),
+    PushWooshUserId("_q_pushwoosh_user_id"),
     Custom("");
 
     companion object {
