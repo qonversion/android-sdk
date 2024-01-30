@@ -856,7 +856,7 @@ internal class QProductCenterManager internal constructor(
         onSuccess: (permissions: Map<String, QPermission>) -> Unit,
         onError: (QonversionError) -> Unit
     ) {
-        if (launchError != null || unhandledLogoutAvailable) {
+        fun actualizePermissions() {
             retryLaunch(
                 onSuccess = { launchResult ->
                     onSuccess(launchResult.permissions)
@@ -869,9 +869,25 @@ internal class QProductCenterManager internal constructor(
                         onSuccess(it)
                     } ?: onError(error)
                 })
-        } else {
-            val permissions = launchResultCache.getActualPermissions() ?: emptyMap()
+        }
+
+        if (launchError != null || unhandledLogoutAvailable) {
+            actualizePermissions()
+            return
+        }
+
+        val permissions = launchResultCache.getActualPermissions() ?: emptyMap()
+
+        val nowMs = System.currentTimeMillis()
+        val permissionsAreActual = permissions.none {
+            val expirationTs = it.value.expirationDate?.time ?: Long.MAX_VALUE
+            it.value.isActive() && expirationTs < nowMs
+        }
+
+        if (permissionsAreActual) {
             onSuccess(permissions)
+        } else {
+            actualizePermissions()
         }
     }
 
