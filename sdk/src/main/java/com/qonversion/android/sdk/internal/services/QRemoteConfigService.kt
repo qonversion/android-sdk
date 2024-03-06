@@ -9,8 +9,12 @@ import javax.inject.Inject
 internal class QRemoteConfigService @Inject constructor(
     private val repository: QRepository
 ) {
-    fun loadRemoteConfig(userId: String, callback: QonversionRemoteConfigCallback) {
-        repository.remoteConfig(userId, callback)
+    fun loadRemoteConfig(
+        userId: String,
+        contextKey: String?,
+        callback: QonversionRemoteConfigCallback
+    ) {
+        repository.remoteConfig(userId, contextKey, callback)
     }
 
     fun attachUserToExperiment(

@@ -82,8 +82,11 @@ internal class DefaultRepository internal constructor(
         initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
-    override fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
-        val queryParams = mapOf("user_id" to userID)
+    override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
+        val queryParams = mapOf("user_id" to userID, "contextKey" to contextKey)
+            .filterValues { it != null }
+            .mapValues { it.value!! }
+
         api.remoteConfig(queryParams).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")

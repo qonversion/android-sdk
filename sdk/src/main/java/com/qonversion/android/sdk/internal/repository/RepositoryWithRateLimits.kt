@@ -32,13 +32,13 @@ internal class RepositoryWithRateLimits(
         }
     }
 
-    override fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
+    override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
         withRateLimitCheck(
             RequestType.RemoteConfig,
-            userID.hashCode(),
+            (userID + contextKey).hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.remoteConfig(userID, callback)
+            repository.remoteConfig(userID, contextKey, callback)
         }
     }
 
