@@ -94,7 +94,7 @@ internal class DefaultRepository internal constructor(
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
-                    if (body.payload.isEmpty() && body._source == null) {
+                    if (body.payload.isEmpty() && body.sourceApi == null) {
                         callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
                     } else {
                         callback.onSuccess(body)
