@@ -83,7 +83,7 @@ internal class DefaultRepository internal constructor(
     }
 
     override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
-        val queryParams = mapOf("user_id" to userID, "contextKey" to contextKey)
+        val queryParams = mapOf("user_id" to userID, "context_key" to contextKey)
             .filterValues { it != null }
             .mapValues { it.value!! }
 

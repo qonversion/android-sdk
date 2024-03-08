@@ -9,7 +9,7 @@ data class QRemoteConfigurationSource(
     @Json(name = "name") val name: String,
     @Json(name = "assignment_type") val assignmentType: QRemoteConfigurationAssignmentType,
     @Json(name = "type") val type: QRemoteConfigurationSourceType,
-    @Json(name = "context_key") internal val contextKeyApi: String
+    @Json(name = "context_key") internal val contextKeyApi: String?
 ) {
-    val contextKey: String? = contextKeyApi.takeIf { it.isNotEmpty() }
+    val contextKey: String? = contextKeyApi?.takeIf { it.isNotEmpty() }
 }

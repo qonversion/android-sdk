@@ -59,7 +59,7 @@ internal class QRemoteConfigManager @Inject constructor(
 
         loadingState.isInProgress = true
         loadingState.loadedConfig = null
-        remoteConfigService.loadRemoteConfig(internalConfig.uid, null, object : QonversionRemoteConfigCallback {
+        remoteConfigService.loadRemoteConfig(internalConfig.uid, contextKey, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 loadingState.loadedConfig = remoteConfig
                 fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
