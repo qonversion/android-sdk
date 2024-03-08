@@ -82,8 +82,11 @@ internal class DefaultRepository internal constructor(
         initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
-    override fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback) {
-        val queryParams = mapOf("user_id" to userID)
+    override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
+        val queryParams = mapOf("user_id" to userID, "context_key" to contextKey)
+            .filterValues { it != null }
+            .mapValues { it.value!! }
+
         api.remoteConfig(queryParams).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
@@ -91,7 +94,7 @@ internal class DefaultRepository internal constructor(
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
-                    if (body.payload.isEmpty() && body._source == null) {
+                    if (body.payload.isEmpty() && body.sourceApi == null) {
                         callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
                     } else {
                         callback.onSuccess(body)

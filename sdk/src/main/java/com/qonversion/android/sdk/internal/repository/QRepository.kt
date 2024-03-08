@@ -19,7 +19,7 @@ internal interface QRepository {
 
     fun init(initRequestData: InitRequestData)
 
-    fun remoteConfig(userID: String, callback: QonversionRemoteConfigCallback)
+    fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback)
 
     fun attachUserToExperiment(
         experimentId: String,

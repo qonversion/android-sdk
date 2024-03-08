@@ -13,62 +13,71 @@ internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
     private val internalConfig: InternalConfig
 ) {
+    internal class LoadingState(
+        var loadedConfig: QRemoteConfig? = null,
+        val callbacks: MutableList<QonversionRemoteConfigCallback> = mutableListOf(),
+        var isInProgress: Boolean = false
+    )
+
     lateinit var userStateProvider: UserStateProvider
-    private var currentRemoteConfig: QRemoteConfig? = null
-    private var remoteConfigCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
-    private var isRequestInProgress: Boolean = false
+    private var loadingStates = mutableMapOf<String?, LoadingState>()
 
     fun handlePendingRequests() {
-        if (remoteConfigCallbacks.isNotEmpty()) {
-            loadRemoteConfig(null)
-        }
+        loadingStates.filter { it.value.callbacks.isNotEmpty() }
+            .keys.forEach { contextKey -> loadRemoteConfig(contextKey, null) }
     }
 
     fun userChangingRequestFailedWithError(error: QonversionError) {
-        fireToCallbacks { onError(error) }
+        loadingStates.keys.forEach {
+            fireToCallbacks(it) { onError(error) }
+        }
     }
 
     fun onUserUpdate() {
-        currentRemoteConfig = null
+        loadingStates = mutableMapOf()
     }
 
-    fun loadRemoteConfig(callback: QonversionRemoteConfigCallback?) {
-        currentRemoteConfig?.takeIf { userStateProvider.isUserStable }?.let {
-            callback?.onSuccess(it)
-            return
-        }
+    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?) {
+        loadingStates[contextKey]
+            ?.loadedConfig
+            ?.takeIf { userStateProvider.isUserStable }
+            ?.let {
+                callback?.onSuccess(it)
+                return
+            }
+
+        val loadingState = loadingStates[contextKey] ?: LoadingState()
+        loadingStates[contextKey] = loadingState
 
         callback?.let {
-            remoteConfigCallbacks.add(it)
+            loadingState.callbacks.add(it)
         }
 
-        if (!userStateProvider.isUserStable || isRequestInProgress) {
+        if (!userStateProvider.isUserStable || loadingState.isInProgress) {
             return
         }
 
-        isRequestInProgress = true
-        currentRemoteConfig = null
-        remoteConfigService.loadRemoteConfig(internalConfig.uid, object : QonversionRemoteConfigCallback {
+        loadingState.isInProgress = true
+        loadingState.loadedConfig = null
+        remoteConfigService.loadRemoteConfig(internalConfig.uid, contextKey, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
-                isRequestInProgress = false
-                currentRemoteConfig = remoteConfig
-                fireToCallbacks { onSuccess(remoteConfig) }
+                loadingState.loadedConfig = remoteConfig
+                fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
             }
 
             override fun onError(error: QonversionError) {
-                isRequestInProgress = false
-                fireToCallbacks { onError(error) }
+                fireToCallbacks(contextKey) { onError(error) }
             }
         })
     }
 
     fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
-        currentRemoteConfig = null
+        loadingStates[null]?.loadedConfig = null
         remoteConfigService.attachUserToExperiment(experimentId, groupId, internalConfig.uid, callback)
     }
 
     fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
-        currentRemoteConfig = null
+        loadingStates[null]?.loadedConfig = null
         remoteConfigService.detachUserFromExperiment(experimentId, internalConfig.uid, callback)
     }
 
@@ -76,7 +85,7 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        currentRemoteConfig = null
+        loadingStates[null]?.loadedConfig = null
         remoteConfigService.attachUserToRemoteConfiguration(remoteConfigurationId, internalConfig.uid, callback)
     }
 
@@ -84,13 +93,16 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        currentRemoteConfig = null
+        loadingStates[null]?.loadedConfig = null
         remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, internalConfig.uid, callback)
     }
 
-    private fun fireToCallbacks(action: QonversionRemoteConfigCallback.() -> Unit) {
-        val callbacks = remoteConfigCallbacks.toList()
-        callbacks.forEach { it.action() }
-        remoteConfigCallbacks.clear()
+    private fun fireToCallbacks(contextKey: String?, action: QonversionRemoteConfigCallback.() -> Unit) {
+        loadingStates[contextKey]?.let { loadingState ->
+            loadingState.isInProgress = false
+            val callbacks = loadingState.callbacks.toList()
+            loadingState.callbacks.clear()
+            callbacks.forEach { it.action() }
+        }
     }
 }

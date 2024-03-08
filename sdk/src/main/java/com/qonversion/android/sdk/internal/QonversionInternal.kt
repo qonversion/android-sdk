@@ -194,7 +194,15 @@ internal class QonversionInternal(
     }
 
     override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
-        remoteConfigManager?.loadRemoteConfig(object : QonversionRemoteConfigCallback {
+        loadRemoteConfig(null, callback)
+    }
+
+    override fun remoteConfig(contextKey: String, callback: QonversionRemoteConfigCallback) {
+        loadRemoteConfig(contextKey, callback)
+    }
+
+    private fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
+        remoteConfigManager?.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 postToMainThread { callback.onSuccess(remoteConfig) }
             }

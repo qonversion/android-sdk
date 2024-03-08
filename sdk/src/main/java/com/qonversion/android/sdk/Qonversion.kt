@@ -116,11 +116,18 @@ interface Qonversion {
     fun offerings(callback: QonversionOfferingsCallback)
 
     /**
-     * Returns Qonversion remote config object
+     * Returns default Qonversion remote config object
      * Use this function to get the remote config with specific payload and experiment info.
      * @param callback - callback that will be called when response is received
      */
     fun remoteConfig(callback: QonversionRemoteConfigCallback)
+
+    /**
+     * Returns Qonversion remote config object by [contextKey].
+     * Use this function to get the remote config with specific payload and experiment info.
+     * @param callback - callback that will be called when response is received
+     */
+    fun remoteConfig(contextKey: String, callback: QonversionRemoteConfigCallback)
 
     /**
      * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
