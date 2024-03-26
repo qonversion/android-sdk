@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -33,6 +34,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 
@@ -205,6 +207,34 @@ internal class QonversionInternal(
         remoteConfigManager?.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 postToMainThread { callback.onSuccess(remoteConfig) }
+            }
+
+            override fun onError(error: QonversionError) {
+                postToMainThread { callback.onError(error) }
+            }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun remoteConfigList(
+        contextKeys: List<String>,
+        withEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    ) {
+        remoteConfigManager?.loadRemoteConfigList(contextKeys, withEmptyContextKey, object : QonversionRemoteConfigListCallback {
+            override fun onSuccess(remoteConfigList: QRemoteConfigList) {
+                postToMainThread { callback.onSuccess(remoteConfigList) }
+            }
+
+            override fun onError(error: QonversionError) {
+                postToMainThread { callback.onError(error) }
+            }
+        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+    }
+
+    override fun remoteConfigList(callback: QonversionRemoteConfigListCallback) {
+        remoteConfigManager?.loadRemoteConfigList(object : QonversionRemoteConfigListCallback {
+            override fun onSuccess(remoteConfigList: QRemoteConfigList) {
+                postToMainThread { callback.onSuccess(remoteConfigList) }
             }
 
             override fun onError(error: QonversionError) {

@@ -13,36 +13,37 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 
 internal interface QRepository {
 
     fun init(initRequestData: InitRequestData)
 
-    fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback)
+    fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback)
+
+    fun remoteConfigList(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback)
+
+    fun remoteConfigList(callback: QonversionRemoteConfigListCallback)
 
     fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     )
 
     fun detachUserFromExperiment(
         experimentId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     )
 
     fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     )
 
     fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     )
 

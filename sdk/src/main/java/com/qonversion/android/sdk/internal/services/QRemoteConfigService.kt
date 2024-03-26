@@ -3,46 +3,48 @@ package com.qonversion.android.sdk.internal.services
 import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import javax.inject.Inject
 
 internal class QRemoteConfigService @Inject constructor(
     private val repository: QRepository
 ) {
-    fun loadRemoteConfig(
-        userId: String,
-        contextKey: String?,
-        callback: QonversionRemoteConfigCallback
-    ) {
-        repository.remoteConfig(userId, contextKey, callback)
+    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
+        repository.remoteConfig(contextKey, callback)
+    }
+
+    fun loadRemoteConfigs(callback: QonversionRemoteConfigListCallback) {
+        repository.remoteConfigList(callback)
+    }
+
+    fun loadRemoteConfigs(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback) {
+        repository.remoteConfigList(contextKeys, withEmptyContextKey, callback)
     }
 
     fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     ) {
-        repository.attachUserToExperiment(experimentId, groupId, userId, callback)
+        repository.attachUserToExperiment(experimentId, groupId, callback)
     }
 
-    fun detachUserFromExperiment(experimentId: String, userId: String, callback: QonversionExperimentAttachCallback) {
-        repository.detachUserFromExperiment(experimentId, userId, callback)
+    fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+        repository.detachUserFromExperiment(experimentId, callback)
     }
 
     fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        repository.attachUserToRemoteConfiguration(remoteConfigurationId, userId, callback)
+        repository.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
     }
 
     fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        repository.detachUserFromRemoteConfiguration(remoteConfigurationId, userId, callback)
+        repository.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
     }
 }

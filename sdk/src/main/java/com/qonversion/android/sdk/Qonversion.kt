@@ -15,6 +15,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
@@ -128,6 +129,22 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      */
     fun remoteConfig(contextKey: String, callback: QonversionRemoteConfigCallback)
+
+    /**
+     * Returns Qonversion remote config objects by a list of [contextKeys].
+     * Use this function to get the remote configs with specific payload and experiment info.
+     * @param withEmptyContextKey - set to true if you want to include remote config
+     *                              with empty context key to the result
+     * @param callback - callback that will be called when response is received
+     */
+    fun remoteConfigList(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback)
+
+    /**
+     * Returns Qonversion remote config objects for all existing context key (including empty one).
+     * Use this function to get the remote configs with specific payload and experiment info.
+     * @param callback - callback that will be called when response is received
+     */
+    fun remoteConfigList(callback: QonversionRemoteConfigListCallback)
 
     /**
      * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
