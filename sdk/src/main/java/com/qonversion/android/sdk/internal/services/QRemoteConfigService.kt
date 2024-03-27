@@ -18,7 +18,11 @@ internal class QRemoteConfigService @Inject constructor(
         repository.remoteConfigList(callback)
     }
 
-    fun loadRemoteConfigs(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback) {
+    fun loadRemoteConfigs(
+        contextKeys: List<String>,
+        withEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    ) {
         repository.remoteConfigList(contextKeys, withEmptyContextKey, callback)
     }
 

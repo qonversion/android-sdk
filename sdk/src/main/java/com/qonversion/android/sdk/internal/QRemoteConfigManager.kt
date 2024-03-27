@@ -123,7 +123,9 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
     }
 
-    private fun getRemoteConfigListCallbackWrapper(callback: QonversionRemoteConfigListCallback): QonversionRemoteConfigListCallback {
+    private fun getRemoteConfigListCallbackWrapper(
+        callback: QonversionRemoteConfigListCallback
+    ): QonversionRemoteConfigListCallback {
         // Remembering loading states for the case of user change -
         // if it happens, we won't store remote configs for different user.
         val localLoadingStates = loadingStates

@@ -220,15 +220,18 @@ internal class QonversionInternal(
         withEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
-        remoteConfigManager?.loadRemoteConfigList(contextKeys, withEmptyContextKey, object : QonversionRemoteConfigListCallback {
-            override fun onSuccess(remoteConfigList: QRemoteConfigList) {
-                postToMainThread { callback.onSuccess(remoteConfigList) }
-            }
+        remoteConfigManager?.loadRemoteConfigList(
+            contextKeys,
+            withEmptyContextKey,
+            object : QonversionRemoteConfigListCallback {
+                override fun onSuccess(remoteConfigList: QRemoteConfigList) {
+                    postToMainThread { callback.onSuccess(remoteConfigList) }
+                }
 
-            override fun onError(error: QonversionError) {
-                postToMainThread { callback.onError(error) }
-            }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+                override fun onError(error: QonversionError) {
+                    postToMainThread { callback.onError(error) }
+                }
+            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
     }
 
     override fun remoteConfigList(callback: QonversionRemoteConfigListCallback) {

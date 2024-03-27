@@ -22,7 +22,11 @@ internal interface QRepository {
 
     fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback)
 
-    fun remoteConfigList(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback)
+    fun remoteConfigList(
+        contextKeys: List<String>,
+        withEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    )
 
     fun remoteConfigList(callback: QonversionRemoteConfigListCallback)
 

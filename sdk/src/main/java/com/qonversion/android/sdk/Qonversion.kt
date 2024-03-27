@@ -137,7 +137,11 @@ interface Qonversion {
      *                              with empty context key to the result
      * @param callback - callback that will be called when response is received
      */
-    fun remoteConfigList(contextKeys: List<String>, withEmptyContextKey: Boolean, callback: QonversionRemoteConfigListCallback)
+    fun remoteConfigList(
+        contextKeys: List<String>,
+        withEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    )
 
     /**
      * Returns Qonversion remote config objects for all existing context key (including empty one).
