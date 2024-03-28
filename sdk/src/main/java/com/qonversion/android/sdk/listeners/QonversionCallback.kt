@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.listeners
 
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.dto.QUser
@@ -27,6 +28,11 @@ interface QonversionOfferingsCallback {
 
 interface QonversionRemoteConfigCallback {
    fun onSuccess(remoteConfig: QRemoteConfig)
+   fun onError(error: QonversionError)
+}
+
+interface QonversionRemoteConfigListCallback {
+   fun onSuccess(remoteConfigList: QRemoteConfigList)
    fun onError(error: QonversionError)
 }
 

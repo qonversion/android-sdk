@@ -11,4 +11,6 @@ data class QRemoteConfig internal constructor(
     @Json(name = "source") internal val sourceApi: QRemoteConfigurationSource?
 ) {
     val source: QRemoteConfigurationSource get() = sourceApi!!
+
+    internal val isCorrect = sourceApi != null
 }
