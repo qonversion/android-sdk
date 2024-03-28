@@ -16,6 +16,7 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 
 internal class RepositoryWithRateLimits(
@@ -32,70 +33,90 @@ internal class RepositoryWithRateLimits(
         }
     }
 
-    override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
+    override fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
         withRateLimitCheck(
             RequestType.RemoteConfig,
-            (userID + contextKey).hashCode(),
+            contextKey.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.remoteConfig(userID, contextKey, callback)
+            repository.remoteConfig(contextKey, callback)
+        }
+    }
+
+    override fun remoteConfigList(
+        contextKeys: List<String>,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    ) {
+        withRateLimitCheck(
+            RequestType.RemoteConfigList,
+            contextKeys.hashCode(),
+            { error -> callback.onError(error) }
+        ) {
+            repository.remoteConfigList(contextKeys, includeEmptyContextKey, callback)
+        }
+    }
+
+    override fun remoteConfigList(callback: QonversionRemoteConfigListCallback) {
+        withRateLimitCheck(
+            RequestType.RemoteConfigList,
+            0,
+            { error -> callback.onError(error) }
+        ) {
+            repository.remoteConfigList(callback)
         }
     }
 
     override fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     ) {
         withRateLimitCheck(
             RequestType.AttachUserToExperiment,
-            (experimentId + groupId + userId).hashCode(),
+            (experimentId + groupId).hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.attachUserToExperiment(experimentId, groupId, userId, callback)
+            repository.attachUserToExperiment(experimentId, groupId, callback)
         }
     }
 
     override fun detachUserFromExperiment(
         experimentId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     ) {
         withRateLimitCheck(
             RequestType.DetachUserFromExperiment,
-            (experimentId + userId).hashCode(),
+            experimentId.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.detachUserFromExperiment(experimentId, userId, callback)
+            repository.detachUserFromExperiment(experimentId, callback)
         }
     }
 
     override fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
         withRateLimitCheck(
             RequestType.AttachUserToRemoteConfiguration,
-            (remoteConfigurationId + userId).hashCode(),
+            remoteConfigurationId.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.attachUserToRemoteConfiguration(remoteConfigurationId, userId, callback)
+            repository.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
         }
     }
 
     override fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
         withRateLimitCheck(
             RequestType.DetachUserFromRemoteConfiguration,
-            (remoteConfigurationId + userId).hashCode(),
+            remoteConfigurationId.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.detachUserFromRemoteConfiguration(remoteConfigurationId, userId, callback)
+            repository.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
         }
     }
 

@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.repository
 
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
+import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
@@ -48,6 +49,7 @@ import com.qonversion.android.sdk.internal.stringValue
 import com.qonversion.android.sdk.internal.toQonversionError
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
+import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 
 import retrofit2.Response
@@ -82,22 +84,18 @@ internal class DefaultRepository internal constructor(
         initRequest(initRequestData.purchases, initRequestData.callback)
     }
 
-    override fun remoteConfig(userID: String, contextKey: String?, callback: QonversionRemoteConfigCallback) {
-        val queryParams = mapOf("user_id" to userID, "context_key" to contextKey)
-            .filterValues { it != null }
-            .mapValues { it.value!! }
-
-        api.remoteConfig(queryParams).enqueue {
+    override fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
+        api.remoteConfig(uid, contextKey).enqueue {
             onResponse = {
                 logger.debug("remoteConfigRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
                 } else {
-                    if (body.payload.isEmpty() && body.sourceApi == null) {
-                        callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
-                    } else {
+                    if (body.isCorrect) {
                         callback.onSuccess(body)
+                    } else {
+                        callback.onError(QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable))
                     }
                 }
             }
@@ -109,14 +107,57 @@ internal class DefaultRepository internal constructor(
         }
     }
 
+    override fun remoteConfigList(
+        contextKeys: List<String>,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback
+    ) {
+        api.remoteConfigList(uid, contextKeys, includeEmptyContextKey).enqueue {
+            onResponse = {
+                logger.debug("remoteConfigListRequest for specific context keys - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body == null) {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                } else {
+                    val res = QRemoteConfigList(body.filter { config -> config.isCorrect })
+                    callback.onSuccess(res)
+                }
+            }
+
+            onFailure = {
+                logger.release("remoteConfigRequest for specific context keys - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
+    override fun remoteConfigList(callback: QonversionRemoteConfigListCallback) {
+        api.remoteConfigList(uid).enqueue {
+            onResponse = {
+                logger.debug("remoteConfigListRequest for all context keys - ${it.getLogMessage()}")
+                val body = it.body()
+                if (body == null) {
+                    callback.onError(errorMapper.getErrorFromResponse(it))
+                } else {
+                    val res = QRemoteConfigList(body.filter { config -> config.isCorrect })
+                    callback.onSuccess(res)
+                }
+            }
+
+            onFailure = {
+                logger.release("remoteConfigRequest for all context keys - failure - ${it.toQonversionError()}")
+                callback.onError(it.toQonversionError())
+            }
+        }
+    }
+
     override fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     ) {
         val request = AttachUserRequest(groupId)
-        api.attachUserToExperiment(experimentId, userId, request).enqueue {
+        api.attachUserToExperiment(experimentId, uid, request).enqueue {
             onResponse = {
                 logger.debug("attachUserToExperimentRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
@@ -135,10 +176,9 @@ internal class DefaultRepository internal constructor(
 
     override fun detachUserFromExperiment(
         experimentId: String,
-        userId: String,
         callback: QonversionExperimentAttachCallback
     ) {
-        api.detachUserFromExperiment(experimentId, userId).enqueue {
+        api.detachUserFromExperiment(experimentId, uid).enqueue {
             onResponse = {
                 logger.debug("detachUserFromExperimentRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
@@ -157,10 +197,9 @@ internal class DefaultRepository internal constructor(
 
     override fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        api.attachUserToRemoteConfiguration(remoteConfigurationId, userId).enqueue {
+        api.attachUserToRemoteConfiguration(remoteConfigurationId, uid).enqueue {
             onResponse = {
                 logger.debug("attachUserToRemoteConfigurationRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
@@ -179,10 +218,9 @@ internal class DefaultRepository internal constructor(
 
     override fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
-        userId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        api.detachUserFromRemoteConfiguration(remoteConfigurationId, userId).enqueue {
+        api.detachUserFromRemoteConfiguration(remoteConfigurationId, uid).enqueue {
             onResponse = {
                 logger.debug("detachUserFromRemoteConfigurationRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {

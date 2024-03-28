@@ -31,6 +31,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.Path
 import retrofit2.http.QueryMap
 import retrofit2.http.Headers
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 internal interface Api {
@@ -74,8 +75,22 @@ internal interface Api {
 
     @GET("v3/remote-config")
     fun remoteConfig(
-        @QueryMap params: Map<String, String>
+        @Query("user_id") userId: String,
+        @Query("context_key") contextKey: String?
     ): Call<QRemoteConfig>
+
+    @GET("v3/remote-configs")
+    fun remoteConfigList(
+        @Query("user_id") userId: String,
+        @Query("all_context_keys") allContextKeys: Boolean = true,
+    ): Call<List<QRemoteConfig>>
+
+    @GET("v3/remote-configs")
+    fun remoteConfigList(
+        @Query("user_id") userId: String,
+        @Query("context_key") contextKeys: List<String>,
+        @Query("with_empty_context_key") includeEmptyContextKey: Boolean,
+    ): Call<List<QRemoteConfig>>
 
     @POST("v3/experiments/{id}/users/{user_id}")
     fun attachUserToExperiment(
