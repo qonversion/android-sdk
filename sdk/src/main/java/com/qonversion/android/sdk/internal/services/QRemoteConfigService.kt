@@ -20,10 +20,10 @@ internal class QRemoteConfigService @Inject constructor(
 
     fun loadRemoteConfigs(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
-        repository.remoteConfigList(contextKeys, withEmptyContextKey, callback)
+        repository.remoteConfigList(contextKeys, includeEmptyContextKey, callback)
     }
 
     fun attachUserToExperiment(

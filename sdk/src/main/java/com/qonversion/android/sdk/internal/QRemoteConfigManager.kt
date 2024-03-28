@@ -76,10 +76,10 @@ internal class QRemoteConfigManager @Inject constructor(
 
     fun loadRemoteConfigList(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
-        val allKeys = if (withEmptyContextKey) contextKeys + EmptyContextKey else contextKeys
+        val allKeys = if (includeEmptyContextKey) contextKeys + EmptyContextKey else contextKeys
         if (allKeys.all { loadingStates[it]?.loadedConfig != null }) {
             val configs = allKeys.mapNotNull { loadingStates[it]?.loadedConfig }
             callback.onSuccess(QRemoteConfigList(configs))
@@ -88,7 +88,7 @@ internal class QRemoteConfigManager @Inject constructor(
 
         remoteConfigService.loadRemoteConfigs(
             contextKeys,
-            withEmptyContextKey,
+            includeEmptyContextKey,
             getRemoteConfigListCallbackWrapper(callback),
         )
     }

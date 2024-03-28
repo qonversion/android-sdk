@@ -89,7 +89,7 @@ internal interface Api {
     fun remoteConfigList(
         @Query("user_id") userId: String,
         @Query("context_key") contextKeys: List<String>,
-        @Query("with_empty_context_key") withEmptyContextKey: Boolean,
+        @Query("with_empty_context_key") includeEmptyContextKey: Boolean,
     ): Call<List<QRemoteConfig>>
 
     @POST("v3/experiments/{id}/users/{user_id}")

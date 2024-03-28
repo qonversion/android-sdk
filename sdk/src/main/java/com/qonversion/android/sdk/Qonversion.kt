@@ -133,13 +133,13 @@ interface Qonversion {
     /**
      * Returns Qonversion remote config objects by a list of [contextKeys].
      * Use this function to get the remote configs with specific payload and experiment info.
-     * @param withEmptyContextKey - set to true if you want to include remote config
+     * @param includeEmptyContextKey - set to true if you want to include remote config
      *                              with empty context key to the result
      * @param callback - callback that will be called when response is received
      */
     fun remoteConfigList(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     )
 

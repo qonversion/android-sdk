@@ -217,12 +217,12 @@ internal class QonversionInternal(
 
     override fun remoteConfigList(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
         remoteConfigManager?.loadRemoteConfigList(
             contextKeys,
-            withEmptyContextKey,
+            includeEmptyContextKey,
             object : QonversionRemoteConfigListCallback {
                 override fun onSuccess(remoteConfigList: QRemoteConfigList) {
                     postToMainThread { callback.onSuccess(remoteConfigList) }

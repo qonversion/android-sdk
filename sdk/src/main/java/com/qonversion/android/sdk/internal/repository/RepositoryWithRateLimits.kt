@@ -45,7 +45,7 @@ internal class RepositoryWithRateLimits(
 
     override fun remoteConfigList(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
         withRateLimitCheck(
@@ -53,7 +53,7 @@ internal class RepositoryWithRateLimits(
             contextKeys.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.remoteConfigList(contextKeys, withEmptyContextKey, callback)
+            repository.remoteConfigList(contextKeys, includeEmptyContextKey, callback)
         }
     }
 

@@ -109,10 +109,10 @@ internal class DefaultRepository internal constructor(
 
     override fun remoteConfigList(
         contextKeys: List<String>,
-        withEmptyContextKey: Boolean,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
-        api.remoteConfigList(uid, contextKeys, withEmptyContextKey).enqueue {
+        api.remoteConfigList(uid, contextKeys, includeEmptyContextKey).enqueue {
             onResponse = {
                 logger.debug("remoteConfigListRequest for specific context keys - ${it.getLogMessage()}")
                 val body = it.body()
