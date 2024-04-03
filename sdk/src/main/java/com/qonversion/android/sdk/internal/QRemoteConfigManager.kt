@@ -22,12 +22,27 @@ internal class QRemoteConfigManager @Inject constructor(
         var isInProgress: Boolean = false
     )
 
+    internal class ListRequestData(
+        val callback: QonversionRemoteConfigListCallback,
+        val contextKeys: List<String>? = null,
+        val includeEmptyContextKey: Boolean = false
+    )
+
     lateinit var userStateProvider: UserStateProvider
     private var loadingStates = mutableMapOf<String?, LoadingState>()
+    private val listRequests = mutableListOf<ListRequestData>()
 
     fun handlePendingRequests() {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
             .keys.forEach { contextKey -> loadRemoteConfig(contextKey, null) }
+
+        listRequests.forEach { requestData ->
+            requestData.contextKeys?.let {
+                loadRemoteConfigList(it, requestData.includeEmptyContextKey, requestData.callback)
+            } ?: run {
+                loadRemoteConfigList(requestData.callback)
+            }
+        }
     }
 
     fun userChangingRequestFailedWithError(error: QonversionError) {
@@ -86,6 +101,11 @@ internal class QRemoteConfigManager @Inject constructor(
             return
         }
 
+        if (!userStateProvider.isUserStable) {
+            listRequests.add(ListRequestData(callback, contextKeys, includeEmptyContextKey))
+            return
+        }
+
         remoteConfigService.loadRemoteConfigs(
             contextKeys,
             includeEmptyContextKey,
@@ -94,6 +114,11 @@ internal class QRemoteConfigManager @Inject constructor(
     }
 
     fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) {
+        if (!userStateProvider.isUserStable) {
+            listRequests.add(ListRequestData(callback))
+            return
+        }
+
         remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(callback))
     }
 
