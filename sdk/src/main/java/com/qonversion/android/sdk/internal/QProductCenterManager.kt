@@ -663,11 +663,7 @@ internal class QProductCenterManager internal constructor(
                 loadStoreProductsIfPossible()
 
                 if (processingPurchases.isNotEmpty()) {
-                    processingPurchases.forEach {
-                        if (!handledPurchasesCache.shouldHandlePurchase(it)) { return@forEach }
-
-                        handledPurchasesCache.saveHandledPurchase(it)
-                    }
+                    handledPurchasesCache.saveHandledPurchases(processingPurchases)
 
                     billingService.consumePurchases(processingPurchases.toList())
                     processingPurchases = emptyList()
