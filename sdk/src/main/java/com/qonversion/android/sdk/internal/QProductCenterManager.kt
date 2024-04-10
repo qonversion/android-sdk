@@ -89,6 +89,8 @@ internal class QProductCenterManager internal constructor(
     private var advertisingID: String? = null
     private var pendingInitRequestData: InitRequestData? = null
 
+    private var processingPurchases: List<Purchase> = emptyList()
+
     private var converter: PurchaseConverter = GooglePurchaseConverter()
 
     @Volatile
@@ -616,6 +618,8 @@ internal class QProductCenterManager internal constructor(
             val completedPurchases =
                 purchases.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
 
+            processingPurchases = completedPurchases
+
             val purchasesInfo = converter.convertPurchases(completedPurchases)
 
             val handledPurchasesCallback =
@@ -657,6 +661,17 @@ internal class QProductCenterManager internal constructor(
                 handlePendingRequests()
 
                 loadStoreProductsIfPossible()
+
+                if (processingPurchases.isNotEmpty()) {
+                    processingPurchases.forEach {
+                        if (!handledPurchasesCache.shouldHandlePurchase(it)) { return@forEach }
+
+                        handledPurchasesCache.saveHandledPurchase(it)
+                    }
+
+                    billingService.consumePurchases(processingPurchases.toList())
+                    processingPurchases = emptyList()
+                }
 
                 handleCachedPurchases()
 
