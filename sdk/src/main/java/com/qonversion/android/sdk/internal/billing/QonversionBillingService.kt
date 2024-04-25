@@ -64,7 +64,7 @@ internal class QonversionBillingService internal constructor(
 
         executeOnMainThread { billingSetupError ->
             if (billingSetupError != null) {
-                logger.release("enrichStoreDataAsync() -> $billingSetupError")
+                logger.error("enrichStoreDataAsync() -> $billingSetupError")
                 onFailed(billingSetupError)
                 return@executeOnMainThread
             }
@@ -140,7 +140,7 @@ internal class QonversionBillingService internal constructor(
                 val productId = purchase.productId ?: return
                 getStoreProductType(
                     productId,
-                    { error -> logger.release("Failed to fetch product type for purchase $productId - " + error.message) }
+                    { error -> logger.error("Failed to fetch product type for purchase $productId - " + error.message) }
                 ) { productType ->
                     when (productType) {
                         QStoreProductType.InApp -> {
@@ -175,7 +175,7 @@ internal class QonversionBillingService internal constructor(
     ) {
         fun fireOnFailed(error: BillingError) {
             onFailed(error)
-            logger.release("queryPurchasesHistory() -> $error")
+            logger.error("queryPurchasesHistory() -> $error")
         }
 
         queryPurchaseHistoryAsync(
@@ -244,7 +244,7 @@ internal class QonversionBillingService internal constructor(
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
-                logger.release("updatePurchase() -> $errorMessage")
+                logger.error("updatePurchase() -> $errorMessage")
                 return@queryPurchaseHistoryForProduct
             }
 
@@ -265,7 +265,7 @@ internal class QonversionBillingService internal constructor(
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
-                logger.release("updatePurchase() -> $errorMessage")
+                logger.error("updatePurchase() -> $errorMessage")
             }
         }
     }
@@ -413,7 +413,7 @@ internal class QonversionBillingService internal constructor(
                 purchases ?: emptyList()
             )
 
-            logger.release("onPurchasesUpdated() -> failed to update purchases $errorMessage")
+            logger.error("onPurchasesUpdated() -> failed to update purchases $errorMessage")
             if (!purchases.isNullOrEmpty()) {
                 logger.release(
                     "Purchases: " + purchases.joinToString(

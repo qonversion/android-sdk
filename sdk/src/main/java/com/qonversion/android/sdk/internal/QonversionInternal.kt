@@ -43,15 +43,15 @@ internal class QonversionInternal(
     application: Application
 ) : Qonversion, LifecycleDelegate, AppStateProvider {
 
-    private var userPropertiesManager: QUserPropertiesManager? = null
-    private var attributionManager: QAttributionManager? = null
-    private var productCenterManager: QProductCenterManager? = null
-    private var automationsManager: QAutomationsManager? = null
+    private var userPropertiesManager: QUserPropertiesManager
+    private var attributionManager: QAttributionManager
+    private var productCenterManager: QProductCenterManager
+    private var automationsManager: QAutomationsManager
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
-    private var sharedPreferencesCache: SharedPreferencesCache? = null
-    private var exceptionManager: ExceptionManager? = null
-    private var remoteConfigManager: QRemoteConfigManager? = null
+    private var sharedPreferencesCache: SharedPreferencesCache
+    private var exceptionManager: ExceptionManager
+    private var remoteConfigManager: QRemoteConfigManager
 
     override var appState = AppState.Background
 
@@ -103,8 +103,8 @@ internal class QonversionInternal(
 
         remoteConfigManager = localRemoteConfigManager
 
-        userPropertiesManager?.productCenterManager = productCenterManager
-        userPropertiesManager?.sendFacebookAttribution()
+        userPropertiesManager.productCenterManager = productCenterManager
+        userPropertiesManager.sendFacebookAttribution()
 
         launch()
     }
@@ -112,22 +112,22 @@ internal class QonversionInternal(
     override fun onAppBackground() {
         appState = AppState.Background
 
-        userPropertiesManager?.onAppBackground()
+        userPropertiesManager.onAppBackground()
     }
 
     override fun onAppForeground() {
         appState = AppState.Foreground
 
-        userPropertiesManager?.onAppForeground()
-        productCenterManager?.onAppForeground()
-        automationsManager?.onAppForeground()
-        attributionManager?.onAppForeground()
+        userPropertiesManager.onAppForeground()
+        productCenterManager.onAppForeground()
+        automationsManager.onAppForeground()
+        attributionManager.onAppForeground()
     }
 
     private fun launch() {
-        productCenterManager?.launch(object : QonversionLaunchCallback {
+        productCenterManager.launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { automationsManager?.onLaunchProcessed() }
+                postToMainThread { automationsManager.onLaunchProcessed() }
 
             override fun onError(error: QonversionError, httpCode: Int?) {}
         })
@@ -135,18 +135,18 @@ internal class QonversionInternal(
 
     override fun syncHistoricalData() {
         val isHistoricalDataSynced: Boolean =
-            sharedPreferencesCache?.getBool(Constants.IS_HISTORICAL_DATA_SYNCED) ?: false
+            sharedPreferencesCache.getBool(Constants.IS_HISTORICAL_DATA_SYNCED)
         if (isHistoricalDataSynced) {
             return
         }
 
         Qonversion.shared.restore(callback = object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                sharedPreferencesCache?.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
+                sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
             }
 
             override fun onError(error: QonversionError) {
-                logger.release("Historical data sync failed.")
+                logger.error("Historical data sync failed.")
             }
         })
     }
@@ -156,11 +156,11 @@ internal class QonversionInternal(
         purchaseModel: QPurchaseModel,
         callback: QonversionEntitlementsCallback
     ) {
-        productCenterManager?.purchaseProduct(
+        productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(purchaseModel),
             mainEntitlementsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        )
     }
 
     override fun updatePurchase(
@@ -168,31 +168,31 @@ internal class QonversionInternal(
         purchaseUpdateModel: QPurchaseUpdateModel,
         callback: QonversionEntitlementsCallback
     ) {
-        productCenterManager?.purchaseProduct(
+        productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(purchaseUpdateModel),
             mainEntitlementsCallback(callback)
-        ) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        )
     }
 
     override fun products(callback: QonversionProductsCallback) {
-        productCenterManager?.loadProducts(object : QonversionProductsCallback {
+        productCenterManager.loadProducts(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) =
                 postToMainThread { callback.onSuccess(products) }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        })
     }
 
     override fun offerings(callback: QonversionOfferingsCallback) {
-        productCenterManager?.offerings(object : QonversionOfferingsCallback {
+        productCenterManager.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) =
                 postToMainThread { callback.onSuccess(offerings) }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        })
     }
 
     override fun remoteConfig(callback: QonversionRemoteConfigCallback) {
@@ -204,7 +204,7 @@ internal class QonversionInternal(
     }
 
     private fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
-        remoteConfigManager?.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
+        remoteConfigManager.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
             override fun onSuccess(remoteConfig: QRemoteConfig) {
                 postToMainThread { callback.onSuccess(remoteConfig) }
             }
@@ -212,7 +212,7 @@ internal class QonversionInternal(
             override fun onError(error: QonversionError) {
                 postToMainThread { callback.onError(error) }
             }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        })
     }
 
     override fun remoteConfigList(
@@ -220,7 +220,7 @@ internal class QonversionInternal(
         includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ) {
-        remoteConfigManager?.loadRemoteConfigList(
+        remoteConfigManager.loadRemoteConfigList(
             contextKeys,
             includeEmptyContextKey,
             object : QonversionRemoteConfigListCallback {
@@ -231,11 +231,11 @@ internal class QonversionInternal(
                 override fun onError(error: QonversionError) {
                     postToMainThread { callback.onError(error) }
                 }
-            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            })
     }
 
     override fun remoteConfigList(callback: QonversionRemoteConfigListCallback) {
-        remoteConfigManager?.loadRemoteConfigList(object : QonversionRemoteConfigListCallback {
+        remoteConfigManager.loadRemoteConfigList(object : QonversionRemoteConfigListCallback {
             override fun onSuccess(remoteConfigList: QRemoteConfigList) {
                 postToMainThread { callback.onSuccess(remoteConfigList) }
             }
@@ -243,7 +243,7 @@ internal class QonversionInternal(
             override fun onError(error: QonversionError) {
                 postToMainThread { callback.onError(error) }
             }
-        }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        })
     }
 
     override fun attachUserToExperiment(
@@ -251,36 +251,32 @@ internal class QonversionInternal(
         groupId: String,
         callback: QonversionExperimentAttachCallback
     ) {
-        remoteConfigManager?.attachUserToExperiment(experimentId, groupId, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager.attachUserToExperiment(experimentId, groupId, callback)
     }
 
     override fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
-        remoteConfigManager?.detachUserFromExperiment(experimentId, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager.detachUserFromExperiment(experimentId, callback)
     }
 
     override fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        remoteConfigManager?.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
     }
 
     override fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) {
-        remoteConfigManager?.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        remoteConfigManager.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
     }
 
     override fun checkTrialIntroEligibility(
         productIds: List<String>,
         callback: QonversionEligibilityCallback
     ) {
-        productCenterManager?.checkTrialIntroEligibilityForProductIds(
+        productCenterManager.checkTrialIntroEligibilityForProductIds(
             productIds,
             object : QonversionEligibilityCallback {
                 override fun onSuccess(eligibilities: Map<String, QEligibility>) =
@@ -288,65 +284,51 @@ internal class QonversionInternal(
 
                 override fun onError(error: QonversionError) =
                     callback.onError(error)
-            }) ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+            })
     }
 
     override fun checkEntitlements(callback: QonversionEntitlementsCallback) {
-        productCenterManager?.checkEntitlements(mainEntitlementsCallback(callback))
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager.checkEntitlements(mainEntitlementsCallback(callback))
     }
 
     override fun restore(callback: QonversionEntitlementsCallback) {
-        productCenterManager?.restore(mainEntitlementsCallback(callback))
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager.restore(mainEntitlementsCallback(callback))
     }
 
     override fun syncPurchases() {
-        productCenterManager?.syncPurchases()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager.syncPurchases()
     }
 
     override fun identify(userID: String) {
-        productCenterManager?.identify(userID)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager.identify(userID)
     }
 
     override fun logout() {
-        productCenterManager?.logout()
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        productCenterManager.logout()
     }
 
     override fun userInfo(callback: QonversionUserCallback) {
-        productCenterManager?.getUserInfo(callback)
+        productCenterManager.getUserInfo(callback)
     }
 
     override fun attribution(data: Map<String, Any>, provider: QAttributionProvider) {
-        attributionManager?.attribution(data, provider)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        attributionManager.attribution(data, provider)
     }
 
     override fun setUserProperty(key: QUserPropertyKey, value: String) {
-        userPropertiesManager?.setUserProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        userPropertiesManager.setUserProperty(key, value)
     }
 
     override fun setCustomUserProperty(key: String, value: String) {
-        userPropertiesManager?.setCustomUserProperty(key, value)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        userPropertiesManager.setCustomUserProperty(key, value)
     }
 
     override fun userProperties(callback: QonversionUserPropertiesCallback) {
-        userPropertiesManager?.userProperties(callback)
-            ?: logLaunchErrorForFunctionName(object {}.javaClass.enclosingMethod?.name)
+        userPropertiesManager.userProperties(callback)
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
-        productCenterManager?.setEntitlementsUpdateListener(entitlementsUpdateListener)
-    }
-
-    // Internal functions
-    private fun logLaunchErrorForFunctionName(functionName: String?) {
-        logger.release("$functionName function can not be executed. It looks like launch was not called.")
+        productCenterManager.setEntitlementsUpdateListener(entitlementsUpdateListener)
     }
 
     // Private functions

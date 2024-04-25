@@ -277,7 +277,7 @@ internal class BillingClientWrapper(
             ?.forEach {
                 logger.debug("queryProductDetailsAsync() -> $it")
             }
-            ?: logger.release("queryProductDetailsAsync() -> ProductDetails list for $productIds is empty.")
+            ?: logger.warn("queryProductDetailsAsync() -> ProductDetails list for $productIds is empty.")
     }
 
     private fun BillingFlowParams.ProductDetailsParams.Builder.applyOffer(

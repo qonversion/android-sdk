@@ -37,7 +37,7 @@ internal class AutomationsEventMapper(private val logger: Logger) {
                 null
             }
         } catch (e: JSONException) {
-            logger.release("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification")
+            logger.error("getEventFromRemoteMessage() -> Failed to retrieve event that triggered push notification")
         }
 
         return null

@@ -49,7 +49,7 @@ internal class ScreenProcessor {
                 val id = json.getString(MACROS_ID_KEY)
 
                 if (category != MACROS_PRODUCT_CATEGORY || id.isEmpty()) {
-                    logger.release("Invalid macros value")
+                    logger.error("Invalid macros value")
                     return@forEach
                 }
 
@@ -57,7 +57,7 @@ internal class ScreenProcessor {
                 val macros = Macros(macrosType, id, value)
                 result.add(macros)
             } catch (e: JSONException) {
-                logger.release("Failed to parse screen macros. $e")
+                logger.error("Failed to parse screen macros. $e")
                 return@forEach
             }
         }
