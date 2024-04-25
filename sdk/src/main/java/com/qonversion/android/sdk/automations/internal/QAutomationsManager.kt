@@ -146,7 +146,7 @@ internal class QAutomationsManager @Inject constructor(
                     callback?.onSuccess()
                 } catch (e: Exception) {
                     val errorMessage = "Failed to start screen with id $screenId with exception: $e"
-                    logger.release("loadScreen() -> $errorMessage")
+                    logger.error("loadScreen() -> $errorMessage")
                     callback?.onError(
                         QonversionError(
                             QonversionErrorCode.UnknownError,
@@ -158,7 +158,7 @@ internal class QAutomationsManager @Inject constructor(
             {
                 val errorMessage =
                     "Failed to load screen with id $screenId. ${it.additionalMessage}"
-                logger.release("loadScreen() -> $errorMessage")
+                logger.error("loadScreen() -> $errorMessage")
                 callback?.onError(QonversionError(it.code, errorMessage))
             }
         )
@@ -190,7 +190,7 @@ internal class QAutomationsManager @Inject constructor(
     }
 
     private fun logDelegateErrorForFunctionName(functionName: String?) {
-        logger.release(
+        logger.error(
             "AutomationsDelegate.$functionName() function can not be executed. " +
                     "It looks like Automations.setDelegate() was not called or delegate has been destroyed by GC"
         )
@@ -203,10 +203,10 @@ internal class QAutomationsManager @Inject constructor(
                 actionPoint?.let {
                     logger.debug("loadScreenIfPossible() ->  Screen with id ${it.screenId} was found to show")
                     loadScreen(it.screenId)
-                } ?: logger.release("loadScreenIfPossible() ->  No screens to show")
+                } ?: logger.warn("loadScreenIfPossible() ->  No screens to show")
             },
             {
-                logger.debug("loadScreenIfPossible() -> Failed to retrieve screenId to show")
+                logger.error("loadScreenIfPossible() -> Failed to retrieve screenId to show")
             }
         )
     }

@@ -57,7 +57,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
         try {
             FacebookAttribution().getAttributionId(context.contentResolver, this)
         } catch (e: IllegalStateException) {
-            logger.release("Failed to retrieve facebook attribution ${e.localizedMessage}")
+            logger.error("Failed to retrieve facebook attribution ${e.localizedMessage}")
         }
     }
 
@@ -81,7 +81,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
             repository.sendProperties(properties,
                 onSuccess = { result ->
                     result.propertyErrors.forEach { propertyError ->
-                        logger.release("Failed to save property ${propertyError.key}: ${propertyError.error}")
+                        logger.error("Failed to save property ${propertyError.key}: ${propertyError.error}")
                     }
 
                     isRequestInProgress = false
@@ -119,13 +119,13 @@ internal class QUserPropertiesManager @Inject internal constructor(
                 delayCalculator.countDelay(PROPERTY_UPLOAD_MIN_DELAY, retriesCounter)
             sendPropertiesWithDelay(retryDelay)
         } catch (e: IllegalArgumentException) {
-            logger.debug("The error occurred during send properties. $e")
+            logger.error("The error occurred during properties sending. $e")
         }
     }
 
     fun setUserProperty(key: QUserPropertyKey, value: String) {
         if (key === QUserPropertyKey.Custom) {
-            logger.release("Can not set user property with the key `QUserPropertyKey.Custom`. " +
+            logger.error("Can not set user property with the key `QUserPropertyKey.Custom`. " +
                     "To set custom user property, use the `setCustomUserProperty` method.")
             return
         }

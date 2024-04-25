@@ -62,7 +62,7 @@ internal class BillingClientHolder(
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED,
             BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> {
-                logger.release("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
+                logger.error("onBillingSetupFinished() -> with error: ${billingResult.getDescription()}")
                 val error = BillingError(
                     billingResult.responseCode,
                     "Billing is not available on this device. ${billingResult.getDescription()}"
@@ -73,7 +73,7 @@ internal class BillingClientHolder(
                 // Client is already in the process of connecting to billing service
             }
             else -> {
-                logger.release("onBillingSetupFinished with error: ${billingResult.getDescription()}")
+                logger.error("onBillingSetupFinished with error: ${billingResult.getDescription()}")
             }
         }
     }

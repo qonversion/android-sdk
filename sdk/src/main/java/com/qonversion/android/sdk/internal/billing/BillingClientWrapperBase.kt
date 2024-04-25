@@ -56,7 +56,7 @@ internal abstract class BillingClientWrapperBase(
         launchBillingFlow(activity, params)
             .takeUnless { billingResult -> billingResult.isOk }
             ?.let { billingResult ->
-                logger.release("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
+                logger.error("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
             }
     }
 
@@ -68,6 +68,6 @@ internal abstract class BillingClientWrapperBase(
         val errorMessage =
             "Failed to query $purchaseType purchases from cache: ${billingResult.getDescription()}"
         onQueryFailed(BillingError(billingResult.responseCode, errorMessage))
-        logger.release("queryPurchases() -> $errorMessage")
+        logger.error("queryPurchases() -> $errorMessage")
     }
 }

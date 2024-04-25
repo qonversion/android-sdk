@@ -90,7 +90,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             startActivity(intent)
             automationsManager.automationsDidFinishExecuting(actionResult)
         } catch (e: ActivityNotFoundException) {
-            logger.release("Couldn't find any Activity to handle the Intent with url $url")
+            logger.error("Couldn't find any Activity to handle the Intent with url $url")
             automationsManager.automationsDidFailExecuting(actionResult)
         }
     }
@@ -104,7 +104,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             startActivity(intent)
             close(QActionResult(QActionResultType.DeepLink, getActionResultMap(url)))
         } catch (e: ActivityNotFoundException) {
-            logger.release("Couldn't find any Activity to handle the Intent with deeplink $url")
+            logger.error("Couldn't find any Activity to handle the Intent with deeplink $url")
             automationsManager.automationsDidFailExecuting(actionResult)
         }
     }
@@ -211,11 +211,11 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                         null
                     )
                 }, { error ->
-                    logger.release("loadWebView() -> Failed to process screen macros ${error.description}")
+                    logger.error("loadWebView() -> Failed to process screen macros ${error.description}")
                     onError(error, true)
                 })
         } ?: run {
-            logger.release("loadWebView() -> Failed to fetch html page for the app screen")
+            logger.error("loadWebView() -> Failed to fetch html page for the app screen")
             onError(QonversionError(QonversionErrorCode.UnknownError), true)
         }
     }
@@ -238,7 +238,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         actionResult: QActionResult
     ) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-        logger.debug("ScreenActivity $functionName -> $error.description")
+        logger.error("ScreenActivity $functionName -> $error.description")
         actionResult.error = error
         automationsManager.automationsDidFailExecuting(actionResult)
     }
