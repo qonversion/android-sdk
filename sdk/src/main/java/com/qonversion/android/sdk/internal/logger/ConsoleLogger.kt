@@ -13,7 +13,7 @@ internal class ConsoleLogger : Logger {
     }
 
     override fun release(message: String) {
-        log(Log.DEBUG, message)
+        log(Log.INFO, message)
     }
 
     override fun debug(message: String) {
