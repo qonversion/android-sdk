@@ -242,6 +242,6 @@ internal class LegacyBillingClientWrapper(
             ?.forEach {
                 logger.debug("querySkuDetailsAsync() -> $it")
             }
-            ?: logger.release("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
+            ?: logger.warn("querySkuDetailsAsync() -> SkuDetails list for $skuList is empty.")
     }
 }

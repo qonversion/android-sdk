@@ -101,7 +101,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("remoteConfigRequest - failure - ${it.toQonversionError()}")
+                logger.error("remoteConfigRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -125,7 +125,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("remoteConfigRequest for specific context keys - failure - ${it.toQonversionError()}")
+                logger.error("remoteConfigRequest for specific context keys - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -145,7 +145,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("remoteConfigRequest for all context keys - failure - ${it.toQonversionError()}")
+                logger.error("remoteConfigRequest for all context keys - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -168,7 +168,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("attachUserToExperimentRequest - failure - ${it.toQonversionError()}")
+                logger.error("attachUserToExperimentRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -189,7 +189,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("detachUserFromExperimentRequest - failure - ${it.toQonversionError()}")
+                logger.error("detachUserFromExperimentRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -210,7 +210,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("attachUserToRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
+                logger.error("attachUserToRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -231,7 +231,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("detachUserFromRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
+                logger.error("detachUserFromRemoteConfigurationRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -265,7 +265,7 @@ internal class DefaultRepository internal constructor(
         val attributionRequest = createAttributionRequest(conversionInfo, from)
         api.attribution(attributionRequest).enqueue {
             onResponse = {
-                logger.release("AttributionRequest - ${it.getLogMessage()}")
+                logger.debug("AttributionRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     onSuccess?.invoke()
                 } else {
@@ -274,7 +274,7 @@ internal class DefaultRepository internal constructor(
             }
 
             onFailure = {
-                logger.release("AttributionRequest - failure - ${it.toQonversionError()}")
+                logger.error("AttributionRequest - failure - ${it.toQonversionError()}")
                 onError?.invoke(it.toQonversionError())
             }
         }
@@ -299,7 +299,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.debug("sendPropertiesRequest - failure - ${it.toQonversionError()}")
+                logger.error("sendPropertiesRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -321,7 +321,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.debug("getPropertiesRequest - failure - ${it.toQonversionError()}")
+                logger.error("getPropertiesRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -355,7 +355,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("eligibilityRequest - failure - ${it.toQonversionError()}")
+                logger.error("eligibilityRequest - failure - ${it.toQonversionError()}")
                 callback.onError(it.toQonversionError())
             }
         }
@@ -370,7 +370,7 @@ internal class DefaultRepository internal constructor(
         val identityRequest = IdentityRequest(currentUserID, userID)
         api.identify(identityRequest).enqueue {
             onResponse = {
-                logger.release("identityRequest - ${it.getLogMessage()}")
+                logger.debug("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
@@ -380,7 +380,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("identityRequest - failure - ${it.toQonversionError()}")
+                logger.error("identityRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -397,7 +397,7 @@ internal class DefaultRepository internal constructor(
     ) {
         api.screens(screenId).enqueue {
             onResponse = {
-                logger.release("screensRequest - ${it.getLogMessage()}")
+                logger.debug("screensRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
@@ -407,7 +407,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("screensRequest - failure - ${it.toQonversionError()}")
+                logger.error("screensRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -421,7 +421,7 @@ internal class DefaultRepository internal constructor(
                 logger.debug("viewsRequest - ${it.getLogMessage()}")
             }
             onFailure = {
-                logger.debug("viewsRequest - failure - ${it.toQonversionError()}")
+                logger.error("viewsRequest - failure - ${it.toQonversionError()}")
             }
         }
     }
@@ -433,7 +433,7 @@ internal class DefaultRepository internal constructor(
     ) {
         api.actionPoints(uid, queryParams).enqueue {
             onResponse = {
-                logger.release("actionPointsRequest - ${it.getLogMessage()}")
+                logger.debug("actionPointsRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
                     onSuccess(body.data.items.lastOrNull()?.data)
@@ -442,7 +442,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("actionPointsRequest - failure - ${it.toQonversionError()}")
+                logger.error("actionPointsRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -455,7 +455,7 @@ internal class DefaultRepository internal constructor(
     ) {
         api.crashLogs(crashData).enqueue {
             onResponse = {
-                logger.release("crashReportRequest - ${it.getLogMessage()}")
+                logger.debug("crashReportRequest - ${it.getLogMessage()}")
                 if (it.isSuccessful) {
                     onSuccess()
                 } else {
@@ -463,7 +463,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("crashReportRequest - failure - ${it.toQonversionError()}")
+                logger.warn("crashReportRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -505,7 +505,7 @@ internal class DefaultRepository internal constructor(
 
         api.purchase(purchaseRequest).enqueue {
             onResponse = {
-                logger.release("purchaseRequest - ${it.getLogMessage()}")
+                logger.debug("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
                 if (body != null && body.success) {
                     callback.onSuccess(body.data)
@@ -527,7 +527,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("purchaseRequest - failure - ${it.toQonversionError()}")
+                logger.error("purchaseRequest - failure - ${it.toQonversionError()}")
                 handlePurchaseError(
                     callback,
                     it.toQonversionError(),
@@ -636,12 +636,12 @@ internal class DefaultRepository internal constructor(
 
         api.restore(request).enqueue {
             onResponse = {
-                logger.release("restoreRequest - ${it.getLogMessage()}")
+                logger.debug("restoreRequest - ${it.getLogMessage()}")
 
                 handlePermissionsResponse(it, callback)
             }
             onFailure = {
-                logger.release("restoreRequest - failure - ${it.toQonversionError()}")
+                logger.error("restoreRequest - failure - ${it.toQonversionError()}")
                 callback?.onError(it.toQonversionError(), null)
             }
         }
@@ -669,7 +669,7 @@ internal class DefaultRepository internal constructor(
                 preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
             }
             onFailure = {
-                logger.release("sendPushTokenRequest - failure - ${it.toQonversionError()}")
+                logger.error("sendPushTokenRequest - failure - ${it.toQonversionError()}")
             }
         }
     }
@@ -691,7 +691,7 @@ internal class DefaultRepository internal constructor(
 
         api.init(initRequest).enqueue {
             onResponse = {
-                logger.release("initRequest - ${it.getLogMessage()}")
+                logger.debug("initRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && body.success) {
@@ -701,7 +701,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
             onFailure = {
-                logger.release("initRequest - failure - ${it.toQonversionError()}")
+                logger.error("initRequest - failure - ${it.toQonversionError()}")
                 callback?.onError(it.toQonversionError(), null)
             }
         }

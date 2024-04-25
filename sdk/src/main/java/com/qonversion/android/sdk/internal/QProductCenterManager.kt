@@ -271,6 +271,13 @@ internal class QProductCenterManager internal constructor(
         purchaseModel: PurchaseModelInternal,
         callback: QonversionEntitlementsCallback
     ) {
+        if (internalConfig.isAnalyticsMode) {
+            logger.warn(
+                "Making purchases via Qonversion in the Analytics mode can lead to " +
+                        "an inconsistent state in the store. Consider switching to " +
+                        "the Subscription management mode.")
+        }
+
         fun tryToPurchase() {
             tryToPurchase(context, purchaseModel, callback)
         }

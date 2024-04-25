@@ -4,28 +4,30 @@ import android.util.Log
 import com.qonversion.android.sdk.BuildConfig
 
 internal class ConsoleLogger : Logger {
-    override fun release(message: String?) {
-        log(TAG, message)
+    override fun error(message: String) {
+        log(Log.ERROR, message)
     }
 
-    override fun debug(message: String?) {
+    override fun warn(message: String) {
+        log(Log.WARN, message)
+    }
+
+    override fun release(message: String) {
+        log(Log.DEBUG, message)
+    }
+
+    override fun debug(message: String) {
         if (BuildConfig.DEBUG) {
-            log(TAG, message)
+            log(Log.DEBUG, message)
         }
     }
 
-    override fun debug(tag: String?, message: String?) {
-        if (BuildConfig.DEBUG) {
-            log(tag, message)
-        }
+    private fun log(logLevel: Int, message: String) {
+        Log.println(logLevel, TAG, format(message))
     }
 
-    private fun log(tag: String?, message: String?) {
-        Log.println(Log.DEBUG, tag, format(message))
-    }
-
-    private fun format(message: String?): String {
-        return "Thread - " + Thread.currentThread().name + " " + message
+    private fun format(message: String): String {
+        return "[Thread - " + Thread.currentThread().name + "] " + message
     }
 
     companion object {
