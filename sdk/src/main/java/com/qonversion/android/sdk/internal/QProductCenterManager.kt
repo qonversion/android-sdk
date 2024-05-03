@@ -83,6 +83,7 @@ internal class QProductCenterManager internal constructor(
 
     private var processingPartnersIdentityId: String? = null
     private var pendingPartnersIdentityId: String? = null
+    private var pendingIdentityCallbacks = mutableMapOf<String, MutableList<QonversionUserCallback>>()
     private var unhandledLogoutAvailable: Boolean = false
 
     private var installDate: Long = 0
@@ -163,24 +164,30 @@ internal class QProductCenterManager internal constructor(
         })
     }
 
-    fun identify(userID: String) {
-        if (processingPartnersIdentityId == userID || identityManager.currentPartnersIdentityId == userID) {
+    fun identify(identityId: String, callback: QonversionUserCallback? = null) {
+        if (identityManager.currentPartnersIdentityId == identityId) {
+            callback?.let { getUserInfo(callback) }
+            return
+        }
+
+        addIdentityCallback(identityId, callback)
+        if (processingPartnersIdentityId == identityId) {
             return
         }
 
         unhandledLogoutAvailable = false
 
-        pendingPartnersIdentityId = userID
+        pendingPartnersIdentityId = identityId
         if (!isLaunchingFinished || isRestoreInProgress) {
             return
         }
 
-        processingPartnersIdentityId = userID
+        processingPartnersIdentityId = identityId
 
         if (launchError != null) {
-            val callback = object : QonversionLaunchCallback {
+            val launchCallback = object : QonversionLaunchCallback {
                 override fun onSuccess(launchResult: QLaunchResult) {
-                    processIdentity(userID)
+                    processIdentity(identityId)
                 }
 
                 override fun onError(error: QonversionError, httpCode: Int?) {
@@ -191,28 +198,37 @@ internal class QProductCenterManager internal constructor(
                 }
             }
 
-            val initRequestData = InitRequestData(installDate, advertisingID, callback = callback)
+            val initRequestData = InitRequestData(installDate, advertisingID, callback = launchCallback)
             repository.init(initRequestData)
         } else {
-            processIdentity(userID)
+            processIdentity(identityId)
         }
     }
 
-    private fun processIdentity(userID: String) {
+    private fun processIdentity(identityId: String) {
         val currentUserID = userInfoService.obtainUserID()
 
-        identityManager.identify(userID, object : IdentityManagerCallback {
-            override fun onSuccess(identityID: String) {
+        identityManager.identify(identityId, object : IdentityManagerCallback {
+            override fun onSuccess(qonversionUid: String) {
                 pendingPartnersIdentityId = null
                 processingPartnersIdentityId = null
 
-                if (currentUserID == identityID) {
+                if (currentUserID == qonversionUid) {
                     handlePendingRequests()
+                    fireIdentitySuccess(identityId)
                 } else {
-                    internalConfig.uid = identityID
+                    internalConfig.uid = qonversionUid
                     remoteConfigManager.onUserUpdate()
                     launchResultCache.clearPermissionsCache()
-                    launch()
+                    launch(object : QonversionLaunchCallback {
+                        override fun onSuccess(launchResult: QLaunchResult) {
+                            fireIdentitySuccess(identityId)
+                        }
+
+                        override fun onError(error: QonversionError, httpCode: Int?) {
+                            fireIdentityError(identityId, error)
+                        }
+                    })
                 }
             }
 
@@ -221,6 +237,8 @@ internal class QProductCenterManager internal constructor(
 
                 executeEntitlementsBlock(error)
                 remoteConfigManager.userChangingRequestFailedWithError(error)
+
+                fireIdentityError(identityId, error)
             }
         })
     }
@@ -1004,5 +1022,36 @@ internal class QProductCenterManager internal constructor(
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         httpCode?.isInternalServerError() == true
                 )
+    }
+
+    private fun addIdentityCallback(identityId: String, callback: QonversionUserCallback?) {
+        if (callback == null) {
+            return
+        }
+
+        val callbacks = pendingIdentityCallbacks[identityId] ?: mutableListOf()
+        callbacks.add(callback)
+        pendingIdentityCallbacks[identityId] = callbacks
+    }
+
+    private fun fireIdentitySuccess(identityId: String) {
+        val callbacks = pendingIdentityCallbacks[identityId] ?: return
+        pendingIdentityCallbacks[identityId] = mutableListOf()
+
+        getUserInfo(object : QonversionUserCallback {
+            override fun onSuccess(user: QUser) {
+                callbacks.forEach { it.onSuccess(user) }
+            }
+
+            override fun onError(error: QonversionError) {
+                callbacks.forEach { it.onError(error) }
+            }
+        })
+    }
+
+    private fun fireIdentityError(identityId: String, error: QonversionError) {
+        val callbacks = pendingIdentityCallbacks[identityId] ?: return
+        pendingIdentityCallbacks[identityId] = mutableListOf()
+        callbacks.forEach { it.onError(error) }
     }
 }

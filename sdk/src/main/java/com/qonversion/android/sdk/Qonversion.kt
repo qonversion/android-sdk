@@ -228,6 +228,13 @@ interface Qonversion {
     fun identify(userID: String)
 
     /**
+     * Call this function to link a user to his unique ID in your system and share purchase data.
+     * @param userID - unique user ID in your system
+     * @param callback - callback that will be called when response is received
+     */
+    fun identify(userID: String, callback: QonversionUserCallback)
+
+    /**
      * Call this function to unlink a user from his unique ID in your system and his purchase data.
      */
     fun logout()
