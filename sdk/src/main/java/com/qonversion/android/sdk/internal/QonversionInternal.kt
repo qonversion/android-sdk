@@ -13,6 +13,7 @@ import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
+import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
@@ -303,12 +304,16 @@ internal class QonversionInternal(
         productCenterManager.identify(userID)
     }
 
+    override fun identify(userID: String, callback: QonversionUserCallback) {
+        productCenterManager.identify(userID, callback)
+    }
+
     override fun logout() {
         productCenterManager.logout()
     }
 
     override fun userInfo(callback: QonversionUserCallback) {
-        productCenterManager.getUserInfo(callback)
+        productCenterManager.getUserInfo(mainUserCallback(callback))
     }
 
     override fun attribution(data: Map<String, Any>, provider: QAttributionProvider) {
@@ -336,6 +341,15 @@ internal class QonversionInternal(
         object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) =
                 postToMainThread { callback.onSuccess(entitlements) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { callback.onError(error) }
+        }
+
+    private fun mainUserCallback(callback: QonversionUserCallback): QonversionUserCallback =
+        object : QonversionUserCallback {
+            override fun onSuccess(user: QUser) =
+                postToMainThread { callback.onSuccess(user) }
 
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
