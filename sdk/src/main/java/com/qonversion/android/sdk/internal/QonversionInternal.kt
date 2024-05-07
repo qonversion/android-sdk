@@ -57,9 +57,6 @@ internal class QonversionInternal(
     override var appState = AppState.Background
 
     init {
-        val lifecycleHandler = AppLifecycleHandler(this)
-        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
-
         QDependencyInjector.buildAppComponent(application, internalConfig, this)
 
         exceptionManager = QDependencyInjector.appComponent.exceptionManager().also {
@@ -106,6 +103,9 @@ internal class QonversionInternal(
 
         userPropertiesManager.productCenterManager = productCenterManager
         userPropertiesManager.sendFacebookAttribution()
+
+        val lifecycleHandler = AppLifecycleHandler(this)
+        postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
         launch()
     }
