@@ -104,6 +104,8 @@ internal class QonversionInternal(
         userPropertiesManager.productCenterManager = productCenterManager
         userPropertiesManager.sendFacebookAttribution()
 
+        remoteConfigManager.userPropertiesManager = userPropertiesManager
+
         val lifecycleHandler = AppLifecycleHandler(this)
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
