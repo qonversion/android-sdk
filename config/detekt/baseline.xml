@@ -270,6 +270,7 @@
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>TooManyFunctions:QRemoteConfigManager.kt$QRemoteConfigManager</ID>
     <ID>TooManyFunctions:QRepository.kt$QRepository</ID>
+    <ID>TooManyFunctions:QUserPropertiesManager.kt$QUserPropertiesManager : FacebookAttributionListener</ID>
     <ID>TooManyFunctions:Qonversion.kt$Qonversion</ID>
     <ID>TooManyFunctions:QonversionBillingService.kt$QonversionBillingService : PurchasesUpdatedListenerConnectionListenerBillingService</ID>
     <ID>TooManyFunctions:QonversionInternal.kt$QonversionInternal : QonversionLifecycleDelegateAppStateProvider</ID>

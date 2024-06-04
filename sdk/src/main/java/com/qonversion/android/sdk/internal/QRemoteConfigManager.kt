@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
+import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
@@ -31,6 +32,7 @@ internal class QRemoteConfigManager @Inject constructor(
     lateinit var userStateProvider: UserStateProvider
     private var loadingStates = mutableMapOf<String?, LoadingState>()
     private val listRequests = mutableListOf<ListRequestData>()
+    lateinit var userPropertiesManager: QUserPropertiesManager
 
     fun handlePendingRequests() {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
@@ -77,14 +79,19 @@ internal class QRemoteConfigManager @Inject constructor(
 
         loadingState.isInProgress = true
         loadingState.loadedConfig = null
-        remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
-            override fun onSuccess(remoteConfig: QRemoteConfig) {
-                loadingState.loadedConfig = remoteConfig
-                fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
-            }
 
-            override fun onError(error: QonversionError) {
-                fireToCallbacks(contextKey) { onError(error) }
+        userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
+            override fun onComplete() {
+                remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
+                    override fun onSuccess(remoteConfig: QRemoteConfig) {
+                        loadingState.loadedConfig = remoteConfig
+                        fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
+                    }
+
+                    override fun onError(error: QonversionError) {
+                        fireToCallbacks(contextKey) { onError(error) }
+                    }
+                })
             }
         })
     }
@@ -106,11 +113,15 @@ internal class QRemoteConfigManager @Inject constructor(
             return
         }
 
-        remoteConfigService.loadRemoteConfigs(
-            contextKeys,
-            includeEmptyContextKey,
-            getRemoteConfigListCallbackWrapper(callback),
-        )
+        userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
+            override fun onComplete() {
+                remoteConfigService.loadRemoteConfigs(
+                    contextKeys,
+                    includeEmptyContextKey,
+                    getRemoteConfigListCallbackWrapper(callback),
+                )
+            }
+        })
     }
 
     fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) {
@@ -119,7 +130,11 @@ internal class QRemoteConfigManager @Inject constructor(
             return
         }
 
-        remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(callback))
+        userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
+            override fun onComplete() {
+                remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(callback))
+            }
+        })
     }
 
     fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {

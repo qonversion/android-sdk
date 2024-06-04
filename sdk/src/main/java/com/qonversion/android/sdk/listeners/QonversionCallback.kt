@@ -70,3 +70,8 @@ interface QonversionUserPropertiesCallback {
    fun onSuccess(userProperties: QUserProperties)
    fun onError(error: QonversionError)
 }
+
+interface QonversionEmptyCallback {
+
+   fun onComplete()
+}

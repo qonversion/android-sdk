@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.storage.PropertiesStorage
+import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 import javax.inject.Inject
 
@@ -31,6 +32,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
     private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
+    private var completions = mutableListOf<QonversionEmptyCallback>()
 
     companion object {
         private const val LOOPER_THREAD_NAME = "userPropertiesThread"
@@ -67,19 +69,27 @@ internal class QUserPropertiesManager @Inject internal constructor(
         setCustomUserProperty(QUserPropertyKey.FacebookAttribution.userPropertyCode, id)
     }
 
-    fun forceSendProperties() {
+    public fun forceSendProperties(callback: QonversionEmptyCallback? = null) {
         if (isRequestInProgress) {
+            if (callback != null) {
+                completions.add(callback)
+            }
             return
         }
 
         val properties = propertiesStorage.getProperties()
 
         if (properties.isNotEmpty()) {
+            if (callback != null) {
+                completions.add(callback)
+            }
+
             isRequestInProgress = true
             isSendingScheduled = false
 
             repository.sendProperties(properties,
                 onSuccess = { result ->
+                    fireCallbacks()
                     result.propertyErrors.forEach { propertyError ->
                         logger.error("Failed to save property ${propertyError.key}: ${propertyError.error}")
                     }
@@ -92,6 +102,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
                     propertiesStorage.clear(properties)
                 },
                 onError = {
+                    fireCallbacks()
                     isRequestInProgress = false
 
                     if (it.code === QonversionErrorCode.InvalidClientUid) {
@@ -108,7 +119,16 @@ internal class QUserPropertiesManager @Inject internal constructor(
                         retryPropertiesRequest()
                     }
                 })
+        } else {
+            callback?.onComplete()
         }
+    }
+
+    private fun fireCallbacks() {
+        val callbacks = completions.toList()
+        completions.clear()
+
+        callbacks.forEach { callback -> callback.onComplete() }
     }
 
     @VisibleForTesting
