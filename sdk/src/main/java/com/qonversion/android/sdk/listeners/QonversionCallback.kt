@@ -74,5 +74,4 @@ interface QonversionUserPropertiesCallback {
 interface QonversionEmptyCallback {
 
    fun onComplete()
-
 }
