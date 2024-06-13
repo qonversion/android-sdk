@@ -44,4 +44,5 @@ enum class QonversionErrorCode(val specification: String) {
     InvalidStoreCredentials("This account does not have access to the requested application"),
     RemoteConfigurationNotAvailable("Remote configuration is not available for the current user or for the provided context key"),
     ApiRateLimitExceeded("API requests rate limit exceeded"),
+    InternalServerError("Internal server error")
 }

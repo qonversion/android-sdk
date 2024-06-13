@@ -1,9 +1,11 @@
 package com.qonversion.android.sdk.internal
 
+import com.qonversion.android.sdk.dto.QFallbackObject
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
+import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
 import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
@@ -16,7 +18,12 @@ private val EmptyContextKey: String? = null
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
+    private val fallbacksService: QFallbacksService
 ) {
+    private val fallbackData: QFallbackObject? by lazy {
+        fallbacksService.obtainFallbackData()
+    }
+
     internal class LoadingState(
         var loadedConfig: QRemoteConfig? = null,
         val callbacks: MutableList<QonversionRemoteConfigCallback> = mutableListOf(),
@@ -89,7 +96,20 @@ internal class QRemoteConfigManager @Inject constructor(
                     }
 
                     override fun onError(error: QonversionError) {
-                        fireToCallbacks(contextKey) { onError(error) }
+                        val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
+                            fireToCallbacks(contextKey) { onError(error) }
+                            return@onError
+                        }
+
+                        val remoteConfig = if (contextKey != null) {
+                            baseRemoteConfigList.remoteConfigForContextKey(contextKey)
+                        } else {
+                            baseRemoteConfigList.remoteConfigForEmptyContextKey
+                        }
+
+                        remoteConfig?.let {
+                            onSuccess(it)
+                        } ?: fireToCallbacks(contextKey) { onError(error) }
                     }
                 })
             }
@@ -118,7 +138,7 @@ internal class QRemoteConfigManager @Inject constructor(
                 remoteConfigService.loadRemoteConfigs(
                     contextKeys,
                     includeEmptyContextKey,
-                    getRemoteConfigListCallbackWrapper(callback),
+                    getRemoteConfigListCallbackWrapper(contextKeys, includeEmptyContextKey, callback),
                 )
             }
         })
@@ -132,7 +152,7 @@ internal class QRemoteConfigManager @Inject constructor(
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
-                remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(callback))
+                remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(null, true, callback))
             }
         })
     }
@@ -164,6 +184,8 @@ internal class QRemoteConfigManager @Inject constructor(
     }
 
     private fun getRemoteConfigListCallbackWrapper(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
     ): QonversionRemoteConfigListCallback {
         // Remembering loading states for the case of user change -
@@ -182,7 +204,24 @@ internal class QRemoteConfigManager @Inject constructor(
             }
 
             override fun onError(error: QonversionError) {
-                callback.onError(error)
+                val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
+                    callback.onError(error)
+                    return@onError
+                }
+
+                val remoteConfigList = if (contextKeys == null) {
+                    baseRemoteConfigList.copy()
+                } else {
+                    val remoteConfigs = baseRemoteConfigList.remoteConfigs.filter { contextKeys.contains(it.source.contextKey) }.toMutableList()
+                    if (includeEmptyContextKey) {
+                        baseRemoteConfigList.remoteConfigs.find { it.source.contextKey?.isEmpty() == true }?.let {
+                            remoteConfigs.add(it)
+                        }
+                    }
+                    QRemoteConfigList(remoteConfigs.toList())
+                }
+
+                onSuccess(remoteConfigList)
             }
         }
     }

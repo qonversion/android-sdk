@@ -2,6 +2,8 @@ package com.qonversion.android.sdk.internal.api
 
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.internal.Constants
+import com.qonversion.android.sdk.internal.isInternalServerError
 import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject
@@ -106,6 +108,7 @@ internal class ApiErrorMapper @Inject constructor(private val helper: ApiHelper)
             20008, 20010, 20203, 20210 -> QonversionErrorCode.PurchaseInvalid
             20011, 20012, 20013 -> QonversionErrorCode.ProjectConfigError
             20201 -> QonversionErrorCode.InvalidStoreCredentials
+            in Constants.INTERNAL_SERVER_ERROR_MIN ..Constants.INTERNAL_SERVER_ERROR_MAX -> QonversionErrorCode.InternalServerError
             else -> QonversionErrorCode.BackendError
         }
 
