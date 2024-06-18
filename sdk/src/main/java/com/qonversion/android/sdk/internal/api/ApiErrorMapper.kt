@@ -50,7 +50,8 @@ internal class ApiErrorMapper @Inject constructor(private val helper: ApiHelper)
 
         return QonversionError(
             qonversionCode,
-            "HTTP status code=${value.code()}, $errorMessage. ${additionalErrorMessage ?: ""}"
+            "HTTP status code=${value.code()}, $errorMessage. ${additionalErrorMessage ?: ""}",
+            value.code()
         )
     }
 
@@ -108,7 +109,6 @@ internal class ApiErrorMapper @Inject constructor(private val helper: ApiHelper)
             20008, 20010, 20203, 20210 -> QonversionErrorCode.PurchaseInvalid
             20011, 20012, 20013 -> QonversionErrorCode.ProjectConfigError
             20201 -> QonversionErrorCode.InvalidStoreCredentials
-            in Constants.INTERNAL_SERVER_ERROR_MIN ..Constants.INTERNAL_SERVER_ERROR_MAX -> QonversionErrorCode.InternalServerError
             else -> QonversionErrorCode.BackendError
         }
 

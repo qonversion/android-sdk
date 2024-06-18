@@ -96,15 +96,20 @@ internal class QRemoteConfigManager @Inject constructor(
                     }
 
                     override fun onError(error: QonversionError) {
+                        if (!error.shouldFireFallback) {
+                            fireToCallbacks(contextKey) { onError(error) }
+                            return
+                        }
+
                         val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
                             fireToCallbacks(contextKey) { onError(error) }
                             return@onError
                         }
 
-                        val remoteConfig = if (contextKey != null) {
-                            baseRemoteConfigList.remoteConfigForContextKey(contextKey)
-                        } else {
+                        val remoteConfig = if (contextKey == null) {
                             baseRemoteConfigList.remoteConfigForEmptyContextKey
+                        } else {
+                            baseRemoteConfigList.remoteConfigForContextKey(contextKey)
                         }
 
                         remoteConfig?.let {
@@ -204,6 +209,11 @@ internal class QRemoteConfigManager @Inject constructor(
             }
 
             override fun onError(error: QonversionError) {
+                if (!error.shouldFireFallback) {
+                    callback.onError(error)
+                    return
+                }
+
                 val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
                     callback.onError(error)
                     return@onError

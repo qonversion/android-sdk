@@ -430,17 +430,15 @@ internal class QProductCenterManager internal constructor(
         purchaseHistoryRecords: List<PurchaseHistory>,
         restoreError: QonversionError
     ) {
-        val productPermissions = launchResultCache.getProductPermissions() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             failLocallyGrantingRestorePermissionsWithError(
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
             return
         }
 
-        val products = launchResultCache.getActualProducts() ?: run {
-            failLocallyGrantingRestorePermissionsWithError(
-                launchError ?: QonversionError(QonversionErrorCode.LaunchError)
-            )
+        val productPermissions = launchResultCache.getProductPermissions() ?: run {
+            failLocallyGrantingRestorePermissionsWithError(restoreError)
             return
         }
 
@@ -467,10 +465,7 @@ internal class QProductCenterManager internal constructor(
         }
 
         val productPermissions = launchResultCache.getProductPermissions() ?: run {
-            failLocallyGrantingPurchasePermissionsWithError(
-                purchaseCallback,
-                launchError ?: QonversionError(QonversionErrorCode.LaunchError)
-            )
+            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
             return
         }
 

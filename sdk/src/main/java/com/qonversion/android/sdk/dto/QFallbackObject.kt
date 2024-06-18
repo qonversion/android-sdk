@@ -9,6 +9,6 @@ import com.squareup.moshi.JsonClass
 internal data class QFallbackObject(
     @Json(name = "products") val products: Map<String, QProduct> = mapOf(),
     @Json(name = "offerings") val offerings: QOfferings?,
-    @Json(name = "products_permissions") val productPermissions: Map<String, List<String>>? = null,
+    @Json(name = "products_permissions") val productPermissions: Map<String, List<String>>?,
     @Json(name = "remote_config_list") val remoteConfigList: QRemoteConfigList?,
 )

@@ -7,4 +7,7 @@ internal val Int.daysToSeconds get() = this * 24L * 60 * 60
 
 internal val Int.daysToMs get() = daysToSeconds * 1000
 
-internal val QonversionError.shouldFireFallback get(): Boolean = this.code == QonversionErrorCode.NetworkConnectionFailed || this.code.
+internal val QonversionError.shouldFireFallback
+    get(): Boolean =
+        this.code == QonversionErrorCode.NetworkConnectionFailed ||
+                this.httpCode?.isInternalServerError() == true
