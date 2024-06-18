@@ -6,19 +6,24 @@ import android.os.Build
 import android.os.Environment
 import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.dto.QFallbackObject
+import com.qonversion.android.sdk.internal.application
+import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.file.Paths
 import javax.inject.Inject
 
-internal class QFallbacksService @Inject constructor(
+internal class QFallbacksService(
     private val context: Application,
+    private val cacheConfigProvider: CacheConfigProvider,
     moshi: Moshi,
     private val logger: Logger
 ) {
@@ -51,7 +56,13 @@ internal class QFallbacksService @Inject constructor(
 
     @Throws(java.lang.Exception::class)
     fun getStringFromFile(filePath: String): String {
-        val fileInputStream = context.assets.open(filePath)
+        val fallbackFileIdentifier = cacheConfigProvider.cacheConfig.fallbackFileIdentifier
+        val fileInputStream = if (fallbackFileIdentifier != null) {
+            context.resources.openRawResource(fallbackFileIdentifier)
+        } else {
+            context.assets.open(filePath)
+        }
+
         val result = convertStreamToString(fileInputStream)
         fileInputStream.close()
 

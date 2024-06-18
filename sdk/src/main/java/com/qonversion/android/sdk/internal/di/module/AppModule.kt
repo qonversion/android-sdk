@@ -75,4 +75,14 @@ internal class AppModule(
     ): LaunchResultCacheWrapper {
         return LaunchResultCacheWrapper(moshi, sharedPreferencesCache, internalConfig, fallbacksService)
     }
+
+    @ApplicationScope
+    @Provides
+    fun provideFallbackService(
+        context: Application,
+        moshi: Moshi,
+        logger: Logger
+    ): QFallbacksService {
+        return QFallbacksService(context, internalConfig, moshi, logger)
+    }
 }
