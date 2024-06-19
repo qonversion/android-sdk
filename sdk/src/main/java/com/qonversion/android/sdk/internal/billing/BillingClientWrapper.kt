@@ -288,22 +288,4 @@ internal class BillingClientWrapper(
         }
         return this
     }
-
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
-        info: UpdatePurchaseInfo? = null
-    ): BillingFlowParams.Builder {
-        if (info != null) {
-            val updateParamsBuilder = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
-            updateParamsBuilder.setOldPurchaseToken(info.purchaseToken)
-            val updateParams = updateParamsBuilder.apply {
-                info.updatePolicy?.toReplacementMode()?.let {
-                    setSubscriptionReplacementMode(it)
-                }
-            }.build()
-
-            setSubscriptionUpdateParams(updateParams)
-        }
-
-        return this
-    }
 }
