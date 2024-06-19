@@ -1,25 +1,14 @@
 package com.qonversion.android.sdk.internal.services
 
 import android.app.Application
-import android.content.res.Resources
-import android.os.Build
-import android.os.Environment
-import com.qonversion.android.sdk.R
 import com.qonversion.android.sdk.dto.QFallbackObject
-import com.qonversion.android.sdk.internal.application
-import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.nio.file.Paths
-import javax.inject.Inject
 
 internal class QFallbacksService(
     private val context: Application,

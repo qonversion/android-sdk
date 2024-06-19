@@ -1,8 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
 import com.qonversion.android.sdk.dto.QFallbackObject
-import com.qonversion.android.sdk.dto.QonversionError
-import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
