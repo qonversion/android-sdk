@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Handler
 import androidx.annotation.UiThread
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.internal.billing.BillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.BillingClientHolder
@@ -95,7 +96,12 @@ internal class QonversionFactory(
     @UiThread
     private fun createBillingClient(listener: PurchasesUpdatedListener): BillingClient {
         val builder = BillingClient.newBuilder(context)
-        builder.enablePendingPurchases()
+        builder.enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .enablePrepaidPlans()
+                .build()
+        )
         builder.setListener(listener)
         return builder.build()
     }
