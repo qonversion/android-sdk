@@ -77,6 +77,9 @@ class QonversionConfig internal constructor(
 
         /**
          * Sets fallback file identifier.
+         * Fallback file will be used in rare cases of network connection or Qonversion API issues for new users without a cache available.
+         * This allows purchases and entitlements to be processed for new users even if the Qonversion API faces issues.
+         * This also makes it possible to receive remote configs for cases when the network connection is unavailable.
          * There is no need to use this function if you put qonversion_fallbacks.json into the `assets` folder.
          * Use this function only if you put qonversion_fallbacks.json into the `res/raw` folder.
          * In that case, `id` should look like `R.raw.qonversion_fallbacks`.

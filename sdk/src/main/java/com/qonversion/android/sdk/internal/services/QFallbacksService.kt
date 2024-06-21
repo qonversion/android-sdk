@@ -10,6 +10,8 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 
+private const val FALLBACK_FILE_NAME = "qonversion_fallbacks.json"
+
 internal class QFallbacksService(
     private val context: Application,
     private val cacheConfigProvider: CacheConfigProvider,
@@ -17,7 +19,6 @@ internal class QFallbacksService(
     private val logger: Logger
 ) {
     private val jsonAdapter: JsonAdapter<QFallbackObject> = moshi.adapter(QFallbackObject::class.java)
-    private val filePath = "qonversion_fallbacks.json"
 
     fun obtainFallbackData(): QFallbackObject? {
         return try {
@@ -50,7 +51,7 @@ internal class QFallbacksService(
         val fileInputStream = if (fallbackFileIdentifier != null) {
             context.resources.openRawResource(fallbackFileIdentifier)
         } else {
-            context.assets.open(filePath)
+            context.assets.open(FALLBACK_FILE_NAME)
         }
 
         val result = convertStreamToString(fileInputStream)
