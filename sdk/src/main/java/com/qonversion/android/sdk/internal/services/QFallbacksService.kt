@@ -17,10 +17,11 @@ internal class QFallbacksService(
     private val logger: Logger
 ) {
     private val jsonAdapter: JsonAdapter<QFallbackObject> = moshi.adapter(QFallbackObject::class.java)
+    private val filePath = "qonversion_fallbacks.json"
 
     fun obtainFallbackData(): QFallbackObject? {
         return try {
-            val json: String = getStringFromFile("qonversion_fallbacks.json")
+            val json: String = getStringFromFile()
             val fallbackData: QFallbackObject? = jsonAdapter.fromJson(json)
 
             fallbackData
@@ -44,7 +45,7 @@ internal class QFallbacksService(
     }
 
     @Throws(java.lang.Exception::class)
-    fun getStringFromFile(filePath: String): String {
+    fun getStringFromFile(): String {
         val fallbackFileIdentifier = cacheConfigProvider.cacheConfig.fallbackFileIdentifier
         val fileInputStream = if (fallbackFileIdentifier != null) {
             context.resources.openRawResource(fallbackFileIdentifier)

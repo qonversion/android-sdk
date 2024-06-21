@@ -190,7 +190,7 @@ internal class QProductCenterManager internal constructor(
                     processIdentity(identityId)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     processingPartnersIdentityId = null
 
                     remoteConfigManager.userChangingRequestFailedWithError(error)
@@ -225,7 +225,7 @@ internal class QProductCenterManager internal constructor(
                             fireIdentitySuccess(identityId)
                         }
 
-                        override fun onError(error: QonversionError, httpCode: Int?) {
+                        override fun onError(error: QonversionError) {
                             fireIdentityError(identityId, error)
                         }
                     })
@@ -390,8 +390,8 @@ internal class QProductCenterManager internal constructor(
                         executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
                     }
 
-                    override fun onError(error: QonversionError, httpCode: Int?) {
-                        if (shouldCalculatePermissionsLocally(error, httpCode)) {
+                    override fun onError(error: QonversionError) {
+                        if (shouldCalculatePermissionsLocally(error)) {
                             calculateRestorePermissionsLocally(historyRecords, error)
                         } else {
                             executeRestoreBlocksOnError(error)
@@ -676,8 +676,8 @@ internal class QProductCenterManager internal constructor(
                 outerCallback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
-                outerCallback?.onError(error, httpCode)
+            override fun onError(error: QonversionError) {
+                outerCallback?.onError(error)
             }
         }
     }
@@ -705,14 +705,14 @@ internal class QProductCenterManager internal constructor(
                 callback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 launchError = error
 
                 handlePendingRequests(error)
 
                 loadStoreProductsIfPossible()
 
-                callback?.onError(error, httpCode)
+                callback?.onError(error)
             }
         }
     }
@@ -795,7 +795,7 @@ internal class QProductCenterManager internal constructor(
                     purchasesCache.clearPurchase(purchase)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {}
+                override fun onError(error: QonversionError) {}
             })
         }
     }
@@ -881,7 +881,7 @@ internal class QProductCenterManager internal constructor(
     ) {
         launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) = onSuccess(launchResult)
-            override fun onError(error: QonversionError, httpCode: Int?) = onError(error)
+            override fun onError(error: QonversionError) = onError(error)
         })
     }
 
@@ -983,10 +983,10 @@ internal class QProductCenterManager internal constructor(
                         handledPurchasesCache.saveHandledPurchase(purchase)
                     }
 
-                    override fun onError(error: QonversionError, httpCode: Int?) {
+                    override fun onError(error: QonversionError) {
                         storeFailedPurchaseIfNecessary(purchase, purchaseInfo, product)
 
-                        if (shouldCalculatePermissionsLocally(error, httpCode)) {
+                        if (shouldCalculatePermissionsLocally(error)) {
                             calculatePurchasePermissionsLocally(
                                 purchase,
                                 purchaseCallback,
@@ -1023,10 +1023,10 @@ internal class QProductCenterManager internal constructor(
         } ?: storePurchase()
     }
 
-    private fun shouldCalculatePermissionsLocally(error: QonversionError, httpCode: Int?): Boolean {
+    private fun shouldCalculatePermissionsLocally(error: QonversionError): Boolean {
         return !internalConfig.isAnalyticsMode && (
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
-                        httpCode?.isInternalServerError() == true
+                        error.httpCode?.isInternalServerError() == true
                 )
     }
 

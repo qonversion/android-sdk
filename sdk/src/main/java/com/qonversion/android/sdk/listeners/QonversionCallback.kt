@@ -13,7 +13,7 @@ import com.qonversion.android.sdk.dto.properties.QUserProperties
 
 internal interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
-   fun onError(error: QonversionError, httpCode: Int?)
+   fun onError(error: QonversionError)
 }
 
 interface QonversionProductsCallback {

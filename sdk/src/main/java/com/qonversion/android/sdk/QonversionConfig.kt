@@ -75,6 +75,14 @@ class QonversionConfig internal constructor(
             this.entitlementsCacheLifetime = lifetime
         }
 
+        /**
+         * Sets fallback file identifier.
+         * There is no need to use this function if you put qonversion_fallbacks.json into the `assets` folder.
+         * Use this function only if you put qonversion_fallbacks.json into the `res/raw` folder.
+         * In that case, `id` should look like `R.raw.qonversion_fallbacks`.
+         *
+         * @param id the identifier for fallback file.
+         */
         fun setFallbackFileIdentifier(@RawRes id: Int): Builder = apply {
             this.fallbackFileIdentifier = id
         }
