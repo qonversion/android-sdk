@@ -16,10 +16,10 @@ internal fun BillingError.toQonversionError(): QonversionError {
         BillingClient.BillingResponseCode.NETWORK_ERROR -> QonversionErrorCode.NetworkConnectionFailed
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QonversionErrorCode.FeatureNotSupported
         BillingClient.BillingResponseCode.OK -> QonversionErrorCode.UnknownError
-        BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.CanceledPurchase
+        BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.PurchaseCanceled
 
         BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> QonversionErrorCode.BillingUnavailable
-        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QonversionErrorCode.ProductUnavailable
+        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QonversionErrorCode.StoreProductNotAvailable
 
         BillingClient.BillingResponseCode.DEVELOPER_ERROR -> QonversionErrorCode.PurchaseInvalid
         BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> QonversionErrorCode.ProductAlreadyOwned
@@ -40,7 +40,7 @@ internal fun BillingError.toQonversionError(): QonversionError {
 internal fun Throwable.toQonversionError(): QonversionError {
     return when (this) {
         is JSONException -> {
-            QonversionError(QonversionErrorCode.ParseResponseFailed, localizedMessage ?: "")
+            QonversionError(QonversionErrorCode.ResponseParsingFailed, localizedMessage ?: "")
         }
 
         is IOException -> {
