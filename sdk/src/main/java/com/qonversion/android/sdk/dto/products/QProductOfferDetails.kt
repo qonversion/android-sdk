@@ -45,6 +45,13 @@ data class QProductOfferDetails(
     val basePlan: QProductPricingPhase? = pricingPhases.find { it.isBasePlan }
 
     /**
+     * Additional details of an installment plan, if exists.
+     */
+    val installmentPlanDetails: QProductInstallmentPlanDetails? = originalOfferDetails.installmentPlanDetails?.let {
+        QProductInstallmentPlanDetails(it)
+    };
+
+    /**
      * A trial phase details, if exists.
      */
     val trialPhase: QProductPricingPhase? = pricingPhases.find { it.isTrial }

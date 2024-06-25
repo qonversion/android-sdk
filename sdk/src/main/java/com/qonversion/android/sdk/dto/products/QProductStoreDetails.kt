@@ -130,6 +130,13 @@ data class QProductStoreDetails(
             basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring
 
     /**
+     * True, if the subscription product is installment, which means that users commit
+     * to pay for a specified amount of periods every month.
+     */
+    val isInstallment: Boolean = isSubscription &&
+            basePlanSubscriptionOfferDetails?.installmentPlanDetails != null
+
+    /**
      * Find an offer with the specified id.
      * @param offerId identifier of the searching offer.
      * @return found offer or null, if an offer with the specified id doesn't exist.
