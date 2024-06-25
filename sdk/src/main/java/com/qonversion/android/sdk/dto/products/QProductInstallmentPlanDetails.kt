@@ -15,7 +15,7 @@ data class QProductInstallmentPlanDetails(
      * Committed payments count after a user signs up for this subscription plan.
      */
     val commitmentPaymentsCount: Int =
-        originalInstallmentPlanDetails.installmentPlanCommitmentPaymentsCount;
+        originalInstallmentPlanDetails.installmentPlanCommitmentPaymentsCount
 
     /**
      * Subsequent committed payments count after this subscription plan renews.
@@ -25,5 +25,5 @@ data class QProductInstallmentPlanDetails(
      * non-installment monthly plan when the plan renews.
      */
     val subsequentCommitmentPaymentsCount: Int =
-        originalInstallmentPlanDetails.subsequentInstallmentPlanCommitmentPaymentsCount;
+        originalInstallmentPlanDetails.subsequentInstallmentPlanCommitmentPaymentsCount
 }

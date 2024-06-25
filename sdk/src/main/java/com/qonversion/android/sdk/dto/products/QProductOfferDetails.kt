@@ -49,7 +49,7 @@ data class QProductOfferDetails(
      */
     val installmentPlanDetails: QProductInstallmentPlanDetails? = originalOfferDetails.installmentPlanDetails?.let {
         QProductInstallmentPlanDetails(it)
-    };
+    }
 
     /**
      * A trial phase details, if exists.
