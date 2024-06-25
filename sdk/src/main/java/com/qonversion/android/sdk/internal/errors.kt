@@ -15,7 +15,7 @@ internal fun BillingError.toQonversionError(): QonversionError {
 
         BillingClient.BillingResponseCode.NETWORK_ERROR -> QonversionErrorCode.NetworkConnectionFailed
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QonversionErrorCode.FeatureNotSupported
-        BillingClient.BillingResponseCode.OK -> QonversionErrorCode.UnknownError
+        BillingClient.BillingResponseCode.OK -> QonversionErrorCode.Unknown
         BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.PurchaseCanceled
 
         BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> QonversionErrorCode.BillingUnavailable
@@ -24,7 +24,7 @@ internal fun BillingError.toQonversionError(): QonversionError {
         BillingClient.BillingResponseCode.DEVELOPER_ERROR -> QonversionErrorCode.PurchaseInvalid
         BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> QonversionErrorCode.ProductAlreadyOwned
         BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> QonversionErrorCode.ProductNotOwned
-        else -> QonversionErrorCode.UnknownError
+        else -> QonversionErrorCode.Unknown
     }
     val additionalMessage = when (errorCode) {
         QonversionErrorCode.BillingUnavailable ->
@@ -47,6 +47,6 @@ internal fun Throwable.toQonversionError(): QonversionError {
             QonversionError(QonversionErrorCode.NetworkConnectionFailed, localizedMessage ?: "")
         }
 
-        else -> QonversionError(QonversionErrorCode.UnknownError, localizedMessage ?: "")
+        else -> QonversionError(QonversionErrorCode.Unknown, localizedMessage ?: "")
     }
 }

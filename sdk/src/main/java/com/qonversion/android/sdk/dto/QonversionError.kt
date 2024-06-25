@@ -18,7 +18,7 @@ data class QonversionError(
  * To get rid of billing errors make sure you follow the [Google Play's billing system integration](https://documentation.qonversion.io/docs/google-plays-billing-integration)
  */
 enum class QonversionErrorCode(val specification: String) {
-    UnknownError("Unknown error"),
+    Unknown("Unknown error"),
     PlayStoreError("There was an issue with the Play Store service"),
     BillingUnavailable("The Billing service is unavailable on the device"),
     PurchasePending("Purchase is pending"),
