@@ -111,7 +111,7 @@ internal class QUserPropertiesManager @Inject internal constructor(
                                 retryPropertiesRequest()
                             }
 
-                            override fun onError(error: QonversionError, httpCode: Int?) {
+                            override fun onError(error: QonversionError) {
                                 retryPropertiesRequest()
                             }
                         })

@@ -115,7 +115,7 @@ internal class QonversionRepositoryIntegrationTest {
                     signal.countDown()
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
             }
@@ -144,7 +144,7 @@ internal class QonversionRepositoryIntegrationTest {
                     fail("Shouldn't succeed")
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     // then
                     assertIncorrectProjectKeyError(error)
                     signal.countDown()
@@ -182,7 +182,7 @@ internal class QonversionRepositoryIntegrationTest {
                 signal.countDown()
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 fail("Shouldn't fail")
             }
         }
@@ -232,7 +232,7 @@ internal class QonversionRepositoryIntegrationTest {
                 signal.countDown()
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 fail("Shouldn't fail")
             }
         }
@@ -256,7 +256,7 @@ internal class QonversionRepositoryIntegrationTest {
                 fail("Shouldn't succeed")
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 assertIncorrectProjectKeyError(error)
                 signal.countDown()
             }
@@ -325,7 +325,7 @@ internal class QonversionRepositoryIntegrationTest {
                 signal.countDown()
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 fail("Shouldn't fail")
             }
         }
@@ -363,7 +363,7 @@ internal class QonversionRepositoryIntegrationTest {
                 fail("Shouldn't succeed")
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 assertIncorrectProjectKeyError(error)
                 signal.countDown()
             }
@@ -874,7 +874,7 @@ internal class QonversionRepositoryIntegrationTest {
                     onComplete(null)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
             }

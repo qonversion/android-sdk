@@ -132,7 +132,7 @@ internal class QonversionInternal(
             override fun onSuccess(launchResult: QLaunchResult) =
                 postToMainThread { automationsManager.onLaunchProcessed() }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {}
+            override fun onError(error: QonversionError) {}
         })
     }
 

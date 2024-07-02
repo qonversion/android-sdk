@@ -27,7 +27,7 @@ internal class RepositoryWithRateLimits(
         withRateLimitCheck(
             RequestType.Init,
             initRequestData.hashCode(),
-            { error -> initRequestData.callback?.onError(error, null) }
+            { error -> initRequestData.callback?.onError(error) }
         ) {
             repository.init(initRequestData)
         }
@@ -129,7 +129,7 @@ internal class RepositoryWithRateLimits(
         withRateLimitCheck(
             RequestType.Purchase,
             purchase.hashCode() + (qProductId + installDate).hashCode(),
-            { error -> callback.onError(error, null) }
+            { error -> callback.onError(error) }
         ) {
             repository.purchase(installDate, purchase, qProductId, callback)
         }
@@ -143,7 +143,7 @@ internal class RepositoryWithRateLimits(
         withRateLimitCheck(
             RequestType.Restore,
             installDate.hashCode() + historyRecords.hashCode(),
-            { error -> callback?.onError(error, null) }
+            { error -> callback?.onError(error) }
         ) {
             repository.restore(installDate, historyRecords, callback)
         }

@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.dto
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class QRemoteConfigList internal constructor(
     val remoteConfigs: List<QRemoteConfig>
 ) {

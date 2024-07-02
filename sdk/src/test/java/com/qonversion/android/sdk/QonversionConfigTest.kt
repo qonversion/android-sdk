@@ -36,7 +36,7 @@ internal class QonversionConfigTest {
     private val mockEntitlementsCacheLifetime = mockk<QEntitlementsCacheLifetime>()
     private val mockProxyUrl = "mock url"
     private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment, mockProxyUrl)
-    private val mockCacheConfig = CacheConfig(mockEntitlementsCacheLifetime)
+    private val mockCacheConfig = CacheConfig(mockEntitlementsCacheLifetime, null)
 
     @BeforeEach
     fun setUp() {
@@ -169,7 +169,7 @@ internal class QonversionConfigTest {
             val builder = QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
 
             val expPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, defaultEnvironment)
-            val expCacheConfig = CacheConfig(defaultEntitlementsCacheLifetime)
+            val expCacheConfig = CacheConfig(defaultEntitlementsCacheLifetime, null)
             val expResult = QonversionConfig(
                 mockApplication,
                 expPrimaryConfig,
