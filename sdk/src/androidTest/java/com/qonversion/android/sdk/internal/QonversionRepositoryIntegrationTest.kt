@@ -555,9 +555,9 @@ internal class QonversionRepositoryIntegrationTest {
         val signal = CountDownLatch(1)
         val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
         val expectedResult = mapOf(
-            monthlyProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroProduct),
+            monthlyProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct),
             annualProduct.qonversionID to QEligibility(QIntroEligibilityStatus.Unknown),
-            inappProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroProduct)
+            inappProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct)
         )
 
         val callback = object : QonversionEligibilityCallback {
