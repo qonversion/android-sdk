@@ -10,8 +10,7 @@ import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -122,7 +121,7 @@ internal class RepositoryWithRateLimits(
 
     override fun purchase(
         installDate: Long,
-        purchase: Purchase,
+        purchase: PurchaseData,
         qProductId: String?,
         callback: QonversionLaunchCallback
     ) {
@@ -137,15 +136,15 @@ internal class RepositoryWithRateLimits(
 
     override fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
+        purchases: List<PurchaseData>,
         callback: QonversionLaunchCallback?
     ) {
         withRateLimitCheck(
             RequestType.Restore,
-            installDate.hashCode() + historyRecords.hashCode(),
+            installDate.hashCode() + purchases.hashCode(),
             { error -> callback?.onError(error, null) }
         ) {
-            repository.restore(installDate, historyRecords, callback)
+            repository.restore(installDate, purchases, callback)
         }
     }
 

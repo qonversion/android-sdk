@@ -63,9 +63,9 @@ internal class LegacyBillingClientWrapper(
     }
 
     @Suppress("DEPRECATION")
-    override fun queryPurchaseHistoryForProduct(
+    override fun queryPurchaseForProduct(
         product: QProduct,
-        onCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
+        onCompleted: (BillingResult, Purchase?) -> Unit
     ) {
         val skuDetails = product.skuDetail ?: return
 
@@ -75,22 +75,12 @@ internal class LegacyBillingClientWrapper(
                         "Querying purchase history for ${skuDetails.sku} with type ${skuDetails.type}"
             )
 
-            queryPurchaseHistoryAsync(skuDetails.type) { billingResult, purchasesList ->
+            queryPurchasesAsync(skuDetails.type) { billingResult, purchasesList ->
                 onCompleted(
                     billingResult,
-                    purchasesList?.firstOrNull { skuDetails.sku == it.skus.firstOrNull() }
+                    purchasesList.firstOrNull { skuDetails.sku == it.skus.firstOrNull() }
                 )
             }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    override fun queryPurchaseHistory(
-        productType: QStoreProductType,
-        onCompleted: (BillingResult, List<PurchaseHistoryRecord>?) -> Unit
-    ) {
-        billingClientHolder.withReadyClient {
-            queryPurchaseHistoryAsync(productType.toSkuType(), onCompleted)
         }
     }
 

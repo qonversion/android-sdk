@@ -73,6 +73,13 @@ interface Qonversion {
      * Call this function to sync the subscriber data with the first launch
      * when Qonversion is implemented.
      */
+    @Deprecated(
+        "Due to Google Play Billing Library 7 updates there is no way " +
+        "to get historical purchases, so now the functionality of this method is limited to " +
+        "active purchases only, which will be synced even without the call of this function. " +
+        "Taking it into account consider removing the call of this method as it will " +
+        "be removed in future releases."
+    )
     fun syncHistoricalData()
 
     /**

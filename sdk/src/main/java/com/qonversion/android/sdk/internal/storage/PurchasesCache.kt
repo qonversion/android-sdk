@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.storage
 
 import android.content.SharedPreferences
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -14,12 +14,12 @@ internal class PurchasesCache(
     private val moshi = Moshi.Builder().build()
     private val collectionPurchaseType: Type = Types.newParameterizedType(
         Set::class.java,
-        Purchase::class.java
+        PurchaseData::class.java
     )
-    private val jsonAdapter: JsonAdapter<Set<Purchase>> =
+    private val jsonAdapter: JsonAdapter<Set<PurchaseData>> =
         moshi.adapter(collectionPurchaseType)
 
-    fun savePurchase(purchase: Purchase) {
+    fun savePurchase(purchase: PurchaseData) {
         val purchases = loadPurchases().toMutableSet()
         purchases.add(purchase)
 
@@ -31,27 +31,27 @@ internal class PurchasesCache(
         savePurchasesAsJson(purchases)
     }
 
-    fun loadPurchases(): Set<Purchase> {
+    fun loadPurchases(): Set<PurchaseData> {
         val json = preferences.getString(PURCHASE_KEY, "")
         if (json.isNullOrEmpty()) {
             return setOf()
         }
         return try {
-            val purchases: Set<Purchase>? = jsonAdapter.fromJson(json)
+            val purchases: Set<PurchaseData>? = jsonAdapter.fromJson(json)
             purchases ?: setOf()
         } catch (e: IOException) {
             setOf()
         }
     }
 
-    fun clearPurchase(purchase: Purchase) {
+    fun clearPurchase(purchase: PurchaseData) {
         val purchases = loadPurchases().toMutableSet()
         purchases.remove(purchase)
 
         savePurchasesAsJson(purchases)
     }
 
-    private fun savePurchasesAsJson(purchases: MutableSet<Purchase>) {
+    private fun savePurchasesAsJson(purchases: MutableSet<PurchaseData>) {
         val jsonStr: String = jsonAdapter.toJson(purchases)
         preferences.edit().putString(PURCHASE_KEY, jsonStr).apply()
     }

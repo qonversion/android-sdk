@@ -7,9 +7,7 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.android.billingclient.api.QueryPurchaseHistoryParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
@@ -109,9 +107,9 @@ internal class BillingClientWrapper(
         launchBillingFlow(activity, params)
     }
 
-    override fun queryPurchaseHistoryForProduct(
+    override fun queryPurchaseForProduct(
         product: QProduct,
-        onCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
+        onCompleted: (BillingResult, Purchase?) -> Unit
     ) {
         val storeDetails = product.storeDetails ?: return
         val productType = storeDetails.originalProductDetails.productType
@@ -119,30 +117,18 @@ internal class BillingClientWrapper(
         billingClientHolder.withReadyClient {
             logger.debug(
                 "queryPurchaseHistoryForProduct() -> " +
-                        "Querying purchase history for ${storeDetails.productId} with type $productType"
+                        "Querying purchase for ${storeDetails.productId} with type $productType"
             )
 
-            val params = QueryPurchaseHistoryParams.newBuilder()
+            val params = QueryPurchasesParams.newBuilder()
                 .setProductType(productType)
                 .build()
-            queryPurchaseHistoryAsync(params) { billingResult, purchasesList ->
+            queryPurchasesAsync(params) { billingResult, purchasesList ->
                 onCompleted(
                     billingResult,
-                    purchasesList?.firstOrNull { storeDetails.productId == it.productId }
+                    purchasesList.firstOrNull { storeDetails.productId == it.productId }
                 )
             }
-        }
-    }
-
-    override fun queryPurchaseHistory(
-        productType: QStoreProductType,
-        onCompleted: (BillingResult, List<PurchaseHistoryRecord>?) -> Unit
-    ) {
-        billingClientHolder.withReadyClient {
-            val params = QueryPurchaseHistoryParams.newBuilder()
-                .setProductType(productType.toProductType())
-                .build()
-            queryPurchaseHistoryAsync(params, onCompleted)
         }
     }
 

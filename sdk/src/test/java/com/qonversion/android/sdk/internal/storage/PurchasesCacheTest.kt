@@ -2,9 +2,8 @@ package com.qonversion.android.sdk.internal.storage
 
 import org.assertj.core.api.Assertions.assertThat
 import android.content.SharedPreferences
-import com.android.billingclient.api.BillingClient
 
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -157,8 +156,8 @@ internal class PurchasesCacheTest {
         }
     }
 
-    private fun mockPurchase(originalOrderId: String = ""): Purchase {
-        return Purchase(
+    private fun mockPurchase(originalOrderId: String = ""): PurchaseData {
+        return PurchaseData(
             storeProductId = "article-test-trial",
             orderId = "GPA.3375-4436-3573-53474",
             originalOrderId = "GPA.3375-4436-3573-53474$originalOrderId",

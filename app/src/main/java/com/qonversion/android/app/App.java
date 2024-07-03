@@ -36,8 +36,6 @@ public class App extends MultiDexApplication {
                 .build();
         Qonversion.initialize(qonversionConfig);
 
-        Qonversion.getSharedInstance().syncHistoricalData();
-
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
 
             @Override
