@@ -106,7 +106,6 @@ internal class QProductCenterManager internal constructor(
                 PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong())
             )
         } else {
-            @Suppress("DEPRECATION")
             context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
         }
         installDate = packageInfo.firstInstallTime.milliSecondsToSeconds()
@@ -390,6 +389,8 @@ internal class QProductCenterManager internal constructor(
                     override fun onSuccess(launchResult: QLaunchResult) {
                         updateLaunchResult(launchResult)
                         executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
+
+                        handledPurchasesCache.saveHandledPurchases(purchases)
                     }
 
                     override fun onError(error: QonversionError, httpCode: Int?) {
