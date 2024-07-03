@@ -84,7 +84,9 @@ class QonversionConfig internal constructor(
          * Use this function only if you put qonversion_fallbacks.json into the `res/raw` folder.
          * In that case, `id` should look like `R.raw.qonversion_fallbacks`.
          *
-         * @param id the identifier for fallback file.
+         * @param id the identifier for the fallback file.
+         *
+         * @see [The documentation](https://documentation.qonversion.io/docs/system-reliability#fallback-files)
          */
         fun setFallbackFileIdentifier(@RawRes id: Int): Builder = apply {
             this.fallbackFileIdentifier = id
