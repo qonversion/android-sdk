@@ -25,7 +25,7 @@ import com.qonversion.android.sdk.internal.dto.QProductRenewState
 import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.qonversion.android.sdk.internal.repository.DefaultRepository
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -82,7 +82,7 @@ internal class OutagerIntegrationTest {
         "test_inapp" to listOf("noAds")
     )
 
-    private val purchase = Purchase(
+    private val purchase = PurchaseData(
         storeProductId = "google_monthly",
         orderId = "GPA.3307-0767-0668-99058",
         originalOrderId = "GPA.3307-0767-0668-99058",

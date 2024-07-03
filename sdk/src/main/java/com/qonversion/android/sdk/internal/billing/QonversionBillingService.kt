@@ -8,7 +8,6 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
 import com.qonversion.android.sdk.internal.dto.ProductStoreId
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -156,45 +155,6 @@ internal class QonversionBillingService internal constructor(
             }
     }
 
-    override fun consumeHistoryRecords(historyRecords: List<PurchaseHistory>) {
-        if (isAnalyticsMode) {
-            return
-        }
-
-        historyRecords.forEach { record ->
-            when (record.type) {
-                QStoreProductType.InApp -> consume(record.historyRecord.purchaseToken)
-                QStoreProductType.Subscription -> acknowledge(record.historyRecord.purchaseToken)
-            }
-        }
-    }
-
-    override fun queryPurchasesHistory(
-        onFailed: (error: BillingError) -> Unit,
-        onCompleted: (purchases: List<PurchaseHistory>) -> Unit
-    ) {
-        fun fireOnFailed(error: BillingError) {
-            onFailed(error)
-            logger.error("queryPurchasesHistory() -> $error")
-        }
-
-        queryPurchaseHistoryAsync(
-            QStoreProductType.Subscription,
-            { subsPurchasesList ->
-                queryPurchaseHistoryAsync(
-                    QStoreProductType.InApp,
-                    { inAppPurchasesList ->
-                        onCompleted(
-                            subsPurchasesList + inAppPurchasesList
-                        )
-                    },
-                    { error -> fireOnFailed(error) }
-                )
-            },
-            { error -> fireOnFailed(error) }
-        )
-    }
-
     override fun queryPurchases(
         onFailed: (error: BillingError) -> Unit,
         onCompleted: (purchases: List<Purchase>) -> Unit
@@ -238,19 +198,19 @@ internal class QonversionBillingService internal constructor(
     ) {
         val billingClientWrapper = chooseBillingClientWrapperForProductPurchase(product) ?: return
 
-        billingClientWrapper.queryPurchaseHistoryForProduct(oldProduct) { billingResult, purchaseHistoryRecord ->
+        billingClientWrapper.queryPurchaseForProduct(oldProduct) { billingResult, purchase ->
             if (!billingResult.isOk) {
                 val errorMessage = "Failed to update purchase: ${billingResult.getDescription()}"
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
                 logger.error("updatePurchase() -> $errorMessage")
-                return@queryPurchaseHistoryForProduct
+                return@queryPurchaseForProduct
             }
 
-            if (purchaseHistoryRecord != null) {
+            if (purchase != null) {
                 logger.debug(
-                    "updatePurchase() -> Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"
+                    "updatePurchase() -> Purchase was found successfully for store product: ${purchase.productId}"
                 )
 
                 makePurchase(
@@ -258,7 +218,7 @@ internal class QonversionBillingService internal constructor(
                     product,
                     offerId,
                     applyOffer,
-                    UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, updatePolicy)
+                    UpdatePurchaseInfo(purchase.purchaseToken, updatePolicy)
                 )
             } else {
                 val errorMessage = "No existing purchase for Qonversion product: ${oldProduct.qonversionID}"
@@ -321,58 +281,6 @@ internal class QonversionBillingService internal constructor(
                 billingClientWrapper.acknowledge(purchaseToken)
             }
         }
-    }
-
-    private fun queryPurchaseHistoryAsync(
-        productType: QStoreProductType,
-        onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
-        onQueryHistoryFailed: (BillingError) -> Unit
-    ) {
-        logger.debug("queryPurchaseHistoryAsync() -> Querying purchase history for type $QStoreProductType")
-
-        executeOnMainThread { billingSetupError ->
-            if (billingSetupError == null) {
-                billingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
-                    if (billingResult.isOk && purchaseHistoryRecords != null) {
-                        val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
-                            productType,
-                            purchaseHistoryRecords
-                        )
-                        onQueryHistoryCompleted(purchaseHistory)
-                    } else {
-                        var errorMessage = "Failed to retrieve purchase history. "
-                        if (purchaseHistoryRecords == null) {
-                            errorMessage += "Purchase history for $productType is null. "
-                        }
-
-                        onQueryHistoryFailed(
-                            BillingError(
-                                billingResult.responseCode,
-                                "$errorMessage ${billingResult.getDescription()}"
-                            )
-                        )
-                    }
-                }
-            } else {
-                onQueryHistoryFailed(billingSetupError)
-            }
-        }
-    }
-
-    private fun getPurchaseHistoryFromHistoryRecords(
-        productType: QStoreProductType,
-        historyRecords: List<PurchaseHistoryRecord>
-    ): List<PurchaseHistory> {
-        val purchaseHistory = mutableListOf<PurchaseHistory>()
-        historyRecords
-            .takeUnless { it.isEmpty() }
-            ?.forEach { record ->
-                purchaseHistory.add(PurchaseHistory(productType, record))
-                logger.debug("queryPurchaseHistoryAsync() -> purchase history for $productType is retrieved ${record.getDescription()}")
-            }
-            ?: logger.release("queryPurchaseHistoryAsync() -> purchase history for $productType is empty.")
-
-        return purchaseHistory
     }
 
     private fun executeOnMainThread(request: (BillingError?) -> Unit) {

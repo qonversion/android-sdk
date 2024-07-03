@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.repository.QRepository
@@ -123,7 +124,7 @@ internal class QProductCenterManagerTest {
 
         val installDateSlot = slot<Long>()
         val callbackSlot = slot<QonversionLaunchCallback>()
-        val entityPurchaseSlot = slot<com.qonversion.android.sdk.internal.purchase.Purchase>()
+        val entityPurchaseSlot = slot<PurchaseData>()
         every {
             mockRepository.purchase(
                 capture(installDateSlot),

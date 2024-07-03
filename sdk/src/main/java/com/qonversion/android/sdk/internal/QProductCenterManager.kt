@@ -32,13 +32,13 @@ import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.BillingService
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
 import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
@@ -377,13 +377,15 @@ internal class QProductCenterManager internal constructor(
         }
         isRestoreInProgress = true
 
-        billingService.queryPurchasesHistory(
+        billingService.queryPurchases(
             onFailed = { executeRestoreBlocksOnError(it.toQonversionError()) }
-        ) { historyRecords ->
-            billingService.consumeHistoryRecords(historyRecords)
+        ) { purchases ->
+            billingService.consumePurchases(purchases)
+            val purchasesInfo = converter.convertPurchases(purchases)
+
             repository.restore(
                 installDate,
-                historyRecords,
+                purchasesInfo,
                 object : QonversionLaunchCallback {
                     override fun onSuccess(launchResult: QLaunchResult) {
                         updateLaunchResult(launchResult)
@@ -392,7 +394,7 @@ internal class QProductCenterManager internal constructor(
 
                     override fun onError(error: QonversionError, httpCode: Int?) {
                         if (shouldCalculatePermissionsLocally(error, httpCode)) {
-                            calculateRestorePermissionsLocally(historyRecords, error)
+                            calculateRestorePermissionsLocally(purchases, error)
                         } else {
                             executeRestoreBlocksOnError(error)
                         }
@@ -427,7 +429,7 @@ internal class QProductCenterManager internal constructor(
     // Private functions
 
     private fun calculateRestorePermissionsLocally(
-        purchaseHistoryRecords: List<PurchaseHistory>,
+        purchases: List<Purchase>,
         restoreError: QonversionError
     ) {
         val launchResult = launchResultCache.getLaunchResult() ?: run {
@@ -439,7 +441,7 @@ internal class QProductCenterManager internal constructor(
 
         launchResultCache.productPermissions?.let {
             val permissions = grantPermissionsAfterFailedRestore(
-                purchaseHistoryRecords,
+                purchases,
                 launchResult.products.values,
                 it
             )
@@ -506,21 +508,21 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun grantPermissionsAfterFailedRestore(
-        historyRecords: List<PurchaseHistory>,
+        purchases: List<Purchase>,
         products: Collection<QProduct>,
         productPermissions: Map<String, List<String>>
     ): Map<String, QPermission> {
-        val newPermissions = historyRecords
+        val newPermissions = purchases
             .asSequence()
-            .flatMap { record ->
+            .flatMap { purchase ->
                 products
-                    .filter { it.storeID == record.historyRecord.productId }
+                    .filter { it.storeID == purchase.productId }
                     .flatMap {
                         val permissionIds = productPermissions[it.qonversionID] ?: emptyList()
                         permissionIds.map { permissionId ->
                             createPermission(
                                 permissionId,
-                                record.historyRecord.purchaseTime,
+                                purchase.purchaseTime,
                                 it
                             )
                         }
@@ -996,7 +998,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun storeFailedPurchaseIfNecessary(
         purchase: Purchase,
-        purchaseInfo: com.qonversion.android.sdk.internal.purchase.Purchase,
+        purchaseInfo: PurchaseData,
         product: QProduct?
     ) {
         fun storePurchase() {

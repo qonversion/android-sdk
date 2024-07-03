@@ -1,9 +1,10 @@
 package com.qonversion.android.sdk.internal.converter
 
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.android.billingclient.api.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 
 internal interface PurchaseConverter {
-    fun convertPurchase(purchase: com.android.billingclient.api.Purchase): Purchase
+    fun convertPurchase(purchase: Purchase): PurchaseData
 
-    fun convertPurchases(purchases: List<com.android.billingclient.api.Purchase>): List<Purchase>
+    fun convertPurchases(purchases: List<Purchase>): List<PurchaseData>
 }

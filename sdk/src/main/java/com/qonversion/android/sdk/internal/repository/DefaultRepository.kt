@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
-import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -25,7 +24,6 @@ import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
-import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
 import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
@@ -40,10 +38,8 @@ import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.enqueue
 import com.qonversion.android.sdk.internal.isInternalServerError
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseData
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.stringValue
 import com.qonversion.android.sdk.internal.toQonversionError
@@ -239,7 +235,7 @@ internal class DefaultRepository internal constructor(
 
     override fun purchase(
         installDate: Long,
-        purchase: Purchase,
+        purchase: PurchaseData,
         qProductId: String?,
         callback: QonversionLaunchCallback
     ) {
@@ -248,10 +244,10 @@ internal class DefaultRepository internal constructor(
 
     override fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
+        purchases: List<PurchaseData>,
         callback: QonversionLaunchCallback?
     ) {
-        val history = convertHistory(historyRecords)
+        val history = purchases.mapNotNull { it.toHistory() }
 
         restoreRequest(installDate, history, callback)
     }
@@ -488,7 +484,7 @@ internal class DefaultRepository internal constructor(
 
     private fun purchaseRequest(
         installDate: Long,
-        purchase: Purchase,
+        purchase: PurchaseData,
         qProductId: String?,
         callback: QonversionLaunchCallback,
         attemptIndex: Int = 0
@@ -500,7 +496,7 @@ internal class DefaultRepository internal constructor(
             accessToken = key,
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
-            purchase = convertPurchaseDetails(purchase, qProductId),
+            purchase = purchase.toPurchaseDetails(qProductId),
         )
 
         api.purchase(purchaseRequest).enqueue {
@@ -577,47 +573,6 @@ internal class DefaultRepository internal constructor(
         }
     }
 
-    private fun convertPurchases(purchases: List<Purchase>?): List<Inapp> {
-        val inapps: MutableList<Inapp> = mutableListOf()
-
-        purchases?.forEach {
-            val inapp = convertPurchaseDetails(it)
-            inapps.add(Inapp(inapp))
-        }
-
-        return inapps.toList()
-    }
-
-    private fun convertPurchaseDetails(
-        purchase: Purchase,
-        qProductId: String? = null
-    ): PurchaseDetails {
-        return PurchaseDetails(
-            purchase.purchaseToken,
-            purchase.purchaseTime,
-            purchase.orderId,
-            purchase.originalOrderId,
-            purchase.storeProductId ?: "",
-            qProductId ?: ""
-        )
-    }
-
-    private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
-        return historyRecords.mapNotNull {
-            val productId = it.historyRecord.productId
-
-            if (productId == null) {
-                null
-            } else {
-                History(
-                    productId,
-                    it.historyRecord.purchaseToken,
-                    it.historyRecord.purchaseTime.milliSecondsToSeconds()
-                )
-            }
-        }
-    }
-
     @VisibleForTesting
     internal fun restoreRequest(
         installDate: Long,
@@ -675,10 +630,11 @@ internal class DefaultRepository internal constructor(
     }
 
     private fun initRequest(
-        purchases: List<Purchase>? = null,
-        callback: QonversionLaunchCallback? = null
+        purchases: List<PurchaseData>?,
+        callback: QonversionLaunchCallback?
     ) {
-        val inapps: List<Inapp> = convertPurchases(purchases)
+        val inapps: List<Inapp> = purchases?.map { it.toInApp() } ?: emptyList()
+
         val initRequest = InitRequest(
             installDate = installDate,
             device = environmentProvider.getInfo(advertisingId),
