@@ -253,7 +253,7 @@ internal class QProductCenterManager internal constructor(
                     val product = it.value
 
                     if (product.storeDetails?.isPrepaid == true) {
-                        QEligibility(QIntroEligibilityStatus.NonIntroProduct)
+                        QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct)
                     } else {
                         QEligibility(QIntroEligibilityStatus.fromProductType(product.type))
                     }

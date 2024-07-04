@@ -149,7 +149,7 @@ internal class QAutomationsManager @Inject constructor(
                     logger.error("loadScreen() -> $errorMessage")
                     callback?.onError(
                         QonversionError(
-                            QonversionErrorCode.UnknownError,
+                            QonversionErrorCode.Unknown,
                             errorMessage
                         )
                     )

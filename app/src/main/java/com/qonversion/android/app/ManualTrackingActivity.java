@@ -11,6 +11,7 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.qonversion.android.sdk.Qonversion;
@@ -34,7 +35,12 @@ public class ManualTrackingActivity extends AppCompatActivity {
 
         client = BillingClient
                 .newBuilder(this)
-                .enablePendingPurchases()
+                .enablePendingPurchases(
+                        PendingPurchasesParams.newBuilder()
+                                .enableOneTimeProducts()
+                                .enablePrepaidPlans()
+                                .build()
+                )
                 .setListener((billingResult, purchases) -> {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         if (purchases != null && !purchases.isEmpty()) {

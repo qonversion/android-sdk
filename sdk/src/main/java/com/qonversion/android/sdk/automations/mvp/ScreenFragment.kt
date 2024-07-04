@@ -216,7 +216,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 })
         } ?: run {
             logger.error("loadWebView() -> Failed to fetch html page for the app screen")
-            onError(QonversionError(QonversionErrorCode.UnknownError), true)
+            onError(QonversionError(QonversionErrorCode.Unknown), true)
         }
     }
 
