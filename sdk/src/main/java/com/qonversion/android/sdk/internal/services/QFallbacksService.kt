@@ -10,7 +10,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 
-private const val FALLBACK_FILE_NAME = "qonversion_fallbacks.json"
+private const val FALLBACK_FILE_NAME = "qonversion_android_fallbacks.json"
 
 internal class QFallbacksService(
     private val context: Application,
