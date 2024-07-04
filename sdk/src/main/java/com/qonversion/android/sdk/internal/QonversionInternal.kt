@@ -25,6 +25,7 @@ import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -53,6 +54,7 @@ internal class QonversionInternal(
     private var sharedPreferencesCache: SharedPreferencesCache
     private var exceptionManager: ExceptionManager
     private var remoteConfigManager: QRemoteConfigManager
+    private var fallbackService: QFallbacksService
 
     override var appState = AppState.Background
 
@@ -74,6 +76,8 @@ internal class QonversionInternal(
         val userID = userInfoService.obtainUserID()
 
         internalConfig.uid = userID
+
+        fallbackService = QDependencyInjector.appComponent.fallbacksService()
 
         automationsManager = QDependencyInjector.appComponent.automationsManager()
 
@@ -132,7 +136,7 @@ internal class QonversionInternal(
             override fun onSuccess(launchResult: QLaunchResult) =
                 postToMainThread { automationsManager.onLaunchProcessed() }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {}
+            override fun onError(error: QonversionError) {}
         })
     }
 
@@ -332,6 +336,12 @@ internal class QonversionInternal(
 
     override fun userProperties(callback: QonversionUserPropertiesCallback) {
         userPropertiesManager.userProperties(callback)
+    }
+
+    override fun isFallbackFileAccessible(): Boolean {
+        val fallbackObject = fallbackService.obtainFallbackData()
+
+        return fallbackObject != null
     }
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {

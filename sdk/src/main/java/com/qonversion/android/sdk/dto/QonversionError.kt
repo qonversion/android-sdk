@@ -2,7 +2,8 @@ package com.qonversion.android.sdk.dto
 
 data class QonversionError(
     val code: QonversionErrorCode,
-    val additionalMessage: String = ""
+    val additionalMessage: String = "",
+    internal val httpCode: Int? = null
 ) {
     val description: String = code.specification
 
@@ -43,5 +44,5 @@ enum class QonversionErrorCode(val specification: String) {
     ProjectConfigError("The project is not configured or configured incorrectly in the Qonversion Dashboard"),
     InvalidStoreCredentials("This account does not have access to the requested application"),
     RemoteConfigurationNotAvailable("Remote configuration is not available for the current user or for the provided context key"),
-    ApiRateLimitExceeded("API requests rate limit exceeded"),
+    ApiRateLimitExceeded("API requests rate limit exceeded")
 }

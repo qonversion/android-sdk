@@ -278,6 +278,12 @@ interface Qonversion {
     fun userProperties(callback: QonversionUserPropertiesCallback)
 
     /**
+     * Call this function to check if the fallback file is accessible.
+     * @return flag that indicates whether Qonversion was able to read data from the fallback file or not.
+     */
+    fun isFallbackFileAccessible(): Boolean
+
+    /**
      * Provide a listener to be notified about asynchronous user entitlements updates.
      *
      * Make sure you provide this listener for being up-to-date with the user entitlements.
