@@ -125,6 +125,7 @@ internal class BillingClientWrapper(
             val params = QueryPurchaseHistoryParams.newBuilder()
                 .setProductType(productType)
                 .build()
+            @Suppress("DEPRECATION")
             queryPurchaseHistoryAsync(params) { billingResult, purchasesList ->
                 onCompleted(
                     billingResult,
@@ -142,6 +143,7 @@ internal class BillingClientWrapper(
             val params = QueryPurchaseHistoryParams.newBuilder()
                 .setProductType(productType.toProductType())
                 .build()
+            @Suppress("DEPRECATION")
             queryPurchaseHistoryAsync(params, onCompleted)
         }
     }
