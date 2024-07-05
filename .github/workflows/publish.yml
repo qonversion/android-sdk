@@ -28,5 +28,5 @@ jobs:
       - name: Publish to MavenCentral
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          OSSRH_TOKEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
