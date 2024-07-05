@@ -214,25 +214,6 @@ internal class LegacyBillingClientWrapper(
         }
     }
 
-    @Suppress("DEPRECATION")
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
-        info: UpdatePurchaseInfo? = null
-    ): BillingFlowParams.Builder {
-        if (info != null) {
-            val updateParamsBuilder = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
-            updateParamsBuilder.setOldSkuPurchaseToken(info.purchaseToken)
-            val updateParams = updateParamsBuilder.apply {
-                info.updatePolicy?.toProrationMode()?.let {
-                    setReplaceSkusProrationMode(it)
-                }
-            }.build()
-
-            setSubscriptionUpdateParams(updateParams)
-        }
-
-        return this
-    }
-
     private fun logSkuDetails(
         @Suppress("DEPRECATION") skuDetailsList: List<SkuDetails>,
         skuList: List<LegacyStoreId>

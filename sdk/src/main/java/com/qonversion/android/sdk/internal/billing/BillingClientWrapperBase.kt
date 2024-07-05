@@ -70,4 +70,22 @@ internal abstract class BillingClientWrapperBase(
         onQueryFailed(BillingError(billingResult.responseCode, errorMessage))
         logger.error("queryPurchases() -> $errorMessage")
     }
+
+    protected fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
+        info: UpdatePurchaseInfo? = null
+    ): BillingFlowParams.Builder {
+        if (info != null) {
+            val updateParamsBuilder = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+            updateParamsBuilder.setOldPurchaseToken(info.purchaseToken)
+            val updateParams = updateParamsBuilder.apply {
+                info.updatePolicy?.toReplacementMode()?.let {
+                    setSubscriptionReplacementMode(it)
+                }
+            }.build()
+
+            setSubscriptionUpdateParams(updateParams)
+        }
+
+        return this
+    }
 }

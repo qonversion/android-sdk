@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
@@ -69,8 +70,19 @@ internal class AppModule(
     @Provides
     fun provideLaunchResultCacheWrapper(
         moshi: Moshi,
-        sharedPreferencesCache: SharedPreferencesCache
+        sharedPreferencesCache: SharedPreferencesCache,
+        fallbacksService: QFallbacksService
     ): LaunchResultCacheWrapper {
-        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache, internalConfig)
+        return LaunchResultCacheWrapper(moshi, sharedPreferencesCache, internalConfig, fallbacksService)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideFallbackService(
+        context: Application,
+        moshi: Moshi,
+        logger: Logger
+    ): QFallbacksService {
+        return QFallbacksService(context, internalConfig, moshi, logger)
     }
 }

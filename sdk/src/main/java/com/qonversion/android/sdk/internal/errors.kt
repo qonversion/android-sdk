@@ -15,16 +15,16 @@ internal fun BillingError.toQonversionError(): QonversionError {
 
         BillingClient.BillingResponseCode.NETWORK_ERROR -> QonversionErrorCode.NetworkConnectionFailed
         BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> QonversionErrorCode.FeatureNotSupported
-        BillingClient.BillingResponseCode.OK -> QonversionErrorCode.UnknownError
-        BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.CanceledPurchase
+        BillingClient.BillingResponseCode.OK -> QonversionErrorCode.Unknown
+        BillingClient.BillingResponseCode.USER_CANCELED -> QonversionErrorCode.PurchaseCanceled
 
         BillingClient.BillingResponseCode.BILLING_UNAVAILABLE -> QonversionErrorCode.BillingUnavailable
-        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QonversionErrorCode.ProductUnavailable
+        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE -> QonversionErrorCode.StoreProductNotAvailable
 
         BillingClient.BillingResponseCode.DEVELOPER_ERROR -> QonversionErrorCode.PurchaseInvalid
         BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> QonversionErrorCode.ProductAlreadyOwned
         BillingClient.BillingResponseCode.ITEM_NOT_OWNED -> QonversionErrorCode.ProductNotOwned
-        else -> QonversionErrorCode.UnknownError
+        else -> QonversionErrorCode.Unknown
     }
     val additionalMessage = when (errorCode) {
         QonversionErrorCode.BillingUnavailable ->
@@ -40,13 +40,13 @@ internal fun BillingError.toQonversionError(): QonversionError {
 internal fun Throwable.toQonversionError(): QonversionError {
     return when (this) {
         is JSONException -> {
-            QonversionError(QonversionErrorCode.ParseResponseFailed, localizedMessage ?: "")
+            QonversionError(QonversionErrorCode.ResponseParsingFailed, localizedMessage ?: "")
         }
 
         is IOException -> {
             QonversionError(QonversionErrorCode.NetworkConnectionFailed, localizedMessage ?: "")
         }
 
-        else -> QonversionError(QonversionErrorCode.UnknownError, localizedMessage ?: "")
+        else -> QonversionError(QonversionErrorCode.Unknown, localizedMessage ?: "")
     }
 }

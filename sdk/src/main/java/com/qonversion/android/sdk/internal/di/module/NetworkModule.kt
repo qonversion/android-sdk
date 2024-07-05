@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.internal.dto.QEntitlementSourceAdapter
 import com.qonversion.android.sdk.internal.dto.QPermissionsAdapter
 import com.qonversion.android.sdk.internal.dto.QProductRenewStateAdapter
 import com.qonversion.android.sdk.internal.dto.QProductsAdapter
+import com.qonversion.android.sdk.internal.dto.QRemoteConfigListAdapter
 import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceAssignmentTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QRemoteConfigurationSourceTypeAdapter
 import com.qonversion.android.sdk.internal.dto.QTransactionEnvironmentAdapter
@@ -61,6 +62,7 @@ internal class NetworkModule {
             .add(QOfferingsAdapter())
             .add(QOfferingAdapter())
             .add(QOfferingTagAdapter())
+            .add(QRemoteConfigListAdapter())
             .add(QExperimentGroupTypeAdapter())
             .add(QRemoteConfigurationSourceTypeAdapter())
             .add(QRemoteConfigurationSourceAssignmentTypeAdapter())

@@ -190,7 +190,7 @@ internal class QProductCenterManager internal constructor(
                     processIdentity(identityId)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     processingPartnersIdentityId = null
 
                     remoteConfigManager.userChangingRequestFailedWithError(error)
@@ -225,7 +225,7 @@ internal class QProductCenterManager internal constructor(
                             fireIdentitySuccess(identityId)
                         }
 
-                        override fun onError(error: QonversionError, httpCode: Int?) {
+                        override fun onError(error: QonversionError) {
                             fireIdentityError(identityId, error)
                         }
                     })
@@ -253,7 +253,7 @@ internal class QProductCenterManager internal constructor(
                     val product = it.value
 
                     if (product.storeDetails?.isPrepaid == true) {
-                        QEligibility(QIntroEligibilityStatus.NonIntroProduct)
+                        QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct)
                     } else {
                         QEligibility(QIntroEligibilityStatus.fromProductType(product.type))
                     }
@@ -281,7 +281,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun getOfferings(): QOfferings? {
-        return launchResultCache.getLaunchResult()?.offerings
+        return launchResultCache.getActualOfferings()
     }
 
     fun purchaseProduct(
@@ -315,16 +315,16 @@ internal class QProductCenterManager internal constructor(
         purchaseModel: PurchaseModelInternal,
         callback: QonversionEntitlementsCallback
     ) {
-        val launchResult = launchResultCache.getLaunchResult() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             callback.onError(launchError ?: QonversionError(QonversionErrorCode.LaunchError))
             return
         }
 
-        val product: QProduct = getProductForPurchase(purchaseModel.productId, launchResult) ?: run {
+        val product: QProduct = getProductForPurchase(purchaseModel.productId, products) ?: run {
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
-        val oldProduct: QProduct? = getProductForPurchase(purchaseModel.oldProductId, launchResult)
+        val oldProduct: QProduct? = getProductForPurchase(purchaseModel.oldProductId, products)
         val purchaseModelEnriched = purchaseModel.enrich(product, oldProduct)
         processPurchase(context, purchaseModelEnriched, callback)
     }
@@ -354,13 +354,13 @@ internal class QProductCenterManager internal constructor(
 
     private fun getProductForPurchase(
         productId: String?,
-        launchResult: QLaunchResult
+        products: Map<String, QProduct>
     ): QProduct? {
         if (productId == null) {
             return null
         }
 
-        return launchResult.products[productId]
+        return products[productId]
     }
 
     fun checkEntitlements(callback: QonversionEntitlementsCallback) {
@@ -390,8 +390,8 @@ internal class QProductCenterManager internal constructor(
                         executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
                     }
 
-                    override fun onError(error: QonversionError, httpCode: Int?) {
-                        if (shouldCalculatePermissionsLocally(error, httpCode)) {
+                    override fun onError(error: QonversionError) {
+                        if (shouldCalculatePermissionsLocally(error)) {
                             calculateRestorePermissionsLocally(historyRecords, error)
                         } else {
                             executeRestoreBlocksOnError(error)
@@ -430,22 +430,25 @@ internal class QProductCenterManager internal constructor(
         purchaseHistoryRecords: List<PurchaseHistory>,
         restoreError: QonversionError
     ) {
-        val launchResult = launchResultCache.getLaunchResult() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             failLocallyGrantingRestorePermissionsWithError(
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
             return
         }
 
-        launchResultCache.productPermissions?.let {
-            val permissions = grantPermissionsAfterFailedRestore(
-                purchaseHistoryRecords,
-                launchResult.products.values,
-                it
-            )
+        val productPermissions = launchResultCache.getProductPermissions() ?: run {
+            failLocallyGrantingRestorePermissionsWithError(restoreError)
+            return
+        }
 
-            executeRestoreBlocksOnSuccess(permissions.toEntitlementsMap())
-        } ?: failLocallyGrantingRestorePermissionsWithError(restoreError)
+        val permissions = grantPermissionsAfterFailedRestore(
+            purchaseHistoryRecords,
+            products.values,
+            productPermissions
+        )
+
+        executeRestoreBlocksOnSuccess(permissions.toEntitlementsMap())
     }
 
     private fun calculatePurchasePermissionsLocally(
@@ -453,7 +456,7 @@ internal class QProductCenterManager internal constructor(
         purchaseCallback: QonversionEntitlementsCallback?,
         purchaseError: QonversionError
     ) {
-        val launchResult = launchResultCache.getLaunchResult() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             failLocallyGrantingPurchasePermissionsWithError(
                 purchaseCallback,
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
@@ -461,21 +464,24 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        launchResultCache.productPermissions?.let {
-            val purchasedProduct = launchResult.products.values.find { product ->
-                product.storeID == purchase.productId
-            } ?: run {
-                failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
-                return
-            }
+        val productPermissions = launchResultCache.getProductPermissions() ?: run {
+            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            return
+        }
 
-            val permissions = grantPermissionsAfterFailedPurchaseTracking(
-                purchase,
-                purchasedProduct,
-                it
-            )
-            purchaseCallback?.onSuccess(permissions.toEntitlementsMap())
-        } ?: failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+        val purchasedProduct = products.values.find { product ->
+            product.storeID == purchase.productId
+        } ?: run {
+            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            return
+        }
+
+        val permissions = grantPermissionsAfterFailedPurchaseTracking(
+            purchase,
+            purchasedProduct,
+            productPermissions
+        )
+        purchaseCallback?.onSuccess(permissions.toEntitlementsMap())
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -670,8 +676,8 @@ internal class QProductCenterManager internal constructor(
                 outerCallback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
-                outerCallback?.onError(error, httpCode)
+            override fun onError(error: QonversionError) {
+                outerCallback?.onError(error)
             }
         }
     }
@@ -699,14 +705,14 @@ internal class QProductCenterManager internal constructor(
                 callback?.onSuccess(launchResult)
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 launchError = error
 
                 handlePendingRequests(error)
 
                 loadStoreProductsIfPossible()
 
-                callback?.onError(error, httpCode)
+                callback?.onError(error)
             }
         }
     }
@@ -745,14 +751,14 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun loadStoreProductsIfPossible() {
-        val launchResult = launchResultCache.getLaunchResult() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             executeProductsBlocks(error)
             return
         }
 
         billingService.enrichStoreDataAsync(
-            launchResult.products.values.toList(),
+            products.values.toList(),
             { error -> executeProductsBlocks(error.toQonversionError()) }
         ) {
             executeProductsBlocks()
@@ -789,7 +795,7 @@ internal class QProductCenterManager internal constructor(
                     purchasesCache.clearPurchase(purchase)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {}
+                override fun onError(error: QonversionError) {}
             })
         }
     }
@@ -808,16 +814,16 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        val launchResult = launchResultCache.getLaunchResult() ?: run {
+        val products = launchResultCache.getActualProducts() ?: run {
             val error = launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             fireProductsFailure(callbacks, error)
             return
         }
 
-        val products = launchResult.products.values.toList()
-        billingService.enrichStoreData(products)
+        val productsList = products.values.toList()
+        billingService.enrichStoreData(productsList)
         callbacks.forEach { callback ->
-            callback.onSuccess(products.associateBy { it.qonversionID })
+            callback.onSuccess(productsList.associateBy { it.qonversionID })
         }
     }
 
@@ -875,7 +881,7 @@ internal class QProductCenterManager internal constructor(
     ) {
         launch(object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) = onSuccess(launchResult)
-            override fun onError(error: QonversionError, httpCode: Int?) = onError(error)
+            override fun onError(error: QonversionError) = onError(error)
         })
     }
 
@@ -955,7 +961,7 @@ internal class QProductCenterManager internal constructor(
 
             if (!handledPurchasesCache.shouldHandlePurchase(purchase)) return@forEach
 
-            val product: QProduct? = launchResultCache.getLaunchResult()?.products?.values?.find {
+            val product: QProduct? = launchResultCache.getActualProducts()?.values?.find {
                 it.storeID == purchase.productId
             }
             val purchaseInfo = converter.convertPurchase(purchase)
@@ -977,10 +983,10 @@ internal class QProductCenterManager internal constructor(
                         handledPurchasesCache.saveHandledPurchase(purchase)
                     }
 
-                    override fun onError(error: QonversionError, httpCode: Int?) {
+                    override fun onError(error: QonversionError) {
                         storeFailedPurchaseIfNecessary(purchase, purchaseInfo, product)
 
-                        if (shouldCalculatePermissionsLocally(error, httpCode)) {
+                        if (shouldCalculatePermissionsLocally(error)) {
                             calculatePurchasePermissionsLocally(
                                 purchase,
                                 purchaseCallback,
@@ -1017,10 +1023,10 @@ internal class QProductCenterManager internal constructor(
         } ?: storePurchase()
     }
 
-    private fun shouldCalculatePermissionsLocally(error: QonversionError, httpCode: Int?): Boolean {
+    private fun shouldCalculatePermissionsLocally(error: QonversionError): Boolean {
         return !internalConfig.isAnalyticsMode && (
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
-                        httpCode?.isInternalServerError() == true
+                        error.httpCode?.isInternalServerError() == true
                 )
     }
 

@@ -285,7 +285,7 @@ internal class QonversionBillingService internal constructor(
             val billingClientWrapper = chooseBillingClientWrapperForProductPurchase(product) ?: run {
                 purchasesListener.onPurchasesFailed(
                     BillingError(
-                        BillingClient.BillingResponseCode.ITEM_NOT_OWNED,
+                        BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
                         "Store details for purchasing Qonversion product " +
                                 "${product.qonversionID} were not found"
                     )

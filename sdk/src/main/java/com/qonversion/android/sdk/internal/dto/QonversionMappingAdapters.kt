@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.internal.dto
 
+import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QRemoteConfigurationAssignmentType
 import com.qonversion.android.sdk.dto.QRemoteConfigurationSourceType
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementSource
@@ -182,6 +184,22 @@ internal class QOfferingTagAdapter {
     @FromJson
     fun fromJson(tag: Int?): QOfferingTag {
         return QOfferingTag.fromTag(tag)
+    }
+}
+
+internal class QRemoteConfigListAdapter {
+    @ToJson
+    private fun toJson(remoteConfigList: QRemoteConfigList?): List<QRemoteConfig> {
+        return remoteConfigList?.remoteConfigs ?: listOf()
+    }
+
+    @FromJson
+    fun fromJson(remoteConfigs: List<QRemoteConfig>): QRemoteConfigList? {
+        if (remoteConfigs.isEmpty()) {
+            return null
+        }
+
+        return QRemoteConfigList(remoteConfigs)
     }
 }
 

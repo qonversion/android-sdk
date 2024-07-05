@@ -125,6 +125,7 @@ internal class BillingClientWrapper(
             val params = QueryPurchaseHistoryParams.newBuilder()
                 .setProductType(productType)
                 .build()
+            @Suppress("DEPRECATION")
             queryPurchaseHistoryAsync(params) { billingResult, purchasesList ->
                 onCompleted(
                     billingResult,
@@ -142,6 +143,7 @@ internal class BillingClientWrapper(
             val params = QueryPurchaseHistoryParams.newBuilder()
                 .setProductType(productType.toProductType())
                 .build()
+            @Suppress("DEPRECATION")
             queryPurchaseHistoryAsync(params, onCompleted)
         }
     }
@@ -286,24 +288,6 @@ internal class BillingClientWrapper(
         offer?.let {
             setOfferToken(offer.offerToken)
         }
-        return this
-    }
-
-    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
-        info: UpdatePurchaseInfo? = null
-    ): BillingFlowParams.Builder {
-        if (info != null) {
-            val updateParamsBuilder = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
-            updateParamsBuilder.setOldPurchaseToken(info.purchaseToken)
-            val updateParams = updateParamsBuilder.apply {
-                info.updatePolicy?.toReplacementMode()?.let {
-                    setSubscriptionReplacementMode(it)
-                }
-            }.build()
-
-            setSubscriptionUpdateParams(updateParams)
-        }
-
         return this
     }
 }

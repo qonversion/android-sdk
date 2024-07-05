@@ -2,7 +2,8 @@ package com.qonversion.android.sdk.dto
 
 data class QonversionError(
     val code: QonversionErrorCode,
-    val additionalMessage: String = ""
+    val additionalMessage: String = "",
+    internal val httpCode: Int? = null
 ) {
     val description: String = code.specification
 
@@ -18,20 +19,20 @@ data class QonversionError(
  * To get rid of billing errors make sure you follow the [Google Play's billing system integration](https://documentation.qonversion.io/docs/google-plays-billing-integration)
  */
 enum class QonversionErrorCode(val specification: String) {
-    UnknownError("Unknown error"),
+    Unknown("Unknown error"),
     PlayStoreError("There was an issue with the Play Store service"),
     BillingUnavailable("The Billing service is unavailable on the device"),
     PurchasePending("Purchase is pending"),
     PurchaseUnspecified("Unspecified state of the purchase"),
     PurchaseInvalid("Failure of purchase"),
-    CanceledPurchase("User pressed back or canceled a dialog for purchase"),
+    PurchaseCanceled("User pressed back or canceled a dialog for purchase"),
     ProductNotOwned("Failed to consume purchase since item is not owned"),
     ProductAlreadyOwned("Failed to purchase since item is already owned"),
     FeatureNotSupported("The requested feature is not supported"),
-    ProductUnavailable("Requested product is not available for purchase or its product id was not found"),
+    StoreProductNotAvailable("Requested product is not available for purchase or its product id was not found"),
     NetworkConnectionFailed("There was a network issue. " +
             "Please make sure that the Internet connection is available on the device"),
-    ParseResponseFailed("A problem occurred while serializing or deserializing data"),
+    ResponseParsingFailed("A problem occurred while serializing or deserializing data"),
     BackendError("There was a backend error"),
     ProductNotFound("Failed to purchase since the Qonversion product was not found"),
     OfferingsNotFound("No offerings found"),
@@ -43,5 +44,5 @@ enum class QonversionErrorCode(val specification: String) {
     ProjectConfigError("The project is not configured or configured incorrectly in the Qonversion Dashboard"),
     InvalidStoreCredentials("This account does not have access to the requested application"),
     RemoteConfigurationNotAvailable("Remote configuration is not available for the current user or for the provided context key"),
-    ApiRateLimitExceeded("API requests rate limit exceeded"),
+    ApiRateLimitExceeded("API requests rate limit exceeded")
 }

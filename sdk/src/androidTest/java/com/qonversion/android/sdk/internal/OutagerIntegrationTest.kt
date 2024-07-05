@@ -120,7 +120,7 @@ internal class OutagerIntegrationTest {
                     signal.countDown()
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
             }
@@ -178,7 +178,7 @@ internal class OutagerIntegrationTest {
                 signal.countDown()
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 fail("Shouldn't fail")
             }
         }
@@ -255,7 +255,7 @@ internal class OutagerIntegrationTest {
                 signal.countDown()
             }
 
-            override fun onError(error: QonversionError, httpCode: Int?) {
+            override fun onError(error: QonversionError) {
                 fail("Shouldn't fail")
             }
         }
@@ -549,7 +549,7 @@ internal class OutagerIntegrationTest {
                     onComplete(null)
                 }
 
-                override fun onError(error: QonversionError, httpCode: Int?) {
+                override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
             }

@@ -573,7 +573,7 @@ internal class DefaultRepository internal constructor(
                 }
             }
         } else {
-            callback.onError(error, errorCode)
+            callback.onError(error)
         }
     }
 
@@ -642,7 +642,7 @@ internal class DefaultRepository internal constructor(
             }
             onFailure = {
                 logger.error("restoreRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError(), null)
+                callback?.onError(it.toQonversionError())
             }
         }
     }
@@ -655,7 +655,7 @@ internal class DefaultRepository internal constructor(
         if (body != null && body.success) {
             callback?.onSuccess(body.data)
         } else {
-            callback?.onError(errorMapper.getErrorFromResponse(response), response.code())
+            callback?.onError(errorMapper.getErrorFromResponse(response))
         }
     }
 
@@ -697,12 +697,12 @@ internal class DefaultRepository internal constructor(
                 if (body != null && body.success) {
                     callback?.onSuccess(body.data)
                 } else {
-                    callback?.onError(errorMapper.getErrorFromResponse(it), it.code())
+                    callback?.onError(errorMapper.getErrorFromResponse(it))
                 }
             }
             onFailure = {
                 logger.error("initRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError(), null)
+                callback?.onError(it.toQonversionError())
             }
         }
     }

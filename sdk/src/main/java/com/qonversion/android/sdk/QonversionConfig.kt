@@ -5,6 +5,7 @@ import android.util.Log
 import com.qonversion.android.sdk.dto.QEnvironment
 import com.qonversion.android.sdk.dto.QLaunchMode
 import android.content.Context
+import androidx.annotation.RawRes
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
@@ -49,6 +50,8 @@ class QonversionConfig internal constructor(
         internal var entitlementsUpdateListener: QEntitlementsUpdateListener? = null
         internal var proxyUrl: String? = null
         internal var isKidsMode: Boolean = false
+        @RawRes
+        internal var fallbackFileIdentifier: Int? = null
 
         /**
          * Set current application [QEnvironment]. Used to distinguish sandbox and production users.
@@ -70,6 +73,23 @@ class QonversionConfig internal constructor(
          */
         fun setEntitlementsCacheLifetime(lifetime: QEntitlementsCacheLifetime): Builder = apply {
             this.entitlementsCacheLifetime = lifetime
+        }
+
+        /**
+         * Sets fallback file identifier.
+         * Fallback file will be used in rare cases of network connection or Qonversion API issues for new users without a cache available.
+         * This allows purchases and entitlements to be processed for new users even if the Qonversion API faces issues.
+         * This also makes it possible to receive remote configs for cases when the network connection is unavailable.
+         * There is no need to use this function if you put qonversion_fallbacks.json into the `assets` folder.
+         * Use this function only if you put qonversion_fallbacks.json into the `res/raw` folder.
+         * In that case, `id` should look like `R.raw.qonversion_fallbacks`.
+         *
+         * @param id the identifier for the fallback file.
+         *
+         * @see [The documentation](https://documentation.qonversion.io/docs/system-reliability#fallback-files)
+         */
+        fun setFallbackFileIdentifier(@RawRes id: Int): Builder = apply {
+            this.fallbackFileIdentifier = id
         }
 
         /**
@@ -131,7 +151,7 @@ class QonversionConfig internal constructor(
             }
 
             val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode)
-            val cacheConfig = CacheConfig(entitlementsCacheLifetime)
+            val cacheConfig = CacheConfig(entitlementsCacheLifetime, fallbackFileIdentifier)
 
             return QonversionConfig(
                 context.application,

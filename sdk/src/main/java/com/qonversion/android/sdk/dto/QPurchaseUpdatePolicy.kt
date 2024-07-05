@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.dto
 
-import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
 
 /**
@@ -53,35 +52,6 @@ enum class QPurchaseUpdatePolicy {
             Deferred -> ReplacementMode.DEFERRED
             WithoutProration -> ReplacementMode.WITHOUT_PRORATION
             else -> ReplacementMode.UNKNOWN_REPLACEMENT_MODE
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    internal fun toProrationMode(): Int {
-        return when (this) {
-            ChargeFullPrice -> BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE
-            ChargeProratedPrice -> BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE
-            WithTimeProration -> BillingFlowParams.ProrationMode.IMMEDIATE_WITH_TIME_PRORATION
-            Deferred -> BillingFlowParams.ProrationMode.DEFERRED
-            WithoutProration -> BillingFlowParams.ProrationMode.IMMEDIATE_WITHOUT_PRORATION
-            else -> BillingFlowParams.ProrationMode.UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY
-        }
-    }
-
-    companion object {
-
-        @Suppress("DEPRECATION")
-        fun fromProrationMode(
-            @BillingFlowParams.ProrationMode prorationMode: Int?
-        ): QPurchaseUpdatePolicy {
-            return when (prorationMode) {
-                BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE -> ChargeFullPrice
-                BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE -> ChargeProratedPrice
-                BillingFlowParams.ProrationMode.IMMEDIATE_WITH_TIME_PRORATION -> WithTimeProration
-                BillingFlowParams.ProrationMode.DEFERRED -> Deferred
-                BillingFlowParams.ProrationMode.IMMEDIATE_WITHOUT_PRORATION -> WithoutProration
-                else -> Unknown
-            }
         }
     }
 }
