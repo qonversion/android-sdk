@@ -48,7 +48,8 @@ internal class ApiErrorMapper @Inject constructor(private val helper: ApiHelper)
 
         return QonversionError(
             qonversionCode,
-            "HTTP status code=${value.code()}, $errorMessage. ${additionalErrorMessage ?: ""}"
+            "HTTP status code=${value.code()}, $errorMessage. ${additionalErrorMessage ?: ""}",
+            value.code()
         )
     }
 

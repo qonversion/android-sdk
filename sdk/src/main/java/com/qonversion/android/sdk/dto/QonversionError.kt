@@ -2,7 +2,8 @@ package com.qonversion.android.sdk.dto
 
 data class QonversionError(
     val code: QonversionErrorCode,
-    val additionalMessage: String = ""
+    val additionalMessage: String = "",
+    internal val httpCode: Int? = null
 ) {
     val description: String = code.specification
 
