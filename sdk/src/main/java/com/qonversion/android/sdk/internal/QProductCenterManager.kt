@@ -828,7 +828,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     @Synchronized
-    private fun executeEntitlementsBlock(error: QonversionError? = null) {
+    private fun executeEntitlementsBlock(actualError: QonversionError? = null) {
         if (entitlementCallbacks.isEmpty()) {
             return
         }
@@ -836,21 +836,18 @@ internal class QProductCenterManager internal constructor(
         val callbacks = entitlementCallbacks.toList()
         entitlementCallbacks.clear()
 
-        error?.let {
-            callbacks.forEach { it.onError(error) }
-        } ?: run {
-            preparePermissionsResult(
-                { permissions ->
-                    callbacks.forEach {
-                        it.onSuccess(permissions.toEntitlementsMap())
-                    }
-                },
-                { error ->
-                    callbacks.forEach {
-                        it.onError(error)
-                    }
-                })
-        }
+        preparePermissionsResult(
+            { permissions ->
+                callbacks.forEach {
+                    it.onSuccess(permissions.toEntitlementsMap())
+                }
+            },
+            { error ->
+                callbacks.forEach {
+                    it.onError(error)
+                }
+            },
+            actualError)
     }
 
     private fun executeRestoreBlocksOnSuccess(entitlements: Map<String, QEntitlement>) {
@@ -896,7 +893,8 @@ internal class QProductCenterManager internal constructor(
 
     private fun preparePermissionsResult(
         onSuccess: (permissions: Map<String, QPermission>) -> Unit,
-        onError: (QonversionError) -> Unit
+        onError: (QonversionError) -> Unit,
+        error: QonversionError?
     ) {
         fun actualizePermissions() {
             retryLaunch(
@@ -913,11 +911,6 @@ internal class QProductCenterManager internal constructor(
                 })
         }
 
-        if (launchError != null || unhandledLogoutAvailable) {
-            actualizePermissions()
-            return
-        }
-
         val permissions = launchResultCache.getActualPermissions() ?: emptyMap()
 
         val nowMs = System.currentTimeMillis()
@@ -926,9 +919,11 @@ internal class QProductCenterManager internal constructor(
             it.value.isActive() && expirationTs < nowMs
         }
 
-        if (permissionsAreActual) {
+        if ((error == null || error.shouldFireFallback) && permissionsAreActual) {
             onSuccess(permissions)
-        } else {
+        } else if (error != null) {
+            onError(error)
+        } else if (launchError != null || unhandledLogoutAvailable) {
             actualizePermissions()
         }
     }
