@@ -917,7 +917,7 @@ internal class QProductCenterManager internal constructor(
             onSuccess(permissions)
         } else if (error != null) {
             onError(error)
-        } else if (launchError != null || unhandledLogoutAvailable) {
+        } else {
             actualizePermissions()
         }
     }
