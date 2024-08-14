@@ -4,7 +4,9 @@ import android.app.Activity
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
@@ -82,7 +84,43 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
-    fun purchase(context: Activity, purchaseModel: QPurchaseModel, callback: QonversionEntitlementsCallback)
+    @Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))
+    fun purchase(
+        context: Activity,
+        purchaseModel: QPurchaseModel,
+        callback: QonversionEntitlementsCallback
+    )
+
+    /**
+     * Make a purchase and validate it through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product product for purchase
+     * @param options necessary information for purchase
+     * @param callback - callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    )
+
+    /**
+     * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product product for purchase
+     * @param options necessary information for purchase
+     * @param callback - callback that will be called when response is received
+     * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     */
+    fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    )
 
     /**
      * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
@@ -92,6 +130,7 @@ interface Qonversion {
      * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
+    @Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))
     fun updatePurchase(
         context: Activity,
         purchaseUpdateModel: QPurchaseUpdateModel,

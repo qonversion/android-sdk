@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
@@ -166,6 +167,26 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(purchaseModel),
+            mainEntitlementsCallback(callback)
+        )
+    }
+
+    override fun purchase(context: Activity,
+                          product: QProduct,
+                          options: QPurchaseOptions,
+                          callback: QonversionEntitlementsCallback) {
+        productCenterManager.purchase(context, product, options, callback)
+    }
+
+    override fun updatePurchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    ) {
+        productCenterManager.purchaseProduct(
+            context,
+            PurchaseModelInternal(product, options),
             mainEntitlementsCallback(callback)
         )
     }

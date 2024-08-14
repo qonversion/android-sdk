@@ -62,7 +62,7 @@ internal class AppModule(
 
     @ApplicationScope
     @Provides
-    fun providePurchasesCache(sharedPreferences: SharedPreferences): PurchasesCache {
+    fun providePurchasesCache(sharedPreferences: SharedPreferencesCache): PurchasesCache {
         return PurchasesCache(sharedPreferences)
     }
 

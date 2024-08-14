@@ -103,16 +103,16 @@ internal class QonversionBillingService internal constructor(
                 updatePurchase(
                     activity,
                     purchaseModel.product,
-                    purchaseModel.offerId,
-                    purchaseModel.applyOffer,
+                    purchaseModel.options.offerId,
+                    purchaseModel.options.applyOffer,
                     purchaseModel.oldProduct,
                     purchaseModel.updatePolicy)
             } else {
                 makePurchase(
                     activity,
                     purchaseModel.product,
-                    purchaseModel.offerId,
-                    purchaseModel.applyOffer
+                    purchaseModel.options.offerId,
+                    purchaseModel.options.applyOffer
                 )
             }
         }

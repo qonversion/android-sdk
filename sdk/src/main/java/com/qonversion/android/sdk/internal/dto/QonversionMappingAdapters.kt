@@ -139,6 +139,22 @@ internal class QPermissionsAdapter {
     }
 }
 
+internal class QPurchaseOptions {
+    @ToJson
+    private fun toJson(permissions: Map<String, QPermission>): List<QPermission> {
+        return permissions.values.toList()
+    }
+
+    @FromJson
+    fun fromJson(permissions: List<QPermission>): Map<String, QPermission> {
+        val result = mutableMapOf<String, QPermission>()
+        permissions.forEach {
+            result[it.permissionID] = it
+        }
+        return result
+    }
+}
+
 internal class QExperimentGroupTypeAdapter {
     @ToJson
     private fun toJson(enum: QExperimentGroupType): String {
