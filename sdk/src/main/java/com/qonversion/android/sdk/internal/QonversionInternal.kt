@@ -171,10 +171,12 @@ internal class QonversionInternal(
         )
     }
 
-    override fun purchase(context: Activity,
-                          product: QProduct,
-                          options: QPurchaseOptions,
-                          callback: QonversionEntitlementsCallback) {
+    override fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    ) {
         productCenterManager.purchase(context, product, options, callback)
     }
 

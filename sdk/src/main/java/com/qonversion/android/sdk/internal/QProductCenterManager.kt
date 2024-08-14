@@ -287,10 +287,12 @@ internal class QProductCenterManager internal constructor(
         return launchResultCache.getActualOfferings()
     }
 
-    fun purchase(context: Activity,
-                 product: QProduct,
-                 options: QPurchaseOptions,
-                 callback: QonversionEntitlementsCallback) {
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    ) {
         val purchaseModel = PurchaseModelInternal(product, options)
 
         purchaseProduct(context, purchaseModel, callback)

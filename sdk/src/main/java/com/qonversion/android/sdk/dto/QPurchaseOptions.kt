@@ -18,7 +18,6 @@ class QPurchaseOptions internal constructor (
         private var oldProduct: QProduct? = null
         private var updatePolicy: QPurchaseUpdatePolicy? = null
 
-
         fun setContextKeys(contextKeys: List<String>): QPurchaseOptions.Builder = apply {
             this.contextKeys = contextKeys
         }
