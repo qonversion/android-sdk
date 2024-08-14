@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
@@ -369,7 +370,8 @@ internal class QProductCenterManager internal constructor(
         billingService.purchase(context, purchaseModel)
     }
 
-    private fun actualPurchaseOptions(): Map<String, QPurchaseOptions> {
+    @VisibleForTesting
+    fun actualPurchaseOptions(): Map<String, QPurchaseOptions> {
         processingPurchaseOptions?.let {
             return it
         }

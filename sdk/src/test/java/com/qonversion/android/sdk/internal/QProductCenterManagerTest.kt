@@ -111,6 +111,9 @@ internal class QProductCenterManagerTest {
 
     @Test
     fun `handle pending purchases when launching is finished and query purchases completed`() {
+        val spykProductCenterManager = spyk(productCenterManager, recordPrivateCalls = true)
+        every { spykProductCenterManager.actualPurchaseOptions() } returns emptyMap()
+
         val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
         val purchases = listOf(purchase)
         every {
@@ -135,7 +138,7 @@ internal class QProductCenterManagerTest {
 
         every { mockBillingService.consumePurchases(any()) } just Runs
 
-        productCenterManager.onAppForeground()
+        spykProductCenterManager.onAppForeground()
 
         verify(exactly = 1) {
             mockBillingService.queryPurchases(any(), any())

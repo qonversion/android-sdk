@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class PurchasesCacheTest {
-    private val mockPrefs: SharedPreferences = mockk(relaxed = true)
-    private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+    private val mockPrefs: SharedPreferencesCache = mockk(relaxed = true)
 
     private lateinit var purchasesCache: PurchasesCache
 
@@ -23,8 +22,6 @@ internal class PurchasesCacheTest {
     @BeforeEach
     fun setUp() {
         clearAllMocks()
-
-        mockSharedPreferences()
 
         purchasesCache = PurchasesCache(mockPrefs)
     }
@@ -38,8 +35,7 @@ internal class PurchasesCacheTest {
             purchasesCache.savePurchase(purchase)
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, onePurchaseStr)
-                mockEditor.apply()
+                mockPrefs.putString(purchaseKey, any())
             }
         }
 
@@ -53,8 +49,7 @@ internal class PurchasesCacheTest {
             purchasesCache.savePurchase(purchase)
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, onePurchaseStr)
-                mockEditor.apply()
+                mockPrefs.putString(purchaseKey, onePurchaseStr)
             }
             val purchases = purchasesCache.loadPurchases()
             assertThat(purchases.size).isEqualTo(1)
@@ -72,8 +67,7 @@ internal class PurchasesCacheTest {
                 "[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, fourNewestPurchasesStr)
-                mockEditor.apply()
+                mockPrefs.putString(purchaseKey, fourNewestPurchasesStr)
             }
         }
     }
@@ -138,8 +132,7 @@ internal class PurchasesCacheTest {
             purchasesCache.clearPurchase(purchase)
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, emptyList)
-                mockEditor.apply()
+                mockPrefs.putString(purchaseKey, emptyList)
             }
         }
 
@@ -151,8 +144,7 @@ internal class PurchasesCacheTest {
             purchasesCache.clearPurchase(purchase)
 
             verifyOrder {
-                mockEditor.putString(purchaseKey, emptyList)
-                mockEditor.apply()
+                mockPrefs.putString(purchaseKey, emptyList)
             }
         }
     }
@@ -164,21 +156,8 @@ internal class PurchasesCacheTest {
             originalOrderId = "GPA.3375-4436-3573-53474$originalOrderId",
             purchaseTime = 1611323804,
             purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g",
+            contextKeys = listOf("test_1", "test_2")
         )
-    }
-
-    private fun mockSharedPreferences() {
-        every {
-            mockEditor.putString(purchaseKey, any())
-        } returns mockEditor
-
-        every {
-            mockPrefs.edit()
-        } returns mockEditor
-
-        every {
-            mockEditor.apply()
-        } just runs
     }
 
     private fun generatePurchaseJson(originalOrderId: String = ""): String {
