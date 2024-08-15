@@ -103,16 +103,16 @@ internal class QonversionBillingService internal constructor(
                 updatePurchase(
                     activity,
                     purchaseModel.product,
-                    purchaseModel.options.offerId,
-                    purchaseModel.options.applyOffer,
+                    purchaseModel.options?.offerId,
+                    purchaseModel.options?.applyOffer,
                     purchaseModel.oldProduct,
                     purchaseModel.updatePolicy)
             } else {
                 makePurchase(
                     activity,
                     purchaseModel.product,
-                    purchaseModel.options.offerId,
-                    purchaseModel.options.applyOffer
+                    purchaseModel.options?.offerId,
+                    purchaseModel.options?.applyOffer
                 )
             }
         }
@@ -232,7 +232,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        applyOffer: Boolean,
+        applyOffer: Boolean?,
         oldProduct: QProduct,
         updatePolicy: QPurchaseUpdatePolicy?
     ) {
@@ -274,7 +274,7 @@ internal class QonversionBillingService internal constructor(
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        applyOffer: Boolean,
+        applyOffer: Boolean?,
         updatePurchaseInfo: UpdatePurchaseInfo? = null
     ) {
         executeOnMainThread { billingSetupError ->

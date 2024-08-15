@@ -96,7 +96,9 @@ internal class QProductCenterManager internal constructor(
 
     private var converter: PurchaseConverter = GooglePurchaseConverter()
 
-    private var processingPurchaseOptions: Map<String, QPurchaseOptions>? = null
+    private val processingPurchaseOptions: MutableMap<String, QPurchaseOptions> by lazy {
+        purchasesCache.loadProcessingPurchasesOptions().toMutableMap()
+    }
 
     @Volatile
     lateinit var billingService: BillingService
@@ -288,17 +290,6 @@ internal class QProductCenterManager internal constructor(
         return launchResultCache.getActualOfferings()
     }
 
-    fun purchase(
-        context: Activity,
-        product: QProduct,
-        options: QPurchaseOptions,
-        callback: QonversionEntitlementsCallback
-    ) {
-        val purchaseModel = PurchaseModelInternal(product, options)
-
-        purchaseProduct(context, purchaseModel, callback)
-    }
-
     fun purchaseProduct(
         context: Activity,
         purchaseModel: PurchaseModelInternal,
@@ -339,7 +330,7 @@ internal class QProductCenterManager internal constructor(
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
-        val oldProduct: QProduct? = purchaseModel.options.oldProduct ?: getProductForPurchase(purchaseModel.oldProductId, products)
+        val oldProduct: QProduct? = purchaseModel.options?.oldProduct ?: getProductForPurchase(purchaseModel.oldProductId, products)
         val purchaseModelEnriched = purchaseModel.enrich(product, oldProduct)
         processPurchase(context, purchaseModelEnriched, callback)
     }
@@ -370,28 +361,14 @@ internal class QProductCenterManager internal constructor(
         billingService.purchase(context, purchaseModel)
     }
 
-    @VisibleForTesting
-    fun actualPurchaseOptions(): Map<String, QPurchaseOptions> {
-        processingPurchaseOptions?.let {
-            return it
-        }
-
-        val cachedPurchaseOptions = purchasesCache.loadProcessingPurchasesOptions()
-        processingPurchaseOptions = cachedPurchaseOptions
-
-        return cachedPurchaseOptions
-    }
-
     private fun updatePurchaseOptions(options: QPurchaseOptions?, storeProductId: String?) {
         storeProductId?.let { productId ->
-            val actualOptions = actualPurchaseOptions().toMutableMap()
             options?.let {
-                actualOptions[productId] = it
+                processingPurchaseOptions[productId] = it
             } ?: run {
-                actualOptions.remove(productId)
+                processingPurchaseOptions.remove(productId)
             }
 
-            processingPurchaseOptions = actualOptions.toMap()
             purchasesCache.saveProcessingPurchasesOptions(processingPurchaseOptions)
         }
     }
@@ -698,8 +675,6 @@ internal class QProductCenterManager internal constructor(
                 purchases.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
 
             processingPurchases = completedPurchases
-
-            val processingPurchaseOptions = actualPurchaseOptions()
 
             val purchasesInfo = converter.convertPurchases(completedPurchases, processingPurchaseOptions)
 
@@ -1012,7 +987,6 @@ internal class QProductCenterManager internal constructor(
             val product: QProduct? = launchResultCache.getActualProducts()?.values?.find {
                 it.storeID == purchase.productId
             }
-            val processingPurchaseOptions = actualPurchaseOptions()
             val currentPurchaseOptions = processingPurchaseOptions[purchase.productId]
             val purchaseInfo = converter.convertPurchase(purchase, currentPurchaseOptions)
             repository.purchase(
@@ -1037,9 +1011,7 @@ internal class QProductCenterManager internal constructor(
                     override fun onError(error: QonversionError) {
                         storeFailedPurchaseIfNecessary(purchase, purchaseInfo, product)
 
-                        product?.storeID?.let {
-                            removePurchaseOptions(it)
-                        }
+                        removePurchaseOptions(product?.storeID)
 
                         if (shouldCalculatePermissionsLocally(error)) {
                             calculatePurchasePermissionsLocally(

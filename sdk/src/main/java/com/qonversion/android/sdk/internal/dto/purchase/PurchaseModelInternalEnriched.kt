@@ -9,7 +9,7 @@ internal class PurchaseModelInternalEnriched(
     val product: QProduct,
     val oldProduct: QProduct?,
     updatePolicy: QPurchaseUpdatePolicy?,
-    options: QPurchaseOptions
+    options: QPurchaseOptions?
 ) : PurchaseModelInternal(productId, oldProduct?.qonversionID, updatePolicy, options) {
 
     constructor(
@@ -18,7 +18,7 @@ internal class PurchaseModelInternalEnriched(
     ) : this(
         purchaseModel.productId,
         product,
-        purchaseModel.options.oldProduct,
+        purchaseModel.options?.oldProduct,
         purchaseModel.updatePolicy,
         purchaseModel.options
     )

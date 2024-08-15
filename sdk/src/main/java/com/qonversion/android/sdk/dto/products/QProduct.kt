@@ -106,6 +106,7 @@ data class QProduct(
      * To know how we choose the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
      * @return purchase model to pass to the purchase method.
      */
+    @Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOfferId(offerId).build()"))
     @JvmOverloads
     fun toPurchaseModel(offerId: String? = null): QPurchaseModel {
         return QPurchaseModel(qonversionID, offerId)
@@ -116,6 +117,7 @@ data class QProduct(
      * @param offer concrete offer which you'd like to purchase.
      * @return purchase model to pass to the purchase method.
      */
+    @Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOffer(offer).build()"))
     fun toPurchaseModel(offer: QProductOfferDetails?): QPurchaseModel {
         val model = toPurchaseModel(offer?.offerId)
         // Remove offer for the case when provided offer details are for bare base plan.
@@ -134,6 +136,7 @@ data class QProduct(
      * @param updatePolicy purchase update policy.
      * @return purchase model to pass to the update purchase method.
      */
+    @Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOldProduct(TODO(\"pass old product here\")).build()"))
     @JvmOverloads
     fun toPurchaseUpdateModel(
         oldProductId: String,

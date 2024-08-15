@@ -10,7 +10,7 @@ internal open class PurchaseModelInternal(
     val productId: String,
     val oldProductId: String?,
     val updatePolicy: QPurchaseUpdatePolicy?,
-    val options: QPurchaseOptions
+    val options: QPurchaseOptions?
 ) {
     constructor(purchaseModel: QPurchaseModel) : this(
         purchaseModel.productId,
@@ -19,10 +19,10 @@ internal open class PurchaseModelInternal(
         QPurchaseOptions(offerId = purchaseModel.offerId, applyOffer = purchaseModel.applyOffer)
     )
 
-    constructor(product: QProduct, options: QPurchaseOptions) : this(
+    constructor(product: QProduct, options: QPurchaseOptions? = null) : this(
         product.qonversionID,
-        options.oldProduct?.qonversionID,
-        options.updatePolicy,
+        options?.oldProduct?.qonversionID,
+        options?.updatePolicy,
         options
     )
 

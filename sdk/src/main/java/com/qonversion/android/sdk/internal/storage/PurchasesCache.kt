@@ -58,11 +58,7 @@ internal class PurchasesCache(
         savePurchasesAsJson(purchases)
     }
 
-    fun saveProcessingPurchasesOptions(options: Map<String, QPurchaseOptions>?) {
-        if (options.isNullOrEmpty()) {
-            return
-        }
-
+    fun saveProcessingPurchasesOptions(options: Map<String, QPurchaseOptions>) {
         preferences.putObject(PURCHASE_OPTIONS_KEY, options, purchasesOptionsJsonAdapter)
     }
 

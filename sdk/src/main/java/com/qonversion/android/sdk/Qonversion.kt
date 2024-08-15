@@ -80,20 +80,6 @@ interface Qonversion {
     /**
      * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
-     * @param purchaseModel necessary information for purchase
-     * @param callback - callback that will be called when response is received
-     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     */
-    @Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))
-    fun purchase(
-        context: Activity,
-        purchaseModel: QPurchaseModel,
-        callback: QonversionEntitlementsCallback
-    )
-
-    /**
-     * Make a purchase and validate it through server-to-server using Qonversion's Backend
-     * @param context current activity context
      * @param product product for purchase
      * @param options necessary information for purchase
      * @param callback - callback that will be called when response is received
@@ -103,6 +89,19 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         options: QPurchaseOptions,
+        callback: QonversionEntitlementsCallback
+    )
+
+    /**
+     * Make a purchase and validate it through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param product product for purchase
+     * @param callback - callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
         callback: QonversionEntitlementsCallback
     )
 
@@ -123,6 +122,20 @@ interface Qonversion {
     )
 
     /**
+     * Make a purchase and validate it through server-to-server using Qonversion's Backend
+     * @param context current activity context
+     * @param purchaseModel necessary information for purchase
+     * @param callback - callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     */
+    @Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
+    fun purchase(
+        context: Activity,
+        purchaseModel: QPurchaseModel,
+        callback: QonversionEntitlementsCallback
+    )
+
+    /**
      * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param purchaseUpdateModel necessary information for purchase update
@@ -130,7 +143,7 @@ interface Qonversion {
      * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
-    @Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))
+    @Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
     fun updatePurchase(
         context: Activity,
         purchaseUpdateModel: QPurchaseUpdateModel,
