@@ -30,10 +30,10 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
-    <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
+    <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
-    <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
+    <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( private val mainHandler: Handler, private val purchasesListener: PurchasesListener, private val logger: Logger, private val isAnalyticsMode: Boolean, private val billingClientHolder: BillingClientHolder, private val billingClientWrapper: BillingClientWrapper, private val legacyBillingClientWrapper: LegacyBillingClientWrapper )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
@@ -102,20 +102,25 @@
     <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$"To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"</ID>
     <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)</ID>
     <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
-    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$val oldProduct: QProduct? = purchaseModel.options.oldProduct ?: getProductForPurchase(purchaseModel.oldProductId, products)</ID>
+    <ID>MaxLineLength:QProduct.kt$QProduct$@Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOffer(offer).build()"))</ID>
+    <ID>MaxLineLength:QProduct.kt$QProduct$@Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOfferId(offerId).build()"))</ID>
+    <ID>MaxLineLength:QProduct.kt$QProduct$@Deprecated("Use new QPurchaseOptions object instead", replaceWith = ReplaceWith("QPurchaseOptions.Builder().setOldProduct(TODO(\"pass old product here\")).build()"))</ID>
+    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$val oldProduct: QProduct? = purchaseModel.options?.oldProduct ?: getProductForPurchase(purchaseModel.oldProductId, products)</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
     <ID>MaxLineLength:QProductStoreDetails.kt$QProductStoreDetails$basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring</ID>
     <ID>MaxLineLength:QRemoteConfigManager.kt$QRemoteConfigManager.&lt;no name provided&gt;$val remoteConfigs = baseRemoteConfigList.remoteConfigs.filter { contextKeys.contains(it.source.contextKey) }.toMutableList()</ID>
     <ID>MaxLineLength:QUserPropertiesManagerTest.kt$QUserPropertiesManagerTest$fun</ID>
     <ID>MaxLineLength:Qonversion.kt$Qonversion$*</ID>
-    <ID>MaxLineLength:Qonversion.kt$Qonversion$@Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))</ID>
-    <ID>MaxLineLength:Qonversion.kt$Qonversion$@Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context: Activity, product: QProduct, options: QPurchaseOptions, callback: QonversionEntitlementsCallback)"))</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$@Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))</ID>
+    <ID>MaxLineLength:Qonversion.kt$Qonversion$@Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"updatePurchase() -&gt; Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $productType is retrieved ${record.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"""HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -130,8 +135,8 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}]"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:133</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:87</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:131</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:146</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:105</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:106</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:107</ID>
@@ -146,16 +151,21 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:142</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.QonversionError.kt:46</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:109</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:120</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:139</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:213</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:370</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:429</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:90</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:342</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:150</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:151</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:332</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:175</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:162</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:213</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:286</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:355</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:684</ID>
@@ -219,8 +229,8 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:9</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:21</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:29</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:23</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:31</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:19</ID>
@@ -234,7 +244,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
-    <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
+    <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
@@ -305,7 +315,6 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPermissionsAdapter$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductRenewStateAdapter$@ToJson private fun toJson(enum: QProductRenewState): Int</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QProductsAdapter$@ToJson private fun toJson(products: Map&lt;String, QProduct&gt;): List&lt;QProduct&gt;</ID>
-    <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QPurchaseOptions$@ToJson private fun toJson(permissions: Map&lt;String, QPermission&gt;): List&lt;QPermission&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigListAdapter$@ToJson private fun toJson(remoteConfigList: QRemoteConfigList?): List&lt;QRemoteConfig&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceAssignmentTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationAssignmentType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QRemoteConfigurationSourceTypeAdapter$@ToJson private fun toJson(enum: QRemoteConfigurationSourceType): String</ID>

@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.QonversionConfig
 import com.qonversion.android.sdk.QonversionConfig.Builder
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails

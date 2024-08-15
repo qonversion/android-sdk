@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.annotation.VisibleForTesting
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
