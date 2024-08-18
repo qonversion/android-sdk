@@ -23,6 +23,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
@@ -174,21 +175,35 @@ class HomeFragment : Fragment() {
     }
 
     private fun purchase(productId: String) {
-        Qonversion.shared.purchase(
-            requireActivity(),
-            QPurchaseModel(productId),
-            callback = object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    when (productId) {
-                        productIdSubs -> binding.buttonSubscribe.toSuccessState()
-                        productIdInApp -> binding.buttonInApp.toSuccessState()
-                    }
-                }
+        val purchaseOptions = QPurchaseOptions.Builder().setContextKeys(listOf("test_1","test_2")).build()
 
-                override fun onError(error: QonversionError) {
-                    showError(requireContext(), error, TAG)
+        Qonversion.shared.products(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                val product = products[productId]
+                product?.let {
+                    Qonversion.shared.purchase(
+                        requireActivity(),
+                        it,
+//                        it.toPurchaseModel(),
+                        purchaseOptions,
+                        callback = object : QonversionEntitlementsCallback {
+                            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                                // handle result here
+                            }
+
+                            override fun onError(error: QonversionError) {
+                                // handle error here
+                            }
+                        })
                 }
-            })
+            }
+
+            override fun onError(error: QonversionError) {
+
+            }
+
+        })
+
     }
 
     private fun showLoading(isLoading: Boolean) {
