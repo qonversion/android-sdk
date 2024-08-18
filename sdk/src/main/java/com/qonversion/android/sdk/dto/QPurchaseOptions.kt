@@ -42,7 +42,7 @@ class QPurchaseOptions internal constructor (
         }
 
         /**
-         * Set the offer Id to the purchase.
+         * Set the offer id to the purchase.
          * If [offerId] is not specified, then the default offer will be applied. To know how we choose
          * the default offer, see [QProductStoreDetails.defaultSubscriptionOfferDetails].
          * @param offerId context keys for the purchase.

@@ -128,7 +128,7 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
-    @Deprecated("Use new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
+    @Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
     fun purchase(
         context: Activity,
         purchaseModel: QPurchaseModel,
@@ -143,7 +143,7 @@ interface Qonversion {
      * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
      */
-    @Deprecated("Use new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
+    @Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
     fun updatePurchase(
         context: Activity,
         purchaseUpdateModel: QPurchaseUpdateModel,
