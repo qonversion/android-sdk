@@ -158,7 +158,7 @@ internal class QonversionInternal(
             }
         })
     }
-    
+
     override fun purchase(
         context: Activity,
         purchaseModel: QPurchaseModel,
