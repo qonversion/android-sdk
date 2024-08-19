@@ -598,7 +598,8 @@ internal class DefaultRepository internal constructor(
             purchase.orderId,
             purchase.originalOrderId,
             purchase.storeProductId ?: "",
-            qProductId ?: ""
+            qProductId ?: "",
+            purchase.contextKeys
         )
     }
 
