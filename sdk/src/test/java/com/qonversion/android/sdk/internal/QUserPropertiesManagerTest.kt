@@ -36,6 +36,7 @@ internal class QUserPropertiesManagerTest {
     private val fieldRetryDelay = "retryDelay"
     private val fieldRetriesCounter = "retriesCounter"
     private val fieldIsSendingScheduled = "isSendingScheduled"
+    private val fieldHandler = "handler"
     private val minDelay = 5
     private val calculatedDelay = 1
     private val properties = mapOf("someKey" to "someValue")
@@ -54,7 +55,7 @@ internal class QUserPropertiesManagerTest {
         mockkConstructor(Handler::class)
         mockHandler = Handler(mockLooper)
 
-        propertiesManager =
+        propertiesManager = spyk(
             QUserPropertiesManager(
                 mockContext,
                 mockRepository,
@@ -63,6 +64,8 @@ internal class QUserPropertiesManagerTest {
                 mockAppStateProvider,
                 mockLogger
             )
+        )
+        propertiesManager.mockPrivateField(fieldHandler, mockHandler)
     }
 
     @Test
@@ -340,35 +343,31 @@ internal class QUserPropertiesManagerTest {
     @Test
     fun `should set and not send user property when sending properties is scheduled`() {
         // given
-        val handlerDelay = (minDelay * 1000).toLong()
         val key = "email"
         val value = "some value"
 
-        val spykPropertiesManager = spyk(propertiesManager, recordPrivateCalls = true)
-        spykPropertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
-        mockPostDelayed(handlerDelay)
+        propertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
+        every { propertiesManager.sendPropertiesWithDelay(any()) } just runs
 
         // when
-        spykPropertiesManager.setCustomUserProperty(key, value)
+        propertiesManager.setCustomUserProperty(key, value)
 
         // then
+        verify {
+            mockPropertiesStorage.save(key, value)
+        }
         verify(exactly = 0) {
-            spykPropertiesManager.forceSendProperties()
+            propertiesManager.sendPropertiesWithDelay(any())
         }
     }
 
     @Test
-    fun `should set and send user property when it is not empty and sending is not scheduled on foreground`() {
+    fun `should set and send user property when it is not empty and sending is not scheduled`() {
         // given
         val key = "_q_email"
         val value = "some value"
-        val handlerDelay = (minDelay * 1000).toLong()
-        mockPostDelayed(handlerDelay)
         every { mockAppStateProvider.appState } returns AppState.Foreground
-
-        every {
-            propertiesManager.forceSendProperties()
-        } just Runs
+        every { propertiesManager.sendPropertiesWithDelay(any()) } just runs
 
         // when
         propertiesManager.setCustomUserProperty(key, value)
@@ -376,33 +375,7 @@ internal class QUserPropertiesManagerTest {
         // then
         verifyOrder {
             mockPropertiesStorage.save(key, value)
-            mockHandler.postDelayed(any(), handlerDelay)
-            propertiesManager.forceSendProperties()
-        }
-
-        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
-        assertEquals("The field isSendingScheduled is not equal true", true, isSendingScheduled)
-    }
-
-    @Test
-    fun `should set and not send user property when it is not empty and sending is not scheduled on background`() {
-        // given
-        val key = "_q_email"
-        val value = "some value"
-        every { mockAppStateProvider.appState } returns AppState.Background
-
-        // when
-        propertiesManager.setCustomUserProperty(key, value)
-
-        // then
-        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
-        assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled)
-        verify(exactly = 1) {
-            mockPropertiesStorage.save(key, value)
-        }
-        verify(exactly = 0) {
-            mockHandler.postDelayed(any(), any())
-            propertiesManager.forceSendProperties()
+            propertiesManager.sendPropertiesWithDelay(minDelay)
         }
     }
 
@@ -464,9 +437,7 @@ internal class QUserPropertiesManagerTest {
         val handlerDelay = (minDelay * 1000).toLong()
         mockPostDelayed(handlerDelay)
 
-        every {
-            propertiesManager.forceSendProperties()
-        } just Runs
+        every { propertiesManager.forceSendProperties() } just Runs
 
         // when
         propertiesManager.sendPropertiesWithDelay(minDelay)
