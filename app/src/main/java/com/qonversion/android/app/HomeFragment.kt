@@ -23,6 +23,7 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
 import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
@@ -189,6 +190,7 @@ class HomeFragment : Fragment() {
                     showError(requireContext(), error, TAG)
                 }
             })
+
     }
 
     private fun showLoading(isLoading: Boolean) {

@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
 import com.android.billingclient.api.Purchase
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
@@ -93,6 +94,10 @@ internal class QProductCenterManager internal constructor(
     private var processingPurchases: List<Purchase> = emptyList()
 
     private var converter: PurchaseConverter = GooglePurchaseConverter()
+
+    private val processingPurchaseOptions: MutableMap<String, QPurchaseOptions> by lazy {
+        purchasesCache.loadProcessingPurchasesOptions().toMutableMap()
+    }
 
     @Volatile
     lateinit var billingService: BillingService
@@ -324,7 +329,7 @@ internal class QProductCenterManager internal constructor(
             callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
             return
         }
-        val oldProduct: QProduct? = getProductForPurchase(purchaseModel.oldProductId, products)
+        val oldProduct: QProduct? = purchaseModel.options?.oldProduct ?: getProductForPurchase(purchaseModel.oldProductId, products)
         val purchaseModelEnriched = purchaseModel.enrich(product, oldProduct)
         processPurchase(context, purchaseModelEnriched, callback)
     }
@@ -349,7 +354,26 @@ internal class QProductCenterManager internal constructor(
         }
 
         purchasingCallbacks[purchaseModel.product.storeID] = callback
+
+        updatePurchaseOptions(purchaseModel.options, purchaseModel.product.storeID)
+
         billingService.purchase(context, purchaseModel)
+    }
+
+    private fun updatePurchaseOptions(options: QPurchaseOptions?, storeProductId: String?) {
+        storeProductId?.let { productId ->
+            options?.let {
+                processingPurchaseOptions[productId] = it
+            } ?: run {
+                processingPurchaseOptions.remove(productId)
+            }
+
+            purchasesCache.saveProcessingPurchasesOptions(processingPurchaseOptions)
+        }
+    }
+
+    private fun removePurchaseOptions(productId: String?) {
+        updatePurchaseOptions(null, productId)
     }
 
     private fun getProductForPurchase(
@@ -651,7 +675,7 @@ internal class QProductCenterManager internal constructor(
 
             processingPurchases = completedPurchases
 
-            val purchasesInfo = converter.convertPurchases(completedPurchases)
+            val purchasesInfo = converter.convertPurchases(completedPurchases, processingPurchaseOptions)
 
             val handledPurchasesCallback =
                 getWrappedPurchasesCallback(completedPurchases, callback)
@@ -673,6 +697,9 @@ internal class QProductCenterManager internal constructor(
         return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 handledPurchasesCache.saveHandledPurchases(trackingPurchases)
+                trackingPurchases.forEach {
+                    removePurchaseOptions(it.productId)
+                }
                 outerCallback?.onSuccess(launchResult)
             }
 
@@ -959,7 +986,8 @@ internal class QProductCenterManager internal constructor(
             val product: QProduct? = launchResultCache.getActualProducts()?.values?.find {
                 it.storeID == purchase.productId
             }
-            val purchaseInfo = converter.convertPurchase(purchase)
+            val currentPurchaseOptions = processingPurchaseOptions[purchase.productId]
+            val purchaseInfo = converter.convertPurchase(purchase, currentPurchaseOptions)
             repository.purchase(
                 installDate,
                 purchaseInfo,
@@ -970,6 +998,7 @@ internal class QProductCenterManager internal constructor(
 
                         val entitlements = launchResult.permissions.toEntitlementsMap()
 
+                        removePurchaseOptions(product?.storeID)
                         purchaseCallback?.onSuccess(entitlements) ?: run {
                             internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(
                                 entitlements
@@ -980,6 +1009,8 @@ internal class QProductCenterManager internal constructor(
 
                     override fun onError(error: QonversionError) {
                         storeFailedPurchaseIfNecessary(purchase, purchaseInfo, product)
+
+                        removePurchaseOptions(product?.storeID)
 
                         if (shouldCalculatePermissionsLocally(error)) {
                             calculatePurchasePermissionsLocally(

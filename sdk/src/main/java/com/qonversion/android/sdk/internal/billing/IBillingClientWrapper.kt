@@ -21,7 +21,7 @@ internal interface IBillingClientWrapper<in StoreId, out StoreData> {
         activity: Activity,
         product: QProduct,
         offerId: String?,
-        applyOffer: Boolean,
+        applyOffer: Boolean? = true,
         updatePurchaseInfo: UpdatePurchaseInfo?,
         onFailed: (error: BillingError) -> Unit
     )

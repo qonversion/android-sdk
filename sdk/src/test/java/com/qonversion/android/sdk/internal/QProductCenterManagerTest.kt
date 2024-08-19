@@ -7,6 +7,7 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.*
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
@@ -18,6 +19,7 @@ import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.mockPrivateField
 import io.mockk.*
 import org.junit.Assert
 import org.junit.Before
@@ -111,6 +113,9 @@ internal class QProductCenterManagerTest {
 
     @Test
     fun `handle pending purchases when launching is finished and query purchases completed`() {
+        val spykProductCenterManager = spyk(productCenterManager, recordPrivateCalls = true)
+        spykProductCenterManager.mockPrivateField("processingPurchaseOptions", emptyMap<String, QPurchaseOptions>())
+
         val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
         val purchases = listOf(purchase)
         every {
@@ -135,7 +140,7 @@ internal class QProductCenterManagerTest {
 
         every { mockBillingService.consumePurchases(any()) } just Runs
 
-        productCenterManager.onAppForeground()
+        spykProductCenterManager.onAppForeground()
 
         verify(exactly = 1) {
             mockBillingService.queryPurchases(any(), any())

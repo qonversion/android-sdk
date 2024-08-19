@@ -9,4 +9,5 @@ internal data class Purchase(
     val originalOrderId: String,
     val purchaseTime: Long,
     val purchaseToken: String,
+    val contextKeys: List<String>?,
 )
