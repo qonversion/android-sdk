@@ -161,7 +161,7 @@ internal class QProductCenterManagerTest {
 
         val purchase = mockk<Purchase>(relaxed = true)
 
-        every { purchase.productId } returns productId
+        every { purchase.products } returns listOf(productId)
         every { purchase.purchaseToken } returns purchaseToken
         every { purchase.purchaseState } returns purchaseState
         every { purchase.isAcknowledged } returns isAcknowledged
