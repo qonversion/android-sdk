@@ -175,34 +175,21 @@ class HomeFragment : Fragment() {
     }
 
     private fun purchase(productId: String) {
-        val purchaseOptions = QPurchaseOptions.Builder().setContextKeys(listOf("test_1","test_2")).build()
-
-        Qonversion.shared.products(object : QonversionProductsCallback {
-            override fun onSuccess(products: Map<String, QProduct>) {
-                val product = products[productId]
-                product?.let {
-                    Qonversion.shared.purchase(
-                        requireActivity(),
-                        it,
-//                        it.toPurchaseModel(),
-                        purchaseOptions,
-                        callback = object : QonversionEntitlementsCallback {
-                            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                                // handle result here
-                            }
-
-                            override fun onError(error: QonversionError) {
-                                // handle error here
-                            }
-                        })
+        Qonversion.shared.purchase(
+            requireActivity(),
+            QPurchaseModel(productId),
+            callback = object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    when (productId) {
+                        productIdSubs -> binding.buttonSubscribe.toSuccessState()
+                        productIdInApp -> binding.buttonInApp.toSuccessState()
+                    }
                 }
-            }
 
-            override fun onError(error: QonversionError) {
-
-            }
-
-        })
+                override fun onError(error: QonversionError) {
+                    showError(requireContext(), error, TAG)
+                }
+            })
 
     }
 
