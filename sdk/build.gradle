@@ -161,8 +161,8 @@ dependencies {
     androidTestImplementation "org.robolectric:robolectric:4.10.3"
 
     // MockK
-    testImplementation 'io.mockk:mockk:1.10.0'
-    androidTestImplementation 'io.mockk:mockk-android:1.10.0'
+    testImplementation 'io.mockk:mockk:1.10.6'
+    androidTestImplementation 'io.mockk:mockk-android:1.10.6'
 
     // Mockito
     testImplementation 'org.mockito:mockito-core:4.3.1'
