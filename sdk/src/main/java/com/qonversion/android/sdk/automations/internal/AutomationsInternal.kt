@@ -25,7 +25,6 @@ internal class AutomationsInternal : Automations {
 
     @Deprecated("Consider removing this method as it isn't needed anymore")
     override fun setNotificationsToken(token: String) {
-
     }
 
     @Deprecated("Consider removing this method. Qonversion is not working with push notifications anymore")

@@ -8,6 +8,7 @@
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
+    <ID>EmptyFunctionBlock:AutomationsInternal.kt$AutomationsInternal${ }</ID>
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
@@ -32,11 +33,10 @@
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
-    <ID>LongParameterList:ManagersModule.kt$ManagersModule$( repository: QRepository, preferences: SharedPreferences, eventMapper: AutomationsEventMapper, appContext: Application, activityProvider: ActivityProvider, appStateProvider: AppStateProvider )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( private val mainHandler: Handler, private val purchasesListener: PurchasesListener, private val logger: Logger, private val isAnalyticsMode: Boolean, private val billingClientHolder: BillingClientHolder, private val billingClientWrapper: BillingClientWrapper, private val legacyBillingClientWrapper: LegacyBillingClientWrapper )</ID>
-    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator )</ID>
-    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, sharedPreferences: SharedPreferences, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
+    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator )</ID>
+    <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10004</ID>
@@ -93,7 +93,6 @@
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
-    <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest.&lt;no name provided&gt;$assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\"}"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
@@ -123,7 +122,6 @@
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
-    <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
@@ -145,8 +143,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:115</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:116</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:117</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:135</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:142</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:102</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:95</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt:159</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.QonversionError.kt:46</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:109</ID>
@@ -155,18 +153,16 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:371</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:430</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:90</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:332</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:175</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:287</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:356</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:685</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:878</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:89</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:906</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:119</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:253</ID>
@@ -202,12 +198,14 @@
     <ID>NewLineAtEndOfFile:ScreenPresenterTest.kt$com.qonversion.android.sdk.automations.mvp.ScreenPresenterTest.kt</ID>
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.internal.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
-    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:270</ID>
+    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:261</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:118</ID>
-    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:396</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:22</ID>
+    <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:7</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:4</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:12</ID>
@@ -248,10 +246,10 @@
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionEntitlementsCallback?, purchaseError: QonversionError )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
-    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:263</ID>
+    <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:254</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:39</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:54</ID>
-    <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:497</ID>
+    <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:468</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:209</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:238</ID>
     <ID>SpacingAroundParens:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:257</ID>

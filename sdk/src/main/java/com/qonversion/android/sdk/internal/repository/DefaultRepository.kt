@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.repository
 
-import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.properties.QUserProperty
