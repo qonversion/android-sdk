@@ -678,34 +678,6 @@ internal class QonversionRepositoryIntegrationTest {
     }
 
     @Test
-    fun sendPushToken() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val token = "dt70kovLQdKymNnhIY6I94:APA91bGfg6m108VFio2ZdgLR6U0B2PtqAn0hIPVU7M4jKklkMxqDUrjoThpX_K60M7CfH8IVZqtku31ei2hmjdJZDfm-bdAl7uxLDWFU8yVcA6-3wBMn3nsYmUrhYWom-qgGC7yIUYzR"
-
-        val uid = UID_PREFIX + "_sendPushToken"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
-                fail("Failed to create user")
-            }
-
-            repository.sendPushToken(token)
-        }
-
-        // then
-        // check that nothing critical happens
-        Handler(Looper.getMainLooper()).postDelayed(
-            { signal.countDown() },
-            1000
-        )
-        signal.await()
-    }
-
-    @Test
     fun screens() {
         // given
         val signal = CountDownLatch(1)

@@ -63,6 +63,7 @@ interface Automations {
     /**
      * Set push token to Qonversion to enable Qonversion push notifications
      */
+    @Deprecated("Consider removing this method as it isn't needed anymore")
     fun setNotificationsToken(token: String)
 
     /**
@@ -71,6 +72,7 @@ interface Automations {
      * @return true when a push notification was received from Qonversion.
      *         Otherwise returns false, so you need to handle a notification yourself.
      */
+    @Deprecated("Consider removing this method. Qonversion is not working with push notifications anymore")
     fun handleNotification(messageData: Map<String, String>): Boolean
 
     /**

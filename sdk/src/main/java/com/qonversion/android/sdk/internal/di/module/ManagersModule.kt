@@ -26,19 +26,15 @@ internal class ManagersModule {
     @Provides
     fun provideAutomationsManager(
         repository: QRepository,
-        preferences: SharedPreferences,
         eventMapper: AutomationsEventMapper,
         appContext: Application,
         activityProvider: ActivityProvider,
-        appStateProvider: AppStateProvider
     ): QAutomationsManager {
         return QAutomationsManager(
             repository,
-            preferences,
             eventMapper,
             appContext,
             activityProvider,
-            appStateProvider
         )
     }
 
