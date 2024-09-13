@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.di.module
 
 import android.app.Application
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.internal.ActivityProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.QIdentityManager

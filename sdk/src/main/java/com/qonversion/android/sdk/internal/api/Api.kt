@@ -12,7 +12,6 @@ import com.qonversion.android.sdk.internal.dto.Data
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.Response
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
