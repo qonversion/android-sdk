@@ -214,10 +214,6 @@ internal class RepositoryWithRateLimits(
         }
     }
 
-    override fun sendPushToken(token: String) {
-        repository.sendPushToken(token)
-    }
-
     override fun screens(
         screenId: String,
         onSuccess: (screen: Screen) -> Unit,

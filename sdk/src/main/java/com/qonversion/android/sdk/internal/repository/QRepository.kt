@@ -95,8 +95,6 @@ internal interface QRepository {
         onError: (error: QonversionError) -> Unit
     )
 
-    fun sendPushToken(token: String)
-
     fun screens(
         screenId: String,
         onSuccess: (screen: Screen) -> Unit,

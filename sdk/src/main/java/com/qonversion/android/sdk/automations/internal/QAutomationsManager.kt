@@ -4,13 +4,10 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.AutomationsDelegate
 import com.qonversion.android.sdk.automations.ScreenCustomizationDelegate
 import com.qonversion.android.sdk.automations.dto.QActionResult
 import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
-import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
-import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.repository.QRepository
@@ -18,7 +15,6 @@ import com.qonversion.android.sdk.listeners.QonversionShowScreenCallback
 import com.qonversion.android.sdk.internal.toBoolean
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.automations.mvp.ScreenActivity
-import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.toMap
 import java.lang.Exception
 import java.lang.ref.WeakReference
@@ -28,11 +24,9 @@ import org.json.JSONObject
 
 internal class QAutomationsManager @Inject constructor(
     private val repository: QRepository,
-    private val preferences: SharedPreferences,
     private val eventMapper: AutomationsEventMapper,
     private val appContext: Application,
     private val activityProvider: ActivityProvider,
-    private val appStateProvider: AppStateProvider
 ) {
     @Volatile
     var automationsDelegate: WeakReference<AutomationsDelegate>? = null
@@ -45,14 +39,6 @@ internal class QAutomationsManager @Inject constructor(
         @Synchronized get
 
     private val logger = ConsoleLogger()
-    private var pendingToken: String? = null
-    internal var isLaunchFinished = false
-
-    fun onAppForeground() {
-        pendingToken?.let {
-            sendPushToken(it)
-        }
-    }
 
     fun handlePushIfPossible(messageData: Map<String, String>): Boolean {
         val pickScreen = messageData[PICK_SCREEN]
@@ -84,32 +70,6 @@ internal class QAutomationsManager @Inject constructor(
                 null
             }
         }
-    }
-
-    fun setPushToken(token: String) {
-        val oldToken = loadToken()
-        if (token.isEmpty() || oldToken.equals(token)) {
-            return
-        }
-
-        savePendingTokenToPref(token)
-        if (!isLaunchFinished || appStateProvider.appState.isBackground()) {
-            pendingToken = token
-        } else {
-            sendPushToken(token)
-        }
-    }
-
-    private fun processPushToken() {
-        val token = getPendingToken()
-        if (!token.isNullOrEmpty()) {
-            sendPushToken(token)
-        }
-    }
-
-    internal fun onLaunchProcessed() {
-        isLaunchFinished = true
-        processPushToken()
     }
 
     fun loadScreen(screenId: String, callback: QonversionShowScreenCallback? = null) {
@@ -217,21 +177,6 @@ internal class QAutomationsManager @Inject constructor(
             QUERY_PARAM_ACTIVE to QUERY_PARAM_ACTIVE_VALUE.toString()
         )
     }
-
-    private fun sendPushToken(token: String) {
-        repository.sendPushToken(token)
-
-        pendingToken = null
-    }
-
-    private fun getPendingToken(): String? {
-        return preferences.getString(PENDING_PUSH_TOKEN_KEY, null)
-    }
-
-    private fun savePendingTokenToPref(token: String) =
-        preferences.edit().putString(PENDING_PUSH_TOKEN_KEY, token).apply()
-
-    private fun loadToken() = preferences.getString(PUSH_TOKEN_KEY, "")
 
     companion object {
         private const val PICK_SCREEN = "qonv.pick_screen"
