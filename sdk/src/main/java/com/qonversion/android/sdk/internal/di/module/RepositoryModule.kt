@@ -34,7 +34,6 @@ internal class RepositoryModule {
         config: InternalConfig,
         logger: Logger,
         apiErrorMapper: ApiErrorMapper,
-        sharedPreferences: SharedPreferences,
         delayCalculator: IncrementalDelayCalculator,
         rateLimiter: RateLimiter
     ): QRepository {
@@ -45,7 +44,6 @@ internal class RepositoryModule {
                 config,
                 logger,
                 apiErrorMapper,
-                sharedPreferences,
                 delayCalculator
             ),
             rateLimiter
@@ -60,7 +58,6 @@ internal class RepositoryModule {
         config: InternalConfig,
         logger: Logger,
         apiErrorMapper: ApiErrorMapper,
-        sharedPreferences: SharedPreferences,
         delayCalculator: IncrementalDelayCalculator
     ): DefaultRepository {
         return DefaultRepository(
@@ -69,7 +66,6 @@ internal class RepositoryModule {
             config,
             logger,
             apiErrorMapper,
-            sharedPreferences,
             delayCalculator
         )
     }

@@ -128,14 +128,12 @@ internal class QonversionInternal(
 
         userPropertiesManager.onAppForeground()
         productCenterManager.onAppForeground()
-        automationsManager.onAppForeground()
         attributionManager.onAppForeground()
     }
 
     private fun launch() {
         productCenterManager.launch(object : QonversionLaunchCallback {
-            override fun onSuccess(launchResult: QLaunchResult) =
-                postToMainThread { automationsManager.onLaunchProcessed() }
+            override fun onSuccess(launchResult: QLaunchResult) {}
 
             override fun onError(error: QonversionError) {}
         })

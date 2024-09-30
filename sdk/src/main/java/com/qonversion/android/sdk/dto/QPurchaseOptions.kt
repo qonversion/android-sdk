@@ -42,7 +42,8 @@ class QPurchaseOptions internal constructor (
         }
 
         /**
-         * Set context keys associated with a purchase.
+         * Set Qonversion product from which the upgrade/downgrade
+         * will be initialized.
          *
          * @param oldProduct Qonversion product from which the upgrade/downgrade
          * will be initialized.

@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.di.module
 
 import android.app.Application
-import android.content.SharedPreferences
 import com.qonversion.android.sdk.automations.internal.ActivityProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.QIdentityManager
@@ -26,19 +25,15 @@ internal class ManagersModule {
     @Provides
     fun provideAutomationsManager(
         repository: QRepository,
-        preferences: SharedPreferences,
         eventMapper: AutomationsEventMapper,
         appContext: Application,
         activityProvider: ActivityProvider,
-        appStateProvider: AppStateProvider
     ): QAutomationsManager {
         return QAutomationsManager(
             repository,
-            preferences,
             eventMapper,
             appContext,
             activityProvider,
-            appStateProvider
         )
     }
 

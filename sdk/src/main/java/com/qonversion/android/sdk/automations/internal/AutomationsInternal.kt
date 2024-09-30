@@ -23,10 +23,11 @@ internal class AutomationsInternal : Automations {
         automationsManager.loadScreen(withID, callback)
     }
 
+    @Deprecated("Consider removing this method as it isn't needed anymore")
     override fun setNotificationsToken(token: String) {
-        automationsManager.setPushToken(token)
     }
 
+    @Deprecated("Consider removing this method. Qonversion is not working with push notifications anymore")
     override fun handleNotification(messageData: Map<String, String>): Boolean {
         return automationsManager.handlePushIfPossible(messageData)
     }

@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.repository
 
-import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
 import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.properties.QUserProperty
@@ -8,8 +7,6 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.internal.Constants.PENDING_PUSH_TOKEN_KEY
-import com.qonversion.android.sdk.internal.Constants.PUSH_TOKEN_KEY
 import com.qonversion.android.sdk.internal.EnvironmentProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -27,7 +24,6 @@ import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
-import com.qonversion.android.sdk.internal.dto.request.SendPushTokenRequest
 import com.qonversion.android.sdk.internal.dto.request.AttributionRequest
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
@@ -64,7 +60,6 @@ internal class DefaultRepository internal constructor(
     private val config: InternalConfig,
     private val logger: Logger,
     private val errorMapper: ApiErrorMapper,
-    private val preferences: SharedPreferences,
     private val delayCalculator: IncrementalDelayCalculator
 ) : QRepository {
     private var advertisingId: String? = null
@@ -386,10 +381,6 @@ internal class DefaultRepository internal constructor(
         }
     }
 
-    override fun sendPushToken(token: String) {
-        sendPushTokenRequest(token)
-    }
-
     override fun screens(
         screenId: String,
         onSuccess: (screen: Screen) -> Unit,
@@ -657,21 +648,6 @@ internal class DefaultRepository internal constructor(
             callback?.onSuccess(body.data)
         } else {
             callback?.onError(errorMapper.getErrorFromResponse(response))
-        }
-    }
-
-    private fun sendPushTokenRequest(token: String) {
-        val device = environmentProvider.getInfo()
-        val request = SendPushTokenRequest(key, uid, device.deviceId, token)
-
-        api.sendPushToken(request).enqueue {
-            onResponse = {
-                preferences.edit().remove(PENDING_PUSH_TOKEN_KEY).apply()
-                preferences.edit().putString(PUSH_TOKEN_KEY, token).apply()
-            }
-            onFailure = {
-                logger.error("sendPushTokenRequest - failure - ${it.toQonversionError()}")
-            }
         }
     }
 

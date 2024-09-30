@@ -31,19 +31,13 @@ import java.lang.ref.WeakReference
 internal class QAutomationsManagerTest {
     private val mockRepository: QRepository = mockk(relaxed = true)
     private val mockActivity: Activity = mockk(relaxed = true)
-    private val mockPrefs: SharedPreferences = mockk(relaxed = true)
-    private val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
     private val mockEventMapper: AutomationsEventMapper = mockk(relaxed = true)
     private val mockApplication: Application = mockk(relaxed = true)
     private val mockActivityProvider: ActivityProvider = mockk<ActivityProvider>(relaxed = true)
-    private val mockAppStateProvider: AppStateProvider = mockk(relaxed = true)
 
     private lateinit var mockIntent: Intent
     private lateinit var automationsManager: QAutomationsManager
 
-    private val fieldPendingToken = "pendingToken"
-    private val pushTokenKey = "com.qonversion.keys.push_token_key"
-    private val pendingPushTokenKey = "com.qonversion.keys.pending_push_token_key"
     private val screenId = "ZNkQaNy6"
     private val html = "<html><body>Screen 2 Content<body></html>"
     private val delegate = object : AutomationsDelegate {
@@ -64,7 +58,6 @@ internal class QAutomationsManagerTest {
 
         mockLogger()
         mockIntent()
-        mockSharedPreferences()
 
         every { mockActivityProvider.getCurrentActivity() } answers {
             mockActivity
@@ -72,11 +65,9 @@ internal class QAutomationsManagerTest {
 
         automationsManager = QAutomationsManager(
             mockRepository,
-            mockPrefs,
             mockEventMapper,
             mockApplication,
             mockActivityProvider,
-            mockAppStateProvider
         )
     }
 
@@ -270,197 +261,6 @@ internal class QAutomationsManagerTest {
 
     }
 
-    @Nested
-    inner class SetPushToken {
-        @Test
-        fun `should send new token when app is in foreground`() {
-            // given
-            val newToken = "newToken"
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns null
-
-            mockLooper()
-            every { mockAppStateProvider.appState } returns AppState.Foreground
-            automationsManager.isLaunchFinished = true
-
-            // when
-            automationsManager.setPushToken(newToken)
-
-            // then
-            verifySequence {
-                mockPrefs.getString(pushTokenKey, "")
-                mockPrefs.edit()
-                mockEditor.putString(pendingPushTokenKey, newToken)
-                mockEditor.apply()
-                mockRepository.sendPushToken(newToken)
-            }
-        }
-
-        @Test
-        fun `should send new token when launch is processed`() {
-            // given
-            val newToken = "newToken"
-            every {
-                mockPrefs.getString(pendingPushTokenKey, null)
-            } returns newToken
-
-            mockLooper()
-
-            // when
-            automationsManager.onLaunchProcessed()
-
-            // then
-            verifySequence {
-                mockPrefs.getString(pendingPushTokenKey, null)
-                mockRepository.sendPushToken(newToken)
-            }
-        }
-
-        @Test
-        fun `shouldn't send new token when app is in background`() {
-            // given
-            val newToken = "newToken"
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns null
-
-            mockLooper()
-            every { mockAppStateProvider.appState } returns AppState.Background
-            automationsManager.isLaunchFinished = true
-
-            // when
-            automationsManager.setPushToken(newToken)
-
-            // then
-            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
-            assertThat(pendingToken).isEqualTo(newToken)
-
-            verify(exactly = 1) {
-                mockPrefs.getString(pushTokenKey, "")
-                mockEditor.putString(pendingPushTokenKey, newToken)
-                mockEditor.apply()
-            }
-            verify(exactly = 0) {
-                mockRepository.sendPushToken(newToken)
-            }
-        }
-
-        @Test
-        fun `shouldn't send a token when launch is not finished`() {
-            val token = "someToken"
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns "another token"
-
-            // when
-            automationsManager.setPushToken(token)
-
-            // then
-            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
-            assertThat(pendingToken).isEqualTo(token)
-            verify(exactly = 1) {
-                mockPrefs.getString(pushTokenKey, "")
-                mockEditor.putString(pendingPushTokenKey, token)
-            }
-            verify {
-                listOf(
-                    mockRepository
-                ) wasNot Called
-            }
-        }
-
-        @Test
-        fun `shouldn't send an old token`() {
-            val oldToken = "oldToken"
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns oldToken
-            automationsManager.isLaunchFinished = true
-
-            // when
-            automationsManager.setPushToken(oldToken)
-
-            // then
-            verify(exactly = 1) {
-                mockPrefs.getString(pushTokenKey, "")
-            }
-            verify {
-                listOf(
-                    mockEditor,
-                    mockRepository
-                ) wasNot Called
-            }
-        }
-
-
-        @Test
-        fun `shouldn't send token when it is empty`() {
-            // given
-            val newToken = ""
-            every {
-                mockPrefs.getString(pushTokenKey, "")
-            } returns null
-
-            mockLooper()
-            every { mockAppStateProvider.appState } returns AppState.Foreground
-            automationsManager.isLaunchFinished = true
-
-            // when
-            automationsManager.setPushToken(newToken)
-
-            // then
-            verify(exactly = 1) {
-                mockPrefs.getString(pushTokenKey, "")
-            }
-            verify {
-                listOf(
-                    mockEditor,
-                    mockRepository
-                ) wasNot Called
-            }
-        }
-    }
-
-    @Nested
-    inner class OnAppForeground {
-        @Test
-        fun `should send new pending token after app switched to foreground`() {
-            // given
-            val newToken = "newToken"
-            automationsManager.mockPrivateField(fieldPendingToken, newToken)
-
-            // when
-            automationsManager.onAppForeground()
-
-            // then
-            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
-            assertThat(pendingToken).isNull()
-
-            verifyOrder {
-                mockRepository.sendPushToken(newToken)
-            }
-        }
-
-        @Test
-        fun `should not send null pending token after app switched to foreground`() {
-            // given
-            val nullToken = null
-            automationsManager.mockPrivateField(fieldPendingToken, nullToken)
-
-            // when
-            automationsManager.onAppForeground()
-
-            // then
-            val pendingToken = automationsManager.getPrivateField<String?>(fieldPendingToken)
-            assertThat(pendingToken).isNull()
-
-            verify {
-                listOf(mockRepository, mockEditor) wasNot called
-            }
-        }
-    }
-
     private fun getQueryParams(): Map<String, String> {
         val queryParamTypeKey = "type"
         val queryParamActiveKey = "active"
@@ -475,24 +275,6 @@ internal class QAutomationsManagerTest {
                 queryParamActiveValue.toString()
             )
         }
-    }
-
-    private fun mockSharedPreferences() {
-        every {
-            mockEditor.putString(pushTokenKey, any())
-        } returns mockEditor
-
-        every {
-            mockEditor.putString(pendingPushTokenKey, any())
-        } returns mockEditor
-
-        every {
-            mockPrefs.edit()
-        } returns mockEditor
-
-        every {
-            mockEditor.apply()
-        } just runs
     }
 
     private fun mockIntent() {
