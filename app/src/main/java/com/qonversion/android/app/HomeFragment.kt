@@ -1,35 +1,26 @@
 package com.qonversion.android.app
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.RemoteMessage
 import com.qonversion.android.app.databinding.FragmentHomeBinding
 import com.qonversion.android.sdk.*
-import com.qonversion.android.sdk.automations.Automations
-import com.qonversion.android.sdk.automations.AutomationsDelegate
-import com.qonversion.android.sdk.automations.ScreenCustomizationDelegate
-import com.qonversion.android.sdk.automations.dto.QActionResult
-import com.qonversion.android.sdk.automations.dto.QActionResultType
-import com.qonversion.android.sdk.automations.dto.QScreenPresentationConfig
-import com.qonversion.android.sdk.automations.dto.QScreenPresentationStyle
-import com.qonversion.android.sdk.dto.QPurchaseModel
-import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import java.util.*
 
 private const val TAG = "HomeFragment"
 
@@ -40,8 +31,6 @@ class HomeFragment : Fragment() {
     private val productIdInApp = "in_app"
     private val entitlementPlus = "plus"
     private val entitlementStandart = "standart"
-    private val screenCustomizationDelegate = getScreenCustomizationDelegate()
-    private val automationsDelegate = getAutomationsDelegate()
     private val entitlementsUpdateListener = getEntitlementsUpdateListener()
 
     override fun onCreateView(
@@ -86,31 +75,6 @@ class HomeFragment : Fragment() {
             goToAuth()
         }
 
-        // Automation
-        // You can skip this step if you don't need to handle the Qonversion Automations result
-        Automations.shared.setDelegate(automationsDelegate)
-
-        Automations.shared.setScreenCustomizationDelegate(screenCustomizationDelegate)
-
-        // Check if the activity was launched from a push notification
-        val remoteMessage: RemoteMessage? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requireActivity().intent.getParcelableExtra(
-                    FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE,
-                    RemoteMessage::class.java
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                requireActivity().intent.getParcelableExtra(
-                    FirebaseMessageReceiver.INTENT_REMOTE_MESSAGE
-                )
-            }
-
-        @Suppress("ControlFlowWithEmptyBody")
-        if (remoteMessage != null && !Automations.shared.handleNotification(remoteMessage.data)) {
-            // Handle notification yourself
-        }
-
         return binding.root
     }
 
@@ -139,6 +103,7 @@ class HomeFragment : Fragment() {
         val subscription = products[productIdSubs]
         if (subscription != null) {
             binding.buttonSubscribe.text = String.format(
+                Locale.getDefault(),
                 "%s %s / %d %s",
                 getStr(R.string.subscribe_for),
                 subscription.prettyPrice,
@@ -175,12 +140,28 @@ class HomeFragment : Fragment() {
     }
 
     private fun purchase(productId: String) {
+        Qonversion.shared.products(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                val product = products[productId] ?: let {
+                    Toast.makeText(requireContext(), "Product $productId not found", Toast.LENGTH_LONG).show()
+                    return;
+                }
+                purchase(product)
+            }
+
+            override fun onError(error: QonversionError) {
+                showError(requireContext(), error, TAG)
+            }
+        })
+    }
+
+    private fun purchase(product: QProduct) {
         Qonversion.shared.purchase(
             requireActivity(),
-            QPurchaseModel(productId),
+            product,
             callback = object : QonversionEntitlementsCallback {
                 override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    when (productId) {
+                    when (product.qonversionID) {
                         productIdSubs -> binding.buttonSubscribe.toSuccessState()
                         productIdInApp -> binding.buttonInApp.toSuccessState()
                     }
@@ -190,7 +171,6 @@ class HomeFragment : Fragment() {
                     showError(requireContext(), error, TAG)
                 }
             })
-
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -214,55 +194,6 @@ class HomeFragment : Fragment() {
     private fun getEntitlementsUpdateListener() = object : QEntitlementsUpdateListener {
         override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
             // handle updated entitlements here
-        }
-    }
-
-    private fun getScreenCustomizationDelegate() = object : ScreenCustomizationDelegate {
-        override fun getPresentationConfigurationForScreen(screenId: String): QScreenPresentationConfig {
-            return QScreenPresentationConfig(
-                QScreenPresentationStyle.FullScreen
-            )
-        }
-    }
-
-    private fun getAutomationsDelegate() = object : AutomationsDelegate {
-        override fun automationsDidFinishExecuting(actionResult: QActionResult) {
-            // Handle the final action that the user completed on the in-app screen.
-            Log.d("AUTOMATIONS", "automationsDidFinishExecuting " + actionResult.type)
-
-            if (actionResult.type == QActionResultType.Purchase) {
-                // You can check available entitlements
-                Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
-                    override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                        // Handle new entitlements here
-                    }
-
-                    override fun onError(error: QonversionError) {
-                        // Handle the error
-                    }
-                })
-            }
-        }
-
-        override fun automationsDidFailExecuting(actionResult: QActionResult) {
-            // Do some logic or track event
-            Log.d("AUTOMATIONS", "automationsDidFailExecuting " + actionResult.type)
-        }
-
-
-        override fun automationsDidStartExecuting(actionResult: QActionResult) {
-            // Do some logic or track event
-            Log.d("AUTOMATIONS", "automationsDidStartExecuting " + actionResult.type)
-        }
-
-        override fun automationsDidShowScreen(screenId: String) {
-            // Do some logic or track event
-            Log.d("AUTOMATIONS", "automationsDidShowScreen $screenId")
-        }
-
-        override fun automationsFinished() {
-            // Do some logic or track event
-            Log.d("AUTOMATIONS", "automationsFinished")
         }
     }
 
