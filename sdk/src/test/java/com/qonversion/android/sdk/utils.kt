@@ -75,7 +75,7 @@ fun mockInAppPurchase(): Purchase {
 object Constants {
     // Subscription purchase without productId
     const val SUBS_PURCHASE_INCOMPLETE = "\"orderId\":\"GPA.0000-0000-0000-0000\"," +
-            "\"packageName\":\"com.qonversion.sample\"," +
+            "\"packageName\":\"io.qonversion.sample\"," +
             "\"purchaseTime\":1631867965714," +
             "\"purchaseState\":1," +
             "\"purchaseToken\":\"XXXXXXX\"," +
@@ -108,7 +108,7 @@ object Constants {
             "\"skuDetailsToken\":\"XXXXXXX\"}"
 
     const val INAPP_PURCHASE = "\"orderId\":\"GPA.0000-0000-0000-0000\"," +
-            "\"packageName\":\"com.qonversion.sample\"," +
+            "\"packageName\":\"io.qonversion.sample\"," +
             "\"productId\":\"qonversion_inapp_consumable\"," +
             "\"purchaseTime\":1632238801527," +
             "\"purchaseState\":1," +
