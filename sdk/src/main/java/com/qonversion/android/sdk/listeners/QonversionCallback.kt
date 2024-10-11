@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.listeners
 
+import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -47,7 +48,7 @@ interface QonversionRemoteConfigurationAttachCallback {
 }
 
 interface QonversionPurchaseCallback : QonversionEntitlementsCallback {
-   fun onSuccess(entitlements: Map<String, QEntitlement>, quantity: Int) = onSuccess(entitlements)
+   fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) = onSuccess(entitlements)
 }
 
 interface QonversionEntitlementsCallback {

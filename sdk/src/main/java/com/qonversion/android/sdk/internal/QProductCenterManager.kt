@@ -506,7 +506,7 @@ internal class QProductCenterManager internal constructor(
             purchasedProduct,
             productPermissions
         )
-        purchaseCallback?.onSuccess(permissions.toEntitlementsMap(), purchase.quantity)
+        purchaseCallback?.onSuccess(permissions.toEntitlementsMap(), purchase)
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -1000,7 +1000,7 @@ internal class QProductCenterManager internal constructor(
                         val entitlements = launchResult.permissions.toEntitlementsMap()
 
                         removePurchaseOptions(product?.storeID)
-                        purchaseCallback?.onSuccess(entitlements, purchase.quantity) ?: run {
+                        purchaseCallback?.onSuccess(entitlements, purchase) ?: run {
                             internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(
                                 entitlements
                             )

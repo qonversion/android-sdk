@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
@@ -410,8 +411,8 @@ internal class QonversionInternal(
         }
 
         return object : QonversionPurchaseCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>, quantity: Int) {
-                postToMainThread { purchaseCallback.onSuccess(entitlements, quantity) }
+            override fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) {
+                postToMainThread { purchaseCallback.onSuccess(entitlements, purchase) }
             }
 
             override fun onSuccess(entitlements: Map<String, QEntitlement>) =
