@@ -46,6 +46,10 @@ interface QonversionRemoteConfigurationAttachCallback {
    fun onError(error: QonversionError)
 }
 
+interface QonversionPurchaseCallback : QonversionEntitlementsCallback {
+   fun onSuccess(entitlements: Map<String, QEntitlement>, quantity: Int) = onSuccess(entitlements)
+}
+
 interface QonversionEntitlementsCallback {
    fun onSuccess(entitlements: Map<String, QEntitlement>)
    fun onError(error: QonversionError)
