@@ -400,13 +400,17 @@ internal class QonversionInternal(
         }
 
     private fun mainPurchaseCallback(callback: QonversionEntitlementsCallback): QonversionPurchaseCallback {
-        val purchaseCallback = if (callback is QonversionPurchaseCallback) callback else object : QonversionPurchaseCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                callback.onSuccess(entitlements)
-            }
+        val purchaseCallback = if (callback is QonversionPurchaseCallback) {
+            callback
+        } else {
+            object : QonversionPurchaseCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    callback.onSuccess(entitlements)
+                }
 
-            override fun onError(error: QonversionError) {
-                callback.onError(error)
+                override fun onError(error: QonversionError) {
+                    callback.onError(error)
+                }
             }
         }
 
