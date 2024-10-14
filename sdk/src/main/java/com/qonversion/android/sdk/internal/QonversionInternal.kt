@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
@@ -37,6 +38,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
@@ -157,6 +159,7 @@ internal class QonversionInternal(
         })
     }
 
+    @Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
     override fun purchase(
         context: Activity,
         purchaseModel: QPurchaseModel,
@@ -165,7 +168,7 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(purchaseModel),
-            mainEntitlementsCallback(callback)
+            mainPurchaseCallback(callback)
         )
     }
 
@@ -178,7 +181,7 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(product, options),
-            mainEntitlementsCallback(callback)
+            mainPurchaseCallback(callback)
         )
     }
 
@@ -190,7 +193,7 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(product),
-            mainEntitlementsCallback(callback)
+            mainPurchaseCallback(callback)
         )
     }
 
@@ -203,10 +206,11 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(product, options),
-            mainEntitlementsCallback(callback)
+            mainPurchaseCallback(callback)
         )
     }
 
+    @Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
     override fun updatePurchase(
         context: Activity,
         purchaseUpdateModel: QPurchaseUpdateModel,
@@ -215,7 +219,7 @@ internal class QonversionInternal(
         productCenterManager.purchaseProduct(
             context,
             PurchaseModelInternal(purchaseUpdateModel),
-            mainEntitlementsCallback(callback)
+            mainPurchaseCallback(callback)
         )
     }
 
@@ -394,6 +398,34 @@ internal class QonversionInternal(
             override fun onError(error: QonversionError) =
                 postToMainThread { callback.onError(error) }
         }
+
+    private fun mainPurchaseCallback(callback: QonversionEntitlementsCallback): QonversionPurchaseCallback {
+        val purchaseCallback = if (callback is QonversionPurchaseCallback) {
+            callback
+        } else {
+            object : QonversionPurchaseCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    callback.onSuccess(entitlements)
+                }
+
+                override fun onError(error: QonversionError) {
+                    callback.onError(error)
+                }
+            }
+        }
+
+        return object : QonversionPurchaseCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) {
+                postToMainThread { purchaseCallback.onSuccess(entitlements, purchase) }
+            }
+
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                postToMainThread { purchaseCallback.onSuccess(entitlements) }
+
+            override fun onError(error: QonversionError) =
+                postToMainThread { purchaseCallback.onError(error) }
+        }
+    }
 
     private fun mainUserCallback(callback: QonversionUserCallback): QonversionUserCallback =
         object : QonversionUserCallback {
