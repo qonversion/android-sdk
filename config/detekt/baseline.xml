@@ -118,6 +118,8 @@
     <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"""HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -154,11 +156,13 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:371</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:90</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:332</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:333</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:162</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:213</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:287</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:356</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:878</ID>
@@ -243,7 +247,7 @@
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$fun identify(identityId: String, callback: QonversionUserCallback? = null)</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionEntitlementsCallback?, purchaseError: QonversionError )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionPurchaseCallback?, purchaseError: QonversionError )</ID>
     <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:254</ID>
