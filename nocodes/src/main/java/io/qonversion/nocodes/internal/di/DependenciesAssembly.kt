@@ -40,8 +40,8 @@ internal class DependenciesAssembly(
     ) {
         fun build(): DependenciesAssembly {
             val miscAssembly = MiscAssemblyImpl(application, internalConfig)
-            val mappersAssembly = MappersAssemblyImpl(miscAssembly)
-            val storageAssembly = StorageAssemblyImpl(application, mappersAssembly, miscAssembly)
+            val mappersAssembly = MappersAssemblyImpl()
+            val storageAssembly = StorageAssemblyImpl(application)
             val networkAssembly =
                 NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly)
             val servicesAssembly = ServicesAssemblyImpl(mappersAssembly, networkAssembly, miscAssembly)

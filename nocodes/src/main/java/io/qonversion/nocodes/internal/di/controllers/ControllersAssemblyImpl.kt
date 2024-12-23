@@ -27,6 +27,6 @@ internal class ControllersAssemblyImpl(
     }
 
     override fun screenPresenter(view: ScreenContract.View): ScreenContract.Presenter {
-        return ScreenPresenter(servicesAssembly.screenService(), view)
+        return ScreenPresenter(servicesAssembly.screenService(), view, miscAssembly.logger())
     }
 }

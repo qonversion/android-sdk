@@ -26,8 +26,7 @@ internal class NetworkAssemblyImpl(
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
         headerBuilder(),
-        API_URL,
-        internalConfig
+        API_URL
     )
 
     override fun exponentialApiInteractor(): ApiInteractor =

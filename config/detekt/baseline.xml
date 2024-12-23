@@ -58,6 +58,10 @@
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20300</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20303</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20399</ID>
+    <ID>MagicNumber:ApiInteractorImpl.kt$418</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Error$30</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Info$10</ID>
+    <ID>MagicNumber:LogLevel.kt$LogLevel.Warning$20</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Month$30</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.SixMonths$180</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.ThreeMonths$90</ID>
@@ -265,22 +269,33 @@
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
+    <ID>SwallowedException:NoCodesInternal.kt$NoCodesInternal$catch (e: Exception) { // todo converting between NoCodesError / NoCodesException }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with deeplink $url") delegate?.onActionFailedExecuting(action) }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with url $url") delegate?.onActionFailedExecuting(action) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { delegate?.onActionFailedExecuting(action) }</ID>
+    <ID>SwallowedException:ScreenPresenter.kt$ScreenPresenter$catch (e: Exception) { logger.error("ScreenPresenter -&gt; failed to open the screen with id $screenId") view.onError("Something went wrong while loading the next screen") }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
+    <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
+    <ID>TooGenericExceptionCaught:NoCodesInternal.kt$NoCodesInternal$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QExceptionManager.kt$QExceptionManager$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QFallbacksService.kt$QFallbacksService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenPresenter.kt$ScreenPresenter$e: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
     <ID>TooManyFunctions:BillingClientWrapper.kt$BillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
@@ -299,6 +314,7 @@
     <ID>TooManyFunctions:ScreenFragment.kt$ScreenFragment : FragmentView</ID>
     <ID>TooManyFunctions:SharedPreferencesCache.kt$SharedPreferencesCache : Cache</ID>
     <ID>TooManyFunctions:extensions.kt$com.qonversion.android.sdk.internal.extensions.kt</ID>
+    <ID>UnnecessaryAbstractClass:BaseClass.kt$BaseClass</ID>
     <ID>UnnecessaryAbstractClass:BillingClientWrapperBase.kt$BillingClientWrapperBase</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:AutomationsEvent.kt$AutomationsEvent$private val productId: String? // Temporarily inaccessible</ID>

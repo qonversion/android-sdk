@@ -14,7 +14,7 @@ internal class ScreenPresenter(
     private val view: ScreenContract.View,
     logger: Logger,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
-) : ScreenContract.Presenter , BaseClass(logger) {
+) : ScreenContract.Presenter, BaseClass(logger) {
 
     override fun shouldOverrideUrlLoading(url: String?): Boolean {
         if (url == null) {

@@ -5,7 +5,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
-import java.util.*
+import java.util.Locale
 
 internal interface MiscAssembly {
 

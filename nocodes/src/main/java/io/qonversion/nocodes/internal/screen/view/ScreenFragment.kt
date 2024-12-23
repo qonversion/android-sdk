@@ -33,7 +33,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     private var binding: NcFragmentScreenBinding? = null
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -79,7 +78,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             startActivity(intent)
             delegate?.onActionFinishedExecuting(action)
         } catch (e: ActivityNotFoundException) {
-            logger.error("Couldn't find any Activity to handle the Intent with url $url")
+            logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with url $url")
             delegate?.onActionFailedExecuting(action)
         }
     }
@@ -93,7 +92,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             startActivity(intent)
             close(action)
         } catch (e: ActivityNotFoundException) {
-            logger.error("Couldn't find any Activity to handle the Intent with deeplink $url")
+            logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with deeplink $url")
             delegate?.onActionFailedExecuting(action)
         }
     }

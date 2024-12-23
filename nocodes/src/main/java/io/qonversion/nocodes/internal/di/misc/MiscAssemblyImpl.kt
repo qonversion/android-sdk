@@ -11,7 +11,7 @@ import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDel
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
 import kotlin.random.Random
-import java.util.*
+import java.util.Locale
 
 internal class MiscAssemblyImpl(
     private val application: Application,
