@@ -18,6 +18,9 @@ import com.qonversion.android.sdk.dto.properties.QUserPropertyKey;
 
 import java.util.Map;
 
+import io.qonversion.nocodes.NoCodes;
+import io.qonversion.nocodes.NoCodesConfig;
+
 public class App extends MultiDexApplication {
     public static final String CHANNEL_ID = "qonversion";
 
@@ -35,6 +38,12 @@ public class App extends MultiDexApplication {
                 .setEnvironment(QEnvironment.Sandbox) // For Automation testing
                 .build();
         Qonversion.initialize(qonversionConfig);
+
+        final NoCodesConfig noCodesConfig = new NoCodesConfig.Builder(
+                this,
+                "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2"
+        ).build();
+        NoCodes.initialize(noCodesConfig);
 
         Qonversion.getSharedInstance().syncHistoricalData();
 

@@ -2,6 +2,7 @@ package io.qonversion.nocodes.internal.networkLayer.apiInteractor
 
 import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesException
+import io.qonversion.nocodes.internal.common.mappers.error.ErrorResponseMapper
 import io.qonversion.nocodes.internal.networkLayer.RetryPolicy
 import io.qonversion.nocodes.internal.networkLayer.dto.RawResponse
 import io.qonversion.nocodes.internal.networkLayer.dto.Request

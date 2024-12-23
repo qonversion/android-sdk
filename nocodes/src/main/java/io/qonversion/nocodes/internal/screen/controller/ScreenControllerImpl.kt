@@ -24,6 +24,7 @@ internal class ScreenControllerImpl(
 ) : ScreenController, BaseClass(logger) {
 
     override suspend fun showScreen(screenId: String) {
+        logger.verbose("showScreen() -> Fetching the screen with id $screenId from the API")
         val screen = screenService.getScreen(screenId)
 
         val context: Context = activityProvider.getCurrentActivity() ?: appContext
@@ -42,6 +43,7 @@ internal class ScreenControllerImpl(
         }
 
         try {
+            logger.verbose("showScreen() -> Launching the screen activity")
             context.startActivity(intent)
             getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)?.let { transitionAnimations ->
                 if (context is Activity) {

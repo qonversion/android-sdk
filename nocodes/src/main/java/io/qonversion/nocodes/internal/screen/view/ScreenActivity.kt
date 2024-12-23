@@ -8,7 +8,7 @@ import io.qonversion.nocodes.R
 import io.qonversion.nocodes.dto.QScreenPresentationStyle
 import io.qonversion.nocodes.internal.screen.getScreenTransactionAnimations
 
-class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
+class ScreenActivity : FragmentActivity(R.layout.nc_activity_screen) {
 
     @Suppress("DEPRECATION")
     private val presentationStyle get() = intent.getSerializableExtra(
@@ -41,10 +41,10 @@ class ScreenActivity : FragmentActivity(R.layout.q_activity_screen) {
         if (addToBackStack) {
             transaction
                 .setCustomAnimations(
-                    R.anim.q_slide_in_from_left,
-                    R.anim.q_fade_out,
-                    R.anim.q_fade_in,
-                    R.anim.q_slide_out_to_left
+                    R.anim.nc_slide_in_from_left,
+                    R.anim.nc_fade_out,
+                    R.anim.nc_fade_in,
+                    R.anim.nc_slide_out_to_left
                 )
                 .addToBackStack(null)
         }

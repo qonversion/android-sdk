@@ -2,6 +2,8 @@ package io.qonversion.nocodes.internal.screen.view
 
 import android.net.Uri
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.internal.common.BaseClass
+import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,11 +12,11 @@ import kotlinx.coroutines.launch
 internal class ScreenPresenter(
     private val service: ScreenService,
     private val view: ScreenContract.View,
+    logger: Logger,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
-) : ScreenContract.Presenter {
+) : ScreenContract.Presenter , BaseClass(logger) {
 
     override fun shouldOverrideUrlLoading(url: String?): Boolean {
-
         if (url == null) {
             return true
         }
@@ -24,6 +26,7 @@ internal class ScreenPresenter(
             return true
         }
 
+        logger.verbose("ScreenPresenter -> handling action with type ${uri.getActionType()}")
         when (uri.getActionType()) {
             QAction.Type.Url -> {
                 val link = uri.getData()
@@ -70,9 +73,9 @@ internal class ScreenPresenter(
 
     private fun Uri.getData() = getQueryParameter(DATA)
 
-    private fun Uri.shouldOverrideUrlLoading() = isAutomationsHost() && isQScheme()
+    private fun Uri.shouldOverrideUrlLoading() = isNoCodesHost() && isNCScheme()
 
-    private fun Uri.isQScheme(): Boolean {
+    private fun Uri.isNCScheme(): Boolean {
         val uriScheme = scheme
         if (uriScheme != null) {
             val pattern = REGEX.toRegex()
@@ -81,15 +84,18 @@ internal class ScreenPresenter(
         return false
     }
 
-    private fun Uri.isAutomationsHost() = host.equals(HOST)
+    private fun Uri.isNoCodesHost() = host.equals(HOST)
 
     private fun loadNextScreen(screenId: String) {
         try {
             scope.launch {
+                logger.verbose("ScreenPresenter -> loading the next screen in stack with id $screenId")
                 val screen = service.getScreen(screenId)
+                logger.verbose("ScreenPresenter -> opening the screen with id $screenId")
                 view.openScreen(screenId, screen.body)
             }
         } catch (e: Exception) {
+            logger.error("ScreenPresenter -> failed to open the screen with id $screenId")
             view.onError("Something went wrong while loading the next screen")
         }
     }

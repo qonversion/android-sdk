@@ -44,11 +44,11 @@ internal class DependenciesAssembly(
             val storageAssembly = StorageAssemblyImpl(application, mappersAssembly, miscAssembly)
             val networkAssembly =
                 NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly)
-            val servicesAssembly = ServicesAssemblyImpl(mappersAssembly, networkAssembly)
+            val servicesAssembly = ServicesAssemblyImpl(mappersAssembly, networkAssembly, miscAssembly)
             val controllersAssembly =
                 ControllersAssemblyImpl(servicesAssembly, miscAssembly, internalConfig, application)
 
-            val instance = DependenciesAssembly(
+            instance = DependenciesAssembly(
                 mappersAssembly,
                 storageAssembly,
                 networkAssembly,

@@ -1,5 +1,8 @@
 package io.qonversion.nocodes.internal.networkLayer.dto
 
+import io.qonversion.nocodes.error.ErrorCode
+import io.qonversion.nocodes.error.NoCodesException
+
 internal sealed class Response(
     val code: Int
 ) {
@@ -14,12 +17,12 @@ internal sealed class Response(
 
         val mapData: Map<*, *> get() = getTypedData()
 
-        @Throws(QonversionException::class)
+        @Throws(NoCodesException::class)
         inline fun <reified T> getTypedData(): T {
             return if (data is T) {
                 data
             } else {
-                throw QonversionException(ErrorCode.Mapping)
+                throw NoCodesException(ErrorCode.Mapping)
             }
         }
     }

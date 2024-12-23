@@ -1,5 +1,9 @@
 package io.qonversion.nocodes.internal.logger
 
+import android.util.Log
+import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.internal.provider.LoggerConfigProvider
+
 internal class ConsoleLogger(private val loggerConfigProvider: LoggerConfigProvider) : Logger {
     private val logLevel get() = loggerConfigProvider.logLevel.level
     private val tag get() = loggerConfigProvider.logTag

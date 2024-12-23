@@ -16,7 +16,7 @@ import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
-import io.qonversion.nocodes.databinding.QFragmentScreenBinding
+import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 
@@ -31,7 +31,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 //    @Inject
 //    internal lateinit var screenProcessor: ScreenProcessor
 
-    private var binding: QFragmentScreenBinding? = null
+    private var binding: NcFragmentScreenBinding? = null
 
 
     override fun onCreateView(
@@ -39,7 +39,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = QFragmentScreenBinding.inflate(inflater, container, false)
+        val binding = NcFragmentScreenBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
     }
