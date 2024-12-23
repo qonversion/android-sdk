@@ -119,6 +119,32 @@ internal class QonversionConfigTest {
             // then
             assertThat(builder.isKidsMode).isFalse()
         }
+
+        @Test
+        fun `disabling FB attribution tracking`() {
+            // given
+            val builder =
+                QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
+
+            // when
+            builder.disableFacebookAttribution()
+
+            // then
+            assertThat(builder.sendFbAttribution).isFalse()
+        }
+
+        @Test
+        fun `remain FB attribution tracking enabled`() {
+            // given
+            val builder =
+                QonversionConfig.Builder(mockContext, projectKey, mockLaunchMode)
+
+            // when
+
+
+            // then
+            assertThat(builder.sendFbAttribution).isTrue()
+        }
     }
 
     @Nested

@@ -10,5 +10,6 @@ internal data class PrimaryConfig(
     val environment: QEnvironment,
     val proxyUrl: String? = null,
     val isKidsMode: Boolean = false,
+    val sendFbAttribution: Boolean = true,
     val sdkVersion: String = BuildConfig.VERSION_NAME
 )
