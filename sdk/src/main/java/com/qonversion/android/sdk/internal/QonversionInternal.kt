@@ -109,7 +109,9 @@ internal class QonversionInternal(
         remoteConfigManager = localRemoteConfigManager
 
         userPropertiesManager.productCenterManager = productCenterManager
-        userPropertiesManager.sendFacebookAttribution()
+        if (internalConfig.primaryConfig.sendFbAttribution) {
+            userPropertiesManager.sendFacebookAttribution()
+        }
 
         remoteConfigManager.userPropertiesManager = userPropertiesManager
 
