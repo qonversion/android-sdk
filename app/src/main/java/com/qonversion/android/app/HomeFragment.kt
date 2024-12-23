@@ -30,6 +30,12 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import io.qonversion.nocodes.NoCodes
+import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.NoCodesShowScreenCallback
+import io.qonversion.nocodes.showScreen
 
 private const val TAG = "HomeFragment"
 
@@ -66,8 +72,38 @@ class HomeFragment : Fragment() {
             }
         })
 
+        NoCodes.shared.setDelegate(object : NoCodesDelegate {
+            override fun onScreenShown(screenId: String) {
+                super.onScreenShown(screenId)
+            }
+
+            override fun onActionStartedExecuting(action: QAction) {
+                super.onActionStartedExecuting(action)
+            }
+
+            override fun onActionFailedExecuting(action: QAction) {
+                super.onActionFailedExecuting(action)
+            }
+
+            override fun onActionFinishedExecuting(action: QAction) {
+                super.onActionFinishedExecuting(action)
+            }
+
+            override fun onFinished() {
+                super.onFinished()
+            }
+        })
+
         binding.buttonSubscribe.setOnClickListener {
-            purchase(productIdSubs)
+//            purchase(productIdSubs)
+            NoCodes.shared.showScreen("9F8uZvTX", object : NoCodesShowScreenCallback {
+                override fun onSuccess() {
+
+                }
+
+                override fun onError(error: NoCodesError) {
+                }
+            })
         }
 
         binding.buttonInApp.setOnClickListener {
