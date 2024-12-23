@@ -33,7 +33,6 @@ public class App extends MultiDexApplication {
                 QLaunchMode.SubscriptionManagement
         )
                 .setEnvironment(QEnvironment.Sandbox) // For Automation testing
-                .disableFacebookAttribution()
                 .build();
         Qonversion.initialize(qonversionConfig);
 
