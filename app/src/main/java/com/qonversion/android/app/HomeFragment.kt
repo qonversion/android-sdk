@@ -95,15 +95,7 @@ class HomeFragment : Fragment() {
         })
 
         binding.buttonSubscribe.setOnClickListener {
-//            purchase(productIdSubs)
-            NoCodes.shared.showScreen("9F8uZvTX", object : NoCodesShowScreenCallback {
-                override fun onSuccess() {
-
-                }
-
-                override fun onError(error: NoCodesError) {
-                }
-            })
+            purchase(productIdSubs)
         }
 
         binding.buttonInApp.setOnClickListener {
