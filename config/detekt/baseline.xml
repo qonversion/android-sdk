@@ -116,6 +116,7 @@
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"updatePurchase() -&gt; Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $productType is retrieved ${record.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$*</ID>
+    <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode, sendFbAttribution)</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
     <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))</ID>
@@ -135,6 +136,7 @@
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:131</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:146</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionConfig.kt:163</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:105</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:106</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:107</ID>
@@ -161,8 +163,8 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:162</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:213</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:164</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:215</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:287</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:356</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:878</ID>
@@ -205,6 +207,7 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:261</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:118</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
