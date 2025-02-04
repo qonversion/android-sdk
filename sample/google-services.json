@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "176235602178",
+    "project_id": "qonversion-sample-applic-eb8a7",
+    "storage_bucket": "qonversion-sample-applic-eb8a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176235602178:android:b090da6fa0510c7192621b",
+        "android_client_info": {
+          "package_name": "io.qonversion.sampleapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0fYxEeTDdoXZopKU54FtsN75FAcmZE9U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

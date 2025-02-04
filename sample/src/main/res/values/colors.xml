@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/colorQonversionBlue</color>
+    <color name="colorPrimaryDark">@color/colorQonversionBlueDark</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="colorQonversionBlue">#3D5DE1</color>
+    <color name="colorQonversionBlueDark">#344cb4</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorGreen">#34c759</color>
+</resources>
