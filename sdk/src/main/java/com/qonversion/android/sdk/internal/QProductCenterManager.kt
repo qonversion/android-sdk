@@ -443,7 +443,9 @@ internal class QProductCenterManager internal constructor(
             }
         } else {
             purchasingCallbacks.values.forEach {
-                it.onError(error.toQonversionError())
+                // Sometimes the callback might be dead at the moment of invocation
+                @Suppress("UNNECESSARY_SAFE_CALL")
+                it?.onError(error.toQonversionError())
             }
             purchasingCallbacks.clear()
         }
@@ -851,7 +853,9 @@ internal class QProductCenterManager internal constructor(
         val productsList = products.values.toList()
         billingService.enrichStoreData(productsList)
         callbacks.forEach { callback ->
-            callback.onSuccess(productsList.associateBy { it.qonversionID })
+            // Sometimes the callback might be dead at the moment of invocation
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            callback?.onSuccess(productsList.associateBy { it.qonversionID })
         }
     }
 
@@ -867,12 +871,16 @@ internal class QProductCenterManager internal constructor(
         preparePermissionsResult(
             { permissions ->
                 callbacks.forEach {
-                    it.onSuccess(permissions.toEntitlementsMap())
+                    // Sometimes the callback might be dead at the moment of invocation
+                    @Suppress("UNNECESSARY_SAFE_CALL")
+                    it?.onSuccess(permissions.toEntitlementsMap())
                 }
             },
             { error ->
                 callbacks.forEach {
-                    it.onError(error)
+                    // Sometimes the callback might be dead at the moment of invocation
+                    @Suppress("UNNECESSARY_SAFE_CALL")
+                    it?.onError(error)
                 }
             },
             actualError)
@@ -884,7 +892,11 @@ internal class QProductCenterManager internal constructor(
 
         isRestoreInProgress = false
 
-        callbacks.forEach { callback -> callback.onSuccess(entitlements) }
+        callbacks.forEach { callback ->
+            // Sometimes the callback might be dead at the moment of invocation
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            callback?.onSuccess(entitlements)
+        }
 
         handlePendingRequests()
     }
@@ -895,7 +907,11 @@ internal class QProductCenterManager internal constructor(
 
         isRestoreInProgress = false
 
-        callbacks.forEach { callback -> callback.onError(error) }
+        callbacks.forEach { callback ->
+            // Sometimes the callback might be dead at the moment of invocation
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            callback?.onError(error)
+        }
 
         handlePendingRequests(error)
     }
@@ -915,7 +931,9 @@ internal class QProductCenterManager internal constructor(
         error: QonversionError
     ) {
         callbacks.forEach {
-            it.onError(error)
+            // Sometimes the callback might be dead at the moment of invocation
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            it?.onError(error)
         }
     }
 

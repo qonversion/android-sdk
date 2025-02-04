@@ -5,7 +5,7 @@
 app/.gradle/
 app/.idea
 /build
-.idea/caches/build_file_checksums.ser
+.idea
 .project
 ReactAndroid/.project
 ReactAndroid/bin/
@@ -14,6 +14,7 @@ expoview/bin/
 expoview/.idea/
 tools/bin/
 app/mockFsDirectory/
+*.aab
 
 expoview/gradlew*
 
