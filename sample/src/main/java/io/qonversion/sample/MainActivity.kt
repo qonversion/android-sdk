@@ -8,7 +8,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
-import io.qonversion.sample.R
 import io.qonversion.sample.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

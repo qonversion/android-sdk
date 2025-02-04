@@ -146,7 +146,7 @@ class HomeFragment : Fragment() {
             override fun onSuccess(products: Map<String, QProduct>) {
                 val product = products[productId] ?: let {
                     Toast.makeText(requireContext(), "Product $productId not found", Toast.LENGTH_LONG).show()
-                    return;
+                    return
                 }
                 purchase(product)
             }

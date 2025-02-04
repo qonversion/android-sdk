@@ -45,7 +45,7 @@ class OfferingsFragment : Fragment() {
                     binding.recyclerViewProductsList.adapter = ProductsAdapter(it) { product ->
                         purchase(product)
                     }
-                } ?:  Toast.makeText(context, "There in no product in the main offering", Toast.LENGTH_LONG).show()
+                } ?: Toast.makeText(context, "There in no product in the main offering", Toast.LENGTH_LONG).show()
             }
 
             override fun onError(error: QonversionError) {

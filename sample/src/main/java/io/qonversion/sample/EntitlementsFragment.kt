@@ -15,7 +15,6 @@ import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import io.qonversion.sample.databinding.FragmentEntitlementsBinding
 
-
 private const val TAG = "EntitlementsFragment"
 
 class EntitlementsFragment : Fragment() {
