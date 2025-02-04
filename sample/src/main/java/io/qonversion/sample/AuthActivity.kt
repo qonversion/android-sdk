@@ -14,7 +14,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.qonversion.android.sdk.Qonversion
-import io.qonversion.sample.R
 
 private const val CODE_GOOGLE_AUTH = 5491
 

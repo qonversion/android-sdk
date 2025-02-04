@@ -19,7 +19,6 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import io.qonversion.sample.R
 import io.qonversion.sample.databinding.FragmentHomeBinding
 import java.util.*
 
