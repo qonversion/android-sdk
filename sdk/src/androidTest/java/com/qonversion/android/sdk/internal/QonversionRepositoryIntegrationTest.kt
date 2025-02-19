@@ -427,7 +427,7 @@ internal class QonversionRepositoryIntegrationTest {
             QAttributionProvider.AppsFlyer.id,
             { fail("Shouldn't succeed") },
             { error ->
-                assertAccessDeniedError(error)
+                assertIncorrectProjectKeyError(error)
                 signal.countDown()
             }
         )
