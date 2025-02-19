@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="io.qonversion.sample.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_entitlementsFragment"
+            app:destination="@id/entitlementsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_offeringsFragment"
+            app:destination="@id/offeringsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/entitlementsFragment"
+        android:name="io.qonversion.sample.EntitlementsFragment"
+        android:label="fragment_entitlements"
+        tools:layout="@layout/fragment_entitlements" />
+    <fragment
+        android:id="@+id/offeringsFragment"
+        android:name="io.qonversion.sample.OfferingsFragment"
+        android:label="fragment_offerings"
+        tools:layout="@layout/fragment_offerings" />
+</navigation>
