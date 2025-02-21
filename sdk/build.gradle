@@ -13,13 +13,14 @@ android {
         group = 'io.qonversion.android.sdk'
         version = release.versionName
         versionName = release.versionName
+        namespace = 'com.qonversion.android.sdk'
 
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '18'
     }
 
     buildTypes {
@@ -33,8 +34,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_18
+        targetCompatibility JavaVersion.VERSION_18
     }
 
     testOptions {
@@ -50,6 +51,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
