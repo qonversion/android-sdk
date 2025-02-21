@@ -57,7 +57,7 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
     private val annualProduct = QProduct("test_annual", "google_annual", null)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
+    private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,
@@ -283,9 +283,9 @@ internal class QonversionRepositoryIntegrationTest {
 
         val history = listOf(
             History(
-                "google_inapp",
-                "lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo",
-                1685953401,
+                "no_ads",
+                "efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ",
+                1740130240,
             )
         )
 
@@ -294,7 +294,7 @@ internal class QonversionRepositoryIntegrationTest {
                 "noAds",
                 "test_inapp",
                 QProductRenewState.NonRenewable,
-                Date(1685953401000),
+                Date(1740130240000),
                 null,
                 QEntitlementSource.PlayStore,
                 1,
@@ -427,7 +427,7 @@ internal class QonversionRepositoryIntegrationTest {
             QAttributionProvider.AppsFlyer.id,
             { fail("Shouldn't succeed") },
             { error ->
-                assertAccessDeniedError(error)
+                assertIncorrectProjectKeyError(error)
                 signal.countDown()
             }
         )

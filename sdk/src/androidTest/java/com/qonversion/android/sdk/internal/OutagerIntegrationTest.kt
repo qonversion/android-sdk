@@ -58,7 +58,7 @@ internal class OutagerIntegrationTest {
         null,
     )
     private val annualProduct = QProduct("test_annual", "google_annual", null)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
+    private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,

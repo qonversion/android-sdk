@@ -34,7 +34,7 @@ internal class NetworkInterceptor @Inject constructor(
                 .build()
 
             val response = chain.proceed(request)
-            if (response.code() in FATAL_ERRORS && apiHelper.isV1Request(request)) {
+            if (response.code() in FATAL_ERRORS && apiHelper.isDeprecatedEndpoint(request)) {
                 config.fatalError = HttpError(response.code(), response.message())
             }
 
