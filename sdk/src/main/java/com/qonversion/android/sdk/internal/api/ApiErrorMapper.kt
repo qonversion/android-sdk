@@ -21,7 +21,7 @@ internal class ApiErrorMapper @Inject constructor(private val helper: ApiHelper)
                 val responseObj = JSONObject(responseBodyStr)
 
                 val request = value.raw().request()
-                if (helper.isV1Request(request)) {
+                if (helper.isDeprecatedEndpoint(request)) {
                     val dataObj = responseObj.getJsonObject(DATA)
                     dataObj.toFormatString(DATA)?.let { errStr ->
                         errorMessage = errStr
