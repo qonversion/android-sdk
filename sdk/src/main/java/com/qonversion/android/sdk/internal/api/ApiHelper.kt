@@ -4,7 +4,7 @@ import okhttp3.Request
 
 internal class ApiHelper(apiUrl: String) {
 
-    private val v0MethodsRegex = "${apiUrl}(?!v\\d+/).*"
+    private val v0MethodsRegex = "$apiUrl(?!v\\d+/).*"
     private val v1MethodsRegex = "${apiUrl}v1/.*"
 
     fun isDeprecatedEndpoint(request: Request) = isV0Request(request) || isV1Request(request)
