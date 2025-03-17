@@ -28,6 +28,7 @@ import com.qonversion.android.sdk.dto.entitlements.QEntitlementsCacheLifetime
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductType
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.BillingService
@@ -394,7 +395,7 @@ internal class QProductCenterManager internal constructor(
         handlePendingRequests()
     }
 
-    fun restore(callback: QonversionEntitlementsCallback? = null) {
+    fun restore(requestTrigger: RequestTrigger, callback: QonversionEntitlementsCallback? = null) {
         callback?.let { restoreCallbacks.add(it) }
 
         if (isRestoreInProgress) {
@@ -422,12 +423,14 @@ internal class QProductCenterManager internal constructor(
                             executeRestoreBlocksOnError(error)
                         }
                     }
-                })
+                },
+                requestTrigger
+            )
         }
     }
 
     fun syncPurchases() {
-        restore()
+        restore(RequestTrigger.SyncPurchases)
     }
 
     override fun onPurchasesCompleted(purchases: List<Purchase>) {

@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
@@ -244,11 +245,12 @@ internal class DefaultRepository internal constructor(
     override fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     ) {
         val history = convertHistory(historyRecords)
 
-        restoreRequest(installDate, history, callback)
+        restoreRequest(installDate, history, callback, requestTrigger)
     }
 
     override fun attribution(
@@ -494,7 +496,7 @@ internal class DefaultRepository internal constructor(
             purchase = convertPurchaseDetails(purchase, qProductId),
         )
 
-        api.purchase(purchaseRequest).enqueue {
+        api.purchase(purchaseRequest, RequestTrigger.Purchase.key, attemptIndex + 1).enqueue {
             onResponse = {
                 logger.debug("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -614,7 +616,8 @@ internal class DefaultRepository internal constructor(
     internal fun restoreRequest(
         installDate: Long,
         history: List<History>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        trigger: RequestTrigger,
     ) {
         val request = RestoreRequest(
             installDate = installDate,
@@ -626,7 +629,7 @@ internal class DefaultRepository internal constructor(
             history = history
         )
 
-        api.restore(request).enqueue {
+        api.restore(request, trigger.key).enqueue {
             onResponse = {
                 logger.debug("restoreRequest - ${it.getLogMessage()}")
 
@@ -634,7 +637,7 @@ internal class DefaultRepository internal constructor(
             }
             onFailure = {
                 logger.error("restoreRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError())
+                callback.onError(it.toQonversionError())
             }
         }
     }

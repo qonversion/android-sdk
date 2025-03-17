@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.api.RequestType
 import com.qonversion.android.sdk.internal.api.RateLimiter
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
@@ -138,14 +139,15 @@ internal class RepositoryWithRateLimits(
     override fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     ) {
         withRateLimitCheck(
             RequestType.Restore,
             installDate.hashCode() + historyRecords.hashCode(),
-            { error -> callback?.onError(error) }
+            { error -> callback.onError(error) }
         ) {
-            repository.restore(installDate, historyRecords, callback)
+            repository.restore(installDate, historyRecords, callback, requestTrigger)
         }
     }
 

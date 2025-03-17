@@ -21,6 +21,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
@@ -150,7 +151,7 @@ internal class QonversionInternal(
             return
         }
 
-        Qonversion.shared.restore(callback = object : QonversionEntitlementsCallback {
+        productCenterManager.restore(RequestTrigger.SyncHistoricalData, callback = object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                 sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
             }
@@ -342,7 +343,7 @@ internal class QonversionInternal(
     }
 
     override fun restore(callback: QonversionEntitlementsCallback) {
-        productCenterManager.restore(mainEntitlementsCallback(callback))
+        productCenterManager.restore(RequestTrigger.Restore, mainEntitlementsCallback(callback))
     }
 
     override fun syncPurchases() {

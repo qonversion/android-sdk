@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -269,7 +270,7 @@ internal class OutagerIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback)
+            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
         }
 
         signal.await()
