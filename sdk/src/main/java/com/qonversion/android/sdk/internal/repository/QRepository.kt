@@ -19,7 +19,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachC
 
 internal interface QRepository {
 
-    fun init(initRequestData: InitRequestData)
+    fun init(requestData: InitRequestData)
 
     fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback)
 

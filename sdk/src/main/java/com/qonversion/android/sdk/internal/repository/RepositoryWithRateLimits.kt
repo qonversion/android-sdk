@@ -24,13 +24,13 @@ internal class RepositoryWithRateLimits(
     private val repository: QRepository,
     private val rateLimiter: RateLimiter,
 ) : QRepository {
-    override fun init(initRequestData: InitRequestData) {
+    override fun init(requestData: InitRequestData) {
         withRateLimitCheck(
             RequestType.Init,
-            initRequestData.hashCode(),
-            { error -> initRequestData.callback?.onError(error) }
+            requestData.hashCode(),
+            { error -> requestData.callback?.onError(error) }
         ) {
-            repository.init(initRequestData)
+            repository.init(requestData)
         }
     }
 

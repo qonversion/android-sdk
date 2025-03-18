@@ -125,7 +125,8 @@ internal class OutagerIntegrationTest {
                 override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid)
@@ -526,7 +527,8 @@ internal class OutagerIntegrationTest {
                 override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
-            }
+            },
+            RequestTrigger.Init
         )
         repository.init(data)
     }

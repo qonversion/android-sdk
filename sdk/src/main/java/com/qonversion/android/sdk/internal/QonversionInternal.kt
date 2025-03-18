@@ -23,7 +23,6 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
@@ -32,7 +31,6 @@ import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
-import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
@@ -119,7 +117,7 @@ internal class QonversionInternal(
         val lifecycleHandler = AppLifecycleHandler(this)
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
-        launch()
+        productCenterManager.launch(RequestTrigger.Init)
     }
 
     override fun onAppBackground() {
@@ -134,14 +132,6 @@ internal class QonversionInternal(
         userPropertiesManager.onAppForeground()
         productCenterManager.onAppForeground()
         attributionManager.onAppForeground()
-    }
-
-    private fun launch() {
-        productCenterManager.launch(object : QonversionLaunchCallback {
-            override fun onSuccess(launchResult: QLaunchResult) {}
-
-            override fun onError(error: QonversionError) {}
-        })
     }
 
     override fun syncHistoricalData() {

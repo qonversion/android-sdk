@@ -37,7 +37,10 @@ import retrofit2.http.Url
 internal interface Api {
 
     @POST("v1/user/init")
-    fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
+    fun init(
+        @Body request: InitRequest,
+        @Header("Trigger") trigger: String
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/purchase")
     fun purchase(

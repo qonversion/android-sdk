@@ -120,7 +120,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid)
@@ -151,7 +152,8 @@ internal class QonversionRepositoryIntegrationTest {
                     assertIncorrectProjectKeyError(error)
                     signal.countDown()
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
@@ -851,7 +853,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
-            }
+            },
+            RequestTrigger.Init
         )
         repository.init(data)
     }

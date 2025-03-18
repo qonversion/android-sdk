@@ -73,11 +73,37 @@ internal class DefaultRepository internal constructor(
 
     // Public functions
 
-    override fun init(initRequestData: InitRequestData) {
-        advertisingId = initRequestData.idfa
-        this.installDate = initRequestData.installDate
+    override fun init(requestData: InitRequestData) {
+        advertisingId = requestData.idfa
+        this.installDate = requestData.installDate
 
-        initRequest(initRequestData.purchases, initRequestData.callback)
+        val inapps: List<Inapp> = convertPurchases(requestData.purchases)
+        val initRequest = InitRequest(
+            installDate = installDate,
+            device = environmentProvider.getInfo(advertisingId),
+            version = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            debugMode = isDebugMode.stringValue(),
+            purchases = inapps
+        )
+
+        api.init(initRequest, requestData.requestTrigger.key).enqueue {
+            onResponse = {
+                logger.debug("initRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (body != null && body.success) {
+                    requestData.callback?.onSuccess(body.data)
+                } else {
+                    requestData.callback?.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.error("initRequest - failure - ${it.toQonversionError()}")
+                requestData.callback?.onError(it.toQonversionError())
+            }
+        }
     }
 
     override fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
@@ -651,39 +677,6 @@ internal class DefaultRepository internal constructor(
             callback?.onSuccess(body.data)
         } else {
             callback?.onError(errorMapper.getErrorFromResponse(response))
-        }
-    }
-
-    private fun initRequest(
-        purchases: List<Purchase>? = null,
-        callback: QonversionLaunchCallback? = null
-    ) {
-        val inapps: List<Inapp> = convertPurchases(purchases)
-        val initRequest = InitRequest(
-            installDate = installDate,
-            device = environmentProvider.getInfo(advertisingId),
-            version = sdkVersion,
-            accessToken = key,
-            clientUid = uid,
-            debugMode = isDebugMode.stringValue(),
-            purchases = inapps
-        )
-
-        api.init(initRequest).enqueue {
-            onResponse = {
-                logger.debug("initRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && body.success) {
-                    callback?.onSuccess(body.data)
-                } else {
-                    callback?.onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("initRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError())
-            }
         }
     }
 

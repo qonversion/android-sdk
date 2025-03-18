@@ -127,7 +127,7 @@ internal class QProductCenterManager internal constructor(
         processPendingInitIfAvailable()
     }
 
-    fun launch(callback: QonversionLaunchCallback? = null) {
+    fun launch(requestTrigger: RequestTrigger, callback: QonversionLaunchCallback? = null) {
         val launchCallback: QonversionLaunchCallback = getLaunchCallback(callback)
         launchError = null
         launchResultCache.resetSessionCache()
@@ -137,15 +137,15 @@ internal class QProductCenterManager internal constructor(
             adProvider.init(context, object : AdvertisingProvider.Callback {
                 override fun onSuccess(advertisingId: String) {
                     advertisingID = advertisingId
-                    continueLaunchWithPurchasesInfo(launchCallback)
+                    continueLaunchWithPurchasesInfo(launchCallback, requestTrigger)
                 }
 
                 override fun onFailure(t: Throwable) {
-                    continueLaunchWithPurchasesInfo(launchCallback)
+                    continueLaunchWithPurchasesInfo(launchCallback, requestTrigger)
                 }
             })
         } else {
-            continueLaunchWithPurchasesInfo(launchCallback)
+            continueLaunchWithPurchasesInfo(launchCallback, requestTrigger)
         }
     }
 
@@ -157,7 +157,7 @@ internal class QProductCenterManager internal constructor(
 
         launchResultCache.sessionLaunchResult?.let {
             loadStoreProductsIfPossible()
-        } ?: launch()
+        } ?: launch(RequestTrigger.Products)
     }
 
     fun offerings(
@@ -205,7 +205,13 @@ internal class QProductCenterManager internal constructor(
                 }
             }
 
-            val initRequestData = InitRequestData(installDate, advertisingID, callback = launchCallback)
+            val initRequestData = InitRequestData(
+                installDate,
+                advertisingID,
+                null,
+                launchCallback,
+                RequestTrigger.Identify
+            )
             repository.init(initRequestData)
         } else {
             processIdentity(identityId)
@@ -227,7 +233,7 @@ internal class QProductCenterManager internal constructor(
                     internalConfig.uid = qonversionUid
                     remoteConfigManager.onUserUpdate()
                     launchResultCache.clearPermissionsCache()
-                    launch(object : QonversionLaunchCallback {
+                    launch(RequestTrigger.Identify, object : QonversionLaunchCallback {
                         override fun onSuccess(launchResult: QLaunchResult) {
                             fireIdentitySuccess(identityId)
                         }
@@ -310,7 +316,8 @@ internal class QProductCenterManager internal constructor(
         if (launchError != null) {
             retryLaunch(
                 onSuccess = { tryToPurchase() },
-                onError = { tryToPurchase() }
+                onError = { tryToPurchase() },
+                requestTrigger = RequestTrigger.Purchase,
             )
         } else {
             tryToPurchase()
@@ -660,11 +667,12 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun continueLaunchWithPurchasesInfo(
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     ) {
         fun processInitDefault() {
             val initRequestData =
-                InitRequestData(installDate, advertisingID, callback = callback)
+                InitRequestData(installDate, advertisingID, null, callback, requestTrigger)
             processInit(initRequestData)
         }
 
@@ -690,7 +698,8 @@ internal class QProductCenterManager internal constructor(
                 installDate,
                 advertisingID,
                 purchasesInfo,
-                handledPurchasesCallback
+                handledPurchasesCallback,
+                requestTrigger
             )
             processInit(initRequestData)
         }
@@ -698,7 +707,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun getWrappedPurchasesCallback(
         trackingPurchases: List<Purchase>,
-        outerCallback: QonversionLaunchCallback?
+        outerCallback: QonversionLaunchCallback
     ): QonversionLaunchCallback {
         return object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
@@ -706,11 +715,11 @@ internal class QProductCenterManager internal constructor(
                 trackingPurchases.forEach {
                     removePurchaseOptions(it.productId)
                 }
-                outerCallback?.onSuccess(launchResult)
+                outerCallback.onSuccess(launchResult)
             }
 
             override fun onError(error: QonversionError) {
-                outerCallback?.onError(error)
+                outerCallback.onError(error)
             }
         }
     }
@@ -776,7 +785,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun handleLogout() {
         unhandledLogoutAvailable = false
-        launch()
+        launch(RequestTrigger.Logout)
     }
 
     private fun updateLaunchResult(launchResult: QLaunchResult) {
@@ -921,9 +930,10 @@ internal class QProductCenterManager internal constructor(
 
     private fun retryLaunch(
         onSuccess: (QLaunchResult) -> Unit,
-        onError: (QonversionError) -> Unit
+        onError: (QonversionError) -> Unit,
+        requestTrigger: RequestTrigger,
     ) {
-        launch(object : QonversionLaunchCallback {
+        launch(requestTrigger, object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) = onSuccess(launchResult)
             override fun onError(error: QonversionError) = onError(error)
         })
@@ -957,7 +967,9 @@ internal class QProductCenterManager internal constructor(
                     cachedPermissions?.let {
                         onSuccess(it)
                     } ?: onError(error)
-                })
+                },
+                requestTrigger = RequestTrigger.ActualizePermissions
+            )
         }
 
         val permissions = launchResultCache.getActualPermissions() ?: emptyMap()
