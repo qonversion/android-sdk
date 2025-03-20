@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserProperty
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -57,7 +58,7 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
     private val annualProduct = QProduct("test_annual", "google_annual", null)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
+    private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,
@@ -119,7 +120,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid)
@@ -150,7 +152,8 @@ internal class QonversionRepositoryIntegrationTest {
                     assertIncorrectProjectKeyError(error)
                     signal.countDown()
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
@@ -283,9 +286,9 @@ internal class QonversionRepositoryIntegrationTest {
 
         val history = listOf(
             History(
-                "google_inapp",
-                "lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo",
-                1685953401,
+                "no_ads",
+                "efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ",
+                1740130240,
             )
         )
 
@@ -294,7 +297,7 @@ internal class QonversionRepositoryIntegrationTest {
                 "noAds",
                 "test_inapp",
                 QProductRenewState.NonRenewable,
-                Date(1685953401000),
+                Date(1740130240000),
                 null,
                 QEntitlementSource.PlayStore,
                 1,
@@ -339,7 +342,7 @@ internal class QonversionRepositoryIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback)
+            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
         }
 
         signal.await()
@@ -373,7 +376,7 @@ internal class QonversionRepositoryIntegrationTest {
         val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
 
         // when
-        repository.restoreRequest(installDate, history, callback)
+        repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
 
         signal.await()
     }
@@ -427,7 +430,7 @@ internal class QonversionRepositoryIntegrationTest {
             QAttributionProvider.AppsFlyer.id,
             { fail("Shouldn't succeed") },
             { error ->
-                assertAccessDeniedError(error)
+                assertIncorrectProjectKeyError(error)
                 signal.countDown()
             }
         )
@@ -850,7 +853,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
-            }
+            },
+            RequestTrigger.Init
         )
         repository.init(data)
     }

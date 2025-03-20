@@ -22,10 +22,14 @@ internal class ApiHeadersProvider @Inject constructor(
 
     private fun getLocale() = Locale.getDefault().language
 
-    fun getHeaders(): Headers {
+    fun getHeaders(specificHeaders: Headers): Headers {
         val headerBuilder = Headers.Builder()
         for ((key, value) in getHeadersMap()) {
             headerBuilder.add(key, value)
+        }
+        specificHeaders.names().forEach { header ->
+            val value = specificHeaders.get(header)
+            value?.let { headerBuilder.add(header, value) }
         }
 
         return headerBuilder.build()

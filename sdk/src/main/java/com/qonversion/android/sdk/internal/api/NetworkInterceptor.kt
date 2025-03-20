@@ -30,11 +30,11 @@ internal class NetworkInterceptor @Inject constructor(
         } else {
             var request = chain.request()
             request = request.newBuilder()
-                .headers(headersProvider.getHeaders())
+                .headers(headersProvider.getHeaders(request.headers()))
                 .build()
 
             val response = chain.proceed(request)
-            if (response.code() in FATAL_ERRORS && apiHelper.isV1Request(request)) {
+            if (response.code() in FATAL_ERRORS && apiHelper.isDeprecatedEndpoint(request)) {
                 config.fatalError = HttpError(response.code(), response.message())
             }
 

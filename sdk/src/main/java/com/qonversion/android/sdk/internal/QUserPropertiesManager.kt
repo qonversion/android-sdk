@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.properties.QUserProperties
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -106,15 +107,18 @@ internal class QUserPropertiesManager @Inject internal constructor(
                     isRequestInProgress = false
 
                     if (it.code === QonversionErrorCode.InvalidClientUid) {
-                        productCenterManager?.launch(callback = object : QonversionLaunchCallback {
-                            override fun onSuccess(launchResult: QLaunchResult) {
-                                retryPropertiesRequest()
-                            }
+                        productCenterManager?.launch(
+                            RequestTrigger.UserProperties,
+                            object : QonversionLaunchCallback {
+                                override fun onSuccess(launchResult: QLaunchResult) {
+                                    retryPropertiesRequest()
+                                }
 
-                            override fun onError(error: QonversionError) {
-                                retryPropertiesRequest()
+                                override fun onError(error: QonversionError) {
+                                    retryPropertiesRequest()
+                                }
                             }
-                        })
+                        )
                     } else {
                         retryPropertiesRequest()
                     }
