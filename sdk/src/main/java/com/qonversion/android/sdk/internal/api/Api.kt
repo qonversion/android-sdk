@@ -27,6 +27,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.http.DELETE
+import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.QueryMap
 import retrofit2.http.Headers
@@ -36,13 +37,23 @@ import retrofit2.http.Url
 internal interface Api {
 
     @POST("v1/user/init")
-    fun init(@Body request: InitRequest): Call<BaseResponse<QLaunchResult>>
+    fun init(
+        @Body request: InitRequest,
+        @Header("Trigger") trigger: String
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/purchase")
-    fun purchase(@Body request: PurchaseRequest): Call<BaseResponse<QLaunchResult>>
+    fun purchase(
+        @Body request: PurchaseRequest,
+        @Header("Trigger") trigger: String,
+        @Header("Attempt") attemptNumber: Int
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("v1/user/restore")
-    fun restore(@Body request: RestoreRequest): Call<BaseResponse<QLaunchResult>>
+    fun restore(
+        @Body request: RestoreRequest,
+        @Header("Trigger") trigger: String
+    ): Call<BaseResponse<QLaunchResult>>
 
     @POST("attribution")
     fun attribution(@Body request: AttributionRequest): Call<BaseResponse<Response>>

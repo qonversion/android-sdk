@@ -30,7 +30,7 @@ internal class NetworkInterceptor @Inject constructor(
         } else {
             var request = chain.request()
             request = request.newBuilder()
-                .headers(headersProvider.getHeaders())
+                .headers(headersProvider.getHeaders(request.headers()))
                 .build()
 
             val response = chain.proceed(request)

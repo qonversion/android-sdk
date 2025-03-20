@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserProperty
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -119,7 +120,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid)
@@ -150,7 +152,8 @@ internal class QonversionRepositoryIntegrationTest {
                     assertIncorrectProjectKeyError(error)
                     signal.countDown()
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
@@ -339,7 +342,7 @@ internal class QonversionRepositoryIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback)
+            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
         }
 
         signal.await()
@@ -373,7 +376,7 @@ internal class QonversionRepositoryIntegrationTest {
         val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
 
         // when
-        repository.restoreRequest(installDate, history, callback)
+        repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
 
         signal.await()
     }
@@ -850,7 +853,8 @@ internal class QonversionRepositoryIntegrationTest {
                 override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
-            }
+            },
+            RequestTrigger.Init
         )
         repository.init(data)
     }

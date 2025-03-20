@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
@@ -72,11 +73,37 @@ internal class DefaultRepository internal constructor(
 
     // Public functions
 
-    override fun init(initRequestData: InitRequestData) {
-        advertisingId = initRequestData.idfa
-        this.installDate = initRequestData.installDate
+    override fun init(requestData: InitRequestData) {
+        advertisingId = requestData.idfa
+        this.installDate = requestData.installDate
 
-        initRequest(initRequestData.purchases, initRequestData.callback)
+        val inapps: List<Inapp> = convertPurchases(requestData.purchases)
+        val initRequest = InitRequest(
+            installDate = installDate,
+            device = environmentProvider.getInfo(advertisingId),
+            version = sdkVersion,
+            accessToken = key,
+            clientUid = uid,
+            debugMode = isDebugMode.stringValue(),
+            purchases = inapps
+        )
+
+        api.init(initRequest, requestData.requestTrigger.key).enqueue {
+            onResponse = {
+                logger.debug("initRequest - ${it.getLogMessage()}")
+
+                val body = it.body()
+                if (body != null && body.success) {
+                    requestData.callback?.onSuccess(body.data)
+                } else {
+                    requestData.callback?.onError(errorMapper.getErrorFromResponse(it))
+                }
+            }
+            onFailure = {
+                logger.error("initRequest - failure - ${it.toQonversionError()}")
+                requestData.callback?.onError(it.toQonversionError())
+            }
+        }
     }
 
     override fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback) {
@@ -244,11 +271,12 @@ internal class DefaultRepository internal constructor(
     override fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     ) {
         val history = convertHistory(historyRecords)
 
-        restoreRequest(installDate, history, callback)
+        restoreRequest(installDate, history, callback, requestTrigger)
     }
 
     override fun attribution(
@@ -494,7 +522,7 @@ internal class DefaultRepository internal constructor(
             purchase = convertPurchaseDetails(purchase, qProductId),
         )
 
-        api.purchase(purchaseRequest).enqueue {
+        api.purchase(purchaseRequest, RequestTrigger.Purchase.key, attemptIndex + 1).enqueue {
             onResponse = {
                 logger.debug("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -614,7 +642,8 @@ internal class DefaultRepository internal constructor(
     internal fun restoreRequest(
         installDate: Long,
         history: List<History>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        trigger: RequestTrigger,
     ) {
         val request = RestoreRequest(
             installDate = installDate,
@@ -626,7 +655,7 @@ internal class DefaultRepository internal constructor(
             history = history
         )
 
-        api.restore(request).enqueue {
+        api.restore(request, trigger.key).enqueue {
             onResponse = {
                 logger.debug("restoreRequest - ${it.getLogMessage()}")
 
@@ -634,7 +663,7 @@ internal class DefaultRepository internal constructor(
             }
             onFailure = {
                 logger.error("restoreRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError())
+                callback.onError(it.toQonversionError())
             }
         }
     }
@@ -648,39 +677,6 @@ internal class DefaultRepository internal constructor(
             callback?.onSuccess(body.data)
         } else {
             callback?.onError(errorMapper.getErrorFromResponse(response))
-        }
-    }
-
-    private fun initRequest(
-        purchases: List<Purchase>? = null,
-        callback: QonversionLaunchCallback? = null
-    ) {
-        val inapps: List<Inapp> = convertPurchases(purchases)
-        val initRequest = InitRequest(
-            installDate = installDate,
-            device = environmentProvider.getInfo(advertisingId),
-            version = sdkVersion,
-            accessToken = key,
-            clientUid = uid,
-            debugMode = isDebugMode.stringValue(),
-            purchases = inapps
-        )
-
-        api.init(initRequest).enqueue {
-            onResponse = {
-                logger.debug("initRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && body.success) {
-                    callback?.onSuccess(body.data)
-                } else {
-                    callback?.onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("initRequest - failure - ${it.toQonversionError()}")
-                callback?.onError(it.toQonversionError())
-            }
         }
     }
 
