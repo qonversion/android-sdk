@@ -19,10 +19,6 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    kotlinOptions {
-        jvmTarget = '18'
-    }
-
     buildTypes {
         buildTypes.each {
             it.buildConfigField("String","VERSION_NAME", "\"${defaultConfig.versionName}\"")
@@ -33,9 +29,8 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_18
-        targetCompatibility JavaVersion.VERSION_18
+    kotlin {
+        jvmToolchain(18)
     }
 
     testOptions {
@@ -67,7 +62,7 @@ ext {
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
 
-    moshiVersion = '1.14.0'
+    moshiVersion = '1.15.2'
     retrofit_version = '2.9.0'
     okhttp_version = '3.12.13'
     billing = '7.0.0'
