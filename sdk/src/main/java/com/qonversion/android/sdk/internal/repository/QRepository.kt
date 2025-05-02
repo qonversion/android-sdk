@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.repository
 
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.properties.QUserProperty
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
@@ -18,7 +19,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachC
 
 internal interface QRepository {
 
-    fun init(initRequestData: InitRequestData)
+    fun init(requestData: InitRequestData)
 
     fun remoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback)
 
@@ -61,7 +62,8 @@ internal interface QRepository {
     fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     )
 
     fun attribution(

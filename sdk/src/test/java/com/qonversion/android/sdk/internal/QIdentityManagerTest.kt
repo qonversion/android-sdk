@@ -39,8 +39,8 @@ internal class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
-                    resultUserID = identityID
+                override fun onSuccess(qonversionUid: String) {
+                    resultUserID = qonversionUid
                 }
                 override fun onError(error: QonversionError) {}
             })
@@ -62,8 +62,8 @@ internal class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {
-                    resultUserID = identityID
+                override fun onSuccess(qonversionUid: String) {
+                    resultUserID = qonversionUid
                 }
                 override fun onError(error: QonversionError) {}
             })
@@ -84,7 +84,7 @@ internal class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUid: String) {}
                 override fun onError(error: QonversionError) {}
             })
 
@@ -109,7 +109,7 @@ internal class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUid: String) {}
                 override fun onError(error: QonversionError) {}
             })
 
@@ -140,7 +140,7 @@ internal class QIdentityManagerTest {
 
             // when
             identityManager.identify(newUserID, object : IdentityManagerCallback {
-                override fun onSuccess(identityID: String) {}
+                override fun onSuccess(qonversionUid: String) {}
                 override fun onError(error: QonversionError) {
                     qError = error
                 }

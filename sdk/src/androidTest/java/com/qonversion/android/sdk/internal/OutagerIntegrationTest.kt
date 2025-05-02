@@ -18,6 +18,7 @@ import com.qonversion.android.sdk.dto.offerings.QOffering
 import com.qonversion.android.sdk.dto.offerings.QOfferingTag
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
@@ -58,7 +59,7 @@ internal class OutagerIntegrationTest {
         null,
     )
     private val annualProduct = QProduct("test_annual", "google_annual", null)
-    private val inappProduct = QProduct("test_inapp", "google_inapp", null)
+    private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionID to monthlyProduct,
         annualProduct.qonversionID to annualProduct,
@@ -124,7 +125,8 @@ internal class OutagerIntegrationTest {
                 override fun onError(error: QonversionError) {
                     fail("Shouldn't fail")
                 }
-            }
+            },
+            RequestTrigger.Init
         )
 
         val repository = initRepository(uid)
@@ -269,7 +271,7 @@ internal class OutagerIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback)
+            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
         }
 
         signal.await()
@@ -525,7 +527,8 @@ internal class OutagerIntegrationTest {
                 override fun onError(error: QonversionError) {
                     onComplete(error)
                 }
-            }
+            },
+            RequestTrigger.Init
         )
         repository.init(data)
     }

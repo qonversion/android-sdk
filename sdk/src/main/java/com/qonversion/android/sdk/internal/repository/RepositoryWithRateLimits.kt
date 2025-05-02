@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.api.RequestType
 import com.qonversion.android.sdk.internal.api.RateLimiter
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
 import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
@@ -23,13 +24,13 @@ internal class RepositoryWithRateLimits(
     private val repository: QRepository,
     private val rateLimiter: RateLimiter,
 ) : QRepository {
-    override fun init(initRequestData: InitRequestData) {
+    override fun init(requestData: InitRequestData) {
         withRateLimitCheck(
             RequestType.Init,
-            initRequestData.hashCode(),
-            { error -> initRequestData.callback?.onError(error) }
+            requestData.hashCode(),
+            { error -> requestData.callback?.onError(error) }
         ) {
-            repository.init(initRequestData)
+            repository.init(requestData)
         }
     }
 
@@ -138,14 +139,15 @@ internal class RepositoryWithRateLimits(
     override fun restore(
         installDate: Long,
         historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback?
+        callback: QonversionLaunchCallback,
+        requestTrigger: RequestTrigger,
     ) {
         withRateLimitCheck(
             RequestType.Restore,
             installDate.hashCode() + historyRecords.hashCode(),
-            { error -> callback?.onError(error) }
+            { error -> callback.onError(error) }
         ) {
-            repository.restore(installDate, historyRecords, callback)
+            repository.restore(installDate, historyRecords, callback, requestTrigger)
         }
     }
 

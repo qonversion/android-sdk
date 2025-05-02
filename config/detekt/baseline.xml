@@ -12,7 +12,6 @@
     <ID>EmptyFunctionBlock:QAutomationsManagerTest.kt$QAutomationsManagerTest.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
-    <ID>EmptyFunctionBlock:QonversionInternal.kt$QonversionInternal.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:1</ID>
@@ -30,6 +29,7 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
+    <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
@@ -120,12 +120,14 @@
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$"updatePurchase() -&gt; Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"</ID>
     <ID>MaxLineLength:QonversionBillingService.kt$QonversionBillingService$logger.debug("queryPurchaseHistoryAsync() -&gt; purchase history for $productType is retrieved ${record.getDescription()}")</ID>
     <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$*</ID>
+    <ID>MaxLineLength:QonversionConfig.kt$QonversionConfig.Builder$val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode, sendFbAttribution)</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
     <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))</ID>
     <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))</ID>
+    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$productCenterManager</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"""HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """</ID>
-    <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lcbfeigohklhpdgmpildjabg.AO-J1OyV-EE2bKGqDcRCvqjZ2NI1uHDRuvonRn5RorP6LNsyK7yHK8FaFlXp6bjTEX3-4JvZKtbY_bpquKBfux09Mfkx05M9YGZsfsr5BJk74r719m77Oyo"</ID>
+    <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
@@ -137,8 +139,10 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}]"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}],"</ID>
     <ID>MaxLineLength:utils.kt$"ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"</ID>
+    <ID>MaxLineLength:utils.kt$val msg = "error code: ${error.code}, description: ${error.description}, additionalMessage: ${error.additionalMessage}"</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:131</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:146</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionConfig.kt:163</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:105</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:106</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:107</ID>
@@ -157,20 +161,21 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:120</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:139</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:371</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:90</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:333</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:216</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:373</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:91</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:341</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:162</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:213</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:287</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:356</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:878</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:89</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:144</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:155</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:206</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:290</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:359</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:882</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:90</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:119</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:253</ID>
@@ -189,6 +194,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:222</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
+    <ID>MaximumLineLength:io.qonversion.sample.utils.kt:10</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
@@ -209,6 +215,7 @@
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:261</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:118</ID>
+    <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
@@ -245,6 +252,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
+    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:23</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
@@ -264,6 +272,7 @@
     <ID>SpacingAroundParens:com.qonversion.android.sdk.utils.kt:66</ID>
     <ID>StringTemplate:com.qonversion.android.sdk.utils.kt:50</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
+    <ID>SwallowedException:AuthActivity.kt$AuthActivity$catch (e: ApiException) { showGoogleLoginError() }</ID>
     <ID>SwallowedException:Automations.kt$Automations.Companion$catch (e: UninitializedPropertyAccessException) { throw UninitializedPropertyAccessException("Qonversion has not been initialized. " + "Automations should be used after Qonversion is initialized.") }</ID>
     <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.error("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
@@ -301,6 +310,7 @@
     <ID>TooManyFunctions:BillingClientWrapper.kt$BillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
     <ID>TooManyFunctions:Cache.kt$Cache</ID>
     <ID>TooManyFunctions:DefaultRepository.kt$DefaultRepository : QRepository</ID>
+    <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : Fragment</ID>
     <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
     <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>

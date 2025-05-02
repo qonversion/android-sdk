@@ -13,13 +13,10 @@ android {
         group = 'io.qonversion.android.sdk'
         version = release.versionName
         versionName = release.versionName
+        namespace = 'com.qonversion.android.sdk'
 
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
     }
 
     buildTypes {
@@ -32,9 +29,8 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+    kotlin {
+        jvmToolchain(17)
     }
 
     testOptions {
@@ -50,6 +46,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -65,7 +62,7 @@ ext {
     PUBLISH_GROUP_ID = 'io.qonversion.android.sdk'
     PUBLISH_ARTIFACT_ID = 'sdk'
 
-    moshiVersion = '1.14.0'
+    moshiVersion = '1.15.2'
     retrofit_version = '2.9.0'
     okhttp_version = '3.12.13'
     billing = '7.0.0'

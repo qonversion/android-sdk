@@ -50,6 +50,7 @@ class QonversionConfig internal constructor(
         internal var entitlementsUpdateListener: QEntitlementsUpdateListener? = null
         internal var proxyUrl: String? = null
         internal var isKidsMode: Boolean = false
+        internal var sendFbAttribution: Boolean = true
         @RawRes
         internal var fallbackFileIdentifier: Int? = null
 
@@ -134,6 +135,15 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Use this function to disable tracking of Facebook Attribution ID.
+         * It may be helpful if you face "Social Account information tracking without
+         * a prominent disclosure" warning during the Google Play Review.
+         */
+        fun disableFacebookAttribution(): Builder = apply {
+            sendFbAttribution = false
+        }
+
+        /**
          * Generate [QonversionConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -150,7 +160,7 @@ class QonversionConfig internal constructor(
                 Log.w("Qonversion", "Environment level is set to Sandbox for release build.")
             }
 
-            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode)
+            val primaryConfig = PrimaryConfig(projectKey, launchMode, environment, proxyUrl, isKidsMode, sendFbAttribution)
             val cacheConfig = CacheConfig(entitlementsCacheLifetime, fallbackFileIdentifier)
 
             return QonversionConfig(
