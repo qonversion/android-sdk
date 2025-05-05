@@ -8,9 +8,9 @@ internal class RequestConfiguratorImpl(
     private val baseUrl: String,
 ) : RequestConfigurator {
 
-    override fun configureScreenRequest(screenId: String): Request {
+    override fun configureScreenRequest(contextKey: String): Request {
         val headers = headerBuilder.buildCommonHeaders()
 
-        return Request.get("$baseUrl/${ApiEndpoint.Screen.path}/$screenId", headers)
+        return Request.get("$baseUrl/${ApiEndpoint.Screen.path}?context_key=$contextKey", headers)
     }
 }

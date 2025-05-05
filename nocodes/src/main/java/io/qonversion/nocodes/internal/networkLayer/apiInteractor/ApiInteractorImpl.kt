@@ -64,11 +64,7 @@ internal class ApiInteractorImpl(
             }
 
             if (response?.isSuccess == true) {
-                val data = response.getResponsePayload()["data"]
-                    ?: throw NoCodesException(
-                        ErrorCode.BadResponse,
-                        "No data provided in response"
-                    )
+                val data = response.getResponsePayload()
                 Response.Success(response.code, data)
             } else {
                 if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {

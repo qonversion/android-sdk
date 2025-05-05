@@ -23,17 +23,17 @@ internal class ScreenControllerImpl(
     logger: Logger,
 ) : ScreenController, BaseClass(logger) {
 
-    override suspend fun showScreen(screenId: String) {
-        logger.verbose("showScreen() -> Fetching the screen with id $screenId from the API")
-        val screen = screenService.getScreen(screenId)
+    override suspend fun showScreen(contextKey: String) {
+        logger.verbose("showScreen() -> Fetching the screen with the context key $contextKey from the API")
+        val screen = screenService.getScreen(contextKey)
 
         val context: Context = activityProvider.getCurrentActivity() ?: appContext
 
         val screenPresentationConfig = internalConfig.screenCustomizationDelegate?.get()
-            ?.getPresentationConfigurationForScreen(screenId) ?: QScreenPresentationConfig()
+            ?.getPresentationConfigurationForScreen(screen.id) ?: QScreenPresentationConfig()
         val intent = ScreenActivity.getCallingIntent(
             context,
-            screenId,
+            screen.id,
             screen.body,
             screenPresentationConfig.presentationStyle
         )
@@ -54,9 +54,9 @@ internal class ScreenControllerImpl(
                 }
             }
         } catch (e: Exception) {
-            val errorMessage = "Failed to start screen with id $screenId with exception: $e"
+            val errorMessage = "Failed to open the screen with the context key $contextKey with exception: $e"
             logger.error("showScreen() -> $errorMessage")
-            throw NoCodesException(ErrorCode.ActivityStart, "Failed to start screen with id $screenId", e)
+            throw NoCodesException(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey", e)
         }
     }
 }

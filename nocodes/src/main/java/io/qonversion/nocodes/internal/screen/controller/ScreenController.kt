@@ -5,5 +5,5 @@ import kotlin.jvm.Throws
 
 internal interface ScreenController {
     @Throws(NoCodesException::class)
-    suspend fun showScreen(screenId: String)
+    suspend fun showScreen(contextKey: String)
 }

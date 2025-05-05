@@ -4,5 +4,5 @@ import io.qonversion.nocodes.internal.networkLayer.dto.Request
 
 internal interface RequestConfigurator {
 
-    fun configureScreenRequest(screenId: String): Request
+    fun configureScreenRequest(contextKey: String): Request
 }

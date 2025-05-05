@@ -78,10 +78,10 @@ interface NoCodes {
 
     /**
      * Show the screen using its ID.
-     * @param screenId identifier of the screen which must be shown.
+     * @param contextKey the context key of the screen which must be shown.
      * @param callback callback that is called when the screen is shown to a user.
      */
-    fun showScreen(screenId: String, callback: NoCodesShowScreenCallback)
+    fun showScreen(contextKey: String, callback: NoCodesShowScreenCallback)
 
     /**
      * Define the level of the logs that the SDK prints.

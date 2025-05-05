@@ -1,12 +1,12 @@
 package io.qonversion.nocodes.dto
 
-import com.qonversion.android.sdk.dto.QonversionError
+import io.qonversion.nocodes.error.NoCodesError
 
 data class QAction(
     val type: Type,
     val parameters: Map<Parameter, String>? = null
 ) {
-    var error: QonversionError? = null // todo
+    var error: NoCodesError? = null
 
     constructor(type: Type, parameter: Parameter, value: String) : this(type, mapOf(parameter to value))
 
@@ -21,7 +21,7 @@ data class QAction(
         CloseAll("closeAllQScreens");
 
         companion object {
-            fun fromType(type: String?) = values().find { it.type == type } ?: Unknown
+            fun fromType(type: String?) = entries.find { it.type == type } ?: Unknown
         }
     }
 

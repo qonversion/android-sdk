@@ -12,12 +12,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.dto.QPurchaseModel
+import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 
 class ScreenFragment : Fragment(), ScreenContract.View {
@@ -103,19 +106,44 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         activity?.let {
-            Qonversion.shared.purchase(
-                it,
-                QPurchaseModel(productId),
-                object : QonversionEntitlementsCallback {
-                    override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                        close(action)
+            Qonversion.shared.products(object : QonversionProductsCallback {
+                override fun onSuccess(products: Map<String, QProduct>) {
+                    val product = products[productId] ?: run {
+                        return handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            "Product with id $productId not found",
+                            action
+                        )
+                    }
 
-                    override fun onError(error: QonversionError) = handleOnErrorCallback(
-                        object {}.javaClass.enclosingMethod?.name,
-                        error,
-                        action
-                    )
-                })
+                    val purchaseOptionsBuilder = QPurchaseOptions.Builder()
+                    arguments?.getString(EX_SCREEN_ID)?.let { screenUid ->
+                        purchaseOptionsBuilder.setScreenUid(screenUid)
+                    }
+                    val purchaseOptions = purchaseOptionsBuilder.build()
+
+                    Qonversion.shared.purchase(
+                        it,
+                        product,
+                        purchaseOptions,
+                        object : QonversionEntitlementsCallback {
+                            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                                close(action)
+
+                            override fun onError(error: QonversionError) = handleOnErrorCallback(
+                                object {}.javaClass.enclosingMethod?.name,
+                                error,
+                                action
+                            )
+                        })
+                }
+
+                override fun onError(error: QonversionError) = handleOnErrorCallback(
+                    object {}.javaClass.enclosingMethod?.name,
+                    error,
+                    action
+                )
+            })
         }
     }
 
@@ -213,9 +241,22 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         error: QonversionError,
         actionResult: QAction
     ) {
+        actionResult.error = NoCodesError(error)
+
+        handleOnErrorCallback(
+            functionName,
+            error.description,
+            actionResult
+        )
+    }
+
+    private fun handleOnErrorCallback(
+        functionName: String?,
+        description: String,
+        actionResult: QAction
+    ) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-        logger.error("ScreenActivity $functionName -> $error.description")
-        actionResult.error = error
+        logger.error("ScreenActivity $functionName -> $description")
         delegate?.onActionFailedExecuting(actionResult)
     }
 

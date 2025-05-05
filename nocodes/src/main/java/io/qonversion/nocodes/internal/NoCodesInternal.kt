@@ -2,6 +2,7 @@ package io.qonversion.nocodes.internal
 
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesShowScreenCallback
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
@@ -28,12 +29,12 @@ internal class NoCodesInternal(
         internalConfig.screenCustomizationDelegate = WeakReference(delegate)
     }
 
-    override fun showScreen(screenId: String, callback: NoCodesShowScreenCallback) {
+    override fun showScreen(contextKey: String, callback: NoCodesShowScreenCallback) {
         scope.launch {
             try {
-                screenController.showScreen(screenId)
-            } catch (e: Exception) {
-                // todo converting between NoCodesError / NoCodesException
+                screenController.showScreen(contextKey)
+            } catch (e: NoCodesException) {
+                // todo
             }
         }
     }

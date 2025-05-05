@@ -10,8 +10,11 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+
+        group = 'io.qonversion.nocodes'
+        version = release.versionName
+        versionName = release.versionName
+        namespace = 'io.qonversion.nocodes'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,15 +28,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+
+    kotlin {
+        jvmToolchain(17)
     }
-    kotlinOptions {
-        jvmTarget = '11'
-    }
+
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 

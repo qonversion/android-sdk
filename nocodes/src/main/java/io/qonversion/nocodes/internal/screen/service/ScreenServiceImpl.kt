@@ -18,8 +18,8 @@ internal class ScreenServiceImpl(
     logger: Logger
 ) : ScreenService, BaseClass(logger) {
 
-    override suspend fun getScreen(screenId: String): NoCodeScreen {
-        val request = requestConfigurator.configureScreenRequest(screenId)
+    override suspend fun getScreen(contextKey: String): NoCodeScreen {
+        val request = requestConfigurator.configureScreenRequest(contextKey)
         val response = apiInteractor.execute(request)
 
         return when (response) {
@@ -31,7 +31,7 @@ internal class ScreenServiceImpl(
                 if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
                     throw NoCodesException(
                         ErrorCode.ScreenNotFound,
-                        "Id: $screenId"
+                        "Context Key: $contextKey"
                     )
                 }
                 throw NoCodesException(

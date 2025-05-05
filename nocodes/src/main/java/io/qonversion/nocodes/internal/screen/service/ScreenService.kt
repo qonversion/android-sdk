@@ -6,5 +6,5 @@ import io.qonversion.nocodes.internal.dto.NoCodeScreen
 internal interface ScreenService {
 
     @Throws(NoCodesException::class)
-    suspend fun getScreen(screenId: String): NoCodeScreen
+    suspend fun getScreen(contextKey: String): NoCodeScreen
 }
