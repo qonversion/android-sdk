@@ -1,6 +1,7 @@
 package io.qonversion.nocodes.interfaces
 
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.NoCodes
 import com.qonversion.android.sdk.Qonversion
 
 interface NoCodesDelegate {
@@ -24,7 +25,7 @@ interface NoCodesDelegate {
      *
      * @param action failed action.
      */
-    fun onActionFailedExecuting(action: QAction) { }
+    fun onActionFailedToExecute(action: QAction) { }
 
     /**
      * Called when No-Code screen finishes executing an action.
@@ -39,4 +40,11 @@ interface NoCodesDelegate {
      * Called when No-Code flow is finished and the screen is closed.
      */
     fun onFinished() { }
+
+    /**
+     * Called when No-Code screen fails to load.
+     * Don't forget to close the screen using [NoCodes.shared.close] method.
+     *
+     */
+    fun onScreenFailedToLoad() { }
 }

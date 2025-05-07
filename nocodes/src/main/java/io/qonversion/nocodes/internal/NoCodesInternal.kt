@@ -40,6 +40,10 @@ internal class NoCodesInternal(
         }
     }
 
+    override fun close() {
+        screenController.close()
+    }
+
     override fun setLogLevel(logLevel: LogLevel) {
         internalConfig.loggerConfig = internalConfig.loggerConfig.copy(logLevel = logLevel)
     }

@@ -59,4 +59,14 @@ internal class ScreenControllerImpl(
             throw NoCodesException(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey", e)
         }
     }
+
+    override fun close() {
+        val currentActivity = activityProvider.getCurrentActivity()
+        if (currentActivity is ScreenActivity) {
+            logger.verbose("close() -> Closing the current screen activity")
+            currentActivity.finish()
+        } else {
+            logger.warn("close() -> There is no visible No-Code Screen activity found to close")
+        }
+    }
 }

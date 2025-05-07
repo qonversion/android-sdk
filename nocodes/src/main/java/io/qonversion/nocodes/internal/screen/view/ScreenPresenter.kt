@@ -174,7 +174,6 @@ internal class ScreenPresenter(
             }
         } catch (e: Exception) {
             logger.error("ScreenPresenter -> failed to open the screen with id $screenId")
-            view.onError("Something went wrong while loading the next screen")
         }
     }
 }

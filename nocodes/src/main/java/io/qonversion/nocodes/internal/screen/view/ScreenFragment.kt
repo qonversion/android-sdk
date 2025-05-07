@@ -32,9 +32,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     private val delegate = delegateProvider.noCodesDelegate?.get()
 
-//    @Inject
-//    internal lateinit var screenProcessor: ScreenProcessor
-
     private var binding: NcFragmentScreenBinding? = null
 
     override fun onCreateView(
@@ -69,7 +66,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             (activity as ScreenActivity).showScreen(screenId, htmlPage)
             delegate?.onActionFinishedExecuting(action)
         } catch (e: Exception) {
-            delegate?.onActionFailedExecuting(action)
+            delegate?.onActionFailedToExecute(action)
         }
     }
 
@@ -83,7 +80,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             delegate?.onActionFinishedExecuting(action)
         } catch (e: ActivityNotFoundException) {
             logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with url $url")
-            delegate?.onActionFailedExecuting(action)
+            delegate?.onActionFailedToExecute(action)
         }
     }
 
@@ -97,7 +94,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             close(action)
         } catch (e: ActivityNotFoundException) {
             logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with deeplink $url")
-            delegate?.onActionFailedExecuting(action)
+            delegate?.onActionFailedToExecute(action)
         }
     }
 
@@ -181,18 +178,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onFinished()
     }
 
-    override fun onError(message: String, shouldCloseScreen: Boolean) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Failed to show the in-app screen")
-        builder.setMessage(message)
-        builder.setPositiveButton(android.R.string.ok) { _, _ ->
-            if (shouldCloseScreen) {
-                close()
-            }
-        }
-        builder.show()
-    }
-
     override fun sendProductsToWebView(jsonData: String) {
         binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\",  {detail: $jsonData} ))", null)
     }
@@ -220,6 +205,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.visibility = View.GONE
 
         val extraHtmlPage = arguments?.getString(EX_HTML_PAGE)
+
+        // todo
         val s = extraHtmlPage?.replace("null!==(n=window)&&void 0!==n&&null!==(r=n.webkit)&&void 0!==r&&null!==(o=r.messageHandlers)&&void 0!==o&&o[i]&&window.webkit.messageHandlers[i].postMessage({eventType:e,data:t})", "NoCodesMessageHandler.jsMessageReceived(JSON.stringify({eventType:e,data:t}))")
 
         s?.let {
@@ -231,6 +218,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 null
             )
         } ?: run {
+            delegate?.onScreenFailedToLoad()
             logger.error("Failed to show No-Code Screen - html page is null")
         }
     }
@@ -262,7 +250,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     ) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         logger.error("ScreenActivity $functionName -> $description")
-        delegate?.onActionFailedExecuting(actionResult)
+        delegate?.onActionFailedToExecute(actionResult)
     }
 
     companion object {

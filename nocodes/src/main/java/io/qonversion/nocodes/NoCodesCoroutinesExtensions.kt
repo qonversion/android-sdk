@@ -8,15 +8,15 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * Show the screen using its ID.
- * @param screenId identifier of the screen which must be shown.
+ * Show the screen using its context key.
+ * @param contextKey the context key of the screen which must be shown.
  */
 @JvmSynthetic
 @Throws(NoCodesException::class)
-suspend fun NoCodes.showScreen(screenId: String) {
+suspend fun NoCodes.showScreen(contextKey: String) {
     return suspendCoroutine { continuation ->
         showScreen(
-            screenId,
+            contextKey,
             object : NoCodesShowScreenCallback {
                 override fun onSuccess() {
                     continuation.resume(Unit)

@@ -77,11 +77,16 @@ interface NoCodes {
     fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate)
 
     /**
-     * Show the screen using its ID.
+     * Show the screen using its context key.
      * @param contextKey the context key of the screen which must be shown.
      * @param callback callback that is called when the screen is shown to a user.
      */
     fun showScreen(contextKey: String, callback: NoCodesShowScreenCallback)
+
+    /**
+     * Use this function to close all No-Code Screens.
+     */
+    fun close()
 
     /**
      * Define the level of the logs that the SDK prints.

@@ -22,10 +22,6 @@ import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.sample.databinding.FragmentHomeBinding
 import java.util.*
 import io.qonversion.nocodes.NoCodes
-import io.qonversion.nocodes.dto.QAction
-import io.qonversion.nocodes.error.NoCodesError
-import io.qonversion.nocodes.interfaces.NoCodesDelegate
-import io.qonversion.nocodes.interfaces.NoCodesShowScreenCallback
 import io.qonversion.nocodes.showScreen
 
 private const val TAG = "HomeFragment"
@@ -54,28 +50,6 @@ class HomeFragment : Fragment() {
             override fun onError(error: QonversionError) {
                 showLoading(false)
                 showError(requireContext(), error, TAG)
-            }
-        })
-
-        NoCodes.shared.setDelegate(object : NoCodesDelegate {
-            override fun onScreenShown(screenId: String) {
-                super.onScreenShown(screenId)
-            }
-
-            override fun onActionStartedExecuting(action: QAction) {
-                super.onActionStartedExecuting(action)
-            }
-
-            override fun onActionFailedExecuting(action: QAction) {
-                super.onActionFailedExecuting(action)
-            }
-
-            override fun onActionFinishedExecuting(action: QAction) {
-                super.onActionFinishedExecuting(action)
-            }
-
-            override fun onFinished() {
-                super.onFinished()
             }
         })
 

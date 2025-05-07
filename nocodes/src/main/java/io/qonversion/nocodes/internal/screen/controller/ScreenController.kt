@@ -6,4 +6,6 @@ import kotlin.jvm.Throws
 internal interface ScreenController {
     @Throws(NoCodesException::class)
     suspend fun showScreen(contextKey: String)
+
+    fun close()
 }
