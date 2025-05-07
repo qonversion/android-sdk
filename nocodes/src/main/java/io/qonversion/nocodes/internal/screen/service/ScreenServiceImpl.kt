@@ -20,9 +20,7 @@ internal class ScreenServiceImpl(
 
     override suspend fun getScreen(contextKey: String): NoCodeScreen {
         val request = requestConfigurator.configureScreenRequest(contextKey)
-        val response = apiInteractor.execute(request)
-
-        return when (response) {
+        return when (val response = apiInteractor.execute(request)) {
             is Response.Success -> {
                 logger.verbose("getScreen -> mapping the screen from the API")
                 mapper.fromMap(response.mapData) ?: throw NoCodesException(ErrorCode.Mapping)
@@ -32,6 +30,28 @@ internal class ScreenServiceImpl(
                     throw NoCodesException(
                         ErrorCode.ScreenNotFound,
                         "Context Key: $contextKey"
+                    )
+                }
+                throw NoCodesException(
+                    ErrorCode.BackendError,
+                    "Response code ${response.code}, message: ${(response).message}"
+                )
+            }
+        }
+    }
+
+    override suspend fun getScreenById(screenId: String): NoCodeScreen {
+        val request = requestConfigurator.configureScreenRequestById(screenId)
+        return when (val response = apiInteractor.execute(request)) {
+            is Response.Success -> {
+                logger.verbose("getScreenById -> mapping the screen from the API")
+                mapper.fromMap(response.mapData) ?: throw NoCodesException(ErrorCode.Mapping)
+            }
+            is Response.Error -> {
+                if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
+                    throw NoCodesException(
+                        ErrorCode.ScreenNotFound,
+                        "Screen Id: $screenId"
                     )
                 }
                 throw NoCodesException(

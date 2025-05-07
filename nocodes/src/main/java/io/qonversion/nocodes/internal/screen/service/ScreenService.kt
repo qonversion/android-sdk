@@ -7,4 +7,7 @@ internal interface ScreenService {
 
     @Throws(NoCodesException::class)
     suspend fun getScreen(contextKey: String): NoCodeScreen
+
+    @Throws(NoCodesException::class)
+    suspend fun getScreenById(screenId: String): NoCodeScreen
 }

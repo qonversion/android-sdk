@@ -1,8 +1,16 @@
 package io.qonversion.nocodes.internal.screen.view
 
-import android.net.Uri
+import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductPrice
+import com.qonversion.android.sdk.dto.products.QProductPricingPhase
+import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.internal.common.BaseClass
+import io.qonversion.nocodes.internal.common.mappers.Mapper
+import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import kotlinx.coroutines.CoroutineScope
@@ -13,31 +21,30 @@ internal class ScreenPresenter(
     private val service: ScreenService,
     private val view: ScreenContract.View,
     logger: Logger,
+    private val serializer: Serializer,
+    private val actionMapper: Mapper<QAction>,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
 
-    override fun shouldOverrideUrlLoading(url: String?): Boolean {
-        if (url == null) {
-            return true
+    override fun onWebViewMessageReceived(message: String) {
+        val action = try {
+            val data = serializer.deserialize(message) as Map<*, *>
+            actionMapper.fromMap(data["data"] as Map<*, *>)
+        } catch (e: Exception) {
+            logger.error("ScreenPresenter -> failed to map action from web page: $e. Original message: $message")
+            return
         }
 
-        val uri = Uri.parse(url)
-        if (!uri.shouldOverrideUrlLoading()) {
-            return true
-        }
-
-        logger.verbose("ScreenPresenter -> handling action with type ${uri.getActionType()}")
-        when (uri.getActionType()) {
+        logger.verbose("ScreenPresenter -> handling action with type ${action.type}")
+        when (action.type) {
             QAction.Type.Url -> {
-                val link = uri.getData()
-                if (link != null) {
-                    view.openLink(link)
+                action.parameters?.get(QAction.Parameter.Url)?.let { link ->
+                    view.openLink(link as String)
                 }
             }
             QAction.Type.DeepLink -> {
-                val deepLink = uri.getData()
-                if (deepLink != null) {
-                    view.openDeepLink(deepLink)
+                action.parameters?.get(QAction.Parameter.Deeplink)?.let { deeplink ->
+                    view.openDeepLink(deeplink as String)
                 }
             }
             QAction.Type.Close -> {
@@ -46,51 +53,122 @@ internal class ScreenPresenter(
             QAction.Type.CloseAll -> {
                 view.closeAll()
             }
+            QAction.Type.LoadProducts -> {
+                handleLoadProductsAction(action)
+            }
+            QAction.Type.ShowScreen -> {
+                view.showScreen()
+            }
             QAction.Type.Navigation -> {
-                val screenId = uri.getData()
-                if (screenId != null) {
-                    loadNextScreen(screenId)
+                action.parameters?.get(QAction.Parameter.ScreenId)?.let { screenId ->
+                    loadNextScreen(screenId as String)
                 }
             }
             QAction.Type.Purchase -> {
-                val productId = uri.getData()
-                if (productId != null) {
-                    view.purchase(productId)
+                action.parameters?.get(QAction.Parameter.ProductId)?.let { productId ->
+                    view.purchase(productId as String)
                 }
             }
             QAction.Type.Restore -> {
                 view.restore()
             }
-            else -> return true
+            else -> {
+                logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
+            }
         }
-        return true
+        return
     }
 
-    private fun Uri.getActionType(): QAction.Type {
-        val actionType = getQueryParameter(ACTION)
-        return QAction.Type.fromType(actionType)
-    }
+    private fun handleLoadProductsAction(action: QAction) {
+        val productIds = action.parameters?.get(QAction.Parameter.ProductIds) as? List<*>
 
-    private fun Uri.getData() = getQueryParameter(DATA)
-
-    private fun Uri.shouldOverrideUrlLoading() = isNoCodesHost() && isNCScheme()
-
-    private fun Uri.isNCScheme(): Boolean {
-        val uriScheme = scheme
-        if (uriScheme != null) {
-            val pattern = REGEX.toRegex()
-            return pattern.matches(uriScheme)
+        if (productIds?.isEmpty() != false) {
+            return
         }
-        return false
+
+        Qonversion.shared.products(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                val filteredProducts = products.filterKeys { productIds.contains(it) }
+
+                val productsInfo = filteredProducts.mapValues { entry -> mapProductInfo(entry.value) }
+                val data = mapOf("data" to productsInfo)
+
+                val jsonData = serializer.serialize(data)
+
+                view.sendProductsToWebView(jsonData)
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load products for the screen:\n$error")
+            }
+        })
     }
 
-    private fun Uri.isNoCodesHost() = host.equals(HOST)
+    private fun mapProductInfo(product: QProduct): Map<String, Any?> {
+        val res = mutableMapOf<String, Any?>(
+            "id" to product.qonversionID,
+            "store_id" to product.storeID,
+        )
+
+        fun enrichWithPriceDetails(price: QProductPrice) {
+            res["price"] = price.priceAmount
+            res["currency_symbol"] = price.currencySymbol
+            res["currency_code"] = price.priceCurrencyCode
+        }
+
+        fun mapPeriodUnit(periodUnit: QSubscriptionPeriod.Unit): String? {
+            return when (periodUnit) {
+                QSubscriptionPeriod.Unit.Day -> "day"
+                QSubscriptionPeriod.Unit.Week -> "week"
+                QSubscriptionPeriod.Unit.Month -> "month"
+                QSubscriptionPeriod.Unit.Year -> "year"
+                QSubscriptionPeriod.Unit.Unknown -> null
+            }
+        }
+
+        product.storeDetails?.let { storeDetails ->
+            res["title"] = storeDetails.title
+
+            if (storeDetails.isInApp) {
+                storeDetails.inAppOfferDetails?.price?.let {
+                    enrichWithPriceDetails(it)
+                }
+            } else {
+                storeDetails.defaultSubscriptionOfferDetails?.let { subscriptionOfferDetails ->
+                    subscriptionOfferDetails.basePlan?.let { basePlan ->
+                        enrichWithPriceDetails(basePlan.price)
+                        res["period_unit"] = mapPeriodUnit(basePlan.billingPeriod.unit)
+                        res["period_unit_count"] = basePlan.billingPeriod.unitCount
+                    }
+
+                    val introPhase = subscriptionOfferDetails.trialPhase
+                        ?: subscriptionOfferDetails.introPhase
+
+                    introPhase?.let {
+                        res["payment_mode"] = if (introPhase.isTrial) "trial" else "intro"
+                        res["intro_price"] = it.price.priceAmount
+                        res["intro_price_type"] = when (it.type) {
+                            QProductPricingPhase.Type.FreeTrial -> "trial"
+                            QProductPricingPhase.Type.DiscountedSinglePayment -> "pay_up_front"
+                            QProductPricingPhase.Type.DiscountedRecurringPayment -> "pay_as_you_go"
+                            else -> null
+                        }
+                        res["intro_period_unit"] = mapPeriodUnit(it.billingPeriod.unit)
+                        res["intro_period_unit_count"] = it.billingPeriod.unitCount
+                        res["intro_number_of_periods"] = it.billingCycleCount
+                    }
+                }
+            }
+        }
+
+        return res
+    }
 
     private fun loadNextScreen(screenId: String) {
         try {
             scope.launch {
                 logger.verbose("ScreenPresenter -> loading the next screen in stack with id $screenId")
-                val screen = service.getScreen(screenId)
+                val screen = service.getScreenById(screenId)
                 logger.verbose("ScreenPresenter -> opening the screen with id $screenId")
                 view.openScreen(screenId, screen.body)
             }
@@ -98,13 +176,5 @@ internal class ScreenPresenter(
             logger.error("ScreenPresenter -> failed to open the screen with id $screenId")
             view.onError("Something went wrong while loading the next screen")
         }
-    }
-
-    companion object {
-        private const val ACTION = "action"
-        private const val DATA = "data"
-        private const val SCHEMA = "qon-"
-        private const val HOST = "automation"
-        private const val REGEX = "$SCHEMA.+"
     }
 }

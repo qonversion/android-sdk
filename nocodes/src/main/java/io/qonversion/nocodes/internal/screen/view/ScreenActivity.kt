@@ -3,6 +3,7 @@ package io.qonversion.nocodes.internal.screen.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
 import io.qonversion.nocodes.R
 import io.qonversion.nocodes.dto.QScreenPresentationStyle
@@ -17,6 +18,10 @@ class ScreenActivity : FragmentActivity(R.layout.nc_activity_screen) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         if (savedInstanceState == null) {
             showScreen(
                 intent.getStringExtra(INTENT_SCREEN_ID),

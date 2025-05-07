@@ -2,6 +2,7 @@ package io.qonversion.nocodes.internal
 
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesShowScreenCallback
@@ -34,7 +35,7 @@ internal class NoCodesInternal(
             try {
                 screenController.showScreen(contextKey)
             } catch (e: NoCodesException) {
-                // todo
+                callback.onError(NoCodesError(e))
             }
         }
     }

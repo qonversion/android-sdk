@@ -9,6 +9,8 @@ class NoCodesError(
 ) {
     constructor(qonversionError: QonversionError) : this(ErrorCode.QonversionError, null, qonversionError)
 
+    constructor(noCodesException: NoCodesException) : this(noCodesException.code, noCodesException.message)
+
     override fun toString(): String {
         return "NoCodesError: {code=$code, description=${code.defaultMessage}, details=${details ?: ""}"
     }

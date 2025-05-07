@@ -19,9 +19,13 @@ internal class ScreenContract {
         fun closeAll(action: QAction = QAction(QAction.Type.Close))
 
         fun onError(message: String, shouldCloseScreen: Boolean = false)
+
+        fun sendProductsToWebView(jsonData: String)
+
+        fun showScreen()
     }
 
     internal interface Presenter {
-        fun shouldOverrideUrlLoading(url: String?): Boolean
+        fun onWebViewMessageReceived(message: String)
     }
 }

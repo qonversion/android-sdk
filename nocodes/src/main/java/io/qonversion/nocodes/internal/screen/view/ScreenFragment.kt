@@ -1,15 +1,16 @@
 package io.qonversion.nocodes.internal.screen.view
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.JavascriptInterface
 import androidx.fragment.app.Fragment
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QPurchaseOptions
@@ -192,41 +193,45 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         builder.show()
     }
 
-    private fun configureWebClient() {
-        binding?.webView?.webViewClient = object : WebViewClient() {
-            @Deprecated("Deprecated since API 24", ReplaceWith(""))
-            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                return presenter.shouldOverrideUrlLoading(url)
-            }
+    override fun sendProductsToWebView(jsonData: String) {
+        binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\",  {detail: $jsonData} ))", null)
+    }
 
-            override fun onPageFinished(view: WebView?, url: String?) {
-                binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-                return super.onPageFinished(view, url)
-            }
+    override fun showScreen() {
+        binding?.webView?.visibility = View.VISIBLE
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+    }
+
+    @JavascriptInterface
+    fun jsMessageReceived(message: String) {
+        Log.d("JSMessage", message)
+        activity?.runOnUiThread {
+            presenter.onWebViewMessageReceived(message)
         }
     }
 
-    private fun loadWebView() {
-        val extraHtmlPage = arguments?.getString(EX_HTML_PAGE)
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun configureWebClient() {
+        binding?.webView?.settings?.javaScriptEnabled = true
+        binding?.webView?.addJavascriptInterface(this, "NoCodesMessageHandler")
+    }
 
-        extraHtmlPage?.let {
-//            screenProcessor.processScreen(it,
-//                { macrosHtml ->
-                    binding?.webView?.loadDataWithBaseURL(
-                        null,
-//                        macrosHtml,
-                        it,
-                        MIME_TYPE,
-                        ENCODING,
-                        null
-                    )
-//                }, { error ->
-//                    logger.error("loadWebView() -> Failed to process screen macros ${error.description}")
-//                    onError(error, true)
-//                })
+    private fun loadWebView() {
+        binding?.webView?.visibility = View.GONE
+
+        val extraHtmlPage = arguments?.getString(EX_HTML_PAGE)
+        val s = extraHtmlPage?.replace("null!==(n=window)&&void 0!==n&&null!==(r=n.webkit)&&void 0!==r&&null!==(o=r.messageHandlers)&&void 0!==o&&o[i]&&window.webkit.messageHandlers[i].postMessage({eventType:e,data:t})", "NoCodesMessageHandler.jsMessageReceived(JSON.stringify({eventType:e,data:t}))")
+
+        s?.let {
+            binding?.webView?.loadDataWithBaseURL(
+                null,
+                it,
+                MIME_TYPE,
+                ENCODING,
+                null
+            )
         } ?: run {
-//            logger.error("loadWebView() -> Failed to fetch html page for the app screen")
-//            onError(QonversionError(QonversionErrorCode.Unknown), true)
+            logger.error("Failed to show No-Code Screen - html page is null")
         }
     }
 
