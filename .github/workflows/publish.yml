@@ -23,10 +23,26 @@ jobs:
           echo "signing.keyId=${{ secrets.SONATYPE_GPG_ID }}" >> ~/.gradle/gradle.properties
           echo "signing.password=${{ secrets.SONATYPE_GPG_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.secretKeyRingFile=$HOME/.gradle/key.gpg" >> ~/.gradle/gradle.properties
-          echo "sonatypeStagingProfileId=${{ secrets.SONATYPE_STAGING_PROFILE_ID }}" >> ~/.gradle/gradle.properties
+          echo "mavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }}" >> ~/.gradle/gradle.properties
+          echo "mavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}" >> ~/.gradle/gradle.properties
+
+      - name: Determine module to publish
+        id: module
+        run: |
+          TAG_NAME="${GITHUB_REF##*/}"
+          if [[ "$TAG_NAME" == sdk/* ]]; then
+            echo "module=sdk" >> $GITHUB_OUTPUT
+          elif [[ "$TAG_NAME" == nocodes/* ]]; then
+            echo "module=nocodes" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown tag format: $TAG_NAME"
+            exit 1
+          fi
 
       - name: Publish to MavenCentral
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
-        env:
-          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-          OSSRH_TOKEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+        run: |
+          if [[ "${{ steps.module.outputs.module }}" == "sdk" ]]; then
+            ./gradlew :sdk:publishAndReleaseToMavenCentral
+          elif [[ "${{ steps.module.outputs.module }}" == "nocodes" ]]; then
+            ./gradlew :nocodes:publishAndReleaseToMavenCentral
+          fi

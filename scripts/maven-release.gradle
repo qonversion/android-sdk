@@ -1,48 +1,32 @@
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+apply plugin: 'com.vanniktech.maven.publish'
 
 afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
+    mavenPublishing {
+        coordinates(PUBLISH_GROUP_ID, PUBLISH_ARTIFACT_ID, android.defaultConfig.versionName)
 
-                groupId PUBLISH_GROUP_ID
-                artifactId PUBLISH_ARTIFACT_ID
-                version android.defaultConfig.versionName
-
-                pom {
-                    name = POM_NAME
-                    packaging = POM_PACKAGING
-                    description = POM_DESCRIPTION
-                    url = POM_URL
-
-                    scm {
-                        url = POM_SCM_URL
-                        connection = POM_SCM_CONNECTION
-                        developerConnection = POM_SCM_DEV_CONNECTION
-                    }
-
-                    licenses {
-                        license {
-                            name = POM_LICENCE_NAME
-                            url = POM_LICENCE_URL
-                            distribution = POM_LICENCE_DIST
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = POM_DEVELOPER_ID
-                            name = POM_DEVELOPER_NAME
-                        }
-                    }
+        pom {
+            name = POM_NAME
+            packaging = POM_PACKAGING
+            description = POM_DESCRIPTION
+            url = POM_URL
+            licenses {
+                license {
+                    name = POM_LICENCE_NAME
+                    url = POM_LICENCE_URL
+                    distribution = POM_LICENCE_DIST
                 }
+            }
+            developers {
+                developer {
+                    id = POM_DEVELOPER_ID
+                    name = POM_DEVELOPER_NAME
+                }
+            }
+            scm {
+                url = POM_SCM_URL
+                connection = POM_SCM_CONNECTION
+                developerConnection = POM_SCM_DEV_CONNECTION
             }
         }
     }
-}
-
-signing {
-    sign publishing.publications
 }

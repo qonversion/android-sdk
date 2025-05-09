@@ -1,0 +1,70 @@
+package io.qonversion.nocodes.internal.screen.service
+
+import io.qonversion.nocodes.error.ErrorCode
+import io.qonversion.nocodes.error.NoCodesException
+import io.qonversion.nocodes.internal.common.BaseClass
+import io.qonversion.nocodes.internal.common.mappers.Mapper
+import io.qonversion.nocodes.internal.networkLayer.apiInteractor.ApiInteractor
+import io.qonversion.nocodes.internal.networkLayer.dto.Response
+import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
+import io.qonversion.nocodes.internal.dto.NoCodeScreen
+import io.qonversion.nocodes.internal.logger.Logger
+import java.net.HttpURLConnection
+
+internal class ScreenServiceImpl(
+    private val requestConfigurator: RequestConfigurator,
+    private val apiInteractor: ApiInteractor,
+    private val mapper: Mapper<NoCodeScreen?>,
+    logger: Logger
+) : ScreenService, BaseClass(logger) {
+
+    override suspend fun getScreen(contextKey: String): NoCodeScreen {
+        val request = requestConfigurator.configureScreenRequest(contextKey)
+        return when (val response = apiInteractor.execute(request)) {
+            is Response.Success -> {
+                val arr = response.arrayData
+                if (arr.isEmpty()) {
+                    throw NoCodesException(
+                        ErrorCode.ScreenNotFound,
+                        "Context key: $contextKey"
+                    )
+                }
+                mapper.fromMap(arr[0] as Map<*, *>) ?: throw NoCodesException(ErrorCode.Mapping)
+            }
+            is Response.Error -> {
+                if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
+                    throw NoCodesException(
+                        ErrorCode.ScreenNotFound,
+                        "Context Key: $contextKey"
+                    )
+                }
+                throw NoCodesException(
+                    ErrorCode.BackendError,
+                    "Response code ${response.code}, message: ${(response).message}"
+                )
+            }
+        }
+    }
+
+    override suspend fun getScreenById(screenId: String): NoCodeScreen {
+        val request = requestConfigurator.configureScreenRequestById(screenId)
+        return when (val response = apiInteractor.execute(request)) {
+            is Response.Success -> {
+                logger.verbose("getScreenById -> mapping the screen from the API")
+                mapper.fromMap(response.mapData) ?: throw NoCodesException(ErrorCode.Mapping)
+            }
+            is Response.Error -> {
+                if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
+                    throw NoCodesException(
+                        ErrorCode.ScreenNotFound,
+                        "Screen Id: $screenId"
+                    )
+                }
+                throw NoCodesException(
+                    ErrorCode.BackendError,
+                    "Response code ${response.code}, message: ${(response).message}"
+                )
+            }
+        }
+    }
+}

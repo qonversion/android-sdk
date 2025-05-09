@@ -17,4 +17,5 @@ internal data class PurchaseDetails(
     @Json(name = "product") val storeProductId: String,
     @Json(name = "product_id") val qProductId: String,
     @Json(name = "context_keys") val contextKeys: List<String>?,
+    @Json(name = "screen_uid") val screenUid: String?,
 )

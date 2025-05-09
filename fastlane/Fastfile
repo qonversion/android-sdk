@@ -15,10 +15,10 @@
 
 default_platform(:android)
 
-def update_gradle(new_version)
+def update_gradle(lib, new_version)
 	path = "../build.gradle"
-    regex = /versionName: ".*",/
-    result_value = "versionName: \"#{new_version}\","
+    regex = /#{lib} = \[\s*versionName: ".*",/
+    result_value = "#{lib} = [\n                versionName: \"#{new_version}\","
 
     update_file(path, regex, result_value)
 end
@@ -84,24 +84,27 @@ platform :android do
     gradle(task: "test")
   end
 
-  lane :patch do
+  lane :patch do |options|
+  	lib = options[:lib]
     tag = get_tag
     new_version = calculate_patch_version(tag)
-    new_tag = "prerelease/" + new_version
+    new_tag = "prerelease-#{lib}/" + new_version
     push_tag(new_tag)
   end
 
-  lane :minor do
+  lane :minor do |options|
+  	lib = options[:lib]
     tag = get_tag
     new_version = calculate_minor_version(tag)
-    new_tag = "prerelease/" + new_version
+    new_tag = "prerelease-#{lib}/" + new_version
     push_tag(new_tag)
   end
 
   lane :bump do |options|
+  	lib = options[:lib]
   	new_version = options[:version]
 
-	update_gradle(new_version)
+	update_gradle(lib, new_version)
   end
 
   lane :setOutagerUrl do |options|

@@ -10,4 +10,5 @@ internal data class Purchase(
     val purchaseTime: Long,
     val purchaseToken: String,
     val contextKeys: List<String>?,
+    val screenUid: String?,
 )

@@ -11,8 +11,8 @@ android {
 
         consumerProguardFiles 'consumer-rules.pro'
         group = 'io.qonversion.android.sdk'
-        version = release.versionName
-        versionName = release.versionName
+        version = sdk.versionName
+        versionName = sdk.versionName
         namespace = 'com.qonversion.android.sdk'
 
         multiDexEnabled true
@@ -177,4 +177,5 @@ dependencies {
     testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
 
 }
+
 apply from: "../scripts/maven-release.gradle"

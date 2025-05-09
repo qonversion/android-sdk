@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.dto
 
-import com.qonversion.android.sdk.QonversionConfig.Builder
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QProductStoreDetails
@@ -16,7 +15,8 @@ class QPurchaseOptions internal constructor (
     internal val offerId: String? = null,
     internal val applyOffer: Boolean = true,
     internal val oldProduct: QProduct? = null,
-    internal val updatePolicy: QPurchaseUpdatePolicy? = null
+    internal val updatePolicy: QPurchaseUpdatePolicy? = null,
+    internal val screenUid: String? = null,
 ) {
     /**
      * The builder of QPurchaseOptions instance.
@@ -30,6 +30,7 @@ class QPurchaseOptions internal constructor (
         private var applyOffer: Boolean = true
         private var oldProduct: QProduct? = null
         private var updatePolicy: QPurchaseUpdatePolicy? = null
+        private var screenUid: String? = null
 
         /**
          * Set the context keys associated with a purchase.
@@ -37,7 +38,7 @@ class QPurchaseOptions internal constructor (
          * @param contextKeys context keys for the purchase.
          * @return builder instance for chain calls.
          */
-        fun setContextKeys(contextKeys: List<String>): QPurchaseOptions.Builder = apply {
+        fun setContextKeys(contextKeys: List<String>): Builder = apply {
             this.contextKeys = contextKeys
         }
 
@@ -49,7 +50,7 @@ class QPurchaseOptions internal constructor (
          * will be initialized.
          * @return builder instance for chain calls.
          */
-        fun setOldProduct(oldProduct: QProduct): QPurchaseOptions.Builder = apply {
+        fun setOldProduct(oldProduct: QProduct): Builder = apply {
             this.oldProduct = oldProduct
         }
 
@@ -60,7 +61,7 @@ class QPurchaseOptions internal constructor (
          * @param updatePolicy update policy for the purchase.
          * @return builder instance for chain calls.
          */
-        fun setUpdatePolicy(updatePolicy: QPurchaseUpdatePolicy): QPurchaseOptions.Builder = apply {
+        fun setUpdatePolicy(updatePolicy: QPurchaseUpdatePolicy): Builder = apply {
             this.updatePolicy = updatePolicy
         }
 
@@ -69,7 +70,7 @@ class QPurchaseOptions internal constructor (
          * @param offer concrete offer which you'd like to purchase.
          * @return builder instance for chain calls.
          */
-        fun setOffer(offer: QProductOfferDetails): QPurchaseOptions.Builder = apply {
+        fun setOffer(offer: QProductOfferDetails): Builder = apply {
             this.offerId = offer.offerId
         }
 
@@ -80,7 +81,7 @@ class QPurchaseOptions internal constructor (
          * @param offerId concrete offer Id which you'd like to purchase.
          * @return builder instance for chain calls.
          */
-        fun setOfferId(offerId: String): QPurchaseOptions.Builder = apply {
+        fun setOfferId(offerId: String): Builder = apply {
             this.offerId = offerId
         }
 
@@ -88,8 +89,17 @@ class QPurchaseOptions internal constructor (
          * Call this function to remove any intro/trial offer from the purchase (use only a bare base plan).
          * @return builder instance for chain calls.
          */
-        fun removeOffer(): QPurchaseOptions.Builder = apply {
+        fun removeOffer(): Builder = apply {
             this.applyOffer = false
+        }
+
+        /**
+         * Set the identifier of the Qonversion No-Code Screen where the purchase happened.
+         * @param screenUid the identifier of the Qonversion No-Code Screen.
+         * @return builder instance for chain calls.
+         */
+        fun setScreenUid(screenUid: String): Builder = apply {
+            this.screenUid = screenUid
         }
 
         /**
@@ -97,7 +107,7 @@ class QPurchaseOptions internal constructor (
          * @return the complete [QPurchaseOptions] instance.
          */
         fun build(): QPurchaseOptions {
-            return QPurchaseOptions(contextKeys, offerId, applyOffer, oldProduct, updatePolicy)
+            return QPurchaseOptions(contextKeys, offerId, applyOffer, oldProduct, updatePolicy, screenUid)
         }
     }
 }
