@@ -3,7 +3,9 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>CommentSpacing:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:171</ID>
+    <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
+    <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
     <ID>ComplexMethod:errors.kt$internal fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
@@ -69,6 +71,7 @@
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.TwoWeeks$14</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Week$7</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Year$365</ID>
+    <ID>MagicNumber:QProductPrice.kt$QProductPrice$1_000_000.0</ID>
     <ID>MagicNumber:QProductPricingPhase.kt$QProductPricingPhase.RecurrenceMode.NonRecurring$3</ID>
     <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.BillingIssue$3</ID>
     <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.Companion$3</ID>
@@ -130,6 +133,8 @@
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
+    <ID>MaxLineLength:ScreenControllerImpl.kt$ScreenControllerImpl$throw NoCodesException(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey", e)</ID>
+    <ID>MaxLineLength:ScreenFragment.kt$ScreenFragment$binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\", {detail: $jsonData} ))", null)</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
@@ -194,8 +199,12 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:222</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:59</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:181</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:10</ID>
+    <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
+    <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
@@ -278,19 +287,17 @@
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
-    <ID>SwallowedException:NoCodesInternal.kt$NoCodesInternal$catch (e: Exception) { // todo converting between NoCodesError / NoCodesException }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with deeplink $url") delegate?.onActionFailedExecuting(action) }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with url $url") delegate?.onActionFailedExecuting(action) }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with deeplink $url") delegate?.onActionFailedToExecute(action) }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with url $url") delegate?.onActionFailedToExecute(action) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { delegate?.onActionFailedExecuting(action) }</ID>
-    <ID>SwallowedException:ScreenPresenter.kt$ScreenPresenter$catch (e: Exception) { logger.error("ScreenPresenter -&gt; failed to open the screen with id $screenId") view.onError("Something went wrong while loading the next screen") }</ID>
+    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { delegate?.onActionFailedToExecute(action) }</ID>
+    <ID>SwallowedException:ScreenPresenter.kt$ScreenPresenter$catch (e: Exception) { logger.error("ScreenPresenter -&gt; failed to open the screen with id $screenId") }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
-    <ID>ThrowsCount:ApiInteractorImpl.kt$ApiInteractorImpl$private suspend fun execute( request: Request, retryPolicy: RetryPolicy, attemptIndex: Int ): Response</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$cause: Exception</ID>
@@ -298,7 +305,6 @@
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
-    <ID>TooGenericExceptionCaught:NoCodesInternal.kt$NoCodesInternal$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QExceptionManager.kt$QExceptionManager$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QFallbacksService.kt$QFallbacksService$e: Exception</ID>
