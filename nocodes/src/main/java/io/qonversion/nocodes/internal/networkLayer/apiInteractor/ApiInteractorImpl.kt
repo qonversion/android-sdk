@@ -64,8 +64,7 @@ internal class ApiInteractorImpl(
             }
 
             if (response?.isSuccess == true) {
-                val data = response.getResponsePayload()
-                Response.Success(response.code, data)
+                Response.Success(response.code, response.payload)
             } else {
                 if (response != null && ERROR_CODES_BLOCKING_FURTHER_EXECUTIONS.contains(response.code)) {
                     configHolder.canSendRequests = false
@@ -97,7 +96,7 @@ internal class ApiInteractorImpl(
     ): Response.Error {
         return when {
             response != null -> {
-                val payload = response.getResponsePayload()
+                val payload = response.payloadToMap()
                 val errorData = payload["error"] as? Map<*, *>
                 errorData?.let {
                     errorMapper.fromMap(it, response.code)
@@ -140,7 +139,7 @@ internal class ApiInteractorImpl(
         return RetryConfig(shouldRetry, newAttemptIndex, delay)
     }
 
-    private fun RawResponse.getResponsePayload(): Map<*, *> {
+    private fun RawResponse.payloadToMap(): Map<*, *> {
         return try {
             (payload as Map<*, *>)
         } catch (cause: ClassCastException) {

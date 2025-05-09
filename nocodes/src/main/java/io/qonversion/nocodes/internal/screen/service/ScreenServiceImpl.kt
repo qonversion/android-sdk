@@ -22,8 +22,14 @@ internal class ScreenServiceImpl(
         val request = requestConfigurator.configureScreenRequest(contextKey)
         return when (val response = apiInteractor.execute(request)) {
             is Response.Success -> {
-                logger.verbose("getScreen -> mapping the screen from the API")
-                mapper.fromMap(response.mapData) ?: throw NoCodesException(ErrorCode.Mapping)
+                val arr = response.arrayData
+                if (arr.isEmpty()) {
+                    throw NoCodesException(
+                        ErrorCode.ScreenNotFound,
+                        "Context key: $contextKey"
+                    )
+                }
+                mapper.fromMap(arr[0] as Map<*, *>) ?: throw NoCodesException(ErrorCode.Mapping)
             }
             is Response.Error -> {
                 if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {

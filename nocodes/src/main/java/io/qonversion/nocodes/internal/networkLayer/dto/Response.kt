@@ -17,12 +17,14 @@ internal sealed class Response(
 
         val mapData: Map<*, *> get() = getTypedData()
 
+        val arrayData: List<*> get() = getTypedData()
+
         @Throws(NoCodesException::class)
         inline fun <reified T> getTypedData(): T {
             return if (data is T) {
                 data
             } else {
-                throw NoCodesException(ErrorCode.Mapping)
+                throw NoCodesException(ErrorCode.Mapping, "Unexpected data type.")
             }
         }
     }

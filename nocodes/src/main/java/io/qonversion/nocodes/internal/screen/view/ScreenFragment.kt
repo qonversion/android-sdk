@@ -1,7 +1,6 @@
 package io.qonversion.nocodes.internal.screen.view
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -205,11 +204,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.visibility = View.GONE
 
         val extraHtmlPage = arguments?.getString(EX_HTML_PAGE)
-
-        // todo
-        val s = extraHtmlPage?.replace("null!==(n=window)&&void 0!==n&&null!==(r=n.webkit)&&void 0!==r&&null!==(o=r.messageHandlers)&&void 0!==o&&o[i]&&window.webkit.messageHandlers[i].postMessage({eventType:e,data:t})", "NoCodesMessageHandler.jsMessageReceived(JSON.stringify({eventType:e,data:t}))")
-
-        s?.let {
+        extraHtmlPage?.let {
             binding?.webView?.loadDataWithBaseURL(
                 null,
                 it,
