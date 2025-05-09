@@ -4,7 +4,7 @@ on:
   workflow_dispatch
 
 jobs:
-  patch-minor:
+  minor-prerelease:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,4 +15,4 @@ jobs:
 
       - name: Minor
         run: |
-          fastlane minor
+          fastlane minor lib:sdk

@@ -12,8 +12,8 @@ android {
         targetSdk 34
 
         group = 'io.qonversion.nocodes'
-        version = release.versionName
-        versionName = release.versionName
+        version = nocodes.versionName
+        versionName = nocodes.versionName
         namespace = 'io.qonversion.nocodes'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -39,6 +39,11 @@ android {
     }
 }
 
+ext {
+    PUBLISH_GROUP_ID = 'io.qonversion'
+    PUBLISH_ARTIFACT_ID = 'no-codes'
+}
+
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.13.1'
@@ -46,3 +51,5 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
     implementation project(':sdk')
 }
+
+apply from: "../scripts/maven-release.gradle"

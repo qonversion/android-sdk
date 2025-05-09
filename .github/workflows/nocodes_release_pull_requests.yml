@@ -2,7 +2,7 @@ name: Release pull requests
 on:
   push:
     tags:
-    - prerelease/*
+    - prerelease-nocodes/*
 
 jobs:
     prerelease:
@@ -17,19 +17,19 @@ jobs:
         - uses: olegtarasov/get-tag@v2.1
           id: tagName
           with:
-            tagRegex: 'prerelease\/(\d*\.\d*\.\d*)'
+            tagRegex: 'prerelease-nocodes\/(\d*\.\d*\.\d*)'
             
         - name: Bump version
           run: |
-            fastlane bump version:${{ steps.tagName.outputs.tag }}
+            fastlane bump lib:nocodes version:${{ steps.tagName.outputs.tag }}
 
         - name: Create pull request
           uses: peter-evans/create-pull-request@v3
           with:
-            title: Release ${{ steps.tagName.outputs.tag }}
-            body: Release PR
+            title: No-Codes Release ${{ steps.tagName.outputs.tag }}
+            body: No-Codes Release Pull Request
             labels: autocreated
-            branch: release/${{ steps.tagName.outputs.tag }}
+            branch: release-nocodes/${{ steps.tagName.outputs.tag }}
             base: develop
          
         - uses: actions/checkout@v2
@@ -38,14 +38,14 @@ jobs:
         
         - name: Reset main branch
           run: |
-            git fetch origin release/${{ steps.tagName.outputs.tag }}:release/${{ steps.tagName.outputs.tag }}
-            git reset --hard release/${{ steps.tagName.outputs.tag }}
+            git fetch origin release-nocodes/${{ steps.tagName.outputs.tag }}:release-nocodes/${{ steps.tagName.outputs.tag }}
+            git reset --hard release-nocodes/${{ steps.tagName.outputs.tag }}
         
         - name: Create Pull Request
           uses: peter-evans/create-pull-request@v3
           with:
-            title: Release ${{ steps.tagName.outputs.tag }}
-            body: Release PR
+            title: No-Codes Release ${{ steps.tagName.outputs.tag }}
+            body: No-Codes Release Pull Request
             labels: autocreated
-            branch: release/${{ steps.tagName.outputs.tag }}
+            branch: release-nocodes/${{ steps.tagName.outputs.tag }}
             base: main
