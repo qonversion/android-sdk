@@ -21,8 +21,6 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.sample.databinding.FragmentHomeBinding
 import java.util.*
-import io.qonversion.nocodes.NoCodes
-import io.qonversion.nocodes.showScreen
 
 private const val TAG = "HomeFragment"
 
