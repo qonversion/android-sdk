@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import io.qonversion.nocodes.dto.QScreenPresentationConfig
 import io.qonversion.nocodes.error.ErrorCode
-import io.qonversion.nocodes.error.NoCodesException
+import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
 import io.qonversion.nocodes.internal.logger.Logger
@@ -56,7 +56,8 @@ internal class ScreenControllerImpl(
         } catch (e: Exception) {
             val errorMessage = "Failed to open the screen with the context key $contextKey with exception: $e"
             logger.error("showScreen() -> $errorMessage")
-            throw NoCodesException(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey", e)
+            val error = NoCodesError(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey")
+            internalConfig.noCodesDelegate?.get()?.onScreenFailedToLoad(error)
         }
     }
 

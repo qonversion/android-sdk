@@ -20,6 +20,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 
@@ -213,7 +214,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 null
             )
         } ?: run {
-            delegate?.onScreenFailedToLoad()
+            val error = NoCodesError(ErrorCode.Mapping, "HTML data of the screen is absent")
+            delegate?.onScreenFailedToLoad(error)
             logger.error("Failed to show No-Code Screen - html page is null")
         }
     }

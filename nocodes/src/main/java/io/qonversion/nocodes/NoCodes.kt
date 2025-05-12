@@ -79,9 +79,8 @@ interface NoCodes {
     /**
      * Show the screen using its context key.
      * @param contextKey the context key of the screen which must be shown.
-     * @param callback callback that is called when the screen is shown to a user.
      */
-    fun showScreen(contextKey: String, callback: NoCodesShowScreenCallback)
+    fun showScreen(contextKey: String)
 
     /**
      * Use this function to close all No-Code Screens.

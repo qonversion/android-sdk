@@ -2,6 +2,7 @@ package io.qonversion.nocodes.interfaces
 
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.NoCodes
+import io.qonversion.nocodes.error.NoCodesError
 import com.qonversion.android.sdk.Qonversion
 
 interface NoCodesDelegate {
@@ -43,8 +44,8 @@ interface NoCodesDelegate {
 
     /**
      * Called when No-Code screen fails to load.
-     * Don't forget to close the screen using [NoCodes.shared.close] method.
-     *
+     * Don't forget to close the screen using [NoCodes.close] method.
+     * @param error The error that occurred while loading the screen.
      */
-    fun onScreenFailedToLoad() { }
+    fun onScreenFailedToLoad(error: NoCodesError) { }
 }
