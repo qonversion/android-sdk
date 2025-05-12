@@ -6,7 +6,6 @@ import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.internal.NoCodesInternal
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
-import io.qonversion.nocodes.interfaces.NoCodesShowScreenCallback
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 
 interface NoCodes {

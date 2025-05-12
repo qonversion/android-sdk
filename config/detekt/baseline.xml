@@ -133,7 +133,7 @@
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
-    <ID>MaxLineLength:ScreenControllerImpl.kt$ScreenControllerImpl$throw NoCodesException(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey", e)</ID>
+    <ID>MaxLineLength:ScreenControllerImpl.kt$ScreenControllerImpl$val error = NoCodesError(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey")</ID>
     <ID>MaxLineLength:ScreenFragment.kt$ScreenFragment$binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\", {detail: $jsonData} ))", null)</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
@@ -189,10 +189,10 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.converter.GooglePurchaseConverter.kt:17</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.errors.kt:33</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:29</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:158</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:167</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:20</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:67</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:156</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:166</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:18</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:65</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:219</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:220</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:221</ID>
@@ -200,7 +200,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:59</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:181</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:182</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:10</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
@@ -230,8 +230,6 @@
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:22</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:7</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:4</ID>
-    <ID>NoUnusedImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:23</ID>
@@ -257,11 +255,11 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:8</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:23</ID>
+    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:27</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
