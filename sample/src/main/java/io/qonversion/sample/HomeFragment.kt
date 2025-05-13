@@ -1,10 +1,13 @@
 package io.qonversion.sample
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -19,6 +22,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import io.qonversion.nocodes.NoCodes
 import io.qonversion.sample.databinding.FragmentHomeBinding
 import java.util.*
 
@@ -62,6 +66,39 @@ class HomeFragment : Fragment() {
         binding.buttonRestore.setOnClickListener {
             showLoading(true)
             Qonversion.shared.restore(getEntitlementsCallback())
+        }
+
+        binding.buttonPaywall.setOnClickListener {
+            val builder = AlertDialog.Builder(requireContext())
+            val input = EditText(requireContext())
+            input.hint = "Context key"
+            
+            val inputContainer = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                val padding = resources.getDimensionPixelSize(R.dimen.dialog_input_margin)
+                setPadding(padding, padding, padding, padding)
+                addView(input, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ))
+            }
+            
+            builder.setTitle("Enter context key")
+            builder.setView(inputContainer)
+
+            builder.setPositiveButton("Show") { _, _ ->
+                val contextKey = input.text.toString()
+                if (contextKey.isNotEmpty()) {
+                    NoCodes.shared.showScreen(contextKey)
+                } else {
+                    Toast.makeText(requireContext(), "Please enter a context key", Toast.LENGTH_SHORT).show()
+                }
+            }
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.cancel()
+            }
+
+            builder.show()
         }
 
         binding.buttonLogout.setOnClickListener {
