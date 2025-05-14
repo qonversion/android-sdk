@@ -52,8 +52,6 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val installDate = 1679652674L
 
-    private val noCodeScreenId = "lsarjYcU"
-
     private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
     private val annualProduct = QProduct("test_annual", "google_annual", null)
     private val inappProduct = QProduct("test_inapp", "no_ads", null)
@@ -86,7 +84,8 @@ internal class QonversionRepositoryIntegrationTest {
         originalOrderId = "GPA.3307-0767-0668-99058",
         purchaseTime = 1679933171,
         purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-        contextKeys = null
+        contextKeys = null,
+        screenUid = null,
     )
 
     @Test
