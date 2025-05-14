@@ -20,7 +20,6 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
-import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 
@@ -49,8 +48,11 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
         configureWebClient()
 
-        loadWebView()
-        notifyScreenView()
+        binding?.webView?.visibility = View.GONE
+        presenter.onStart(
+            arguments?.getString(EX_CONTEXT_KEY),
+            arguments?.getString(EX_SCREEN_ID)
+        )
     }
 
     override fun onDestroyView() {
@@ -58,12 +60,25 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding = null
     }
 
-    override fun openScreen(screenId: String, htmlPage: String) {
+    override fun displayScreen(screenId: String, html: String) {
+        activity?.runOnUiThread {
+            binding?.webView?.loadDataWithBaseURL(
+                null,
+                html,
+                MIME_TYPE,
+                ENCODING,
+                null
+            )
+            delegate?.onScreenShown(screenId)
+        }
+    }
+
+    override fun navigateToScreen(screenId: String) {
         val action = QAction(QAction.Type.Navigation, QAction.Parameter.ScreenId, screenId)
         delegate?.onActionStartedExecuting(action)
 
         try {
-            (activity as ScreenActivity).showScreen(screenId, htmlPage)
+            (activity as ScreenActivity).showScreen(null, screenId)
             delegate?.onActionFinishedExecuting(action)
         } catch (e: Exception) {
             delegate?.onActionFailedToExecute(action)
@@ -182,7 +197,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\",  {detail: $jsonData} ))", null)
     }
 
-    override fun showScreen() {
+    override fun finishScreenPreparation() {
         binding?.webView?.visibility = View.VISIBLE
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
     }
@@ -199,31 +214,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private fun configureWebClient() {
         binding?.webView?.settings?.javaScriptEnabled = true
         binding?.webView?.addJavascriptInterface(this, "NoCodesMessageHandler")
-    }
-
-    private fun loadWebView() {
-        binding?.webView?.visibility = View.GONE
-
-        val extraHtmlPage = arguments?.getString(EX_HTML_PAGE)
-        extraHtmlPage?.let {
-            binding?.webView?.loadDataWithBaseURL(
-                null,
-                it,
-                MIME_TYPE,
-                ENCODING,
-                null
-            )
-        } ?: run {
-            val error = NoCodesError(ErrorCode.Mapping, "HTML data of the screen is absent")
-            delegate?.onScreenFailedToLoad(error)
-            logger.error("Failed to show No-Code Screen - html page is null")
-        }
-    }
-
-    private fun notifyScreenView() {
-        arguments?.getString(EX_SCREEN_ID)?.let {
-            delegate?.onScreenShown(it)
-        }
     }
 
     private fun handleOnErrorCallback(
@@ -251,17 +241,14 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     companion object {
-        private const val EX_HTML_PAGE = "htmlPage"
+        private const val EX_CONTEXT_KEY = "contextKey"
         private const val EX_SCREEN_ID = "screenId"
         private const val MIME_TYPE = "text/html"
         private const val ENCODING = "UTF-8"
 
-        fun getArguments(
-            screenId: String?,
-            htmlPage: String?
-        ) = Bundle().also {
+        fun getArguments(contextKey: String?, screenId: String?) = Bundle().also {
+            it.putString(EX_CONTEXT_KEY, contextKey)
             it.putString(EX_SCREEN_ID, screenId)
-            it.putString(EX_HTML_PAGE, htmlPage)
         }
     }
 }

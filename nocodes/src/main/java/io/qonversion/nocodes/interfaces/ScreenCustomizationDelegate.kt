@@ -9,8 +9,8 @@ interface ScreenCustomizationDelegate {
     /**
      * The function should return the screen presentation configuration
      * used to present the first screen in the chain.
-     * @param screenId identifier of the screen, for which the configuration will be used.
+     * @param contextKey the context key of the screen, for which the configuration will be used.
      * @return screen presentation configuration.
      */
-    fun getPresentationConfigurationForScreen(screenId: String): QScreenPresentationConfig
+    fun getPresentationConfigurationForScreen(contextKey: String): QScreenPresentationConfig
 }

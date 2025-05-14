@@ -8,10 +8,14 @@ import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.error.ErrorCode
+import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.logger.Logger
+import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,10 +25,42 @@ internal class ScreenPresenter(
     private val service: ScreenService,
     private val view: ScreenContract.View,
     logger: Logger,
+    private val delegateProvider: NoCodesDelegateProvider,
     private val serializer: Serializer,
     private val actionMapper: Mapper<QAction>,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
+
+    override fun onStart(contextKey: String?, screenId: String?) {
+        scope.launch {
+            logger.verbose("ScreenPresenter -> loading the screen to present")
+
+            val screen = try { contextKey?.let {
+                    service.getScreen(contextKey)
+                } ?: screenId?.let {
+                    service.getScreenById(screenId)
+                } ?: run {
+                    val errorMessage =
+                        "Neither context key, nor screen id is provided to load screen"
+                    logger.error("ScreenPresenter -> $errorMessage")
+
+                    val error = NoCodesError(ErrorCode.ScreenNotFound, errorMessage)
+                    delegateProvider.noCodesDelegate?.get()?.onScreenFailedToLoad(error)
+
+                    return@launch
+                }
+            } catch (e: NoCodesException) {
+                logger.error("ScreenPresenter -> Failed to fetch No-Code screen. $e")
+
+                delegateProvider.noCodesDelegate?.get()?.onScreenFailedToLoad(NoCodesError(e))
+
+                return@launch
+            }
+
+            logger.verbose("ScreenPresenter -> displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")
+            view.displayScreen(screen.id, screen.body)
+        }
+    }
 
     override fun onWebViewMessageReceived(message: String) {
         val action = try {
@@ -57,7 +93,7 @@ internal class ScreenPresenter(
                 handleLoadProductsAction(action)
             }
             QAction.Type.ShowScreen -> {
-                view.showScreen()
+                view.finishScreenPreparation()
             }
             QAction.Type.Navigation -> {
                 action.parameters?.get(QAction.Parameter.ScreenId)?.let { screenId ->
@@ -167,10 +203,8 @@ internal class ScreenPresenter(
     private fun loadNextScreen(screenId: String) {
         try {
             scope.launch {
-                logger.verbose("ScreenPresenter -> loading the next screen in stack with id $screenId")
-                val screen = service.getScreenById(screenId)
                 logger.verbose("ScreenPresenter -> opening the screen with id $screenId")
-                view.openScreen(screenId, screen.body)
+                view.navigateToScreen(screenId)
             }
         } catch (e: Exception) {
             logger.error("ScreenPresenter -> failed to open the screen with id $screenId")

@@ -26,6 +26,8 @@ import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import io.qonversion.nocodes.NoCodes
+import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.sample.databinding.FragmentHomeBinding
 import kotlin.system.exitProcess
 import java.util.*
@@ -34,7 +36,7 @@ private const val TAG = "HomeFragment"
 private const val CLICK_TIMEOUT = 500L // 5 seconds
 private const val REQUIRED_CLICKS = 5
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), NoCodesDelegate {
 
     lateinit var binding: FragmentHomeBinding
     private var clickCount = 0
@@ -53,6 +55,7 @@ class HomeFragment : Fragment() {
 
         setupImageViewClickListener()
         setupQonversion()
+        setupNoCodes()
         setupButtons()
 
         return binding.root
@@ -148,6 +151,10 @@ class HomeFragment : Fragment() {
                 showError(requireContext(), error, TAG)
             }
         })
+    }
+
+    private fun setupNoCodes() {
+        NoCodes.shared.setDelegate(this)
     }
 
     private fun setupButtons() {
@@ -311,6 +318,10 @@ class HomeFragment : Fragment() {
         } else {
             ProgressBar.INVISIBLE
         }
+    }
+
+    override fun onScreenFailedToLoad(error: NoCodesError) {
+        NoCodes.shared.close()
     }
 
     private fun getStr(stringId: Int): String {
