@@ -24,8 +24,8 @@ class ScreenActivity : FragmentActivity(R.layout.nc_activity_screen) {
         )
         if (savedInstanceState == null) {
             showScreen(
-                intent.getStringExtra(INTENT_SCREEN_ID),
-                intent.getStringExtra(INTENT_HTML_PAGE),
+                intent.getStringExtra(INTENT_CONTEXT_KEY),
+                null,
                 false
             )
         }
@@ -36,12 +36,11 @@ class ScreenActivity : FragmentActivity(R.layout.nc_activity_screen) {
         playCloseAnimation()
     }
 
-    internal fun showScreen(screenId: String?, htmlPage: String?, addToBackStack: Boolean = true) {
-        val args = ScreenFragment.getArguments(screenId, htmlPage)
+    internal fun showScreen(contextKey: String?, screenId: String?, addToBackStack: Boolean = true) {
+        val args = ScreenFragment.getArguments(contextKey, screenId)
         val fragment = ScreenFragment()
         fragment.arguments = args
-        val transaction = supportFragmentManager
-            .beginTransaction()
+        val transaction = supportFragmentManager.beginTransaction()
 
         if (addToBackStack) {
             transaction
@@ -77,19 +76,16 @@ class ScreenActivity : FragmentActivity(R.layout.nc_activity_screen) {
     }
 
     companion object {
-        private const val INTENT_HTML_PAGE = "htmlPage"
-        private const val INTENT_SCREEN_ID = "screenId"
+        private const val INTENT_CONTEXT_KEY = "contextKey"
         private const val INTENT_SCREEN_PRESENTATION_STYLE = "screenPresentationStyle"
 
         fun getCallingIntent(
             context: Context,
-            screenId: String,
-            htmlPage: String,
+            contextKey: String,
             screenPresentationStyle: QScreenPresentationStyle
         ) =
             Intent(context, ScreenActivity::class.java).also {
-                it.putExtra(INTENT_SCREEN_ID, screenId)
-                it.putExtra(INTENT_HTML_PAGE, htmlPage)
+                it.putExtra(INTENT_CONTEXT_KEY, contextKey)
                 it.putExtra(INTENT_SCREEN_PRESENTATION_STYLE, screenPresentationStyle)
             }
     }

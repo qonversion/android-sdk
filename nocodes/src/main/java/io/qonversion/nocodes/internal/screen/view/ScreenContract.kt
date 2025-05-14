@@ -4,7 +4,9 @@ import io.qonversion.nocodes.dto.QAction
 
 internal class ScreenContract {
     interface View {
-        fun openScreen(screenId: String, htmlPage: String)
+        fun displayScreen(screenId: String, html: String)
+
+        fun navigateToScreen(screenId: String)
 
         fun openLink(url: String)
 
@@ -20,10 +22,12 @@ internal class ScreenContract {
 
         fun sendProductsToWebView(jsonData: String)
 
-        fun showScreen()
+        fun finishScreenPreparation()
     }
 
     internal interface Presenter {
+        fun onStart(contextKey: String?, screenId: String?)
+
         fun onWebViewMessageReceived(message: String)
     }
 }

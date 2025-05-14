@@ -20,7 +20,6 @@ internal class ControllersAssemblyImpl(
 
     override fun screenController(): ScreenController {
         return ScreenControllerImpl(
-            servicesAssembly.screenService(),
             internalConfig,
             miscAssembly.activityProvider(),
             appContext,
@@ -33,6 +32,7 @@ internal class ControllersAssemblyImpl(
             servicesAssembly.screenService(),
             view,
             miscAssembly.logger(),
+            miscAssembly.noCodesDelegateProvider(),
             miscAssembly.jsonSerializer(),
             mappersAssembly.actionMapper(),
         )

@@ -11,12 +11,10 @@ import io.qonversion.nocodes.internal.dto.config.InternalConfig
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.screen.getScreenTransactionAnimations
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
-import io.qonversion.nocodes.internal.screen.service.ScreenService
 import io.qonversion.nocodes.internal.screen.view.ScreenActivity
 import java.lang.Exception
 
 internal class ScreenControllerImpl(
-    private val screenService: ScreenService,
     private val internalConfig: InternalConfig,
     private val activityProvider: ActivityProvider,
     private val appContext: Context,
@@ -25,16 +23,13 @@ internal class ScreenControllerImpl(
 
     override suspend fun showScreen(contextKey: String) {
         logger.verbose("showScreen() -> Fetching the screen with the context key $contextKey from the API")
-        val screen = screenService.getScreen(contextKey)
-
         val context: Context = activityProvider.getCurrentActivity() ?: appContext
 
         val screenPresentationConfig = internalConfig.screenCustomizationDelegate?.get()
-            ?.getPresentationConfigurationForScreen(screen.id) ?: QScreenPresentationConfig()
+            ?.getPresentationConfigurationForScreen(contextKey) ?: QScreenPresentationConfig()
         val intent = ScreenActivity.getCallingIntent(
             context,
-            screen.id,
-            screen.body,
+            contextKey,
             screenPresentationConfig.presentationStyle
         )
         if (context !is Activity) {
