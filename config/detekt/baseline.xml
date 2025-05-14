@@ -201,7 +201,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:59</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:182</ID>
-    <ID>MaximumLineLength:io.qonversion.sample.utils.kt:10</ID>
+    <ID>MaximumLineLength:io.qonversion.sample.utils.kt:41</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
@@ -222,7 +222,6 @@
     <ID>NewLineAtEndOfFile:util.kt$com.qonversion.android.sdk.internal.storage.util.kt</ID>
     <ID>NewLineAtEndOfFile:utils.kt$com.qonversion.android.sdk.utils.kt</ID>
     <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:261</ID>
-    <ID>NoBlankLineBeforeRbrace:com.qonversion.android.sdk.internal.validator.TokenValidatorTest.kt:20</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:118</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
@@ -259,7 +258,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:23</ID>
+    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:31</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>

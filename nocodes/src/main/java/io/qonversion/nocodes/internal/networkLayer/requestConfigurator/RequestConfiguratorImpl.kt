@@ -11,12 +11,12 @@ internal class RequestConfiguratorImpl(
     override fun configureScreenRequest(contextKey: String): Request {
         val headers = headerBuilder.buildCommonHeaders()
 
-        return Request.get("$baseUrl/${ApiEndpoint.Contexts.path}/$contextKey/${ApiEndpoint.Screens.path}", headers)
+        return Request.get("${baseUrl}v3/${ApiEndpoint.Contexts.path}/$contextKey/${ApiEndpoint.Screens.path}", headers)
     }
 
     override fun configureScreenRequestById(screenId: String): Request {
         val headers = headerBuilder.buildCommonHeaders()
 
-        return Request.get("$baseUrl/${ApiEndpoint.Screens.path}/$screenId", headers)
+        return Request.get("${baseUrl}v3/${ApiEndpoint.Screens.path}/$screenId", headers)
     }
 }

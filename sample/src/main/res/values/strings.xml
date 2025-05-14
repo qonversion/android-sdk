@@ -12,6 +12,7 @@
     <string name="build_in_app_subscriptions_without_server_code">Build in-app subscriptions\n without server code</string>
     <string name="loading">Loading…</string>
     <string name="logout">Logout</string>
+    <string name="presentPaywall">Present Paywall</string>
     <string name="name">Name</string>
     <string name="description">Description</string>
     <string name="price">Price</string>
