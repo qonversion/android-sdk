@@ -1,5 +1,8 @@
 package io.qonversion.sample;
 
+import static io.qonversion.sample.UtilsKt.getApiUrl;
+import static io.qonversion.sample.UtilsKt.getProjectKey;
+
 import androidx.multidex.MultiDexApplication;
 
 import com.appsflyer.AppsFlyerConversionListener;
@@ -18,27 +21,35 @@ import io.qonversion.nocodes.NoCodes;
 import io.qonversion.nocodes.NoCodesConfig;
 
 public class App extends MultiDexApplication {
+    private static final String DEFAULT_PROJECT_KEY = "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2";
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         FirebaseApp.initializeApp(this);
 
-        final QonversionConfig qonversionConfig = new QonversionConfig.Builder(
+        String projectKey = getProjectKey(this, DEFAULT_PROJECT_KEY);
+        String apiUrl = getApiUrl(this);
+
+        QonversionConfig.Builder qonversionConfigBuilder = new QonversionConfig.Builder(
                 this,
-                "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2",
+                projectKey,
                 QLaunchMode.SubscriptionManagement
-        )
-                .setEnvironment(QEnvironment.Sandbox)
-                .build();
+        ).setEnvironment(QEnvironment.Sandbox);
 
-        Qonversion.initialize(qonversionConfig);
-
-        final NoCodesConfig noCodesConfig = new NoCodesConfig.Builder(
+        NoCodesConfig.Builder noCodesConfigBuilder = new NoCodesConfig.Builder(
                 this,
-                "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2"
-        ).build();
-        NoCodes.initialize(noCodesConfig);
+                projectKey
+        );
+
+        if (apiUrl != null) {
+            qonversionConfigBuilder.setProxyURL(apiUrl);
+            noCodesConfigBuilder.setProxyURL(apiUrl);
+        }
+
+        Qonversion.initialize(qonversionConfigBuilder.build());
+        NoCodes.initialize(noCodesConfigBuilder.build());
 
         Qonversion.getSharedInstance().syncHistoricalData();
 

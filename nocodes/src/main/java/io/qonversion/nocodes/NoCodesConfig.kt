@@ -45,6 +45,7 @@ class NoCodesConfig internal constructor(
     ) {
         private var noCodesDelegate: NoCodesDelegate? = null
         private var screenCustomizationDelegate: ScreenCustomizationDelegate? = null
+        private var proxyUrl: String? = null
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
 
@@ -68,6 +69,24 @@ class NoCodesConfig internal constructor(
          */
         fun setScreenCustomizationDelegate(screenCustomizationDelegate: ScreenCustomizationDelegate): Builder = apply {
             this.screenCustomizationDelegate = screenCustomizationDelegate
+        }
+
+        /**
+         * Provide a URL to your proxy server which will redirect all the requests from the No-Codes
+         * SDK to our API. Please, contact us before using this feature.
+         *
+         * @param url your proxy server url
+         * @return builder instance for chain calls.
+         */
+        fun setProxyURL(url: String): Builder = apply {
+            proxyUrl = url
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                proxyUrl = "https://$proxyUrl"
+            }
+
+            if (!url.endsWith("/")) {
+                proxyUrl += "/"
+            }
         }
 
         /**
@@ -106,7 +125,7 @@ class NoCodesConfig internal constructor(
             }
 
             val primaryConfig = PrimaryConfig(projectKey)
-            val networkConfig = NetworkConfig()
+            val networkConfig = NetworkConfig(proxyUrl)
             val loggerConfig = LoggerConfig(logLevel, logTag)
 
             return NoCodesConfig(
