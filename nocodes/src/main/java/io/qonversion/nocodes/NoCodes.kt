@@ -102,7 +102,7 @@ interface NoCodes {
 
     /**
      * Define the log tag that the Qonversion No-Codes SDK will print with every log message.
-     * For example, you can use it to filter the Qonversion SDK logs and your app own logs together.
+     * For example, you can use it to filter the Qonversion No-Codes SDK logs and your app own logs together.
      *
      * You may set log tag both *after* Qonversion No-Codes SDK initializing with [NoCodes.setLogTag]
      * and *while* Qonversion No-Codes initializing with [NoCodes.initialize]
