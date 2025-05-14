@@ -7,8 +7,8 @@ import android.widget.Toast
 import com.qonversion.android.sdk.dto.QonversionError
 
 private const val QONVERSION_PREFS = "qonversion_config"
-private const val KEY_PROJECT_KEY = "project_key";
-private const val KEY_API_URL = "api_url";
+private const val KEY_PROJECT_KEY = "project_key"
+private const val KEY_API_URL = "api_url"
 private fun getQonversionPrefs(context: Context): SharedPreferences = context.getSharedPreferences(QONVERSION_PREFS, 0)
 
 fun getProjectKey(context: Context, defaultKey: String): String =
@@ -17,7 +17,7 @@ fun getProjectKey(context: Context, defaultKey: String): String =
 fun getApiUrl(context: Context): String? =
     getQonversionPrefs(context).getString(KEY_API_URL, null)
 
-fun storeQonversionPrefs(context:Context, projectKey: String, apiUrl: String?) {
+fun storeQonversionPrefs(context: Context, projectKey: String, apiUrl: String?) {
     val prefs = getQonversionPrefs(context)
     prefs.edit().apply {
         if (projectKey.isBlank()) {

@@ -64,13 +64,13 @@ class HomeFragment : Fragment() {
             if (currentTime - lastClickTime > CLICK_TIMEOUT) {
                 resetClickCount()
             }
-            
+
             clickCount++
             lastClickTime = currentTime
-            
+
             clickHandler.removeCallbacks(clickRunnable)
             clickHandler.postDelayed(clickRunnable, CLICK_TIMEOUT)
-            
+
             if (clickCount >= REQUIRED_CLICKS) {
                 showConfigurationDialog()
                 resetClickCount()
@@ -88,10 +88,10 @@ class HomeFragment : Fragment() {
         val projectKeyInput = dialogView.findViewById<EditText>(R.id.projectKeyInput)
         val apiRadioGroup = dialogView.findViewById<RadioGroup>(R.id.apiRadioGroup)
         val customUrlInput = dialogView.findViewById<EditText>(R.id.customUrlInput)
-        
+
         // Initially hide custom URL input
         customUrlInput.visibility = View.GONE
-        
+
         apiRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             customUrlInput.visibility = if (checkedId == R.id.radioCustom) View.VISIBLE else View.GONE
         }
@@ -168,7 +168,7 @@ class HomeFragment : Fragment() {
             val builder = AlertDialog.Builder(requireContext())
             val input = EditText(requireContext())
             input.hint = "Context key"
-            
+
             val inputContainer = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
                 val padding = resources.getDimensionPixelSize(R.dimen.dialog_input_margin)
@@ -178,7 +178,7 @@ class HomeFragment : Fragment() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ))
             }
-            
+
             builder.setTitle("Enter context key")
             builder.setView(inputContainer)
 
