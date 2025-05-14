@@ -30,10 +30,10 @@ jobs:
         id: module
         run: |
           TAG_NAME="${GITHUB_REF##*/}"
-          if [[ "$TAG_NAME" == sdk/* ]]; then
-            echo "module=sdk" >> $GITHUB_OUTPUT
-          elif [[ "$TAG_NAME" == nocodes/* ]]; then
-            echo "module=nocodes" >> $GITHUB_OUTPUT
+          if [[ "$TAG_NAME" == sdk_* ]]; then
+            echo "Publishing SDK module" >> $GITHUB_OUTPUT
+          elif [[ "$TAG_NAME" == nocodes_* ]]; then
+            echo "Publishing NoCodes module" >> $GITHUB_OUTPUT
           else
             echo "Unknown tag format: $TAG_NAME"
             exit 1
