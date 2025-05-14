@@ -40,4 +40,9 @@ data class QProductPrice(
      * Price currency symbol. Null if failed to parse.
      */
     val currencySymbol: String? = currency?.symbol
+
+    /**
+     * Price amount in currency units
+     */
+    val priceAmount = priceAmountMicros / 1_000_000.0
 }

@@ -21,7 +21,8 @@ internal class GooglePurchaseConverter : PurchaseConverter {
             originalOrderId = formatOriginalTransactionId(purchase.orderId ?: ""),
             purchaseTime = purchase.purchaseTime.milliSecondsToSeconds(),
             purchaseToken = purchase.purchaseToken,
-            contextKeys = options?.contextKeys
+            contextKeys = options?.contextKeys,
+            screenUid = options?.screenUid,
         )
     }
 

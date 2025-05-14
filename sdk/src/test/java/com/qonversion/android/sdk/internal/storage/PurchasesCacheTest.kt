@@ -1,8 +1,6 @@
 package com.qonversion.android.sdk.internal.storage
 
 import org.assertj.core.api.Assertions.assertThat
-import android.content.SharedPreferences
-import com.android.billingclient.api.BillingClient
 
 import com.qonversion.android.sdk.internal.purchase.Purchase
 import io.mockk.*
@@ -156,7 +154,8 @@ internal class PurchasesCacheTest {
             originalOrderId = "GPA.3375-4436-3573-53474$originalOrderId",
             purchaseTime = 1611323804,
             purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g",
-            contextKeys = listOf("test_1", "test_2")
+            contextKeys = listOf("test_1", "test_2"),
+            screenUid = "screenUid",
         )
     }
 

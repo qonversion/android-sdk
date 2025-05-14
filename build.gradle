@@ -5,8 +5,12 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 buildscript {
     ext {
-        release = [
+        sdk = [
                 versionName: "8.2.5",
+                versionCode: 1
+        ]
+        nocodes = [
+                versionName: "0.0.1-alpha.2",
                 versionCode: 1
         ]
     }
@@ -27,7 +31,8 @@ buildscript {
 
 plugins {
     id "io.gitlab.arturbosch.detekt" version "1.18.0"
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+    id "com.vanniktech.maven.publish" version "0.31.0"
 }
 
 dependencies {
@@ -41,10 +46,6 @@ allprojects {
         maven { url 'https://jitpack.io' }
         jcenter()
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
 
 def projectSource = file(projectDir)
@@ -87,5 +88,3 @@ tasks.register("detektGenerateBaseline", DetektCreateBaselineTask) {
     include(kotlinFiles)
     exclude(resourceFiles, buildFiles, appFiles)
 }
-
-apply from: "${rootDir}/scripts/publish-root.gradle"

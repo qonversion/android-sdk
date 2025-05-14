@@ -1,0 +1,51 @@
+name: Release pull requests
+on:
+  push:
+    tags:
+    - prerelease-nocodes/*
+
+jobs:
+    prerelease:
+      runs-on: macos-latest
+
+      steps:
+        - uses: actions/checkout@v2
+          name: Checkout all
+          with:
+            fetch-depth: 0
+          
+        - uses: olegtarasov/get-tag@v2.1
+          id: tagName
+          with:
+            tagRegex: 'prerelease-nocodes\/(\d*\.\d*\.\d*)'
+            
+        - name: Bump version
+          run: |
+            fastlane bump lib:nocodes version:${{ steps.tagName.outputs.tag }}
+
+        - name: Create pull request
+          uses: peter-evans/create-pull-request@v3
+          with:
+            title: No-Codes Release ${{ steps.tagName.outputs.tag }}
+            body: No-Codes Release Pull Request
+            labels: autocreated
+            branch: release-nocodes/${{ steps.tagName.outputs.tag }}
+            base: develop
+         
+        - uses: actions/checkout@v2
+          with:
+            ref: main
+        
+        - name: Reset main branch
+          run: |
+            git fetch origin release-nocodes/${{ steps.tagName.outputs.tag }}:release-nocodes/${{ steps.tagName.outputs.tag }}
+            git reset --hard release-nocodes/${{ steps.tagName.outputs.tag }}
+        
+        - name: Create Pull Request
+          uses: peter-evans/create-pull-request@v3
+          with:
+            title: No-Codes Release ${{ steps.tagName.outputs.tag }}
+            body: No-Codes Release Pull Request
+            labels: autocreated
+            branch: release-nocodes/${{ steps.tagName.outputs.tag }}
+            base: main
