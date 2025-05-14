@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'io.qonversion.nocodes'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+
+        group = 'io.qonversion.nocodes'
+        version = nocodes.versionName
+        versionName = nocodes.versionName
+        namespace = 'io.qonversion.nocodes'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        buildTypes.each {
+            it.buildConfigField("String","VERSION_NAME", "\"${defaultConfig.versionName}\"")
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    kotlin {
+        jvmToolchain(17)
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+}
+
+ext {
+    PUBLISH_GROUP_ID = 'io.qonversion'
+    PUBLISH_ARTIFACT_ID = 'no-codes'
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+    api project(':sdk')
+}
+
+apply from: "../scripts/maven-release.gradle"

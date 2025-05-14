@@ -18,7 +18,6 @@ import com.qonversion.android.sdk.internal.repository.RepositoryWithRateLimits
 import com.qonversion.android.sdk.internal.storage.TokenStorage
 import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
-import com.qonversion.android.sdk.internal.validator.TokenValidator
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
@@ -73,10 +72,7 @@ internal class RepositoryModule {
     @ApplicationScope
     @Provides
     fun provideTokenStorage(preferences: SharedPreferences): TokenStorage {
-        return TokenStorage(
-            preferences,
-            TokenValidator()
-        )
+        return TokenStorage(preferences)
     }
 
     @ApplicationScope

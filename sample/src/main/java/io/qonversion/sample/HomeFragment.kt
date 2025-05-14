@@ -1,11 +1,17 @@
 package io.qonversion.sample
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -19,14 +25,24 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import io.qonversion.nocodes.NoCodes
+import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.sample.databinding.FragmentHomeBinding
+import kotlin.system.exitProcess
 import java.util.*
 
 private const val TAG = "HomeFragment"
+private const val CLICK_TIMEOUT = 500L // 5 seconds
+private const val REQUIRED_CLICKS = 5
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), NoCodesDelegate {
 
     lateinit var binding: FragmentHomeBinding
+    private var clickCount = 0
+    private var lastClickTime = 0L
+    private val clickHandler = Handler(Looper.getMainLooper())
+    private val clickRunnable = Runnable { resetClickCount() }
 
     private val subscriptionProductId = "weekly"
     private val inAppProductId = "in_app"
@@ -37,6 +53,91 @@ class HomeFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentHomeBinding.inflate(inflater)
 
+        setupImageViewClickListener()
+        setupQonversion()
+        setupNoCodes()
+        setupButtons()
+
+        return binding.root
+    }
+
+    private fun setupImageViewClickListener() {
+        binding.imageView.setOnClickListener {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastClickTime > CLICK_TIMEOUT) {
+                resetClickCount()
+            }
+
+            clickCount++
+            lastClickTime = currentTime
+
+            clickHandler.removeCallbacks(clickRunnable)
+            clickHandler.postDelayed(clickRunnable, CLICK_TIMEOUT)
+
+            if (clickCount >= REQUIRED_CLICKS) {
+                showConfigurationDialog()
+                resetClickCount()
+            }
+        }
+    }
+
+    private fun resetClickCount() {
+        clickCount = 0
+        lastClickTime = 0
+    }
+
+    private fun showConfigurationDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_configuration, null)
+        val projectKeyInput = dialogView.findViewById<EditText>(R.id.projectKeyInput)
+        val apiRadioGroup = dialogView.findViewById<RadioGroup>(R.id.apiRadioGroup)
+        val customUrlInput = dialogView.findViewById<EditText>(R.id.customUrlInput)
+
+        // Initially hide custom URL input
+        customUrlInput.visibility = View.GONE
+
+        apiRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            customUrlInput.visibility = if (checkedId == R.id.radioCustom) View.VISIBLE else View.GONE
+        }
+
+        val currentProjectKey = getProjectKey(requireContext(), "")
+        val currentApiUrl = getApiUrl(requireContext())
+
+        // Set current values to inputs
+        projectKeyInput.setText(currentProjectKey)
+        if (currentApiUrl != null) {
+            apiRadioGroup.check(R.id.radioCustom)
+            customUrlInput.setText(currentApiUrl)
+            customUrlInput.visibility = View.VISIBLE
+        } else {
+            apiRadioGroup.check(R.id.radioProduction)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Qonversion configuration")
+            .setView(dialogView)
+            .setCancelable(false)
+            .setPositiveButton("Apply") { _, _ ->
+                val projectKey = projectKeyInput.text.toString()
+                val apiUrl = customUrlInput.takeIf {
+                    apiRadioGroup.checkedRadioButtonId == R.id.radioCustom
+                }?.text?.toString()
+                storeQonversionPrefs(requireContext(), projectKey, apiUrl)
+
+                // Close the app
+                exitProcess(0)
+            }
+            .setNeutralButton("Reset") { _, _ ->
+                // Clear configuration
+                storeQonversionPrefs(requireContext(), "", null)
+
+                // Close the app
+                exitProcess(0)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun setupQonversion() {
         Qonversion.shared.setEntitlementsUpdateListener(entitlementsUpdateListener)
 
         Qonversion.shared.products(callback = object : QonversionProductsCallback {
@@ -50,7 +151,13 @@ class HomeFragment : Fragment() {
                 showError(requireContext(), error, TAG)
             }
         })
+    }
 
+    private fun setupNoCodes() {
+        NoCodes.shared.setDelegate(this)
+    }
+
+    private fun setupButtons() {
         binding.buttonSubscribe.setOnClickListener {
             purchase(subscriptionProductId)
         }
@@ -64,14 +171,44 @@ class HomeFragment : Fragment() {
             Qonversion.shared.restore(getEntitlementsCallback())
         }
 
+        binding.buttonPaywall.setOnClickListener {
+            val builder = AlertDialog.Builder(requireContext())
+            val input = EditText(requireContext())
+            input.hint = "Context key"
+
+            val inputContainer = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                val padding = resources.getDimensionPixelSize(R.dimen.dialog_input_margin)
+                setPadding(padding, padding, padding, padding)
+                addView(input, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ))
+            }
+
+            builder.setTitle("Enter context key")
+            builder.setView(inputContainer)
+
+            builder.setPositiveButton("Show") { _, _ ->
+                val contextKey = input.text.toString()
+                if (contextKey.isNotEmpty()) {
+                    NoCodes.shared.showScreen(contextKey)
+                } else {
+                    Toast.makeText(requireContext(), "Please enter a context key", Toast.LENGTH_SHORT).show()
+                }
+            }
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.cancel()
+            }
+
+            builder.show()
+        }
+
         binding.buttonLogout.setOnClickListener {
             Firebase.auth.signOut()
             Qonversion.shared.logout()
-
             goToAuth()
         }
-
-        return binding.root
     }
 
     private fun getEntitlementsUpdateListener() = object : QEntitlementsUpdateListener {
@@ -181,6 +318,10 @@ class HomeFragment : Fragment() {
         } else {
             ProgressBar.INVISIBLE
         }
+    }
+
+    override fun onScreenFailedToLoad(error: NoCodesError) {
+        NoCodes.shared.close()
     }
 
     private fun getStr(stringId: Int): String {

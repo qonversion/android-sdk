@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.internal
 
-import android.os.Handler
-import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
@@ -54,8 +52,6 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val installDate = 1679652674L
 
-    private val noCodeScreenId = "lsarjYcU"
-
     private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
     private val annualProduct = QProduct("test_annual", "google_annual", null)
     private val inappProduct = QProduct("test_inapp", "no_ads", null)
@@ -88,7 +84,8 @@ internal class QonversionRepositoryIntegrationTest {
         originalOrderId = "GPA.3307-0767-0668-99058",
         purchaseTime = 1679933171,
         purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
-        contextKeys = null
+        contextKeys = null,
+        screenUid = null,
     )
 
     @Test
@@ -669,163 +666,6 @@ internal class QonversionRepositoryIntegrationTest {
         repository.identify(
             identityId,
             uid,
-            { fail("Shouldn't succeed") },
-            { error ->
-                assertAccessDeniedError(error)
-
-                signal.countDown()
-            }
-        )
-
-        signal.await()
-    }
-
-    @Test
-    fun screens() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_screens"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
-                fail("Failed to create user")
-            }
-
-            repository.screens(
-                noCodeScreenId,
-                { screen ->
-                    assertEquals(screen.id, noCodeScreenId)
-                    assertEquals(screen.background, "#CDFFD7")
-                    assertEquals(screen.lang, "EN")
-                    assertEquals(screen.obj, "screen")
-                    assertTrue(screen.htmlPage.isNotEmpty())
-
-                    signal.countDown()
-                },
-                { fail("Shouldn't fail") }
-            )
-        }
-
-        signal.await()
-    }
-
-    @Test
-    fun screensError() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_screens"
-        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
-
-        // when
-        repository.screens(
-            noCodeScreenId,
-            { fail("Shouldn't succeed") },
-            { error ->
-                assertAccessDeniedError(error)
-
-                signal.countDown()
-            }
-        )
-
-        signal.await()
-    }
-
-    @Test
-    fun views() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_views"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
-                fail("Failed to create user")
-            }
-
-            repository.views(noCodeScreenId)
-        }
-
-        // then
-        // check that nothing critical happens
-        Handler(Looper.getMainLooper()).postDelayed(
-            { signal.countDown() },
-            1000
-        )
-        signal.await()
-    }
-
-    @Test
-    fun viewsError() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_views"
-        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
-
-        // when
-        repository.views(noCodeScreenId)
-
-        // then
-        // check that nothing critical happens
-        Handler(Looper.getMainLooper()).postDelayed(
-            { signal.countDown() },
-            1000
-        )
-        signal.await()
-    }
-
-    @Test
-    fun actionPoints() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_actionPoints"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
-                fail("Failed to create user")
-            }
-
-            repository.actionPoints(
-                mapOf(
-                    "type" to "screen_view",
-                    "active" to "1"
-                ),
-                { actionPoints ->
-                    // no trigger for automation
-                    assertTrue(actionPoints === null)
-
-                    signal.countDown()
-                },
-                { fail("Shouldn't fail") }
-            )
-        }
-
-        signal.await()
-    }
-
-    @Test
-    fun actionPointsError() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_actionPoints"
-        val repository = initRepository(uid, INCORRECT_PROJECT_KEY)
-
-        // when
-        repository.actionPoints(
-            mapOf(
-                "type" to "screen_view",
-                "active" to "1"
-            ),
             { fail("Shouldn't succeed") },
             { error ->
                 assertAccessDeniedError(error)

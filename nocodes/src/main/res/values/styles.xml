@@ -1,0 +1,5 @@
+<resources>
+    <style name="NCProgressBarStyleGray">
+        <item name="colorAccent">@color/ncGray</item>
+    </style>
+</resources>
