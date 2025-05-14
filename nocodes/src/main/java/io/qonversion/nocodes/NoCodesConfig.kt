@@ -18,7 +18,7 @@ private const val DEFAULT_LOG_TAG = "Qonversion No-Codes"
  *
  * You should pass the created instance to the [NoCodes.initialize] method.
  *
- * @see [The documentation](https://documentation.qonversion.io/docs/quickstart) // todo update the link
+ * @see [The documentation](https://documentation.qonversion.io/docs/getting-started-with-no-code-screens/) // todo update the link
  */
 class NoCodesConfig internal constructor(
     internal val application: Application,
@@ -84,7 +84,7 @@ class NoCodesConfig internal constructor(
 
         /**
          * Define the log tag that the Qonversion No-Codes SDK will print with every log message.
-         * For example, you can use it to filter the Qonversion SDK logs and your app own logs together.
+         * For example, you can use it to filter the Qonversion No-Codes SDK logs and your app own logs together.
          *
          * @param logTag the desired log tag.
          * @return builder instance for chain calls.
