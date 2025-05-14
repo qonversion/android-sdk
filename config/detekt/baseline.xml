@@ -157,9 +157,9 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:120</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProduct.kt:139</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:216</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:373</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:91</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:371</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:89</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:341</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:153</ID>
@@ -168,10 +168,10 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:144</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:155</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:206</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:290</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:359</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:882</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:90</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:288</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:357</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:723</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:88</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:118</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.api.ApiErrorMapper.kt:119</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:253</ID>
@@ -312,6 +312,7 @@
     <ID>UnnecessaryAbstractClass:BillingClientWrapperBase.kt$BillingClientWrapperBase</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:AutomationsEvent.kt$AutomationsEvent$private val productId: String? // Temporarily inaccessible</ID>
+    <ID>UnusedPrivateMember:OutagerIntegrationTest.kt$OutagerIntegrationTest$private val noCodeScreenId = "lsarjYcU"</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
@@ -329,6 +330,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionEnvironmentAdapter$@ToJson private fun toJson(enum: QTransactionEnvironment): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionOwnershipTypeAdapter$@ToJson private fun toJson(enum: QTransactionOwnershipType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionTypeAdapter$@ToJson private fun toJson(enum: QTransactionType): String</ID>
+    <ID>UnusedPrivateMember:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$private val noCodeScreenId = "lsarjYcU"</ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:LegacyBillingClientWrapper.kt$import com.android.billingclient.api.*</ID>
