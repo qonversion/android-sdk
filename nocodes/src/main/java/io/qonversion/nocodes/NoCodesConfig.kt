@@ -18,7 +18,7 @@ private const val DEFAULT_LOG_TAG = "Qonversion No-Codes"
  *
  * You should pass the created instance to the [NoCodes.initialize] method.
  *
- * @see [The documentation](https://documentation.qonversion.io/docs/getting-started-with-no-code-screens/) // todo update the link
+ * @see [The documentation](https://documentation.qonversion.io/docs/getting-started-with-no-code-screens/)
  */
 class NoCodesConfig internal constructor(
     internal val application: Application,
