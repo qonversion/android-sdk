@@ -1,7 +1,5 @@
 package com.qonversion.android.sdk.internal
 
-import android.os.Handler
-import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.collect.Maps
@@ -418,93 +416,6 @@ internal class OutagerIntegrationTest {
                     signal.countDown()
                 },
                 { fail("Shouldn't fail") }
-            )
-        }
-
-        signal.await()
-    }
-
-    @Test
-    fun screens() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_screens"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { initError ->
-            initError?.let {
-                fail("Failed to create user")
-            }
-
-            repository.screens(
-                noCodeScreenId,
-                { fail("Shouldn't succeed") },
-                { error ->
-                    // Unsupported method on Outager
-                    assertEquals(error.code, QonversionErrorCode.BackendError)
-                    assertEquals(error.additionalMessage, """HTTP status code=503, error=Service Unavailable. """)
-                    signal.countDown()
-                }
-            )
-        }
-
-        signal.await()
-    }
-
-    @Test
-    fun views() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_views"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { error ->
-            error?.let {
-                fail("Failed to create user")
-            }
-
-            repository.views(noCodeScreenId)
-        }
-
-        // then
-        // check that nothing critical happens
-        Handler(Looper.getMainLooper()).postDelayed(
-            { signal.countDown() },
-            1000
-        )
-        signal.await()
-    }
-
-    @Test
-    fun actionPoints() {
-        // given
-        val signal = CountDownLatch(1)
-
-        val uid = UID_PREFIX + "_actionPoints"
-        val repository = initRepository(uid)
-
-        // when
-        withNewUserCreated(repository) { initError ->
-            initError?.let {
-                fail("Failed to create user")
-            }
-
-            repository.actionPoints(
-                mapOf(
-                    "type" to "screen_view",
-                    "active" to "1"
-                ),
-                { fail("Shouldn't succeed") },
-                { error ->
-                    // Unsupported method on Outager
-                    assertEquals(error.code, QonversionErrorCode.BackendError)
-                    assertEquals(error.additionalMessage, """HTTP status code=503, error=Service Unavailable. """)
-                    signal.countDown()
-                }
             )
         }
 
