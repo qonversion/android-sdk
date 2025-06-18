@@ -6,7 +6,7 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 buildscript {
     ext {
         sdk = [
-                versionName: "8.2.5",
+                versionName: "8.2.6",
                 versionCode: 1
         ]
         nocodes = [

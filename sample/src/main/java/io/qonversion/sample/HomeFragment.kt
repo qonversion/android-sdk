@@ -172,11 +172,14 @@ class HomeFragment : Fragment(), NoCodesDelegate {
         }
 
         binding.buttonPaywall.setOnClickListener {
-            val builder = AlertDialog.Builder(requireContext())
-            val input = EditText(requireContext())
+            val context = requireContext()
+            val builder = AlertDialog.Builder(context)
+            val input = EditText(context)
             input.hint = "Context key"
+            // Set the previously stored context key if it exists
+            input.setText(getLastContextKey(context))
 
-            val inputContainer = LinearLayout(requireContext()).apply {
+            val inputContainer = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 val padding = resources.getDimensionPixelSize(R.dimen.dialog_input_margin)
                 setPadding(padding, padding, padding, padding)
@@ -192,6 +195,8 @@ class HomeFragment : Fragment(), NoCodesDelegate {
             builder.setPositiveButton("Show") { _, _ ->
                 val contextKey = input.text.toString()
                 if (contextKey.isNotEmpty()) {
+                    // Store the context key for future use
+                    saveLastContextKey(context, contextKey)
                     NoCodes.shared.showScreen(contextKey)
                 } else {
                     Toast.makeText(requireContext(), "Please enter a context key", Toast.LENGTH_SHORT).show()
