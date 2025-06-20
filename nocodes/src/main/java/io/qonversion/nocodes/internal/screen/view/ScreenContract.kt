@@ -18,7 +18,7 @@ internal class ScreenContract {
 
         fun close(action: QAction = QAction(QAction.Type.Close))
 
-        fun closeAll(action: QAction = QAction(QAction.Type.Close))
+        fun closeAll(action: QAction = QAction(QAction.Type.CloseAll))
 
         fun sendProductsToWebView(jsonData: String)
 
