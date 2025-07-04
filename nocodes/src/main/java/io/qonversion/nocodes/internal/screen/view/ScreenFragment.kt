@@ -29,7 +29,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
 
-    private val delegate = delegateProvider.noCodesDelegate?.get()
+    private val delegate = delegateProvider.noCodesDelegate
 
     private var binding: NcFragmentScreenBinding? = null
 

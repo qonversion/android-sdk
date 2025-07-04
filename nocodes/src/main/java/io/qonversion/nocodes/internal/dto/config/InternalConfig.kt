@@ -14,7 +14,7 @@ internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     val networkConfig: NetworkConfig,
     var loggerConfig: LoggerConfig,
-    override var noCodesDelegate: WeakReference<NoCodesDelegate>?,
+    override var noCodesDelegate: NoCodesDelegate?,
     var screenCustomizationDelegate: WeakReference<ScreenCustomizationDelegate>?,
 ) : PrimaryConfigProvider,
     LoggerConfigProvider,
@@ -25,7 +25,7 @@ internal class InternalConfig(
         noCodesConfig.primaryConfig,
         noCodesConfig.networkConfig,
         noCodesConfig.loggerConfig,
-        noCodesConfig.noCodesDelegate?.let { WeakReference(it) },
+        noCodesConfig.noCodesDelegate?.let { NoCodesDelegateWrapper(it) },
         noCodesConfig.screenCustomizationDelegate?.let { WeakReference(it) }
     )
 

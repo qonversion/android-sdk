@@ -52,7 +52,7 @@ internal class ScreenControllerImpl(
             val errorMessage = "Failed to open the screen with the context key $contextKey with exception: $e"
             logger.error("showScreen() -> $errorMessage")
             val error = NoCodesError(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey")
-            internalConfig.noCodesDelegate?.get()?.onScreenFailedToLoad(error)
+            internalConfig.noCodesDelegate?.onScreenFailedToLoad(error)
         }
     }
 
