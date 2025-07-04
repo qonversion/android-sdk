@@ -14,37 +14,37 @@ class NoCodesDelegateWrapper(
     constructor(delegate: NoCodesDelegate) : this(WeakReference(delegate))
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    
+
     override fun onScreenShown(screenId: String) {
         mainHandler.post {
             delegate.get()?.onScreenShown(screenId)
         }
     }
-    
+
     override fun onActionStartedExecuting(action: QAction) {
         mainHandler.post {
             delegate.get()?.onActionStartedExecuting(action)
         }
     }
-    
+
     override fun onActionFailedToExecute(action: QAction) {
         mainHandler.post {
             delegate.get()?.onActionFailedToExecute(action)
         }
     }
-    
+
     override fun onActionFinishedExecuting(action: QAction) {
         mainHandler.post {
             delegate.get()?.onActionFinishedExecuting(action)
         }
     }
-    
+
     override fun onFinished() {
         mainHandler.post {
             delegate.get()?.onFinished()
         }
     }
-    
+
     override fun onScreenFailedToLoad(error: NoCodesError) {
         mainHandler.post {
             delegate.get()?.onScreenFailedToLoad(error)
