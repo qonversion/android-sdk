@@ -45,14 +45,14 @@ internal class ScreenPresenter(
                     logger.error("ScreenPresenter -> $errorMessage")
 
                     val error = NoCodesError(ErrorCode.ScreenNotFound, errorMessage)
-                    delegateProvider.noCodesDelegate?.get()?.onScreenFailedToLoad(error)
+                    delegateProvider.noCodesDelegate?.onScreenFailedToLoad(error)
 
                     return@launch
                 }
             } catch (e: NoCodesException) {
                 logger.error("ScreenPresenter -> Failed to fetch No-Code screen. $e")
 
-                delegateProvider.noCodesDelegate?.get()?.onScreenFailedToLoad(NoCodesError(e))
+                delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(e))
 
                 return@launch
             }

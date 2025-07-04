@@ -6,6 +6,7 @@ import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
+import io.qonversion.nocodes.internal.dto.config.NoCodesDelegateWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ internal class NoCodesInternal(
     private val screenController = dependenciesAssembly.screenController()
 
     override fun setDelegate(delegate: NoCodesDelegate) {
-        internalConfig.noCodesDelegate = WeakReference(delegate)
+        internalConfig.noCodesDelegate = NoCodesDelegateWrapper(delegate)
     }
 
     override fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate) {
