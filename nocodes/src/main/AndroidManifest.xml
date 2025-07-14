@@ -4,6 +4,7 @@
     <application>
         <activity
             android:name=".internal.screen.view.ScreenActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait"
         />
     </application>
