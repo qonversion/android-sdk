@@ -4,22 +4,15 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchaseHistoryRecord
-import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 internal val BillingResult.isOk get() = responseCode == BillingClient.BillingResponseCode.OK
 
 internal fun BillingResult.getDescription() =
     "It is a proxy of the Google BillingClient error: ${responseCode.getDescription()}"
-
-internal fun PurchaseHistoryRecord.getDescription() =
-    "ProductId: ${this.productId}; PurchaseTime: ${this.purchaseTime.convertLongToTime()}; PurchaseToken: ${this.purchaseToken}"
 
 internal fun Purchase.getDescription() =
     "ProductId: ${this.productId}; OrderId: ${this.orderId}; PurchaseToken: ${this.purchaseToken}"
@@ -82,15 +75,6 @@ internal val QSubscriptionPeriod.Unit.inDays get() = when (this) {
     QSubscriptionPeriod.Unit.Month -> 30
     QSubscriptionPeriod.Unit.Year -> 365
     QSubscriptionPeriod.Unit.Unknown -> 0
-}
-
-@Suppress("DEPRECATION")
-internal val QProduct.hasAnyStoreDetails get() = skuDetail != null || storeDetails != null
-
-private fun Long.convertLongToTime(): String {
-    val date = Date(this)
-    val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
-    return format.format(date)
 }
 
 private fun @receiver:BillingClient.BillingResponseCode Int.getDescription(): String {

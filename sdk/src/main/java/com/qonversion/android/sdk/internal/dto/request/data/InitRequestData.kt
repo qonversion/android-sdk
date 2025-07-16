@@ -2,7 +2,7 @@ package com.qonversion.android.sdk.internal.dto.request.data
 
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
 
 internal data class InitRequestData(
     val installDate: Long,

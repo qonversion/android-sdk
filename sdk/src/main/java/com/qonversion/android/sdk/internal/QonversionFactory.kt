@@ -8,7 +8,6 @@ import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.qonversion.android.sdk.internal.billing.BillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.BillingClientHolder
-import com.qonversion.android.sdk.internal.billing.LegacyBillingClientWrapper
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -64,8 +63,7 @@ internal class QonversionFactory(
             logger,
             isAnalyticsMode,
             billingClientHolder,
-            createBillingClientWrapper(billingClientHolder),
-            createLegacyBillingClientWrapper(billingClientHolder)
+            createBillingClientWrapper(billingClientHolder)
         )
     }
 
@@ -79,12 +77,6 @@ internal class QonversionFactory(
         clientHolder.setBillingClient(billingClient)
 
         return clientHolder
-    }
-
-    private fun createLegacyBillingClientWrapper(
-        billingClientHolder: BillingClientHolder
-    ): LegacyBillingClientWrapper {
-        return LegacyBillingClientWrapper(billingClientHolder, logger)
     }
 
     private fun createBillingClientWrapper(

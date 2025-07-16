@@ -9,9 +9,7 @@ import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseOptions
-import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -23,7 +21,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseOptionsInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -152,19 +150,6 @@ internal class QonversionInternal(
         })
     }
 
-    @Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
-    override fun purchase(
-        context: Activity,
-        purchaseModel: QPurchaseModel,
-        callback: QonversionEntitlementsCallback
-    ) {
-        productCenterManager.purchaseProduct(
-            context,
-            PurchaseModelInternal(purchaseModel),
-            mainPurchaseCallback(callback)
-        )
-    }
-
     override fun purchase(
         context: Activity,
         product: QProduct,
@@ -173,7 +158,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product, options),
+            PurchaseOptionsInternal(product, options),
             mainPurchaseCallback(callback)
         )
     }
@@ -185,7 +170,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product),
+            PurchaseOptionsInternal(product),
             mainPurchaseCallback(callback)
         )
     }
@@ -198,20 +183,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product, options),
-            mainPurchaseCallback(callback)
-        )
-    }
-
-    @Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
-    override fun updatePurchase(
-        context: Activity,
-        purchaseUpdateModel: QPurchaseUpdateModel,
-        callback: QonversionEntitlementsCallback
-    ) {
-        productCenterManager.purchaseProduct(
-            context,
-            PurchaseModelInternal(purchaseUpdateModel),
+            PurchaseOptionsInternal(product, options),
             mainPurchaseCallback(callback)
         )
     }
