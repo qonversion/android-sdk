@@ -320,7 +320,11 @@ internal class BillingClientWrapper(
         billingClientHolder.withReadyClient {
             queryProductDetailsAsync(params) { billingResult, productDetailsResult ->
                 if (billingResult.isOk) {
-                    logProductDetails(productDetailsResult.productDetailsList, productDetailsResult.unfetchedProductList, productIds)
+                    logProductDetails(
+                        productDetailsResult.productDetailsList,
+                        productDetailsResult.unfetchedProductList,
+                        productIds
+                    )
                     onQuerySkuCompleted(productDetailsResult.productDetailsList)
                 } else {
                     onQuerySkuFailed(

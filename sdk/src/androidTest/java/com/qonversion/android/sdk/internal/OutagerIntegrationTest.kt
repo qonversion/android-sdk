@@ -21,10 +21,10 @@ import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
-import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.internal.repository.DefaultRepository
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -195,6 +195,7 @@ internal class OutagerIntegrationTest {
                 installDate,
                 purchase,
                 "test_monthly",
+                RequestTrigger.Purchase,
                 callback
             )
         }
@@ -207,8 +208,8 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val history = listOf(
-            History(
+        val purchaseRecords = listOf(
+            PurchaseRecord(
                 "google_monthly",
                 "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
                 1679933171,
@@ -268,7 +269,7 @@ internal class OutagerIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
+            repository.restoreRequest(installDate, purchaseRecords, RequestTrigger.Restore, callback)
         }
 
         signal.await()

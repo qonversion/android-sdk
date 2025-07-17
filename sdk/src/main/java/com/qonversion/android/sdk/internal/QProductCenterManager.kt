@@ -334,7 +334,8 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        val oldProduct: QProduct? = purchaseOptions.options?.oldProduct ?: getProductForPurchase(purchaseOptions.oldProductId, products)
+        val oldProduct: QProduct? = purchaseOptions.options?.oldProduct
+            ?: getProductForPurchase(purchaseOptions.oldProductId, products)
         val purchaseOptionsEnriched = purchaseOptions.enrich(oldProduct)
         processPurchase(context, purchaseOptionsEnriched, callback)
     }

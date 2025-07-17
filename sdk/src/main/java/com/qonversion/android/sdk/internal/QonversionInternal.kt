@@ -139,15 +139,18 @@ internal class QonversionInternal(
             return
         }
 
-        productCenterManager.restore(RequestTrigger.SyncHistoricalData, callback = object : QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
-            }
+        productCenterManager.restore(
+            RequestTrigger.SyncHistoricalData,
+            callback = object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
+                }
 
-            override fun onError(error: QonversionError) {
-                logger.error("Historical data sync failed.")
+                override fun onError(error: QonversionError) {
+                    logger.error("Historical data sync failed.")
+                }
             }
-        })
+        )
     }
 
     override fun purchase(
