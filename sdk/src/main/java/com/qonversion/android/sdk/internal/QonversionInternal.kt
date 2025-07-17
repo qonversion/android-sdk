@@ -7,7 +7,6 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
@@ -48,7 +47,6 @@ internal class QonversionInternal(
     private var userPropertiesManager: QUserPropertiesManager
     private var attributionManager: QAttributionManager
     private var productCenterManager: QProductCenterManager
-    private var automationsManager: QAutomationsManager
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache
@@ -78,8 +76,6 @@ internal class QonversionInternal(
         internalConfig.uid = userID
 
         fallbackService = QDependencyInjector.appComponent.fallbacksService()
-
-        automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
