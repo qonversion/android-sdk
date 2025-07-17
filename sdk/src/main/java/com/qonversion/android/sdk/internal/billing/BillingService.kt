@@ -4,8 +4,7 @@ import android.app.Activity
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
-import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseOptionsInternalEnriched
 
 internal interface BillingService {
 
@@ -19,17 +18,10 @@ internal interface BillingService {
 
     fun purchase(
         activity: Activity,
-        purchaseModel: PurchaseModelInternalEnriched,
+        purchaseOptions: PurchaseOptionsInternalEnriched,
     )
 
     fun consumePurchases(purchases: List<Purchase>)
-
-    fun consumeHistoryRecords(historyRecords: List<PurchaseHistory>)
-
-    fun queryPurchasesHistory(
-        onFailed: (error: BillingError) -> Unit,
-        onCompleted: (purchases: List<PurchaseHistory>) -> Unit
-    )
 
     fun queryPurchases(
         onFailed: (error: BillingError) -> Unit,

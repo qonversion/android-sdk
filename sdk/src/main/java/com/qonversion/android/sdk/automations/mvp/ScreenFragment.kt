@@ -17,15 +17,16 @@ import com.qonversion.android.sdk.automations.dto.QActionResultType
 import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.automations.internal.macros.ScreenProcessor
 import com.qonversion.android.sdk.databinding.QFragmentScreenBinding
-import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.di.component.DaggerFragmentComponent
 import com.qonversion.android.sdk.internal.di.module.FragmentModule
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import javax.inject.Inject
 
 class ScreenFragment : Fragment(), ScreenContract.View {
@@ -114,21 +115,50 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         automationsManager.automationsDidStartExecuting(actionResult)
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
-        activity?.let {
-            Qonversion.shared.purchase(
-                it,
-                QPurchaseModel(productId),
-                object : QonversionEntitlementsCallback {
-                    override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                        close(actionResult)
+        fun purchaseProduct(product: QProduct) {
+            activity?.let {
+                Qonversion.shared.purchase(
+                    it,
+                    product,
+                    object : QonversionEntitlementsCallback {
+                        override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                            close(actionResult)
 
-                    override fun onError(error: QonversionError) = handleOnErrorCallback(
-                        object {}.javaClass.enclosingMethod?.name,
-                        error,
-                        actionResult
-                    )
-                })
+                        override fun onError(error: QonversionError) = handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error,
+                            actionResult
+                        )
+                    })
+            }
         }
+
+        Qonversion.shared.products(
+            object : QonversionProductsCallback {
+                override fun onSuccess(products: Map<String, QProduct>) {
+                    val product = products[productId]
+                    if (product != null) {
+                        purchaseProduct(product)
+                    } else {
+                        val error = QonversionError(
+                            QonversionErrorCode.ProductNotFound,
+                            "Product with ID $productId not found"
+                        )
+                        handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error,
+                            actionResult
+                        )
+                    }
+                }
+
+                override fun onError(error: QonversionError) = handleOnErrorCallback(
+                    object {}.javaClass.enclosingMethod?.name,
+                    error,
+                    actionResult
+                )
+            }
+        )
     }
 
     override fun restore() {

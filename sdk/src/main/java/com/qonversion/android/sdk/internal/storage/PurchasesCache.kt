@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.storage
 
 import com.qonversion.android.sdk.dto.QPurchaseOptions
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types

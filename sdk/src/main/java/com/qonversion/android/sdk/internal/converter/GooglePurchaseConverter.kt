@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.converter
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.milliSecondsToSeconds
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
 
 internal class GooglePurchaseConverter : PurchaseConverter {
 

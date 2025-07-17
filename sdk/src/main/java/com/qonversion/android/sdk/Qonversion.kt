@@ -3,9 +3,7 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseOptions
-import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -74,6 +72,9 @@ interface Qonversion {
     /**
      * Call this function to sync the subscriber data with the first launch
      * when Qonversion is implemented.
+     *
+     * You don't need to care about single call of this function during the application lifetime.
+     * Qonversion will take care about it.
      */
     fun syncHistoricalData()
 
@@ -118,35 +119,6 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         options: QPurchaseOptions,
-        callback: QonversionEntitlementsCallback
-    )
-
-    /**
-     * Make a purchase and validate it through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param purchaseModel necessary information for purchase
-     * @param callback - callback that will be called when response is received
-     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     */
-    @Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
-    fun purchase(
-        context: Activity,
-        purchaseModel: QPurchaseModel,
-        callback: QonversionEntitlementsCallback
-    )
-
-    /**
-     * Update (upgrade/downgrade) subscription and validate it through server-to-server using Qonversion's Backend
-     * @param context current activity context
-     * @param purchaseUpdateModel necessary information for purchase update
-     * @param callback - callback that will be called when response is received
-     * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
-     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     */
-    @Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
-    fun updatePurchase(
-        context: Activity,
-        purchaseUpdateModel: QPurchaseUpdateModel,
         callback: QonversionEntitlementsCallback
     )
 
@@ -260,14 +232,15 @@ interface Qonversion {
     fun checkEntitlements(callback: QonversionEntitlementsCallback)
 
     /**
-     * Restore user Products
+     * Restore active user purchases and grant entitlements for them.
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
     fun restore(callback: QonversionEntitlementsCallback)
 
     /**
-     * This method will send all purchases to the Qonversion backend. Call this every time when purchase is handled by your own implementation.
+     * This method will send all the active purchases to the Qonversion backend.
+     * Call this every time when a purchase is handled by your own implementation.
      * @warning This function should only be called if you're using Qonversion SDK in analytics mode.
      * @see [Analytics mode](https://qonversion.io/docs/observer-mode)
      */

@@ -33,9 +33,8 @@ internal class BillingClientHolder(
     }
 
     fun withReadyClient(billingFunction: BillingClient.() -> Unit) {
-        billingClient.takeIf { isConnected }?.let {
-            it.billingFunction()
-        } ?: logger.debug("Connection to the BillingClient was lost")
+        billingClient.takeIf { isConnected }?.billingFunction()
+            ?: logger.debug("Connection to the BillingClient was lost")
     }
 
     fun subscribeOnPurchasesUpdates(purchasesUpdatedListener: PurchasesUpdatedListener) {

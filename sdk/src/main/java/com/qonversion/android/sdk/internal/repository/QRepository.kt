@@ -8,8 +8,8 @@ import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -56,14 +56,15 @@ internal interface QRepository {
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback
     )
 
     fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback,
+        historyRecords: List<PurchaseRecord>,
         requestTrigger: RequestTrigger,
+        callback: QonversionLaunchCallback,
     )
 
     fun attribution(
