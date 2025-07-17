@@ -35,16 +35,6 @@ jobs:
       uses: maierj/fastlane-action@v1.4.0
       with:
         lane: test
-    - name: Build and Tests without JUnit Platform
-      run: ./gradlew test
-
-    - name: Add useJUnitPlatform setting
+    - name: Build and Tests
       run: |
-          sed -i.bak '/tasks.withType(Test) {/a \\
-    useJUnitPlatform()' sdk/build.gradle
-
-    - name: Build and Tests with JUnit Platform
-      run: ./gradlew test
-
-    - name: Revert build.gradle changes
-      run: mv sdk/build.gradle.bak sdk/build.gradle
+          fastlane test
