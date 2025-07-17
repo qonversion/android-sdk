@@ -94,6 +94,7 @@ internal class QonversionFactory(
                 .enablePrepaidPlans()
                 .build()
         )
+        builder.enableAutoServiceReconnection()
         builder.setListener(listener)
         return builder.build()
     }
