@@ -7,27 +7,27 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 class QOffering(
-    @Json(name = "id") val offeringID: String,
+    @Json(name = "id") val offeringId: String,
     @Json(name = "tag") val tag: QOfferingTag,
     @Json(name = "products") val products: List<QProduct> = listOf()
 ) {
 
-    fun productForID(id: String): QProduct? {
-        return products.firstOrNull { it.qonversionID == id }
+    fun productForId(id: String): QProduct? {
+        return products.firstOrNull { it.qonversionId == id }
     }
 
     override fun hashCode(): Int {
-        return offeringID.hashCode()
+        return offeringId.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         return other is QOffering &&
-                other.offeringID == offeringID &&
+                other.offeringId == offeringId &&
                 other.tag == tag &&
                 other.products equalsIgnoreOrder products
     }
 
     override fun toString(): String {
-        return "QOffering(offeringID=$offeringID, tag=$tag, products=$products)"
+        return "QOffering(offeringId=$offeringId, tag=$tag, products=$products)"
     }
 }

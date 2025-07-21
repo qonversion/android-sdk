@@ -79,19 +79,19 @@ internal class BillingClientWrapper(
             storeDetails.isInApp -> null
             applyOffer == false -> {
                 storeDetails.basePlanSubscriptionOfferDetails ?: run {
-                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionID}")
+                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionId}")
                     return
                 }
             }
             offerId?.isNotEmpty() == true -> {
                 storeDetails.findOffer(offerId) ?: run {
-                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionID}")
+                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionId}")
                     return
                 }
             }
             else -> {
                 storeDetails.defaultSubscriptionOfferDetails ?: run {
-                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionID}")
+                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionId}")
                     return
                 }
             }

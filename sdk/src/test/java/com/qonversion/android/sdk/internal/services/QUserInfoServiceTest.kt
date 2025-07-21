@@ -38,7 +38,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -54,7 +54,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -70,7 +70,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verify(exactly = 0) {
@@ -85,7 +85,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verify(exactly = 0) {
@@ -103,7 +103,7 @@ internal class QUserInfoServiceTest {
             mockUUID()
 
             // when
-            val resultID = userInfoService.obtainUserID()
+            val resultID = userInfoService.obtainUserId()
 
             // then
             Assertions.assertThat(resultID).isEqualTo(generatedUID)
@@ -118,7 +118,7 @@ internal class QUserInfoServiceTest {
             mockTokenStorage(token)
 
             // when
-            val resultId = userInfoService.obtainUserID()
+            val resultId = userInfoService.obtainUserId()
 
             // then
             Assertions.assertThat(resultId).isEqualTo(token)
@@ -134,7 +134,7 @@ internal class QUserInfoServiceTest {
             mockUUID()
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -154,7 +154,7 @@ internal class QUserInfoServiceTest {
             mockUUID()
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -173,7 +173,7 @@ internal class QUserInfoServiceTest {
             mockTokenStorage(token)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -192,7 +192,7 @@ internal class QUserInfoServiceTest {
             mockTokenStorage(token)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verifySequence {
@@ -209,7 +209,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verify(exactly = 0) {
@@ -224,7 +224,7 @@ internal class QUserInfoServiceTest {
             mockUserIDCache(userID)
 
             // when
-            userInfoService.obtainUserID()
+            userInfoService.obtainUserId()
 
             // then
             verify(exactly = 0) {

@@ -12,7 +12,7 @@ internal open class PurchaseOptionsInternal(
 ) {
     constructor(product: QProduct, options: QPurchaseOptions? = null) : this(
         product,
-        options?.oldProduct?.qonversionID,
+        options?.oldProduct?.qonversionId,
         options?.updatePolicy,
         options
     )

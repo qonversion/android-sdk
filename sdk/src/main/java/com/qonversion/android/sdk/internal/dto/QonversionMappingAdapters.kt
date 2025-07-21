@@ -117,7 +117,7 @@ internal class QProductsAdapter {
     fun fromJson(products: List<QProduct>): Map<String, QProduct> {
         val result = mutableMapOf<String, QProduct>()
         products.forEach {
-            result[it.qonversionID] = it
+            result[it.qonversionId] = it
         }
         return result
     }
@@ -133,7 +133,7 @@ internal class QPermissionsAdapter {
     fun fromJson(permissions: List<QPermission>): Map<String, QPermission> {
         val result = mutableMapOf<String, QPermission>()
         permissions.forEach {
-            result[it.permissionID] = it
+            result[it.permissionId] = it
         }
         return result
     }
@@ -228,7 +228,7 @@ internal class QOfferingAdapter {
     @FromJson
     fun fromJson(offering: QOffering): QOffering {
         offering.products.forEach {
-            it.offeringID = offering.offeringID
+            it.offeringId = offering.offeringId
         }
         return offering
     }
@@ -258,7 +258,7 @@ internal class QEligibilityAdapter {
     fun fromJson(eligibilities: List<ProductEligibility>): Map<String, QEligibility> {
         val result = mutableMapOf<String, QEligibility>()
         eligibilities.forEach {
-            result[it.product.qonversionID] = QEligibility(it.eligibilityStatus)
+            result[it.product.qonversionId] = QEligibility(it.eligibilityStatus)
         }
         return result
     }

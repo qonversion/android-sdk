@@ -6,15 +6,15 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class QProduct(
-    @Json(name = "id") val qonversionID: String,
-    @Json(name = "store_id") val storeID: String?,
-    @Json(name = "base_plan_id") val basePlanID: String?,
+    @Json(name = "id") val qonversionId: String,
+    @Json(name = "store_id") val storeId: String?,
+    @Json(name = "base_plan_id") val basePlanId: String?,
 ) {
     /**
      * The store details of this product containing all the information from Google Play including
-     * the offers for purchasing the base plan of this product (specified by [basePlanID])
+     * the offers for purchasing the base plan of this product (specified by [basePlanId])
      * in case of a subscription.
-     * Null, if the product was not found. If the [basePlanID] is not specified for a subscription
+     * Null, if the product was not found. If the [basePlanId] is not specified for a subscription
      * product, this field will be presented but the [QProductStoreDetails.subscriptionOfferDetails]
      * will be empty.
      */
@@ -23,7 +23,7 @@ data class QProduct(
         private set
 
     @Transient
-    var offeringID: String? = null
+    var offeringId: String? = null
 
     /**
      * The subscription base plan duration for this product.
@@ -61,6 +61,6 @@ data class QProduct(
     }
 
     internal fun setStoreProductDetails(productDetails: ProductDetails) {
-        storeDetails = QProductStoreDetails(productDetails, basePlanID)
+        storeDetails = QProductStoreDetails(productDetails, basePlanId)
     }
 }

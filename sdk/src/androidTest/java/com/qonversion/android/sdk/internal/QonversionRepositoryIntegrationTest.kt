@@ -56,9 +56,9 @@ internal class QonversionRepositoryIntegrationTest {
     private val annualProduct = QProduct("test_annual", "google_annual", null)
     private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
-        monthlyProduct.qonversionID to monthlyProduct,
-        annualProduct.qonversionID to annualProduct,
-        inappProduct.qonversionID to inappProduct
+        monthlyProduct.qonversionId to monthlyProduct,
+        annualProduct.qonversionId to annualProduct,
+        inappProduct.qonversionId to inappProduct
     )
 
     private val expectedOffering = QOffering(
@@ -556,11 +556,11 @@ internal class QonversionRepositoryIntegrationTest {
     fun eligibilityForProductIds() {
         // given
         val signal = CountDownLatch(1)
-        val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
+        val productIds = listOf(monthlyProduct.qonversionId, annualProduct.qonversionId)
         val expectedResult = mapOf(
-            monthlyProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct),
-            annualProduct.qonversionID to QEligibility(QIntroEligibilityStatus.Unknown),
-            inappProduct.qonversionID to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct)
+            monthlyProduct.qonversionId to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct),
+            annualProduct.qonversionId to QEligibility(QIntroEligibilityStatus.Unknown),
+            inappProduct.qonversionId to QEligibility(QIntroEligibilityStatus.NonIntroOrTrialProduct)
         )
 
         val callback = object : QonversionEligibilityCallback {
@@ -598,7 +598,7 @@ internal class QonversionRepositoryIntegrationTest {
     fun eligibilityForProductIdsError() {
         // given
         val signal = CountDownLatch(1)
-        val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
+        val productIds = listOf(monthlyProduct.qonversionId, annualProduct.qonversionId)
 
         val callback = object : QonversionEligibilityCallback {
             override fun onSuccess(eligibilities: Map<String, QEligibility>) {

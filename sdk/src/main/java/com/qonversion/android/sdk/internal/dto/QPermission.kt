@@ -10,8 +10,8 @@ import java.util.Date
 
 @JsonClass(generateAdapter = true)
 internal data class QPermission(
-    @Json(name = "id") val permissionID: String,
-    @Json(name = "associated_product") val productID: String,
+    @Json(name = "id") val permissionId: String,
+    @Json(name = "associated_product") val productId: String,
     @Json(name = "renew_state") val renewState: QProductRenewState,
     @Json(name = "started_timestamp") val startedDate: Date,
     @Json(name = "expiration_timestamp") val expirationDate: Date?,

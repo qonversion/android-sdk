@@ -7,8 +7,6 @@ import com.qonversion.android.sdk.internal.api.RequestType
 import com.qonversion.android.sdk.internal.api.RateLimiter
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.purchase.Purchase
@@ -203,38 +201,18 @@ internal class RepositoryWithRateLimits(
     }
 
     override fun identify(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
+        userId: String,
+        currentUserId: String,
+        onSuccess: (identityId: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         withRateLimitCheck(
             RequestType.Identify,
-            (userID + currentUserID).hashCode(),
+            (userId + currentUserId).hashCode(),
             onError,
         ) {
-            repository.identify(userID, currentUserID, onSuccess, onError)
+            repository.identify(userId, currentUserId, onSuccess, onError)
         }
-    }
-
-    override fun screens(
-        screenId: String,
-        onSuccess: (screen: Screen) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        repository.screens(screenId, onSuccess, onError)
-    }
-
-    override fun views(screenId: String) {
-        repository.views(screenId)
-    }
-
-    override fun actionPoints(
-        queryParams: Map<String, String>,
-        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        repository.actionPoints(queryParams, onSuccess, onError)
     }
 
     override fun crashReport(
