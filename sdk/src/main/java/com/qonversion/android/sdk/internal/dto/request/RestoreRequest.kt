@@ -1,7 +1,7 @@
 package com.qonversion.android.sdk.internal.dto.request
 
 import com.qonversion.android.sdk.internal.dto.Environment
-import com.qonversion.android.sdk.internal.dto.purchase.History
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -14,5 +14,5 @@ internal data class RestoreRequest(
     @Json(name = "q_uid") override val clientUid: String?,
     @Json(name = "receipt") override val receipt: String = "",
     @Json(name = "debug_mode") override val debugMode: String,
-    @Json(name = "history") val history: List<History>
+    @Json(name = "history") val history: List<PurchaseRecord>
 ) : RequestData()

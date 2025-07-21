@@ -6,7 +6,7 @@ import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams.
  * A policy used for purchase updates, which describes
  * how to migrate from purchased plan to a new one.
  *
- * Used in [QPurchaseUpdateModel] class for purchase updates.
+ * Used in [QPurchaseOptions] class for purchase updates.
  */
 enum class QPurchaseUpdatePolicy {
     /**

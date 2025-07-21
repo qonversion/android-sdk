@@ -11,8 +11,8 @@ import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
 import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -125,6 +125,7 @@ internal class RepositoryWithRateLimits(
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback
     ) {
         withRateLimitCheck(
@@ -132,22 +133,22 @@ internal class RepositoryWithRateLimits(
             purchase.hashCode() + (qProductId + installDate).hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.purchase(installDate, purchase, qProductId, callback)
+            repository.purchase(installDate, purchase, qProductId, requestTrigger, callback)
         }
     }
 
     override fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback,
+        historyRecords: List<PurchaseRecord>,
         requestTrigger: RequestTrigger,
+        callback: QonversionLaunchCallback,
     ) {
         withRateLimitCheck(
             RequestType.Restore,
             installDate.hashCode() + historyRecords.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.restore(installDate, historyRecords, callback, requestTrigger)
+            repository.restore(installDate, historyRecords, requestTrigger, callback)
         }
     }
 

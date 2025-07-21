@@ -1,16 +1,18 @@
 package com.qonversion.android.sdk.internal.billing
 
 import android.app.Activity
+import androidx.annotation.UiThread
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchaseHistoryRecord
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.android.billingclient.api.QueryPurchaseHistoryParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.android.billingclient.api.UnfetchedProduct
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
@@ -18,10 +20,9 @@ import com.qonversion.android.sdk.internal.dto.ProductStoreId
 import com.qonversion.android.sdk.internal.logger.Logger
 
 internal class BillingClientWrapper(
-    billingClientHolder: BillingClientHolder,
-    logger: Logger
-) : BillingClientWrapperBase(billingClientHolder, logger),
-    IBillingClientWrapper<ProductStoreId, ProductDetails> {
+    private val billingClientHolder: BillingClientHolder,
+    private val logger: Logger
+) : IBillingClientWrapper<ProductStoreId, ProductDetails> {
 
     private var productDetails = mapOf<String, ProductDetails>()
 
@@ -109,9 +110,9 @@ internal class BillingClientWrapper(
         launchBillingFlow(activity, params)
     }
 
-    override fun queryPurchaseHistoryForProduct(
+    override fun queryPurchaseForProduct(
         product: QProduct,
-        onCompleted: (BillingResult, PurchaseHistoryRecord?) -> Unit
+        onCompleted: (BillingResult, Purchase?) -> Unit
     ) {
         val storeDetails = product.storeDetails ?: return
         val productType = storeDetails.originalProductDetails.productType
@@ -122,29 +123,15 @@ internal class BillingClientWrapper(
                         "Querying purchase history for ${storeDetails.productId} with type $productType"
             )
 
-            val params = QueryPurchaseHistoryParams.newBuilder()
+            val params = QueryPurchasesParams.newBuilder()
                 .setProductType(productType)
                 .build()
-            @Suppress("DEPRECATION")
-            queryPurchaseHistoryAsync(params) { billingResult, purchasesList ->
+            queryPurchasesAsync(params) { billingResult, purchasesList ->
                 onCompleted(
                     billingResult,
-                    purchasesList?.firstOrNull { storeDetails.productId == it.productId }
+                    purchasesList.firstOrNull { storeDetails.productId == it.productId }
                 )
             }
-        }
-    }
-
-    override fun queryPurchaseHistory(
-        productType: QStoreProductType,
-        onCompleted: (BillingResult, List<PurchaseHistoryRecord>?) -> Unit
-    ) {
-        billingClientHolder.withReadyClient {
-            val params = QueryPurchaseHistoryParams.newBuilder()
-                .setProductType(productType.toProductType())
-                .build()
-            @Suppress("DEPRECATION")
-            queryPurchaseHistoryAsync(params, onCompleted)
         }
     }
 
@@ -207,6 +194,83 @@ internal class BillingClientWrapper(
         }
     }
 
+    override fun consume(purchaseToken: String) {
+        val params = ConsumeParams.newBuilder()
+            .setPurchaseToken(purchaseToken)
+            .build()
+
+        billingClientHolder.withReadyClient {
+            consumeAsync(
+                params
+            ) { billingResult, purchaseToken ->
+                if (!billingResult.isOk) {
+                    val errorMessage =
+                        "Failed to consume purchase with token $purchaseToken ${billingResult.getDescription()}"
+                    logger.debug("consume() -> $errorMessage")
+                }
+            }
+        }
+    }
+
+    override fun acknowledge(purchaseToken: String) {
+        val params = AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchaseToken)
+            .build()
+
+        billingClientHolder.withReadyClient {
+            acknowledgePurchase(
+                params
+            ) { billingResult ->
+                if (!billingResult.isOk) {
+                    val errorMessage =
+                        "Failed to acknowledge purchase with token $purchaseToken ${billingResult.getDescription()}"
+                    logger.debug("acknowledge() -> $errorMessage")
+                }
+            }
+        }
+    }
+
+    @UiThread
+    private fun launchBillingFlow(
+        activity: Activity,
+        params: BillingFlowParams
+    ) = billingClientHolder.withReadyClient {
+        launchBillingFlow(activity, params)
+            .takeUnless { billingResult -> billingResult.isOk }
+            ?.let { billingResult ->
+                logger.error("launchBillingFlow() -> Failed to launch billing flow. ${billingResult.getDescription()}")
+            }
+    }
+
+    private fun handlePurchasesQueryError(
+        billingResult: BillingResult,
+        purchaseType: String,
+        onQueryFailed: (error: BillingError) -> Unit
+    ) {
+        val errorMessage =
+            "Failed to query $purchaseType purchases from cache: ${billingResult.getDescription()}"
+        onQueryFailed(BillingError(billingResult.responseCode, errorMessage))
+        logger.error("queryPurchases() -> $errorMessage")
+    }
+
+    private fun BillingFlowParams.Builder.setSubscriptionUpdateParams(
+        info: UpdatePurchaseInfo? = null
+    ): BillingFlowParams.Builder {
+        if (info != null) {
+            val updateParamsBuilder = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+            updateParamsBuilder.setOldPurchaseToken(info.purchaseToken)
+            val updateParams = updateParamsBuilder.apply {
+                info.updatePolicy?.toReplacementMode()?.let {
+                    setSubscriptionReplacementMode(it)
+                }
+            }.build()
+
+            setSubscriptionUpdateParams(updateParams)
+        }
+
+        return this
+    }
+
     private fun loadProducts(
         productIds: List<String>,
         onFailed: (BillingError) -> Unit,
@@ -254,10 +318,14 @@ internal class BillingClientWrapper(
             .build()
 
         billingClientHolder.withReadyClient {
-            queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            queryProductDetailsAsync(params) { billingResult, productDetailsResult ->
                 if (billingResult.isOk) {
-                    logProductDetails(productDetailsList, productIds)
-                    onQuerySkuCompleted(productDetailsList)
+                    logProductDetails(
+                        productDetailsResult.productDetailsList,
+                        productDetailsResult.unfetchedProductList,
+                        productIds
+                    )
+                    onQuerySkuCompleted(productDetailsResult.productDetailsList)
                 } else {
                     onQuerySkuFailed(
                         BillingError(
@@ -272,6 +340,7 @@ internal class BillingClientWrapper(
 
     private fun logProductDetails(
         productDetailsList: List<ProductDetails>,
+        unfetchedProductList: List<UnfetchedProduct>,
         productIds: List<String>
     ) {
         productDetailsList
@@ -280,6 +349,11 @@ internal class BillingClientWrapper(
                 logger.debug("queryProductDetailsAsync() -> $it")
             }
             ?: logger.warn("queryProductDetailsAsync() -> ProductDetails list for $productIds is empty.")
+        unfetchedProductList
+            .takeUnless { it.isEmpty() }
+            ?.forEach {
+                logger.warn("queryProductDetailsAsync() -> Unfetched product: $it")
+            }
     }
 
     private fun BillingFlowParams.ProductDetailsParams.Builder.applyOffer(
