@@ -1,5 +1,0 @@
-<resources>
-    <style name="QProgressBarStyleGray">
-        <item name="colorAccent">@color/qGray</item>
-    </style>
-</resources>
