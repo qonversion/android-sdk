@@ -142,8 +142,8 @@ internal class ScreenPresenter(
 
     private fun mapProductInfo(product: QProduct): Map<String, Any?> {
         val res = mutableMapOf<String, Any?>(
-            "id" to product.qonversionID,
-            "store_id" to product.storeID,
+            "id" to product.qonversionId,
+            "store_id" to product.storeId,
         )
 
         fun enrichWithPriceDetails(price: QProductPrice) {
