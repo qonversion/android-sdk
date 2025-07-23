@@ -1,15 +1,12 @@
 package com.qonversion.android.sdk.internal.di.module
 
 import android.app.Application
-import com.qonversion.android.sdk.automations.internal.ActivityProvider
 import com.qonversion.android.sdk.internal.IncrementalDelayCalculator
 import com.qonversion.android.sdk.internal.QIdentityManager
 import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
-import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.QUserPropertiesManager
-import com.qonversion.android.sdk.automations.internal.AutomationsEventMapper
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.storage.UserPropertiesStorage
@@ -20,30 +17,6 @@ import java.util.Random
 
 @Module
 internal class ManagersModule {
-
-    @ApplicationScope
-    @Provides
-    fun provideAutomationsManager(
-        repository: QRepository,
-        eventMapper: AutomationsEventMapper,
-        appContext: Application,
-        activityProvider: ActivityProvider,
-    ): QAutomationsManager {
-        return QAutomationsManager(
-            repository,
-            eventMapper,
-            appContext,
-            activityProvider,
-        )
-    }
-
-    @ApplicationScope
-    @Provides
-    fun provideAutomationsEventMapper(
-        logger: Logger
-    ): AutomationsEventMapper {
-        return AutomationsEventMapper(logger)
-    }
 
     @ApplicationScope
     @Provides

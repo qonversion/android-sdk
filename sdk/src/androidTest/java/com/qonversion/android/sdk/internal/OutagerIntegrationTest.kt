@@ -21,10 +21,10 @@ import com.qonversion.android.sdk.internal.di.QDependencyInjector
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.internal.dto.QProductRenewState
-import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
-import com.qonversion.android.sdk.internal.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.internal.repository.DefaultRepository
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -57,9 +57,9 @@ internal class OutagerIntegrationTest {
     private val annualProduct = QProduct("test_annual", "google_annual", null)
     private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
-        monthlyProduct.qonversionID to monthlyProduct,
-        annualProduct.qonversionID to annualProduct,
-        inappProduct.qonversionID to inappProduct
+        monthlyProduct.qonversionId to monthlyProduct,
+        annualProduct.qonversionId to annualProduct,
+        inappProduct.qonversionId to inappProduct
     )
 
     private val expectedOffering = QOffering(
@@ -195,6 +195,7 @@ internal class OutagerIntegrationTest {
                 installDate,
                 purchase,
                 "test_monthly",
+                RequestTrigger.Purchase,
                 callback
             )
         }
@@ -207,8 +208,8 @@ internal class OutagerIntegrationTest {
         // given
         val signal = CountDownLatch(1)
 
-        val history = listOf(
-            History(
+        val purchaseRecords = listOf(
+            PurchaseRecord(
                 "google_monthly",
                 "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY",
                 1679933171,
@@ -268,7 +269,7 @@ internal class OutagerIntegrationTest {
                 fail("Failed to create user")
             }
 
-            repository.restoreRequest(installDate, history, callback, RequestTrigger.Restore)
+            repository.restoreRequest(installDate, purchaseRecords, RequestTrigger.Restore, callback)
         }
 
         signal.await()
@@ -357,7 +358,7 @@ internal class OutagerIntegrationTest {
     fun eligibilityForProductIds() {
         // given
         val signal = CountDownLatch(1)
-        val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
+        val productIds = listOf(monthlyProduct.qonversionId, annualProduct.qonversionId)
 
         val callback = object : QonversionEligibilityCallback {
             override fun onSuccess(eligibilities: Map<String, QEligibility>) {

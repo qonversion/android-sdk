@@ -7,8 +7,7 @@ import com.qonversion.android.sdk.dto.QPurchaseUpdatePolicy
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
 import com.qonversion.android.sdk.internal.dto.ProductStoreId
-import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternalEnriched
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseOptionsInternalEnriched
 import com.qonversion.android.sdk.internal.logger.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -18,8 +17,7 @@ internal class QonversionBillingService internal constructor(
     private val logger: Logger,
     private val isAnalyticsMode: Boolean,
     private val billingClientHolder: BillingClientHolder,
-    private val billingClientWrapper: BillingClientWrapper,
-    private val legacyBillingClientWrapper: LegacyBillingClientWrapper
+    private val billingClientWrapper: BillingClientWrapper
 ) : PurchasesUpdatedListener, BillingClientHolder.ConnectionListener, BillingService {
 
     private val requestsQueue = ConcurrentLinkedQueue<(billingSetupError: BillingError?) -> Unit>()
@@ -41,17 +39,17 @@ internal class QonversionBillingService internal constructor(
         onFailed: (error: BillingError) -> Unit,
         onEnriched: (products: List<QProduct>) -> Unit
     ) {
-        if (!products.any { it.storeID != null }) {
+        if (!products.any { it.storeId != null }) {
             onEnriched(products)
             return
         }
 
         fun fetchProductDetails() {
             // Fetching ProductDetails
-            val actualStoreIds = products.filter { it.storeID != null }
+            val actualStoreIds = products.filter { it.storeId != null }
                 .map { ProductStoreId(
-                    it.storeID!!,
-                    it.basePlanID
+                    it.storeId!!,
+                    it.basePlanId
                 ) }
             billingClientWrapper.withStoreDataLoaded(
                 actualStoreIds,
@@ -69,26 +67,16 @@ internal class QonversionBillingService internal constructor(
                 return@executeOnMainThread
             }
 
-            // Fetching legacy SkuDetails
-            val legacyStoreIds = products.mapNotNull { it.storeID }
-            legacyBillingClientWrapper.withStoreDataLoaded(
-                legacyStoreIds,
-                { fetchProductDetails() },
-            ) {
-                fetchProductDetails()
-            }
+            fetchProductDetails()
         }
     }
 
     override fun enrichStoreData(products: List<QProduct>) {
         products.forEach { product ->
-            product.storeID?.let { storeId ->
-                @Suppress("DEPRECATION")
-                product.skuDetail = legacyBillingClientWrapper.getStoreData(storeId)
-
+            product.storeId?.let { storeId ->
                 val productStoreId = ProductStoreId(
                     storeId,
-                    product.basePlanID
+                    product.basePlanId
                 )
                 billingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
                     product.setStoreProductDetails(storeData)
@@ -97,31 +85,31 @@ internal class QonversionBillingService internal constructor(
         }
     }
 
-    override fun purchase(activity: Activity, purchaseModel: PurchaseModelInternalEnriched) {
+    override fun purchase(activity: Activity, purchaseOptions: PurchaseOptionsInternalEnriched) {
         fun handlePurchase() {
-            if (purchaseModel.oldProduct != null && purchaseModel.oldProduct.hasAnyStoreDetails) {
+            if (purchaseOptions.oldProduct?.storeDetails != null) {
                 updatePurchase(
                     activity,
-                    purchaseModel.product,
-                    purchaseModel.options?.offerId,
-                    purchaseModel.options?.applyOffer,
-                    purchaseModel.oldProduct,
-                    purchaseModel.updatePolicy)
+                    purchaseOptions.product,
+                    purchaseOptions.options?.offerId,
+                    purchaseOptions.options?.applyOffer,
+                    purchaseOptions.oldProduct,
+                    purchaseOptions.updatePolicy)
             } else {
                 makePurchase(
                     activity,
-                    purchaseModel.product,
-                    purchaseModel.options?.offerId,
-                    purchaseModel.options?.applyOffer
+                    purchaseOptions.product,
+                    purchaseOptions.options?.offerId,
+                    purchaseOptions.options?.applyOffer
                 )
             }
         }
 
-        if (purchaseModel.product.hasAnyStoreDetails) {
+        if (purchaseOptions.product.storeDetails != null) {
             handlePurchase()
         } else {
             enrichStoreDataAsync(
-                listOfNotNull(purchaseModel.product, purchaseModel.oldProduct),
+                listOfNotNull(purchaseOptions.product, purchaseOptions.oldProduct),
                 { error -> purchasesListener.onPurchasesFailed(error) }
             ) {
                 handlePurchase()
@@ -156,45 +144,6 @@ internal class QonversionBillingService internal constructor(
             }
     }
 
-    override fun consumeHistoryRecords(historyRecords: List<PurchaseHistory>) {
-        if (isAnalyticsMode) {
-            return
-        }
-
-        historyRecords.forEach { record ->
-            when (record.type) {
-                QStoreProductType.InApp -> consume(record.historyRecord.purchaseToken)
-                QStoreProductType.Subscription -> acknowledge(record.historyRecord.purchaseToken)
-            }
-        }
-    }
-
-    override fun queryPurchasesHistory(
-        onFailed: (error: BillingError) -> Unit,
-        onCompleted: (purchases: List<PurchaseHistory>) -> Unit
-    ) {
-        fun fireOnFailed(error: BillingError) {
-            onFailed(error)
-            logger.error("queryPurchasesHistory() -> $error")
-        }
-
-        queryPurchaseHistoryAsync(
-            QStoreProductType.Subscription,
-            { subsPurchasesList ->
-                queryPurchaseHistoryAsync(
-                    QStoreProductType.InApp,
-                    { inAppPurchasesList ->
-                        onCompleted(
-                            subsPurchasesList + inAppPurchasesList
-                        )
-                    },
-                    { error -> fireOnFailed(error) }
-                )
-            },
-            { error -> fireOnFailed(error) }
-        )
-    }
-
     override fun queryPurchases(
         onFailed: (error: BillingError) -> Unit,
         onCompleted: (purchases: List<Purchase>) -> Unit
@@ -217,13 +166,7 @@ internal class QonversionBillingService internal constructor(
     ) {
         billingClientWrapper.getStoreProductType(
             storeId,
-            { actualError ->
-                legacyBillingClientWrapper.getStoreProductType(
-                    storeId,
-                    { onFailed(actualError) },
-                    onSuccess
-                )
-            },
+            onFailed,
             onSuccess
         )
     }
@@ -236,21 +179,30 @@ internal class QonversionBillingService internal constructor(
         oldProduct: QProduct,
         updatePolicy: QPurchaseUpdatePolicy?
     ) {
-        val billingClientWrapper = chooseBillingClientWrapperForProductPurchase(product) ?: return
+        product.storeDetails ?: run {
+            purchasesListener.onPurchasesFailed(
+                BillingError(
+                    BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
+                    "Store details for purchasing Qonversion product " +
+                            "${product.qonversionId} were not found"
+                )
+            )
+            return@updatePurchase
+        }
 
-        billingClientWrapper.queryPurchaseHistoryForProduct(oldProduct) { billingResult, purchaseHistoryRecord ->
+        billingClientWrapper.queryPurchaseForProduct(oldProduct) { billingResult, purchase ->
             if (!billingResult.isOk) {
                 val errorMessage = "Failed to update purchase: ${billingResult.getDescription()}"
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
                 logger.error("updatePurchase() -> $errorMessage")
-                return@queryPurchaseHistoryForProduct
+                return@queryPurchaseForProduct
             }
 
-            if (purchaseHistoryRecord != null) {
+            if (purchase != null) {
                 logger.debug(
-                    "updatePurchase() -> Purchase was found successfully for store product: ${purchaseHistoryRecord.productId}"
+                    "updatePurchase() -> Purchase was found successfully for store product: ${purchase.productId}"
                 )
 
                 makePurchase(
@@ -258,10 +210,10 @@ internal class QonversionBillingService internal constructor(
                     product,
                     offerId,
                     applyOffer,
-                    UpdatePurchaseInfo(purchaseHistoryRecord.purchaseToken, updatePolicy)
+                    UpdatePurchaseInfo(purchase.purchaseToken, updatePolicy)
                 )
             } else {
-                val errorMessage = "No existing purchase for Qonversion product: ${oldProduct.qonversionID}"
+                val errorMessage = "No existing purchase for Qonversion product: ${oldProduct.qonversionId}"
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
@@ -282,12 +234,12 @@ internal class QonversionBillingService internal constructor(
                 return@executeOnMainThread
             }
 
-            val billingClientWrapper = chooseBillingClientWrapperForProductPurchase(product) ?: run {
+            product.storeDetails ?: run {
                 purchasesListener.onPurchasesFailed(
                     BillingError(
                         BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
                         "Store details for purchasing Qonversion product " +
-                                "${product.qonversionID} were not found"
+                                "${product.qonversionId} were not found"
                     )
                 )
                 return@executeOnMainThread
@@ -321,58 +273,6 @@ internal class QonversionBillingService internal constructor(
                 billingClientWrapper.acknowledge(purchaseToken)
             }
         }
-    }
-
-    private fun queryPurchaseHistoryAsync(
-        productType: QStoreProductType,
-        onQueryHistoryCompleted: (List<PurchaseHistory>) -> Unit,
-        onQueryHistoryFailed: (BillingError) -> Unit
-    ) {
-        logger.debug("queryPurchaseHistoryAsync() -> Querying purchase history for type $QStoreProductType")
-
-        executeOnMainThread { billingSetupError ->
-            if (billingSetupError == null) {
-                billingClientWrapper.queryPurchaseHistory(productType) { billingResult, purchaseHistoryRecords ->
-                    if (billingResult.isOk && purchaseHistoryRecords != null) {
-                        val purchaseHistory = getPurchaseHistoryFromHistoryRecords(
-                            productType,
-                            purchaseHistoryRecords
-                        )
-                        onQueryHistoryCompleted(purchaseHistory)
-                    } else {
-                        var errorMessage = "Failed to retrieve purchase history. "
-                        if (purchaseHistoryRecords == null) {
-                            errorMessage += "Purchase history for $productType is null. "
-                        }
-
-                        onQueryHistoryFailed(
-                            BillingError(
-                                billingResult.responseCode,
-                                "$errorMessage ${billingResult.getDescription()}"
-                            )
-                        )
-                    }
-                }
-            } else {
-                onQueryHistoryFailed(billingSetupError)
-            }
-        }
-    }
-
-    private fun getPurchaseHistoryFromHistoryRecords(
-        productType: QStoreProductType,
-        historyRecords: List<PurchaseHistoryRecord>
-    ): List<PurchaseHistory> {
-        val purchaseHistory = mutableListOf<PurchaseHistory>()
-        historyRecords
-            .takeUnless { it.isEmpty() }
-            ?.forEach { record ->
-                purchaseHistory.add(PurchaseHistory(productType, record))
-                logger.debug("queryPurchaseHistoryAsync() -> purchase history for $productType is retrieved ${record.getDescription()}")
-            }
-            ?: logger.release("queryPurchaseHistoryAsync() -> purchase history for $productType is empty.")
-
-        return purchaseHistory
     }
 
     private fun executeOnMainThread(request: (BillingError?) -> Unit) {
@@ -435,21 +335,6 @@ internal class QonversionBillingService internal constructor(
                     mainHandler.post { billingRequest(error) }
                 }
             }
-        }
-    }
-
-    private fun chooseBillingClientWrapperForProductPurchase(
-        product: QProduct
-    ): IBillingClientWrapper<*, *>? {
-        // Use new billing for the products, where
-        // -- storeDetails are loaded
-        // -- base plan id is specified
-        // -- offer for that base plan exists
-        val storeDetails = product.storeDetails
-        return when {
-            storeDetails != null && (product.basePlanID != null || storeDetails.isInApp) -> billingClientWrapper
-            @Suppress("DEPRECATION") product.skuDetail != null -> legacyBillingClientWrapper
-            else -> return null
         }
     }
 }

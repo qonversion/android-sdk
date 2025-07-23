@@ -4,19 +4,19 @@ import com.android.billingclient.api.Purchase
 import javax.inject.Inject
 
 internal class QHandledPurchasesCache @Inject internal constructor() {
-    private val handledOrderIDs = mutableSetOf<String>()
+    private val handledOrderIds = mutableSetOf<String>()
 
     fun shouldHandlePurchase(purchase: Purchase): Boolean {
-        return !handledOrderIDs.contains(purchase.orderId)
+        return !handledOrderIds.contains(purchase.orderId)
     }
 
     fun saveHandledPurchase(purchase: Purchase) {
         purchase.orderId?.let {
-            handledOrderIDs.add(it)
+            handledOrderIds.add(it)
         }
     }
 
     fun saveHandledPurchases(purchases: Collection<Purchase>) {
-        handledOrderIDs.addAll(purchases.mapNotNull { it.orderId })
+        handledOrderIds.addAll(purchases.mapNotNull { it.orderId })
     }
 }

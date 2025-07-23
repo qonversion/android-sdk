@@ -7,12 +7,10 @@ import com.qonversion.android.sdk.internal.api.RequestType
 import com.qonversion.android.sdk.internal.api.RateLimiter
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -125,6 +123,7 @@ internal class RepositoryWithRateLimits(
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback
     ) {
         withRateLimitCheck(
@@ -132,22 +131,22 @@ internal class RepositoryWithRateLimits(
             purchase.hashCode() + (qProductId + installDate).hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.purchase(installDate, purchase, qProductId, callback)
+            repository.purchase(installDate, purchase, qProductId, requestTrigger, callback)
         }
     }
 
     override fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback,
+        historyRecords: List<PurchaseRecord>,
         requestTrigger: RequestTrigger,
+        callback: QonversionLaunchCallback,
     ) {
         withRateLimitCheck(
             RequestType.Restore,
             installDate.hashCode() + historyRecords.hashCode(),
             { error -> callback.onError(error) }
         ) {
-            repository.restore(installDate, historyRecords, callback, requestTrigger)
+            repository.restore(installDate, historyRecords, requestTrigger, callback)
         }
     }
 
@@ -202,38 +201,18 @@ internal class RepositoryWithRateLimits(
     }
 
     override fun identify(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
+        userId: String,
+        currentUserId: String,
+        onSuccess: (identityId: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
         withRateLimitCheck(
             RequestType.Identify,
-            (userID + currentUserID).hashCode(),
+            (userId + currentUserId).hashCode(),
             onError,
         ) {
-            repository.identify(userID, currentUserID, onSuccess, onError)
+            repository.identify(userId, currentUserId, onSuccess, onError)
         }
-    }
-
-    override fun screens(
-        screenId: String,
-        onSuccess: (screen: Screen) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        repository.screens(screenId, onSuccess, onError)
-    }
-
-    override fun views(screenId: String) {
-        repository.views(screenId)
-    }
-
-    override fun actionPoints(
-        queryParams: Map<String, String>,
-        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        repository.actionPoints(queryParams, onSuccess, onError)
     }
 
     override fun crashReport(

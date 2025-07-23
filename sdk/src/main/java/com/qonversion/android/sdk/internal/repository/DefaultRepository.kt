@@ -13,15 +13,11 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.api.ApiErrorMapper
 import com.qonversion.android.sdk.internal.api.RequestTrigger
-import com.qonversion.android.sdk.internal.billing.productId
 import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
-import com.qonversion.android.sdk.internal.dto.purchase.History
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
 import com.qonversion.android.sdk.internal.dto.request.AttachUserRequest
@@ -31,16 +27,14 @@ import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
-import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.enqueue
 import com.qonversion.android.sdk.internal.isInternalServerError
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
+import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.logger.Logger
-import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.secondsToMilliSeconds
 import com.qonversion.android.sdk.internal.stringValue
 import com.qonversion.android.sdk.internal.toQonversionError
@@ -263,20 +257,19 @@ internal class DefaultRepository internal constructor(
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback
     ) {
-        purchaseRequest(installDate, purchase, qProductId, callback)
+        purchaseRequest(installDate, purchase, qProductId, requestTrigger, callback)
     }
 
     override fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback,
+        historyRecords: List<PurchaseRecord>,
         requestTrigger: RequestTrigger,
+        callback: QonversionLaunchCallback
     ) {
-        val history = convertHistory(historyRecords)
-
-        restoreRequest(installDate, history, callback, requestTrigger)
+        restoreRequest(installDate, historyRecords, requestTrigger, callback)
     }
 
     override fun attribution(
@@ -385,83 +378,25 @@ internal class DefaultRepository internal constructor(
     }
 
     override fun identify(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
+        userId: String,
+        currentUserId: String,
+        onSuccess: (identityId: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val identityRequest = IdentityRequest(currentUserID, userID)
+        val identityRequest = IdentityRequest(currentUserId, userId)
         api.identify(identityRequest).enqueue {
             onResponse = {
                 logger.debug("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.userID)
+                    onSuccess(body.data.userId)
                 } else {
                     onError(errorMapper.getErrorFromResponse(it))
                 }
             }
             onFailure = {
                 logger.error("identityRequest - failure - ${it.toQonversionError()}")
-                onError(it.toQonversionError())
-            }
-        }
-    }
-
-    override fun screens(
-        screenId: String,
-        onSuccess: (screen: Screen) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        api.screens(screenId).enqueue {
-            onResponse = {
-                logger.debug("screensRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.data)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("screensRequest - failure - ${it.toQonversionError()}")
-                onError(it.toQonversionError())
-            }
-        }
-    }
-
-    override fun views(screenId: String) {
-        val viewsRequest = ViewsRequest(uid)
-
-        api.views(screenId, viewsRequest).enqueue {
-            onResponse = {
-                logger.debug("viewsRequest - ${it.getLogMessage()}")
-            }
-            onFailure = {
-                logger.error("viewsRequest - failure - ${it.toQonversionError()}")
-            }
-        }
-    }
-
-    override fun actionPoints(
-        queryParams: Map<String, String>,
-        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        api.actionPoints(uid, queryParams).enqueue {
-            onResponse = {
-                logger.debug("actionPointsRequest - ${it.getLogMessage()}")
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.items.lastOrNull()?.data)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("actionPointsRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }
@@ -509,6 +444,7 @@ internal class DefaultRepository internal constructor(
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback,
         attemptIndex: Int = 0
     ) {
@@ -522,7 +458,7 @@ internal class DefaultRepository internal constructor(
             purchase = convertPurchaseDetails(purchase, qProductId),
         )
 
-        api.purchase(purchaseRequest, RequestTrigger.Purchase.key, attemptIndex + 1).enqueue {
+        api.purchase(purchaseRequest, requestTrigger.key, attemptIndex + 1).enqueue {
             onResponse = {
                 logger.debug("purchaseRequest - ${it.getLogMessage()}")
                 val body = it.body()
@@ -539,6 +475,7 @@ internal class DefaultRepository internal constructor(
                             installDate,
                             purchase,
                             qProductId,
+                            requestTrigger,
                             callback,
                             nextAttemptIndex
                         )
@@ -557,6 +494,7 @@ internal class DefaultRepository internal constructor(
                         installDate,
                         purchase,
                         qProductId,
+                        requestTrigger,
                         callback,
                         nextAttemptIndex
                     )
@@ -623,28 +561,12 @@ internal class DefaultRepository internal constructor(
         )
     }
 
-    private fun convertHistory(historyRecords: List<PurchaseHistory>): List<History> {
-        return historyRecords.mapNotNull {
-            val productId = it.historyRecord.productId
-
-            if (productId == null) {
-                null
-            } else {
-                History(
-                    productId,
-                    it.historyRecord.purchaseToken,
-                    it.historyRecord.purchaseTime.milliSecondsToSeconds()
-                )
-            }
-        }
-    }
-
     @VisibleForTesting
     internal fun restoreRequest(
         installDate: Long,
-        history: List<History>,
-        callback: QonversionLaunchCallback,
+        records: List<PurchaseRecord>,
         trigger: RequestTrigger,
+        callback: QonversionLaunchCallback,
     ) {
         val request = RestoreRequest(
             installDate = installDate,
@@ -653,7 +575,7 @@ internal class DefaultRepository internal constructor(
             accessToken = key,
             clientUid = uid,
             debugMode = isDebugMode.stringValue(),
-            history = history
+            history = records
         )
 
         api.restore(request, trigger.key).enqueue {

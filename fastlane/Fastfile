@@ -30,6 +30,22 @@ def update_outager_url_in_tests(url)
     update_file(path, regex, url)
 end
 
+def add_junit_platform_to_tests()
+	path = Dir['../sdk/build.gradle'].first
+    regex = /tasks\.withType\(Test\) {/
+    result_value = "tasks.withType(Test) {\n    useJUnitPlatform()"
+
+    update_file(path, regex, result_value)
+end
+
+def remove_junit_platform_from_tests()
+	path = Dir['../sdk/build.gradle'].first
+    regex = /tasks\.withType\(Test\) {\n    useJUnitPlatform\(\)/
+    result_value = "tasks.withType(Test) {"
+
+    update_file(path, regex, result_value)
+end
+
 def update_file(path, regex, result_value)
 	file = File.read(path)
     new_content = file.gsub(regex, result_value)
@@ -82,6 +98,9 @@ platform :android do
   desc "Runs all the tests"
   lane :test do
     gradle(task: "test")
+    add_junit_platform_to_tests()
+    gradle(task: "test")
+    remove_junit_platform_from_tests()
   end
 
   lane :patch do |options|
