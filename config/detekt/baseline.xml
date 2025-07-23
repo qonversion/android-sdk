@@ -4,13 +4,11 @@
   <CurrentIssues>
     <ID>CommentSpacing:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:171</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
-    <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
     <ID>ComplexMethod:errors.kt$internal fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
-    <ID>EmptyFunctionBlock:AutomationsInternal.kt$AutomationsInternal${ }</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
@@ -81,7 +79,6 @@
     <ID>MatchingDeclarationName:util.kt$Util</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:Automations.kt$Automations$*</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -91,8 +88,6 @@
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
-    <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$"To override default animation, please, provide an activity context to AutomationsDelegate.contextForScreenIntent"</ID>
-    <ID>MaxLineLength:QAutomationsManager.kt$QAutomationsManager$getScreenTransactionAnimations(screenPresentationConfig.presentationStyle)</ID>
     <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
@@ -113,7 +108,7 @@
     <ID>MaxLineLength:ScreenPresenter.kt$ScreenPresenter$logger.verbose("ScreenPresenter -&gt; displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
-    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) }</ID>
+    <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringId, realValue?.offerings?.main?.offeringId) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong userProducts value", expectedValue.userProducts, realValue?.userProducts) }</ID>
     <ID>MaxLineLength:errors.kt$"Please make sure that you are using the google account where purchases are allowed and the application was correctly signed and properly set up for billing."</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\"}]"</ID>
@@ -121,8 +116,6 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}],"</ID>
     <ID>MaxLineLength:utils.kt$val msg = "error code: ${error.code}, description: ${error.description}, additionalMessage: ${error.additionalMessage}"</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionConfig.kt:163</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:102</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.automations.internal.QAutomationsManager.kt:95</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.QonversionError.kt:46</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
@@ -154,7 +147,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:60</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
@@ -200,14 +193,12 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
-    <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$fun identify(identityId: String, callback: QonversionUserCallback? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionPurchaseCallback?, purchaseError: QonversionError )</ID>
-    <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:39</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:54</ID>
@@ -219,18 +210,12 @@
     <ID>StringTemplate:com.qonversion.android.sdk.utils.kt:50</ID>
     <ID>SwallowedException:ApiErrorMapper.kt$ApiErrorMapper$catch (e: JSONException) { errorMessage = "$ERROR=failed to parse the backend response" }</ID>
     <ID>SwallowedException:AuthActivity.kt$AuthActivity$catch (e: ApiException) { showGoogleLoginError() }</ID>
-    <ID>SwallowedException:Automations.kt$Automations.Companion$catch (e: UninitializedPropertyAccessException) { throw UninitializedPropertyAccessException("Qonversion has not been initialized. " + "Automations should be used after Qonversion is initialized.") }</ID>
-    <ID>SwallowedException:AutomationsEventMapper.kt$AutomationsEventMapper$catch (e: JSONException) { logger.error("getEventFromRemoteMessage() -&gt; Failed to retrieve event that triggered push notification") }</ID>
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
-    <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with url $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with deeplink $url") delegate?.onActionFailedToExecute(action) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with url $url") delegate?.onActionFailedToExecute(action) }</ID>
-    <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { automationsManager.automationsDidFailExecuting(actionResult) }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: Exception) { delegate?.onActionFailedToExecute(action) }</ID>
     <ID>SwallowedException:ScreenPresenter.kt$ScreenPresenter$catch (e: Exception) { logger.error("ScreenPresenter -&gt; failed to open the screen with id $screenId") }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
@@ -242,7 +227,6 @@
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
-    <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QExceptionManager.kt$QExceptionManager$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QFallbacksService.kt$QFallbacksService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
@@ -255,7 +239,6 @@
     <ID>TooManyFunctions:DefaultRepository.kt$DefaultRepository : QRepository</ID>
     <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : FragmentNoCodesDelegate</ID>
     <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
-    <ID>TooManyFunctions:QAutomationsManager.kt$QAutomationsManager</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>TooManyFunctions:QRemoteConfigManager.kt$QRemoteConfigManager</ID>
     <ID>TooManyFunctions:QRepository.kt$QRepository</ID>
@@ -269,7 +252,6 @@
     <ID>TooManyFunctions:extensions.kt$com.qonversion.android.sdk.internal.extensions.kt</ID>
     <ID>UnnecessaryAbstractClass:BaseClass.kt$BaseClass</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
-    <ID>UnusedPrivateMember:AutomationsEvent.kt$AutomationsEvent$private val productId: String? // Temporarily inaccessible</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
