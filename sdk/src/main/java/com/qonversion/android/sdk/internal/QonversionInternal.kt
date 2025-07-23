@@ -71,9 +71,9 @@ internal class QonversionInternal(
         val identityManager = QDependencyInjector.appComponent.identityManager()
         sharedPreferencesCache = QDependencyInjector.appComponent.sharedPreferencesCache()
 
-        val userID = userInfoService.obtainUserID()
+        val userId = userInfoService.obtainUserId()
 
-        internalConfig.uid = userID
+        internalConfig.uid = userId
 
         fallbackService = QDependencyInjector.appComponent.fallbacksService()
 
@@ -311,12 +311,12 @@ internal class QonversionInternal(
         productCenterManager.syncPurchases()
     }
 
-    override fun identify(userID: String) {
-        productCenterManager.identify(userID)
+    override fun identify(userId: String) {
+        productCenterManager.identify(userId)
     }
 
-    override fun identify(userID: String, callback: QonversionUserCallback) {
-        productCenterManager.identify(userID, callback)
+    override fun identify(userId: String, callback: QonversionUserCallback) {
+        productCenterManager.identify(userId, callback)
     }
 
     override fun logout() {

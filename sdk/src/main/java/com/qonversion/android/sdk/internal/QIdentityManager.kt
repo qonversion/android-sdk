@@ -16,16 +16,16 @@ internal class QIdentityManager @Inject constructor(
 ) {
     val currentPartnersIdentityId: String? get() = userInfoService.getPartnersIdentityId()
 
-    fun identify(userID: String, callback: IdentityManagerCallback) {
-        val currentUserID = userInfoService.obtainUserID()
-        repository.identify(userID, currentUserID,
-            onSuccess = { resultUserID ->
-                userInfoService.storePartnersIdentityId(userID)
-                if (resultUserID.isNotEmpty()) {
-                    userInfoService.storeQonversionUserId(resultUserID)
+    fun identify(userId: String, callback: IdentityManagerCallback) {
+        val currentUserId = userInfoService.obtainUserId()
+        repository.identify(userId, currentUserId,
+            onSuccess = { resultUserId ->
+                userInfoService.storePartnersIdentityId(userId)
+                if (resultUserId.isNotEmpty()) {
+                    userInfoService.storeQonversionUserId(resultUserId)
                 }
 
-                callback.onSuccess(resultUserID)
+                callback.onSuccess(resultUserId)
             },
             onError = {
                 callback.onError(it)

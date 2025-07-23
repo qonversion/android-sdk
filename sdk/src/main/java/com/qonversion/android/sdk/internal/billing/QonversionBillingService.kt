@@ -39,17 +39,17 @@ internal class QonversionBillingService internal constructor(
         onFailed: (error: BillingError) -> Unit,
         onEnriched: (products: List<QProduct>) -> Unit
     ) {
-        if (!products.any { it.storeID != null }) {
+        if (!products.any { it.storeId != null }) {
             onEnriched(products)
             return
         }
 
         fun fetchProductDetails() {
             // Fetching ProductDetails
-            val actualStoreIds = products.filter { it.storeID != null }
+            val actualStoreIds = products.filter { it.storeId != null }
                 .map { ProductStoreId(
-                    it.storeID!!,
-                    it.basePlanID
+                    it.storeId!!,
+                    it.basePlanId
                 ) }
             billingClientWrapper.withStoreDataLoaded(
                 actualStoreIds,
@@ -73,10 +73,10 @@ internal class QonversionBillingService internal constructor(
 
     override fun enrichStoreData(products: List<QProduct>) {
         products.forEach { product ->
-            product.storeID?.let { storeId ->
+            product.storeId?.let { storeId ->
                 val productStoreId = ProductStoreId(
                     storeId,
-                    product.basePlanID
+                    product.basePlanId
                 )
                 billingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
                     product.setStoreProductDetails(storeData)
@@ -184,7 +184,7 @@ internal class QonversionBillingService internal constructor(
                 BillingError(
                     BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
                     "Store details for purchasing Qonversion product " +
-                            "${product.qonversionID} were not found"
+                            "${product.qonversionId} were not found"
                 )
             )
             return@updatePurchase
@@ -213,7 +213,7 @@ internal class QonversionBillingService internal constructor(
                     UpdatePurchaseInfo(purchase.purchaseToken, updatePolicy)
                 )
             } else {
-                val errorMessage = "No existing purchase for Qonversion product: ${oldProduct.qonversionID}"
+                val errorMessage = "No existing purchase for Qonversion product: ${oldProduct.qonversionId}"
                 purchasesListener.onPurchasesFailed(
                     BillingError(billingResult.responseCode, errorMessage)
                 )
@@ -239,7 +239,7 @@ internal class QonversionBillingService internal constructor(
                     BillingError(
                         BillingClient.BillingResponseCode.ITEM_UNAVAILABLE,
                         "Store details for purchasing Qonversion product " +
-                                "${product.qonversionID} were not found"
+                                "${product.qonversionId} were not found"
                     )
                 )
                 return@executeOnMainThread

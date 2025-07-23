@@ -79,19 +79,19 @@ internal class BillingClientWrapper(
             storeDetails.isInApp -> null
             applyOffer == false -> {
                 storeDetails.basePlanSubscriptionOfferDetails ?: run {
-                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionID}")
+                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionId}")
                     return
                 }
             }
             offerId?.isNotEmpty() == true -> {
                 storeDetails.findOffer(offerId) ?: run {
-                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionID}")
+                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionId}")
                     return
                 }
             }
             else -> {
                 storeDetails.defaultSubscriptionOfferDetails ?: run {
-                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionID}")
+                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionId}")
                     return
                 }
             }
@@ -279,32 +279,30 @@ internal class BillingClientWrapper(
         queryProductDetailsAsync(
             BillingClient.ProductType.SUBS,
             productIds,
-            { subscriptionProductDetails ->
-                val subscriptionProductIds = subscriptionProductDetails.map { it.productId }.toSet()
-                val inAppProductIds = productIds - subscriptionProductIds
-
-                if (inAppProductIds.isNotEmpty()) {
-                    queryProductDetailsAsync(
-                        BillingClient.ProductType.INAPP,
-                        inAppProductIds,
-                        { inAppProductDetails ->
-                            onCompleted(subscriptionProductDetails + inAppProductDetails)
-                        },
-                        onFailed
-                    )
-                } else {
-                    onCompleted(subscriptionProductDetails)
-                }
-            },
             onFailed
-        )
+        ) { subscriptionProductDetails ->
+            val subscriptionProductIds = subscriptionProductDetails.map { it.productId }.toSet()
+            val inAppProductIds = productIds - subscriptionProductIds
+
+            if (inAppProductIds.isNotEmpty()) {
+                queryProductDetailsAsync(
+                    BillingClient.ProductType.INAPP,
+                    inAppProductIds,
+                    onFailed
+                ) { inAppProductDetails ->
+                    onCompleted(subscriptionProductDetails + inAppProductDetails)
+                }
+            } else {
+                onCompleted(subscriptionProductDetails)
+            }
+        }
     }
 
     private fun queryProductDetailsAsync(
         productType: String,
         productIds: List<String>,
-        onQuerySkuCompleted: (List<ProductDetails>) -> Unit,
-        onQuerySkuFailed: (BillingError) -> Unit
+        onFailed: (BillingError) -> Unit,
+        onCompleted: (List<ProductDetails>) -> Unit
     ) {
         val productDetails = productIds.map { productId ->
             QueryProductDetailsParams.Product.newBuilder()
@@ -325,9 +323,9 @@ internal class BillingClientWrapper(
                         productDetailsResult.unfetchedProductList,
                         productIds
                     )
-                    onQuerySkuCompleted(productDetailsResult.productDetailsList)
+                    onCompleted(productDetailsResult.productDetailsList)
                 } else {
-                    onQuerySkuFailed(
+                    onFailed(
                         BillingError(
                             billingResult.responseCode,
                             "Failed to fetch products. ${billingResult.getDescription()}"

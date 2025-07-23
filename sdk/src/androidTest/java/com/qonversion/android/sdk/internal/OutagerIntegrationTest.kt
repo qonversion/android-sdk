@@ -57,9 +57,9 @@ internal class OutagerIntegrationTest {
     private val annualProduct = QProduct("test_annual", "google_annual", null)
     private val inappProduct = QProduct("test_inapp", "no_ads", null)
     private val expectedProducts = mapOf(
-        monthlyProduct.qonversionID to monthlyProduct,
-        annualProduct.qonversionID to annualProduct,
-        inappProduct.qonversionID to inappProduct
+        monthlyProduct.qonversionId to monthlyProduct,
+        annualProduct.qonversionId to annualProduct,
+        inappProduct.qonversionId to inappProduct
     )
 
     private val expectedOffering = QOffering(
@@ -358,7 +358,7 @@ internal class OutagerIntegrationTest {
     fun eligibilityForProductIds() {
         // given
         val signal = CountDownLatch(1)
-        val productIds = listOf(monthlyProduct.qonversionID, annualProduct.qonversionID)
+        val productIds = listOf(monthlyProduct.qonversionId, annualProduct.qonversionId)
 
         val callback = object : QonversionEligibilityCallback {
             override fun onSuccess(eligibilities: Map<String, QEligibility>) {

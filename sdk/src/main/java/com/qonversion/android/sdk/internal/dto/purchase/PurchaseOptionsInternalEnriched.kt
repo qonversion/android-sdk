@@ -9,4 +9,4 @@ internal class PurchaseOptionsInternalEnriched(
     val oldProduct: QProduct?,
     updatePolicy: QPurchaseUpdatePolicy?,
     options: QPurchaseOptions?
-) : PurchaseOptionsInternal(product, oldProduct?.qonversionID, updatePolicy, options)
+) : PurchaseOptionsInternal(product, oldProduct?.qonversionId, updatePolicy, options)

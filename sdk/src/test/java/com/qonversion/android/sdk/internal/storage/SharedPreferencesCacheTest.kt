@@ -218,7 +218,7 @@ internal class SharedPreferencesCacheTest {
                 { Assert.assertEquals("Wrong uid value", expectedValue.uid, realValue?.uid) },
                 { Assert.assertEquals("Wrong userProducts value", expectedValue.userProducts, realValue?.userProducts) },
                 { Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) },
-                { Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) },
+                { Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringId, realValue?.offerings?.main?.offeringId) },
                 { Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }
             )
         }

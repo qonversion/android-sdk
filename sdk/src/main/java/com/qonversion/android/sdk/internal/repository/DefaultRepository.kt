@@ -17,8 +17,6 @@ import com.qonversion.android.sdk.internal.dto.BaseResponse
 import com.qonversion.android.sdk.internal.dto.ProviderData
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.eligibility.StoreProductInfo
 import com.qonversion.android.sdk.internal.dto.purchase.Inapp
 import com.qonversion.android.sdk.internal.dto.purchase.PurchaseDetails
@@ -29,7 +27,6 @@ import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.internal.dto.request.ViewsRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import com.qonversion.android.sdk.internal.enqueue
@@ -381,83 +378,25 @@ internal class DefaultRepository internal constructor(
     }
 
     override fun identify(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
+        userId: String,
+        currentUserId: String,
+        onSuccess: (identityId: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     ) {
-        val identityRequest = IdentityRequest(currentUserID, userID)
+        val identityRequest = IdentityRequest(currentUserId, userId)
         api.identify(identityRequest).enqueue {
             onResponse = {
                 logger.debug("identityRequest - ${it.getLogMessage()}")
 
                 val body = it.body()
                 if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.userID)
+                    onSuccess(body.data.userId)
                 } else {
                     onError(errorMapper.getErrorFromResponse(it))
                 }
             }
             onFailure = {
                 logger.error("identityRequest - failure - ${it.toQonversionError()}")
-                onError(it.toQonversionError())
-            }
-        }
-    }
-
-    override fun screens(
-        screenId: String,
-        onSuccess: (screen: Screen) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        api.screens(screenId).enqueue {
-            onResponse = {
-                logger.debug("screensRequest - ${it.getLogMessage()}")
-
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.data)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("screensRequest - failure - ${it.toQonversionError()}")
-                onError(it.toQonversionError())
-            }
-        }
-    }
-
-    override fun views(screenId: String) {
-        val viewsRequest = ViewsRequest(uid)
-
-        api.views(screenId, viewsRequest).enqueue {
-            onResponse = {
-                logger.debug("viewsRequest - ${it.getLogMessage()}")
-            }
-            onFailure = {
-                logger.error("viewsRequest - failure - ${it.toQonversionError()}")
-            }
-        }
-    }
-
-    override fun actionPoints(
-        queryParams: Map<String, String>,
-        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    ) {
-        api.actionPoints(uid, queryParams).enqueue {
-            onResponse = {
-                logger.debug("actionPointsRequest - ${it.getLogMessage()}")
-                val body = it.body()
-                if (body != null && it.isSuccessful) {
-                    onSuccess(body.data.items.lastOrNull()?.data)
-                } else {
-                    onError(errorMapper.getErrorFromResponse(it))
-                }
-            }
-            onFailure = {
-                logger.error("actionPointsRequest - failure - ${it.toQonversionError()}")
                 onError(it.toQonversionError())
             }
         }

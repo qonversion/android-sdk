@@ -21,12 +21,12 @@ data class QEntitlement(
     val transactions: List<QTransaction>
 ) {
     internal constructor(permission: QPermission) : this(
-        permission.permissionID,
+        permission.permissionId,
         permission.startedDate,
         permission.expirationDate,
         permission.isActive(),
         permission.source,
-        permission.productID,
+        permission.productId,
         QEntitlementRenewState.fromProductRenewState(permission.renewState),
         permission.renewsCount,
         permission.trialStartDate,
