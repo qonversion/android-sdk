@@ -113,7 +113,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
-    override fun purchase(productId: String) {
+    override fun purchase(productId: String, screenId: String?) {
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
@@ -130,8 +130,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                     }
 
                     val purchaseOptionsBuilder = QPurchaseOptions.Builder()
-                    arguments?.getString(EX_SCREEN_ID)?.let { screenUid ->
-                        purchaseOptionsBuilder.setScreenUid(screenUid)
+                    screenId?.let { nonNullScreenId ->
+                        purchaseOptionsBuilder.setScreenUid(nonNullScreenId)
                     }
                     val purchaseOptions = purchaseOptionsBuilder.build()
 

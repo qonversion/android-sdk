@@ -12,7 +12,7 @@ internal class ScreenContract {
 
         fun openDeepLink(url: String)
 
-        fun purchase(productId: String)
+        fun purchase(productId: String, screenId: String?)
 
         fun restore()
 
