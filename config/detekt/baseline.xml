@@ -203,7 +203,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:60</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
