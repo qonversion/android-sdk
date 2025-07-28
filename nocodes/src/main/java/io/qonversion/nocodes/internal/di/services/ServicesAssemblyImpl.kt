@@ -1,7 +1,6 @@
 package io.qonversion.nocodes.internal.di.services
 
 import android.content.Context
-import io.qonversion.nocodes.internal.common.FallbackConstants
 import io.qonversion.nocodes.internal.di.mappers.MappersAssembly
 import io.qonversion.nocodes.internal.di.misc.MiscAssembly
 import io.qonversion.nocodes.internal.di.network.NetworkAssembly
@@ -15,7 +14,7 @@ internal class ServicesAssemblyImpl(
     private val networkAssembly: NetworkAssembly,
     private val miscAssembly: MiscAssembly,
     private val context: Context,
-    private val fallbackFileName: String?
+    private val effectiveFallbackFileName: String
 ) : ServicesAssembly {
 
     override fun screenService(): ScreenService {
@@ -29,16 +28,14 @@ internal class ServicesAssemblyImpl(
     }
 
     override fun fallbackService(): FallbackService? {
-        val effectiveFileName = fallbackFileName ?: FallbackConstants.DEFAULT_FILE_NAME
-
         // Check if fallback file is available
-        if (!FallbackService.isFallbackFileAvailable(effectiveFileName, context)) {
+        if (!FallbackService.isFallbackFileAvailable(effectiveFallbackFileName, context)) {
             return null
         }
 
         return FallbackServiceImpl(
             context,
-            effectiveFileName,
+            effectiveFallbackFileName,
             mappersAssembly.screenMapper(),
             miscAssembly.logger()
         )

@@ -6,8 +6,8 @@ import io.qonversion.nocodes.internal.common.FallbackConstants
 internal data class PrimaryConfig(
     val projectKey: String,
     val sdkVersion: String = BuildConfig.VERSION_NAME,
-    val fallbackFileName: String? = null
+    val customFallbackFileName: String? = null
 ) {
     val effectiveFallbackFileName: String
-        get() = fallbackFileName ?: FallbackConstants.DEFAULT_FILE_NAME
+        get() = customFallbackFileName ?: FallbackConstants.DEFAULT_FILE_NAME
 }

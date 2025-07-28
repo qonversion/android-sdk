@@ -49,14 +49,14 @@ internal class DependenciesAssembly(
                 networkAssembly,
                 miscAssembly,
                 application,
-                internalConfig.primaryConfig.fallbackFileName
+                internalConfig.primaryConfig.effectiveFallbackFileName
             )
             val controllersAssembly = ControllersAssemblyImpl(
+                application,
                 servicesAssembly,
                 miscAssembly,
                 mappersAssembly,
-                internalConfig,
-                application
+                internalConfig
             )
 
             instance = DependenciesAssembly(
