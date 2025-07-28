@@ -24,7 +24,7 @@ internal class NetworkAssemblyImpl(
 
     override fun networkClient(): NetworkClient = NetworkClientImpl(
         miscAssembly.jsonSerializer(),
-        isFallbackAvailable = internalConfig.primaryConfig.fallbackFileName != null
+        isFallbackAvailable = internalConfig.primaryConfig.customFallbackFileName != null
     )
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(

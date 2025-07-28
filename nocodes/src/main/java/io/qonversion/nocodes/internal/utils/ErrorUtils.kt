@@ -8,6 +8,28 @@ import java.util.concurrent.TimeoutException
 
 object ErrorUtils {
 
+    // Network error keywords
+    private val NETWORK_KEYWORDS = listOf(
+        "network",
+        "connection",
+        "timeout",
+        "dns",
+        "unreachable"
+    )
+
+    // HTTP status codes that indicate server errors
+    private val SERVER_STATUS_CODES = listOf(
+        "403", "451", "429", "500", "502", "503", "504"
+    )
+
+    // Server error keywords
+    private val SERVER_KEYWORDS = listOf(
+        "blocked", "forbidden", "unavailable", "restricted",
+        "geoblocked", "censored", "sanctioned", "rate limit",
+        "server error", "internal error", "bad gateway",
+        "service unavailable", "gateway timeout"
+    )
+
     /**
      * Checks if the error is a network-related error that should trigger fallback
      */
@@ -20,11 +42,7 @@ object ErrorUtils {
             is TimeoutException -> true
             else -> {
                 val message = error.message?.lowercase() ?: ""
-                message.contains("network") ||
-                message.contains("connection") ||
-                message.contains("timeout") ||
-                message.contains("dns") ||
-                message.contains("unreachable")
+                NETWORK_KEYWORDS.any { message.contains(it) }
             }
         }
     }
@@ -33,23 +51,15 @@ object ErrorUtils {
      * Checks if the error is a server-related error that should trigger fallback
      */
     fun isServerError(error: Exception): Boolean {
-        // Check for HTTP status codes in error message
         val message = error.message?.lowercase() ?: ""
-        val statusCodePatterns = listOf("403", "451", "429", "500", "502", "503", "504")
 
-        if (statusCodePatterns.any { message.contains(it) }) {
+        // Check for HTTP status codes
+        if (SERVER_STATUS_CODES.any { message.contains(it) }) {
             return true
         }
 
-        // Check for specific error keywords
-        val errorKeywords = listOf(
-            "blocked", "forbidden", "unavailable", "restricted",
-            "geoblocked", "censored", "sanctioned", "rate limit",
-            "server error", "internal error", "bad gateway",
-            "service unavailable", "gateway timeout"
-        )
-
-        if (errorKeywords.any { message.contains(it) }) {
+        // Check for server error keywords
+        if (SERVER_KEYWORDS.any { message.contains(it) }) {
             return true
         }
 

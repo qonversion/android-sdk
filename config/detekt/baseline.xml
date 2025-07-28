@@ -99,8 +99,6 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
-    <ID>MaxLineLength:FallbackServiceImpl.kt$FallbackServiceImpl$logger.warn("loadScreen() -&gt; Skipping invalid screen object with context key $contextKey: ${e.message}")</ID>
-    <ID>MaxLineLength:FallbackServiceImpl.kt$FallbackServiceImpl$logger.warn("loadScreenById() -&gt; Skipping invalid screen object with screen Id $screenId: ${e.message}")</ID>
     <ID>MaxLineLength:FallbackServiceTest.kt$FallbackServiceTest$assertNotNull(FallbackService::class.java.getDeclaredMethod("isFallbackFileAvailable", String::class.java, Context::class.java))</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
@@ -209,9 +207,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:41</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:74</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:42</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:43</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl.kt:107</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl.kt:59</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
@@ -245,19 +241,17 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:48</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:50</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:57</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:59</ID>
     <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:66</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:68</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:75</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:69</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:72</ID>
     <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:77</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:80</ID>
     <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:89</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:22</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:7</ID>
+    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:14</ID>
+    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:15</ID>
+    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:12</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:23</ID>
@@ -287,7 +281,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:10</ID>
+    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:11</ID>
     <ID>NoWildcardImports:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:4</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
@@ -368,6 +362,7 @@
     <ID>UnnecessaryAbstractClass:BillingClientWrapperBase.kt$BillingClientWrapperBase</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
     <ID>UnusedPrivateMember:AutomationsEvent.kt$AutomationsEvent$private val productId: String? // Temporarily inaccessible</ID>
+    <ID>UnusedPrivateMember:FallbackServiceTest.kt$FallbackServiceTest$@Mock private lateinit var mockScreen: NoCodeScreen</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>
