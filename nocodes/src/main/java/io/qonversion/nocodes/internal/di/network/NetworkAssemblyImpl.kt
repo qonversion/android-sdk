@@ -22,7 +22,10 @@ internal class NetworkAssemblyImpl(
     private val miscAssembly: MiscAssembly
 ) : NetworkAssembly {
 
-    override fun networkClient(): NetworkClient = NetworkClientImpl(miscAssembly.jsonSerializer())
+    override fun networkClient(): NetworkClient = NetworkClientImpl(
+        miscAssembly.jsonSerializer(),
+        isFallbackAvailable = internalConfig.primaryConfig.fallbackFileName != null
+    )
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
         headerBuilder(),
