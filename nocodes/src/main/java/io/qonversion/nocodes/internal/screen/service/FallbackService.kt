@@ -5,7 +5,7 @@ import io.qonversion.nocodes.internal.dto.NoCodeScreen
 internal interface FallbackService {
     suspend fun loadScreen(contextKey: String): NoCodeScreen?
     suspend fun loadScreenById(screenId: String): NoCodeScreen?
-    
+
     companion object {
         fun isFallbackFileAvailable(fileName: String, context: android.content.Context): Boolean {
             return try {
@@ -15,4 +15,4 @@ internal interface FallbackService {
             }
         }
     }
-} 
+}

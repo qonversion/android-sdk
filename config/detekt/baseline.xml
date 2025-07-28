@@ -31,6 +31,8 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
+    <ID>FinalNewline:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:1</ID>
+    <ID>FinalNewline:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:1</ID>
     <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
@@ -97,6 +99,9 @@
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_started\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionStarted</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"subscription_upgraded\", \"happened\": $timeInSec}" to AutomationsEventType.SubscriptionUpgraded</ID>
     <ID>MaxLineLength:AutomationsEventMapperTest.kt$AutomationsEventMapperTest.GetEventFromRemoteMessage$"{\"name\": \"trial_billing_retry_entered\", \"happened\": $timeInSec}" to AutomationsEventType.TrialBillingRetry</ID>
+    <ID>MaxLineLength:FallbackServiceImpl.kt$FallbackServiceImpl$logger.warn("loadScreen() -&gt; Skipping invalid screen object with context key $contextKey: ${e.message}")</ID>
+    <ID>MaxLineLength:FallbackServiceImpl.kt$FallbackServiceImpl$logger.warn("loadScreenById() -&gt; Skipping invalid screen object with screen Id $screenId: ${e.message}")</ID>
+    <ID>MaxLineLength:FallbackServiceTest.kt$FallbackServiceTest$assertNotNull(FallbackService::class.java.getDeclaredMethod("isFallbackFileAvailable", String::class.java, Context::class.java))</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -138,6 +143,8 @@
     <ID>MaxLineLength:ScreenFragment.kt$ScreenFragment$binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\", {detail: $jsonData} ))", null)</ID>
     <ID>MaxLineLength:ScreenPresenter.kt$ScreenPresenter$logger.verbose("ScreenPresenter -&gt; displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
+    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$// logger.info("getScreen() -&gt; Successfully loaded fallback screen for context key: $contextKey")</ID>
+    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$// logger.info("getScreenById() -&gt; Successfully loaded fallback screen for screen ID: $screenId")</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) }</ID>
@@ -202,6 +209,9 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:41</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:74</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:42</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
@@ -211,6 +221,8 @@
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ErrorUtilsTest.kt$io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt</ID>
+    <ID>NewLineAtEndOfFile:FallbackServiceTest.kt$io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.internal.requests.OsRequestTest.kt</ID>
@@ -229,6 +241,16 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:48</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:50</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:57</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:59</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:66</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:68</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:75</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:77</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:80</ID>
+    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:89</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:20</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:22</ID>
     <ID>NoUnusedImports:com.qonversion.android.sdk.automations.internal.QAutomationsManagerTest.kt:7</ID>
@@ -261,9 +283,12 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
+    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:10</ID>
+    <ID>NoWildcardImports:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:4</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
+    <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
@@ -287,6 +312,7 @@
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
+    <ID>SwallowedException:FallbackService.kt$FallbackService.Companion$catch (e: Exception) { false }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
@@ -303,6 +329,8 @@
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FallbackService.kt$FallbackService.Companion$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FallbackServiceImpl.kt$FallbackServiceImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
@@ -311,6 +339,7 @@
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenPresenter.kt$ScreenPresenter$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$fallbackError: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
     <ID>TooManyFunctions:BillingClientWrapper.kt$BillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
@@ -351,6 +380,7 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionEnvironmentAdapter$@ToJson private fun toJson(enum: QTransactionEnvironment): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionOwnershipTypeAdapter$@ToJson private fun toJson(enum: QTransactionOwnershipType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionTypeAdapter$@ToJson private fun toJson(enum: QTransactionType): String</ID>
+    <ID>UnusedPrivateMember:ScreenServiceImpl.kt$ScreenServiceImpl$private val mapper: Mapper&lt;NoCodeScreen?&gt;</ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:LegacyBillingClientWrapper.kt$import com.android.billingclient.api.*</ID>
