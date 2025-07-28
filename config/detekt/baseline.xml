@@ -143,8 +143,8 @@
     <ID>MaxLineLength:ScreenFragment.kt$ScreenFragment$binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\", {detail: $jsonData} ))", null)</ID>
     <ID>MaxLineLength:ScreenPresenter.kt$ScreenPresenter$logger.verbose("ScreenPresenter -&gt; displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")</ID>
     <ID>MaxLineLength:ScreenPresenterTest.kt$ScreenPresenterTest$fun</ID>
-    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$// logger.info("getScreen() -&gt; Successfully loaded fallback screen for context key: $contextKey")</ID>
-    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$// logger.info("getScreenById() -&gt; Successfully loaded fallback screen for screen ID: $screenId")</ID>
+    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$logger.info("getScreen() -&gt; Successfully loaded fallback screen for context key: $contextKey")</ID>
+    <ID>MaxLineLength:ScreenServiceImpl.kt$ScreenServiceImpl$logger.info("getScreenById() -&gt; Successfully loaded fallback screen for screen ID: $screenId")</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offeringID value", expectedValue.offerings?.main?.offeringID, realValue?.offerings?.main?.offeringID) }</ID>
@@ -212,12 +212,16 @@
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:41</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl.kt:74</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:42</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl.kt:107</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl.kt:59</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
+    <ID>NestedBlockDepth:ScreenServiceImpl.kt$ScreenServiceImpl$override suspend fun getScreen(contextKey: String): NoCodeScreen</ID>
+    <ID>NestedBlockDepth:ScreenServiceImpl.kt$ScreenServiceImpl$override suspend fun getScreenById(screenId: String): NoCodeScreen</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
@@ -339,6 +343,7 @@
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenPresenter.kt$ScreenPresenter$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$fallbackError: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
@@ -380,7 +385,6 @@
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionEnvironmentAdapter$@ToJson private fun toJson(enum: QTransactionEnvironment): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionOwnershipTypeAdapter$@ToJson private fun toJson(enum: QTransactionOwnershipType): String</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QTransactionTypeAdapter$@ToJson private fun toJson(enum: QTransactionType): String</ID>
-    <ID>UnusedPrivateMember:ScreenServiceImpl.kt$ScreenServiceImpl$private val mapper: Mapper&lt;NoCodeScreen?&gt;</ID>
     <ID>UtilityClassWithPublicConstructor:util.kt$Util</ID>
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:LegacyBillingClientWrapper.kt$import com.android.billingclient.api.*</ID>
