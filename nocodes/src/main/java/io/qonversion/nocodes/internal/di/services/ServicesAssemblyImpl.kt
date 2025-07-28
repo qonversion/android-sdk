@@ -27,15 +27,15 @@ internal class ServicesAssemblyImpl(
             miscAssembly.logger()
         )
     }
-    
+
     override fun fallbackService(): FallbackService? {
         val effectiveFileName = fallbackFileName ?: FallbackConstants.DEFAULT_FILE_NAME
-        
+
         // Check if fallback file is available
         if (!FallbackService.isFallbackFileAvailable(effectiveFileName, context)) {
             return null
         }
-        
+
         return FallbackServiceImpl(
             context,
             effectiveFileName,

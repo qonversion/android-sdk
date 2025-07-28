@@ -59,17 +59,17 @@ internal class NetworkClientImpl(
     internal fun connect(url: URL): HttpURLConnection {
         return try {
             val connection = url.openConnection() as HttpURLConnection
-            
+
             // Set smart timeout based on fallback availability
             val timeout = if (isFallbackAvailable) {
                 TimeoutConstants.FALLBACK_AVAILABLE_TIMEOUT
             } else {
                 TimeoutConstants.DEFAULT_TIMEOUT
             }
-            
+
             connection.connectTimeout = timeout.toInt()
             connection.readTimeout = timeout.toInt()
-            
+
             connection
         } catch (cause: Exception) {
             throw if (cause is IOException || cause is ClassCastException || cause is NullPointerException) {

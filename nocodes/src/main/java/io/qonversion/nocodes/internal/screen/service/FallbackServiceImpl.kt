@@ -21,19 +21,18 @@ internal class FallbackServiceImpl(
     override suspend fun loadScreen(contextKey: String): NoCodeScreen? = withContext(Dispatchers.IO) {
         try {
             logger.verbose("loadScreen() -> Loading fallback screen for context key: $contextKey")
-            
+
             val jsonString = loadFallbackFile()
             val jsonObject = JSONObject(jsonString)
             val screensObject = jsonObject.getJSONObject("screens")
-            
-            // Итерируемся по ключам объекта screens
+
             val keys = screensObject.keys()
             while (keys.hasNext()) {
                 try {
                     val screenKey = keys.next()
                     val screenObject = screensObject.getJSONObject(screenKey)
                     val mappedScreen = mapper.fromMap(screenObject.toMap())
-                    
+
                     if (mappedScreen?.contextKey == contextKey) {
                         logger.info("loadScreen() -> Found fallback screen for context key: $contextKey")
                         return@withContext mappedScreen
@@ -43,7 +42,7 @@ internal class FallbackServiceImpl(
                     continue
                 }
             }
-            
+
             logger.warn("loadScreen() -> No fallback screen found for context key: $contextKey")
             null
         } catch (e: Exception) {
@@ -55,19 +54,18 @@ internal class FallbackServiceImpl(
     override suspend fun loadScreenById(screenId: String): NoCodeScreen? = withContext(Dispatchers.IO) {
         try {
             logger.verbose("loadScreenById() -> Loading fallback screen for screen ID: $screenId")
-            
+
             val jsonString = loadFallbackFile()
             val jsonObject = JSONObject(jsonString)
             val screensObject = jsonObject.getJSONObject("screens")
-            
-            // Итерируемся по ключам объекта screens
+
             val keys = screensObject.keys()
             while (keys.hasNext()) {
                 try {
                     val screenKey = keys.next()
                     val screenObject = screensObject.getJSONObject(screenKey)
                     val mappedScreen = mapper.fromMap(screenObject.toMap())
-                    
+
                     if (mappedScreen?.id == screenId) {
                         logger.info("loadScreenById() -> Found fallback screen for screen ID: $screenId")
                         return@withContext mappedScreen
@@ -77,7 +75,7 @@ internal class FallbackServiceImpl(
                     continue
                 }
             }
-            
+
             logger.warn("loadScreenById() -> No fallback screen found for screen ID: $screenId")
             null
         } catch (e: Exception) {
@@ -127,4 +125,4 @@ internal class FallbackServiceImpl(
         }
         return list
     }
-} 
+}

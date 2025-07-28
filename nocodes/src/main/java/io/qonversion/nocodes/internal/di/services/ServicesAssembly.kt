@@ -6,6 +6,6 @@ import io.qonversion.nocodes.internal.screen.service.ScreenService
 internal interface ServicesAssembly {
 
     fun screenService(): ScreenService
-    
+
     fun fallbackService(): FallbackService?
 }

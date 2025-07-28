@@ -5,12 +5,9 @@ import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
 import io.qonversion.nocodes.internal.networkLayer.apiInteractor.ApiInteractor
-import io.qonversion.nocodes.internal.networkLayer.dto.Response
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
 import io.qonversion.nocodes.internal.dto.NoCodeScreen
 import io.qonversion.nocodes.internal.logger.Logger
-import io.qonversion.nocodes.internal.utils.ErrorUtils
-import java.net.HttpURLConnection
 
 internal class ScreenServiceImpl(
     private val requestConfigurator: RequestConfigurator,
