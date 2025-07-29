@@ -43,7 +43,7 @@ internal class DependenciesAssembly(
             val mappersAssembly = MappersAssemblyImpl()
             val storageAssembly = StorageAssemblyImpl(application)
             val networkAssembly =
-                NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly)
+                NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly, application)
             val servicesAssembly = ServicesAssemblyImpl(
                 mappersAssembly,
                 networkAssembly,
