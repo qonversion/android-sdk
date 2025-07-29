@@ -25,8 +25,8 @@ internal class FallbackServiceImpl(
             val jsonObject = JSONObject(jsonString)
             val screensObject = jsonObject.getJSONObject("screens")
 
-            val screens = mutableMapOf<String, NoCodeScreen>()
-            val contextKeyToScreen = mutableMapOf<String, NoCodeScreen>()
+            val screensById = mutableMapOf<String, NoCodeScreen>()
+            val screensByContextKey = mutableMapOf<String, NoCodeScreen>()
 
             val keys = screensObject.keys()
             while (keys.hasNext()) {
@@ -37,11 +37,9 @@ internal class FallbackServiceImpl(
 
                     mappedScreen?.let { screen ->
                         // Store by screen Id
-                        screens[screen.id] = screen
+                        screensById[screen.id] = screen
                         // Store by context key
-                        screen.contextKey?.let { contextKey ->
-                            contextKeyToScreen[contextKey] = screen
-                        }
+                        screensByContextKey[screen.contextKey] = screen
                     }
                 } catch (e: Exception) {
                     logger.warn("FallbackServiceImpl -> Skipping invalid screen object: ${e.message}")
@@ -49,8 +47,8 @@ internal class FallbackServiceImpl(
                 }
             }
 
-            logger.info("FallbackServiceImpl -> Successfully loaded ${screens.size} fallback screens")
-            FallbackData(screens, contextKeyToScreen)
+            logger.info("FallbackServiceImpl -> Successfully loaded ${screensById.size} fallback screens")
+            FallbackData(screensById, screensByContextKey)
         } catch (e: Exception) {
             logger.error("FallbackServiceImpl -> Failed to load fallback data: ${e.message}")
             FallbackData(emptyMap(), emptyMap())
@@ -60,7 +58,7 @@ internal class FallbackServiceImpl(
     override suspend fun loadScreen(contextKey: String): NoCodeScreen? {
         logger.verbose("loadScreen() -> Looking for fallback screen with context key: $contextKey")
 
-        val screen = fallbackData.contextKeyToScreen[contextKey]
+        val screen = fallbackData.screensByContextKey[contextKey]
         if (screen != null) {
             logger.info("loadScreen() -> Found fallback screen for context key: $contextKey")
         } else {
@@ -73,7 +71,7 @@ internal class FallbackServiceImpl(
     override suspend fun loadScreenById(screenId: String): NoCodeScreen? {
         logger.verbose("loadScreenById() -> Looking for fallback screen with Id: $screenId")
 
-        val screen = fallbackData.screens[screenId]
+        val screen = fallbackData.screensById[screenId]
         if (screen != null) {
             logger.info("loadScreenById() -> Found fallback screen for Id: $screenId")
         } else {
@@ -96,8 +94,8 @@ internal class FallbackServiceImpl(
     }
 
     private data class FallbackData(
-        val screens: Map<String, NoCodeScreen>,
-        val contextKeyToScreen: Map<String, NoCodeScreen>
+        val screensById: Map<String, NoCodeScreen>,
+        val screensByContextKey: Map<String, NoCodeScreen>
     )
 
     private fun JSONObject.toMap(): Map<String, Any?> {
