@@ -21,99 +21,81 @@ internal class ScreenServiceImpl(
 ) : ScreenService, BaseClass(logger) {
 
     override suspend fun getScreen(contextKey: String): NoCodeScreen {
-        try {
-            val request = requestConfigurator.configureScreenRequest(contextKey)
-            return when (val response = apiInteractor.execute(request)) {
-                is Response.Success -> {
-                    val arr = response.arrayData
-                    if (arr.isEmpty()) {
-                        throw NoCodesException(
-                            ErrorCode.ScreenNotFound,
-                            "Context key: $contextKey"
-                        )
-                    }
-                    mapper.fromMap(arr[0] as Map<*, *>) ?: throw NoCodesException(ErrorCode.Mapping)
-                }
-                is Response.Error -> {
-                    if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
-                        throw NoCodesException(
-                            ErrorCode.ScreenNotFound,
-                            "Context Key: $contextKey"
-                        )
-                    }
-                    throw NoCodesException(
-                        ErrorCode.BackendError,
-                        "Response code ${response.code}, message: ${(response).message}"
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            // Check if we should trigger fallback
-            if (ErrorUtils.shouldTriggerFallback(e)) {
-                logger.warn("getScreen() -> Network/Server error detected, attempting fallback: ${e.message}")
-
-                fallbackService?.let { service ->
-                    try {
-                        val fallbackScreen = service.loadScreen(contextKey)
-                        if (fallbackScreen != null) {
-                            logger.info("getScreen() -> Successfully loaded fallback screen for context key: $contextKey")
-                            return fallbackScreen
-                        } else {
-                            logger.warn("getScreen() -> Fallback screen not found for context key: $contextKey")
-                        }
-                    } catch (fallbackError: Exception) {
-                        logger.error("getScreen() -> Failed to load fallback screen: ${fallbackError.message}")
-                    }
-                } ?: run {
-                    logger.warn("getScreen() -> Fallback service not available")
-                }
-            }
-
-            // Re-throw the original error if fallback failed or is not available
-            throw e
-        }
+        return executeWithFallback(
+            requestProvider = { requestConfigurator.configureScreenRequest(contextKey) },
+            fallbackProvider = { fallbackService?.loadScreen(contextKey) },
+            errorContext = "Context key: $contextKey",
+            methodName = "getScreen"
+        )
     }
 
     override suspend fun getScreenById(screenId: String): NoCodeScreen {
+        return executeWithFallback(
+            requestProvider = { requestConfigurator.configureScreenRequestById(screenId) },
+            fallbackProvider = { fallbackService?.loadScreenById(screenId) },
+            errorContext = "Screen Id: $screenId",
+            methodName = "getScreenById"
+        )
+    }
+
+    private suspend fun executeWithFallback(
+        requestProvider: () -> Any,
+        fallbackProvider: suspend () -> NoCodeScreen?,
+        errorContext: String,
+        methodName: String
+    ): NoCodeScreen {
         try {
-            val request = requestConfigurator.configureScreenRequestById(screenId)
+            val request = requestProvider()
             return when (val response = apiInteractor.execute(request)) {
                 is Response.Success -> {
-                    logger.verbose("getScreenById -> mapping the screen from the API")
-                    mapper.fromMap(response.mapData) ?: throw NoCodesException(ErrorCode.Mapping)
+                    val screen = when {
+                        response.arrayData.isNotEmpty() -> {
+                            // Handle array response (for context key requests)
+                            mapper.fromMap(response.arrayData[0] as Map<*, *>)
+                        }
+                        response.mapData.isNotEmpty() -> {
+                            // Handle map response (for screen ID requests)
+                            logger.verbose("$methodName -> mapping the screen from the API")
+                            mapper.fromMap(response.mapData)
+                        }
+                        else -> null
+                    }
+                    
+                    if (response.arrayData.isEmpty() && response.mapData.isEmpty()) {
+                        throw NoCodesException(ErrorCode.ScreenNotFound, errorContext)
+                    }
+                    
+                    screen ?: throw NoCodesException(ErrorCode.Mapping)
                 }
                 is Response.Error -> {
                     if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
-                        throw NoCodesException(
-                            ErrorCode.ScreenNotFound,
-                            "Screen Id: $screenId"
-                        )
+                        throw NoCodesException(ErrorCode.ScreenNotFound, errorContext)
                     }
                     throw NoCodesException(
                         ErrorCode.BackendError,
-                        "Response code ${response.code}, message: ${(response).message}"
+                        "Response code ${response.code}, message: ${response.message}"
                     )
                 }
             }
         } catch (e: Exception) {
             // Check if we should trigger fallback
             if (ErrorUtils.shouldTriggerFallback(e)) {
-                logger.warn("getScreenById() -> Network/Server error detected, attempting fallback: ${e.message}")
+                logger.warn("$methodName() -> Network/Server error detected, attempting fallback: ${e.message}")
 
                 fallbackService?.let { service ->
                     try {
-                        val fallbackScreen = service.loadScreenById(screenId)
+                        val fallbackScreen = fallbackProvider()
                         if (fallbackScreen != null) {
-                            logger.info("getScreenById() -> Successfully loaded fallback screen for screen ID: $screenId")
+                            logger.info("$methodName() -> Successfully loaded fallback screen for $errorContext")
                             return fallbackScreen
                         } else {
-                            logger.warn("getScreenById() -> Fallback screen not found for screen ID: $screenId")
+                            logger.warn("$methodName() -> Fallback screen not found for $errorContext")
                         }
                     } catch (fallbackError: Exception) {
-                        logger.error("getScreenById() -> Failed to load fallback screen: ${fallbackError.message}")
+                        logger.error("$methodName() -> Failed to load fallback screen: ${fallbackError.message}")
                     }
                 } ?: run {
-                    logger.warn("getScreenById() -> Fallback service not available")
+                    logger.warn("$methodName() -> Fallback service not available")
                 }
             }
 
