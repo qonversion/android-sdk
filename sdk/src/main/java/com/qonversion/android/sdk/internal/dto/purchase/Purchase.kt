@@ -1,4 +1,4 @@
-package com.qonversion.android.sdk.internal.purchase
+package com.qonversion.android.sdk.internal.dto.purchase
 
 import com.squareup.moshi.JsonClass
 

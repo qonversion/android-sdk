@@ -305,7 +305,7 @@ class HomeFragment : Fragment(), NoCodesDelegate {
             product,
             object : QonversionEntitlementsCallback {
                 override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    when (product.qonversionID) {
+                    when (product.qonversionId) {
                         subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
                         inAppProductId -> binding.buttonInApp.toSuccessState()
                     }

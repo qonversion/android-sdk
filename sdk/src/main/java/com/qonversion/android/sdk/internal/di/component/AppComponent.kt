@@ -1,7 +1,6 @@
 package com.qonversion.android.sdk.internal.di.component
 
 import com.qonversion.android.sdk.internal.di.scope.ApplicationScope
-import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QHandledPurchasesCache
 import com.qonversion.android.sdk.internal.QIdentityManager
@@ -37,7 +36,6 @@ internal interface AppComponent {
     fun purchasesCache(): PurchasesCache
     fun handledPurchasesCache(): QHandledPurchasesCache
     fun launchResultCacheWrapper(): LaunchResultCacheWrapper
-    fun automationsManager(): QAutomationsManager
     fun identityManager(): QIdentityManager
     fun userInfoService(): QUserInfoService
     fun userPropertiesManager(): QUserPropertiesManager

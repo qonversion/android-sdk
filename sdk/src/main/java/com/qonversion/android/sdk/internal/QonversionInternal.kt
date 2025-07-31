@@ -7,11 +7,8 @@ import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
-import com.qonversion.android.sdk.automations.internal.QAutomationsManager
 import com.qonversion.android.sdk.dto.QAttributionProvider
-import com.qonversion.android.sdk.dto.QPurchaseModel
 import com.qonversion.android.sdk.dto.QPurchaseOptions
-import com.qonversion.android.sdk.dto.QPurchaseUpdateModel
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -23,7 +20,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.di.QDependencyInjector
-import com.qonversion.android.sdk.internal.dto.purchase.PurchaseModelInternal
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseOptionsInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
@@ -50,7 +47,6 @@ internal class QonversionInternal(
     private var userPropertiesManager: QUserPropertiesManager
     private var attributionManager: QAttributionManager
     private var productCenterManager: QProductCenterManager
-    private var automationsManager: QAutomationsManager
     private var logger = ConsoleLogger()
     private val handler = Handler(Looper.getMainLooper())
     private var sharedPreferencesCache: SharedPreferencesCache
@@ -75,13 +71,11 @@ internal class QonversionInternal(
         val identityManager = QDependencyInjector.appComponent.identityManager()
         sharedPreferencesCache = QDependencyInjector.appComponent.sharedPreferencesCache()
 
-        val userID = userInfoService.obtainUserID()
+        val userId = userInfoService.obtainUserId()
 
-        internalConfig.uid = userID
+        internalConfig.uid = userId
 
         fallbackService = QDependencyInjector.appComponent.fallbacksService()
-
-        automationsManager = QDependencyInjector.appComponent.automationsManager()
 
         userPropertiesManager = QDependencyInjector.appComponent.userPropertiesManager()
 
@@ -141,27 +135,17 @@ internal class QonversionInternal(
             return
         }
 
-        productCenterManager.restore(RequestTrigger.SyncHistoricalData, callback = object : QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
-            }
+        productCenterManager.restore(
+            RequestTrigger.SyncHistoricalData,
+            callback = object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                    sharedPreferencesCache.putBool(Constants.IS_HISTORICAL_DATA_SYNCED, true)
+                }
 
-            override fun onError(error: QonversionError) {
-                logger.error("Historical data sync failed.")
+                override fun onError(error: QonversionError) {
+                    logger.error("Historical data sync failed.")
+                }
             }
-        })
-    }
-
-    @Deprecated("Use the new purchase() method", replaceWith = ReplaceWith("purchase(context, TODO(\"pass product here\"), callback)"))
-    override fun purchase(
-        context: Activity,
-        purchaseModel: QPurchaseModel,
-        callback: QonversionEntitlementsCallback
-    ) {
-        productCenterManager.purchaseProduct(
-            context,
-            PurchaseModelInternal(purchaseModel),
-            mainPurchaseCallback(callback)
         )
     }
 
@@ -173,7 +157,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product, options),
+            PurchaseOptionsInternal(product, options),
             mainPurchaseCallback(callback)
         )
     }
@@ -185,7 +169,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product),
+            PurchaseOptionsInternal(product),
             mainPurchaseCallback(callback)
         )
     }
@@ -198,20 +182,7 @@ internal class QonversionInternal(
     ) {
         productCenterManager.purchaseProduct(
             context,
-            PurchaseModelInternal(product, options),
-            mainPurchaseCallback(callback)
-        )
-    }
-
-    @Deprecated("Use the new updatePurchase() method", replaceWith = ReplaceWith("updatePurchase(context, TODO(\"pass product here\"), TODO(\"pass purchase options here\"), callback)"))
-    override fun updatePurchase(
-        context: Activity,
-        purchaseUpdateModel: QPurchaseUpdateModel,
-        callback: QonversionEntitlementsCallback
-    ) {
-        productCenterManager.purchaseProduct(
-            context,
-            PurchaseModelInternal(purchaseUpdateModel),
+            PurchaseOptionsInternal(product, options),
             mainPurchaseCallback(callback)
         )
     }
@@ -340,12 +311,12 @@ internal class QonversionInternal(
         productCenterManager.syncPurchases()
     }
 
-    override fun identify(userID: String) {
-        productCenterManager.identify(userID)
+    override fun identify(userId: String) {
+        productCenterManager.identify(userId)
     }
 
-    override fun identify(userID: String, callback: QonversionUserCallback) {
-        productCenterManager.identify(userID, callback)
+    override fun identify(userId: String, callback: QonversionUserCallback) {
+        productCenterManager.identify(userId, callback)
     }
 
     override fun logout() {

@@ -39,9 +39,9 @@ class ProductsAdapter(
         }
 
         fun bind(product: QProduct) = with(itemView) {
-            binding.txtName.text = product.qonversionID
-            binding.txtDescription.text = product.skuDetail?.description
-            binding.txtPrice.text = product.skuDetail?.price
+            binding.txtName.text = product.qonversionId
+            binding.txtDescription.text = product.storeDetails?.description
+            binding.txtPrice.text = product.prettyPrice
         }
     }
 }

@@ -34,7 +34,7 @@ internal class QIdentityManagerTest {
             mockIdentifyResponse(identityID)
 
             every {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
             } returns currentUserID
 
             // when
@@ -57,7 +57,7 @@ internal class QIdentityManagerTest {
             mockIdentifyResponse(identityID)
 
             every {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
             } returns currentUserID
 
             // when
@@ -79,7 +79,7 @@ internal class QIdentityManagerTest {
             mockIdentifyResponse(identityID)
 
             every {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
             } returns currentUserID
 
             // when
@@ -90,7 +90,7 @@ internal class QIdentityManagerTest {
 
             // then
             verifySequence {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
                 mockRepository.identify(newUserID, currentUserID, any(), any())
                 mockUserInfoService.storePartnersIdentityId(newUserID)
                 mockUserInfoService.storeQonversionUserId(identityID)
@@ -104,7 +104,7 @@ internal class QIdentityManagerTest {
             mockIdentifyResponse(identityID)
 
             every {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
             } returns currentUserID
 
             // when
@@ -115,7 +115,7 @@ internal class QIdentityManagerTest {
 
             // then
             verifySequence {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
                 mockRepository.identify(newUserID, currentUserID, any(), any())
                 mockUserInfoService.storePartnersIdentityId(newUserID)
             }
@@ -135,7 +135,7 @@ internal class QIdentityManagerTest {
             }
 
             every {
-                mockUserInfoService.obtainUserID()
+                mockUserInfoService.obtainUserId()
             } returns currentUserID
 
             // when

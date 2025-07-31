@@ -4,12 +4,10 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.properties.QUserProperty
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.dto.SendPropertiesResult
-import com.qonversion.android.sdk.internal.dto.automations.ActionPointScreen
-import com.qonversion.android.sdk.internal.dto.automations.Screen
 import com.qonversion.android.sdk.internal.dto.request.CrashRequest
 import com.qonversion.android.sdk.internal.dto.request.data.InitRequestData
-import com.qonversion.android.sdk.internal.purchase.Purchase
-import com.qonversion.android.sdk.internal.purchase.PurchaseHistory
+import com.qonversion.android.sdk.internal.dto.purchase.Purchase
+import com.qonversion.android.sdk.internal.dto.purchase.PurchaseRecord
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
@@ -56,14 +54,15 @@ internal interface QRepository {
         installDate: Long,
         purchase: Purchase,
         qProductId: String?,
+        requestTrigger: RequestTrigger,
         callback: QonversionLaunchCallback
     )
 
     fun restore(
         installDate: Long,
-        historyRecords: List<PurchaseHistory>,
-        callback: QonversionLaunchCallback,
+        historyRecords: List<PurchaseRecord>,
         requestTrigger: RequestTrigger,
+        callback: QonversionLaunchCallback,
     )
 
     fun attribution(
@@ -91,23 +90,9 @@ internal interface QRepository {
     )
 
     fun identify(
-        userID: String,
-        currentUserID: String,
-        onSuccess: (identityID: String) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    )
-
-    fun screens(
-        screenId: String,
-        onSuccess: (screen: Screen) -> Unit,
-        onError: (error: QonversionError) -> Unit
-    )
-
-    fun views(screenId: String)
-
-    fun actionPoints(
-        queryParams: Map<String, String>,
-        onSuccess: (actionPoint: ActionPointScreen?) -> Unit,
+        userId: String,
+        currentUserId: String,
+        onSuccess: (identityId: String) -> Unit,
         onError: (error: QonversionError) -> Unit
     )
 

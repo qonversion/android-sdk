@@ -135,7 +135,7 @@ class QonversionConfig internal constructor(
         }
 
         /**
-         * Use this function to disable tracking of Facebook Attribution ID.
+         * Use this function to disable tracking of Facebook Attribution identifier.
          * It may be helpful if you face "Social Account information tracking without
          * a prominent disclosure" warning during the Google Play Review.
          */

@@ -35,25 +35,25 @@ internal class Util {
             date = Date(1612903277000),
             products = mapOf(
                 "main" to QProduct(
-                    qonversionID = "main",
-                    storeID = "qonversion_subs_weekly",
-                    basePlanID = null,
+                    qonversionId = "main",
+                    storeId = "qonversion_subs_weekly",
+                    basePlanId = null,
                 ),
                 "in_app" to QProduct(
-                    qonversionID = "in_app",
-                    storeID = "qonversion_inapp_consumable",
-                    basePlanID = null,
+                    qonversionId = "in_app",
+                    storeId = "qonversion_inapp_consumable",
+                    basePlanId = null,
                 ),
                 "annual" to QProduct(
-                    qonversionID = "annual",
-                    storeID = "qonversion_subs_annual",
-                    basePlanID = null,
+                    qonversionId = "annual",
+                    storeId = "qonversion_subs_annual",
+                    basePlanId = null,
                 )
             ),
             permissions = mapOf(
                 "standart" to QPermission(
-                    permissionID = "standart",
-                    productID = "in_app",
+                    permissionId = "standart",
+                    productId = "in_app",
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
@@ -68,8 +68,8 @@ internal class Util {
                     null
                 ),
                 "Test Permission" to QPermission(
-                    permissionID = "Test Permission",
-                    productID = "in_app",
+                    permissionId = "Test Permission",
+                    productId = "in_app",
                     renewState = QProductRenewState.NonRenewable,
                     startedDate = Date(1612880300000),
                     expirationDate = null,
@@ -86,42 +86,42 @@ internal class Util {
             ),
             userProducts = mapOf(
                 "in_app" to QProduct(
-                    qonversionID = "in_app",
-                    storeID = "qonversion_inapp_consumable",
-                    basePlanID = null,
+                    qonversionId = "in_app",
+                    storeId = "qonversion_inapp_consumable",
+                    basePlanId = null,
                 )
             ),
             offerings = QOfferings(
                 main = QOffering(
-                    offeringID = "main",
+                    offeringId = "main",
                     tag = QOfferingTag.Main,
                     products = listOf(
                         QProduct(
-                            qonversionID = "in_app",
-                            storeID = "qonversion_inapp_consumable",
-                            basePlanID = null,
+                            qonversionId = "in_app",
+                            storeId = "qonversion_inapp_consumable",
+                            basePlanId = null,
                         ),
                         QProduct(
-                            qonversionID = "main",
-                            storeID = "qonversion_subs_weekly",
-                            basePlanID = null,
+                            qonversionId = "main",
+                            storeId = "qonversion_subs_weekly",
+                            basePlanId = null,
                         )
                     )
                 ),
                 availableOfferings = listOf(
                     QOffering(
-                        offeringID = "main",
+                        offeringId = "main",
                         tag = QOfferingTag.Main,
                         products = listOf(
                             QProduct(
-                                qonversionID = "in_app",
-                                storeID = "qonversion_inapp_consumable",
-                                basePlanID = null,
+                                qonversionId = "in_app",
+                                storeId = "qonversion_inapp_consumable",
+                                basePlanId = null,
                             ),
                             QProduct(
-                                qonversionID = "main",
-                                storeID = "qonversion_subs_weekly",
-                                basePlanID = null,
+                                qonversionId = "main",
+                                storeId = "qonversion_subs_weekly",
+                                basePlanId = null,
                             )
                         )
                     )
@@ -131,11 +131,13 @@ internal class Util {
 
         const val LAUNCH_RESULT_JSON_STR = "{\"uid\":\"Og-97RMtD0tXhKg-O_ELSQFDpdyuq9Nj\"," +
                 "\"timestamp\":1612903277," +
-                "\"products\":[{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}," +
-                "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}," +
-                "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\",\"type\":0,\"duration\":4}]," +
-                "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1},{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1}],\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}]," +
-                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":0,\"duration\":0}]" +
+                "\"products\":[{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\"}," +
+                "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"}," +
+                "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\"}]," +
+                "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}," +
+                "{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}]," +
+                "\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"}]," +
+                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\"}]" +
                 "}]}"
 
         fun buildMoshi(): Moshi =

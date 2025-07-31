@@ -15,33 +15,33 @@ internal class QUserInfoService @Inject constructor(
     private val preferences: Cache,
     private val tokenStorage: TokenStorage
 ) {
-    fun obtainUserID(): String {
-        val cachedUserID = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
-        var resultUserID = cachedUserID
+    fun obtainUserId(): String {
+        val cachedUserId = preferences.getString(PREFS_QONVERSION_USER_ID_KEY, null)
+        var resultUserId = cachedUserId
 
-        if (resultUserID.isNullOrEmpty()) {
-            resultUserID = tokenStorage.load()
+        if (resultUserId.isNullOrEmpty()) {
+            resultUserId = tokenStorage.load()
             tokenStorage.delete()
         }
 
-        if (resultUserID.isNullOrEmpty() || resultUserID == TEST_UID) {
-            resultUserID = generateRandomUserID()
+        if (resultUserId.isEmpty() || resultUserId == TEST_UID) {
+            resultUserId = generateRandomUserId()
         }
 
-        if (cachedUserID.isNullOrEmpty() || cachedUserID == TEST_UID) {
-            preferences.putString(PREFS_QONVERSION_USER_ID_KEY, resultUserID)
-            preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserID)
+        if (cachedUserId.isNullOrEmpty() || cachedUserId == TEST_UID) {
+            preferences.putString(PREFS_QONVERSION_USER_ID_KEY, resultUserId)
+            preferences.putString(PREFS_ORIGINAL_USER_ID_KEY, resultUserId)
         }
 
-        return resultUserID
+        return resultUserId
     }
 
-    fun storeQonversionUserId(userID: String) {
-        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userID)
+    fun storeQonversionUserId(userId: String) {
+        preferences.putString(PREFS_QONVERSION_USER_ID_KEY, userId)
     }
 
-    fun storePartnersIdentityId(userID: String) {
-        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, userID)
+    fun storePartnersIdentityId(userId: String) {
+        preferences.putString(PREFS_PARTNER_IDENTITY_ID_KEY, userId)
     }
 
     fun getPartnersIdentityId(): String? {
@@ -72,7 +72,7 @@ internal class QUserInfoService @Inject constructor(
 
     // Private
 
-    private fun generateRandomUserID(): String {
+    private fun generateRandomUserId(): String {
         val uuid = UUID.randomUUID().toString().replace(Regex("-"), "")
         val result = "$USER_ID_PREFIX$USER_ID_SEPARATOR$uuid"
 

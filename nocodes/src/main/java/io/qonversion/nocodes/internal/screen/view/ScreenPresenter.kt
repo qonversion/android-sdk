@@ -14,6 +14,7 @@ import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
 import io.qonversion.nocodes.internal.common.serializers.Serializer
+import io.qonversion.nocodes.internal.dto.NoCodeScreen
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.screen.service.ScreenService
@@ -30,6 +31,8 @@ internal class ScreenPresenter(
     private val actionMapper: Mapper<QAction>,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
+
+    private var currentScreen: NoCodeScreen? = null
 
     override fun onStart(contextKey: String?, screenId: String?) {
         scope.launch {
@@ -57,6 +60,7 @@ internal class ScreenPresenter(
                 return@launch
             }
 
+            currentScreen = screen
             logger.verbose("ScreenPresenter -> displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")
             view.displayScreen(screen.id, screen.body)
         }
@@ -102,7 +106,7 @@ internal class ScreenPresenter(
             }
             QAction.Type.Purchase -> {
                 action.parameters?.get(QAction.Parameter.ProductId)?.let { productId ->
-                    view.purchase(productId as String)
+                    view.purchase(productId as String, currentScreen?.id)
                 }
             }
             QAction.Type.Restore -> {
@@ -142,8 +146,8 @@ internal class ScreenPresenter(
 
     private fun mapProductInfo(product: QProduct): Map<String, Any?> {
         val res = mutableMapOf<String, Any?>(
-            "id" to product.qonversionID,
-            "store_id" to product.storeID,
+            "id" to product.qonversionId,
+            "store_id" to product.storeId,
         )
 
         fun enrichWithPriceDetails(price: QProductPrice) {
