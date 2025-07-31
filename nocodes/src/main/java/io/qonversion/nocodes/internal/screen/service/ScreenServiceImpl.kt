@@ -24,7 +24,7 @@ internal class ScreenServiceImpl(
         return executeWithFallback(
             requestProvider = { requestConfigurator.configureScreenRequest(contextKey) },
             fallbackProvider = { fallbackService?.loadScreen(contextKey) },
-            errorContext = "Context key: $contextKey",
+            errorContext = "context key: $contextKey",
             methodName = "getScreen"
         )
     }
@@ -33,7 +33,7 @@ internal class ScreenServiceImpl(
         return executeWithFallback(
             requestProvider = { requestConfigurator.configureScreenRequestById(screenId) },
             fallbackProvider = { fallbackService?.loadScreenById(screenId) },
-            errorContext = "Screen Id: $screenId",
+            errorContext = "screen id: $screenId",
             methodName = "getScreenById"
         )
     }
