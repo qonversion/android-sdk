@@ -1,5 +1,6 @@
 package io.qonversion.nocodes.internal.di.network
 
+import android.content.Context
 import io.qonversion.nocodes.internal.common.API_URL
 import io.qonversion.nocodes.internal.di.mappers.MappersAssembly
 import io.qonversion.nocodes.internal.di.misc.MiscAssembly
@@ -19,10 +20,14 @@ internal class NetworkAssemblyImpl(
     private val internalConfig: InternalConfig,
     private val mappersAssembly: MappersAssembly,
     private val storageAssembly: StorageAssembly,
-    private val miscAssembly: MiscAssembly
+    private val miscAssembly: MiscAssembly,
+    private val context: Context
 ) : NetworkAssembly {
 
-    override fun networkClient(): NetworkClient = NetworkClientImpl(miscAssembly.jsonSerializer())
+    override fun networkClient(): NetworkClient = NetworkClientImpl(
+        miscAssembly.jsonSerializer(),
+        isFallbackAvailable = isFallbackActuallyAvailable()
+    )
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
         headerBuilder(),
@@ -49,5 +54,14 @@ internal class NetworkAssemblyImpl(
             mappersAssembly.apiErrorMapper(),
             retryPolicy
         )
+    }
+
+    private fun isFallbackActuallyAvailable(): Boolean {
+        return try {
+            val effectiveFileName = internalConfig.primaryConfig.effectiveFallbackFileName
+            context.assets.open(effectiveFileName).use { true }
+        } catch (e: Exception) {
+            false
+        }
     }
 }

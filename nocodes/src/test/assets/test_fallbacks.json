@@ -1,0 +1,14 @@
+{
+  "screens": {
+    "test_screen_1": {
+      "id": "test_id_1",
+      "body": "<html><body><h1>Test Screen 1</h1></body></html>",
+      "context_key": "test_context_1"
+    },
+    "test_screen_2": {
+      "id": "test_id_2", 
+      "body": "<html><body><h1>Test Screen 2</h1></body></html>",
+      "context_key": "test_context_2"
+    }
+  }
+} 

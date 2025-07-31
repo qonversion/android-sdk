@@ -11,11 +11,11 @@ import io.qonversion.nocodes.internal.screen.view.ScreenContract
 import io.qonversion.nocodes.internal.screen.view.ScreenPresenter
 
 internal class ControllersAssemblyImpl(
+    private val appContext: Context,
     private val servicesAssembly: ServicesAssembly,
     private val miscAssembly: MiscAssembly,
     private val mappersAssembly: MappersAssembly,
-    private val internalConfig: InternalConfig,
-    private val appContext: Context
+    private val internalConfig: InternalConfig
 ) : ControllersAssembly {
 
     override fun screenController(): ScreenController {

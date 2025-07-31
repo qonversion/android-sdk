@@ -43,14 +43,20 @@ internal class DependenciesAssembly(
             val mappersAssembly = MappersAssemblyImpl()
             val storageAssembly = StorageAssemblyImpl(application)
             val networkAssembly =
-                NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly)
-            val servicesAssembly = ServicesAssemblyImpl(mappersAssembly, networkAssembly, miscAssembly)
+                NetworkAssemblyImpl(internalConfig, mappersAssembly, storageAssembly, miscAssembly, application)
+            val servicesAssembly = ServicesAssemblyImpl(
+                mappersAssembly,
+                networkAssembly,
+                miscAssembly,
+                application,
+                internalConfig.primaryConfig.effectiveFallbackFileName
+            )
             val controllersAssembly = ControllersAssemblyImpl(
+                application,
                 servicesAssembly,
                 miscAssembly,
                 mappersAssembly,
-                internalConfig,
-                application
+                internalConfig
             )
 
             instance = DependenciesAssembly(

@@ -48,6 +48,7 @@ class NoCodesConfig internal constructor(
         private var proxyUrl: String? = null
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
+        private var customFallbackFileName: String? = null
 
         /**
          * Provide a delegate to be notified about the no-code screens events.
@@ -113,6 +114,18 @@ class NoCodesConfig internal constructor(
         }
 
         /**
+         * Set a custom fallback file name for offline scenarios.
+         * This file should be placed in the assets folder and will be used when network is unavailable.
+         * If not set, the default file name "nocodes_fallbacks.json" will be used.
+         *
+         * @param fileName the custom fallback file name.
+         * @return builder instance for chain calls.
+         */
+        fun setCustomFallbackFileName(fileName: String): Builder = apply {
+            this.customFallbackFileName = fileName
+        }
+
+        /**
          * Generate [NoCodesConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -124,7 +137,7 @@ class NoCodesConfig internal constructor(
                 throw IllegalStateException("Project key is empty")
             }
 
-            val primaryConfig = PrimaryConfig(projectKey)
+            val primaryConfig = PrimaryConfig(projectKey, customFallbackFileName = customFallbackFileName)
             val networkConfig = NetworkConfig(proxyUrl)
             val loggerConfig = LoggerConfig(logLevel, logTag)
 

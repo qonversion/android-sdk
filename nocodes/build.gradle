@@ -37,6 +37,13 @@ android {
         viewBinding true
         buildConfig true
     }
+    sourceSets {
+        main {
+            assets {
+                srcDirs 'src/main/assets', 'src/main/assets/fallbacks'
+            }
+        }
+    }
 }
 
 ext {

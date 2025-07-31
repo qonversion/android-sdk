@@ -41,7 +41,7 @@ public class App extends MultiDexApplication {
         NoCodesConfig.Builder noCodesConfigBuilder = new NoCodesConfig.Builder(
                 this,
                 projectKey
-        );
+        ).setCustomFallbackFileName("fallbacks/nocodes_fallbacks.json");
 
         if (apiUrl != null) {
             qonversionConfigBuilder.setProxyURL(apiUrl);
