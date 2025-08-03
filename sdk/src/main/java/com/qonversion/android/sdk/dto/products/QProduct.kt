@@ -48,7 +48,7 @@ data class QProduct(
     /**
      * The calculated type of this product based on the store information.
      */
-    val type: QProductType = storeDetails?.productType ?: QProductType.Unknown
+    val type: QProductType get() = storeDetails?.productType ?: QProductType.Unknown
 
     /**
      * Formatted price for this product, including the currency sign.
