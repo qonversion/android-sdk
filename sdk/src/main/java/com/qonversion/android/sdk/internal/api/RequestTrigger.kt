@@ -9,7 +9,6 @@ internal enum class RequestTrigger(val key: String) {
     Purchase("Purchase"),
     UserProperties("UserProperties"),
     Restore("Restore"),
-    SyncHistoricalData("SyncHistoricalData"),
     SyncPurchases("SyncPurchases"),
     ActualizePermissions("ActualizePermissions"),
     Logout("Logout"),

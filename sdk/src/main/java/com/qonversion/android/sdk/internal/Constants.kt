@@ -7,7 +7,6 @@ internal object Constants {
     const val PREFS_PARTNER_IDENTITY_ID_KEY = "$PREFS_PREFIX.partnerIdentityUserID"
     const val USER_ID_PREFIX = "QON"
     const val USER_ID_SEPARATOR = "_"
-    const val IS_HISTORICAL_DATA_SYNCED = "$PREFS_PREFIX.is_historical_data_synced"
     const val INTERNAL_SERVER_ERROR_MIN = 500
     const val INTERNAL_SERVER_ERROR_MAX = 599
     const val PRICE_MICROS_DIVIDER: Double = 1000000.0
