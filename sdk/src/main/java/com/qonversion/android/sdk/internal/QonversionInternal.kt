@@ -128,6 +128,7 @@ internal class QonversionInternal(
         attributionManager.onAppForeground()
     }
 
+    @Deprecated("Due to the Google Play Billing Library 8 limitations, this method doesn't restore historical purchases anymore.")
     override fun syncHistoricalData() {
         val isHistoricalDataSynced: Boolean =
             sharedPreferencesCache.getBool(Constants.IS_HISTORICAL_DATA_SYNCED)

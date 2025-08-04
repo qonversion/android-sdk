@@ -76,6 +76,7 @@ interface Qonversion {
      * You don't need to care about single call of this function during the application lifetime.
      * Qonversion will take care about it.
      */
+    @Deprecated("Due to the Google Play Billing Library 8 limitations, this method doesn't restore historical purchases anymore.")
     fun syncHistoricalData()
 
     /**
