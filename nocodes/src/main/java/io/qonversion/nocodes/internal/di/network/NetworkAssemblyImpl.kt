@@ -15,13 +15,14 @@ import io.qonversion.nocodes.internal.networkLayer.networkClient.NetworkClient
 import io.qonversion.nocodes.internal.networkLayer.networkClient.NetworkClientImpl
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfiguratorImpl
+import io.qonversion.nocodes.internal.utils.FallbackUtils
 
 internal class NetworkAssemblyImpl(
+    private val context: Context,
     private val internalConfig: InternalConfig,
     private val mappersAssembly: MappersAssembly,
     private val storageAssembly: StorageAssembly,
-    private val miscAssembly: MiscAssembly,
-    private val context: Context
+    private val miscAssembly: MiscAssembly
 ) : NetworkAssembly {
 
     override fun networkClient(): NetworkClient = NetworkClientImpl(
@@ -57,11 +58,9 @@ internal class NetworkAssemblyImpl(
     }
 
     private fun isFallbackActuallyAvailable(): Boolean {
-        return try {
-            val effectiveFileName = internalConfig.primaryConfig.effectiveFallbackFileName
-            context.assets.open(effectiveFileName).use { true }
-        } catch (e: Exception) {
-            false
-        }
+        return FallbackUtils.isFallbackFileAvailable(
+            internalConfig.primaryConfig.effectiveFallbackFileName,
+            context
+        )
     }
 }

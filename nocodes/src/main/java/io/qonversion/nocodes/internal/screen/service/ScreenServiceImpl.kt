@@ -9,6 +9,7 @@ import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestCo
 import io.qonversion.nocodes.internal.dto.NoCodeScreen
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.dto.Response
+import io.qonversion.nocodes.internal.networkLayer.dto.Request
 import io.qonversion.nocodes.internal.utils.ErrorUtils
 import java.net.HttpURLConnection
 
@@ -39,7 +40,7 @@ internal class ScreenServiceImpl(
     }
 
     private suspend fun executeWithFallback(
-        requestProvider: () -> Any,
+        requestProvider: () -> Request,
         fallbackProvider: suspend () -> NoCodeScreen?,
         errorContext: String,
         methodName: String
@@ -48,6 +49,11 @@ internal class ScreenServiceImpl(
             val request = requestProvider()
             return when (val response = apiInteractor.execute(request)) {
                 is Response.Success -> {
+                    // Check if response has any data
+                    if (response.arrayData.isEmpty() && response.mapData.isEmpty()) {
+                        throw NoCodesException(ErrorCode.ScreenNotFound, errorContext)
+                    }
+
                     val screen = when {
                         response.arrayData.isNotEmpty() -> {
                             // Handle array response (for context key requests)
@@ -60,11 +66,7 @@ internal class ScreenServiceImpl(
                         }
                         else -> null
                     }
-                    
-                    if (response.arrayData.isEmpty() && response.mapData.isEmpty()) {
-                        throw NoCodesException(ErrorCode.ScreenNotFound, errorContext)
-                    }
-                    
+
                     screen ?: throw NoCodesException(ErrorCode.Mapping)
                 }
                 is Response.Error -> {
