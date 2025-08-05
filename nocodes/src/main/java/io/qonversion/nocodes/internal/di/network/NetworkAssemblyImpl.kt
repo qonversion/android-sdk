@@ -1,5 +1,6 @@
 package io.qonversion.nocodes.internal.di.network
 
+import android.content.Context
 import io.qonversion.nocodes.internal.common.API_URL
 import io.qonversion.nocodes.internal.di.mappers.MappersAssembly
 import io.qonversion.nocodes.internal.di.misc.MiscAssembly
@@ -14,15 +15,20 @@ import io.qonversion.nocodes.internal.networkLayer.networkClient.NetworkClient
 import io.qonversion.nocodes.internal.networkLayer.networkClient.NetworkClientImpl
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfiguratorImpl
+import io.qonversion.nocodes.internal.utils.FallbackUtils
 
 internal class NetworkAssemblyImpl(
+    private val context: Context,
     private val internalConfig: InternalConfig,
     private val mappersAssembly: MappersAssembly,
     private val storageAssembly: StorageAssembly,
     private val miscAssembly: MiscAssembly
 ) : NetworkAssembly {
 
-    override fun networkClient(): NetworkClient = NetworkClientImpl(miscAssembly.jsonSerializer())
+    override fun networkClient(): NetworkClient = NetworkClientImpl(
+        miscAssembly.jsonSerializer(),
+        isFallbackAvailable = isFallbackActuallyAvailable()
+    )
 
     override fun requestConfigurator(): RequestConfigurator = RequestConfiguratorImpl(
         headerBuilder(),
@@ -48,6 +54,13 @@ internal class NetworkAssemblyImpl(
             internalConfig,
             mappersAssembly.apiErrorMapper(),
             retryPolicy
+        )
+    }
+
+    private fun isFallbackActuallyAvailable(): Boolean {
+        return FallbackUtils.isFallbackFileAvailable(
+            internalConfig.primaryConfig.effectiveFallbackFileName,
+            context
         )
     }
 }

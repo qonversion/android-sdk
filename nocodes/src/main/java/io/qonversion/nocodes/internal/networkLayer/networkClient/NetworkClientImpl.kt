@@ -3,6 +3,7 @@ package io.qonversion.nocodes.internal.networkLayer.networkClient
 import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.common.serializers.Serializer
+import io.qonversion.nocodes.internal.common.TimeoutConstants
 import io.qonversion.nocodes.internal.networkLayer.dto.RawResponse
 import io.qonversion.nocodes.internal.networkLayer.dto.Request
 import io.qonversion.nocodes.internal.networkLayer.utils.isInternalServerErrorHttpCode
@@ -23,7 +24,8 @@ import java.net.URL
 private const val NETWORK_ENCODING = "utf-8"
 
 internal class NetworkClientImpl(
-    private val serializer: Serializer
+    private val serializer: Serializer,
+    private val isFallbackAvailable: Boolean = false
 ) : NetworkClient {
     override suspend fun execute(request: Request): RawResponse {
         return withContext(Dispatchers.IO) {
@@ -56,7 +58,19 @@ internal class NetworkClientImpl(
 
     internal fun connect(url: URL): HttpURLConnection {
         return try {
-            url.openConnection() as HttpURLConnection
+            val connection = url.openConnection() as HttpURLConnection
+
+            // Set smart timeout based on fallback availability
+            val timeout = if (isFallbackAvailable) {
+                TimeoutConstants.FALLBACK_AVAILABLE_TIMEOUT
+            } else {
+                TimeoutConstants.DEFAULT_TIMEOUT
+            }
+
+            connection.connectTimeout = timeout.toInt()
+            connection.readTimeout = timeout.toInt()
+
+            connection
         } catch (cause: Exception) {
             throw if (cause is IOException || cause is ClassCastException || cause is NullPointerException) {
                 NoCodesException(
