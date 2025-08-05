@@ -11,10 +11,10 @@ import io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl
 import io.qonversion.nocodes.internal.utils.FallbackUtils
 
 internal class ServicesAssemblyImpl(
+    private val context: Context,
     private val mappersAssembly: MappersAssembly,
     private val networkAssembly: NetworkAssembly,
     private val miscAssembly: MiscAssembly,
-    private val context: Context,
     private val effectiveFallbackFileName: String
 ) : ServicesAssembly {
 
