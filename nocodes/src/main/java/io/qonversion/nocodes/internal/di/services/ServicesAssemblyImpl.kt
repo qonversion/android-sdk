@@ -8,6 +8,7 @@ import io.qonversion.nocodes.internal.screen.service.FallbackService
 import io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl
+import io.qonversion.nocodes.internal.utils.FallbackUtils
 
 internal class ServicesAssemblyImpl(
     private val mappersAssembly: MappersAssembly,
@@ -29,7 +30,7 @@ internal class ServicesAssemblyImpl(
 
     override fun fallbackService(): FallbackService? {
         // Check if fallback file is available
-        if (!FallbackService.isFallbackFileAvailable(effectiveFallbackFileName, context)) {
+        if (!FallbackUtils.isFallbackFileAvailable(effectiveFallbackFileName, context)) {
             return null
         }
 
