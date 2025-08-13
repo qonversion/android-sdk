@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 internal class ApiHelperTest {
 
-    private val apiUrl = "https://api.qonversion.io/"
+    private val apiUrl = "https://api2.qonversion.io/"
     private lateinit var apiHelper: ApiHelper
 
     @BeforeEach
