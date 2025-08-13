@@ -50,6 +50,6 @@ internal class InternalConfig(
     val isAnalyticsMode get() = primaryConfig.launchMode == QLaunchMode.Analytics
 
     companion object {
-        private const val BASE_URL = "https://api.qonversion.io/"
+        private const val BASE_URL = "https://api2.qonversion.io/"
     }
 }
