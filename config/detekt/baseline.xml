@@ -6,6 +6,7 @@
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun shouldOverrideUrlLoading(url: String?): Boolean</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
+    <ID>ComplexMethod:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
     <ID>ComplexMethod:errors.kt$internal fun BillingError.toQonversionError(): QonversionError</ID>
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
@@ -208,6 +209,7 @@
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
+    <ID>NestedBlockDepth:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:AutomationsEventMapperTest.kt$com.qonversion.android.sdk.automations.internal.AutomationsEventMapperTest.kt</ID>
@@ -264,6 +266,7 @@
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:AutomationsEventMapper.kt$AutomationsEventMapper$fun getEventFromRemoteMessage(messageData: Map&lt;String, String&gt;): AutomationsEvent?</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
+    <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
@@ -287,6 +290,7 @@
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
+    <ID>SwallowedException:FallbackUtils.kt$FallbackUtils$catch (e: Exception) { false }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:QAutomationsManager.kt$QAutomationsManager$catch (e: JSONException) { null }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("Couldn't find any Activity to handle the Intent with deeplink $url") automationsManager.automationsDidFailExecuting(actionResult) }</ID>
@@ -298,11 +302,14 @@
     <ID>SwallowedException:ScreenPresenter.kt$ScreenPresenter$catch (e: Exception) { logger.error("ScreenPresenter -&gt; failed to open the screen with id $screenId") }</ID>
     <ID>SwallowedException:SharedPreferencesCache.kt$SharedPreferencesCache$catch (e: IOException) { null }</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection$IllegalStateException()</ID>
+    <ID>ThrowsCount:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
     <ID>TooGenericExceptionCaught:AdvertisingProvider.kt$AdvertisingProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EnvironmentProvider.kt$EnvironmentProvider$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FallbackServiceImpl.kt$FallbackServiceImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FallbackUtils.kt$FallbackUtils$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QAutomationsManager.kt$QAutomationsManager$e: Exception</ID>
@@ -311,6 +318,8 @@
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenPresenter.kt$ScreenPresenter$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$fallbackError: Exception</ID>
     <ID>TooManyFunctions:Api.kt$Api</ID>
     <ID>TooManyFunctions:AppComponent.kt$AppComponent</ID>
     <ID>TooManyFunctions:BillingClientWrapper.kt$BillingClientWrapper : BillingClientWrapperBaseIBillingClientWrapper</ID>
