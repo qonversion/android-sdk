@@ -10,7 +10,7 @@ buildscript {
                 versionCode: 1
         ]
         nocodes = [
-                versionName: "0.0.7",
+                versionName: "0.0.8",
                 versionCode: 1
         ]
     }
