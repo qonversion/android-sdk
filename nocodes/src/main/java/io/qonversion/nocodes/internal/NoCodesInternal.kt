@@ -19,6 +19,20 @@ internal class NoCodesInternal(
 ) : NoCodes {
 
     private val screenController = dependenciesAssembly.screenController()
+    private val screenService = dependenciesAssembly.screenService()
+    private val logger = dependenciesAssembly.logger()
+
+    init {
+        // Automatic screen preloading during initialization
+        scope.launch {
+            try {
+                val preloadedScreens = screenService.preloadScreens()
+                logger.info("NoCodesInternal -> Successfully preloaded ${preloadedScreens.size} screens during initialization")
+            } catch (e: Exception) {
+                logger.warn("NoCodesInternal -> Failed to preload screens during initialization: ${e.message}")
+            }
+        }
+    }
 
     override fun setDelegate(delegate: NoCodesDelegate) {
         internalConfig.noCodesDelegate = NoCodesDelegateWrapper(delegate)
