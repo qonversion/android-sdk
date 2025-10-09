@@ -12,6 +12,7 @@ import io.qonversion.nocodes.internal.networkLayer.dto.Response
 import io.qonversion.nocodes.internal.networkLayer.dto.Request
 import io.qonversion.nocodes.internal.utils.ErrorUtils
 import java.net.HttpURLConnection
+import java.util.concurrent.ConcurrentHashMap
 
 internal class ScreenServiceImpl(
     private val requestConfigurator: RequestConfigurator,
@@ -21,7 +22,16 @@ internal class ScreenServiceImpl(
     logger: Logger
 ) : ScreenService, BaseClass(logger) {
 
+    private val screensById = ConcurrentHashMap<String, NoCodeScreen>()
+    private val screensByContextKey = ConcurrentHashMap<String, NoCodeScreen>()
+
     override suspend fun getScreen(contextKey: String): NoCodeScreen {
+        // Check cache first
+        screensByContextKey[contextKey]?.let { cachedScreen ->
+            logger.verbose("getScreen() -> Screen found in cache for context key: $contextKey")
+            return cachedScreen
+        }
+
         return executeWithFallback(
             requestProvider = { requestConfigurator.configureScreenRequest(contextKey) },
             fallbackProvider = { fallbackService?.loadScreen(contextKey) },
@@ -31,12 +41,53 @@ internal class ScreenServiceImpl(
     }
 
     override suspend fun getScreenById(screenId: String): NoCodeScreen {
+        // Check cache first
+        screensById[screenId]?.let { cachedScreen ->
+            logger.verbose("getScreenById() -> Screen found in cache for screen id: $screenId")
+            return cachedScreen
+        }
+
         return executeWithFallback(
             requestProvider = { requestConfigurator.configureScreenRequestById(screenId) },
             fallbackProvider = { fallbackService?.loadScreenById(screenId) },
             errorContext = "screen id: $screenId",
             methodName = "getScreenById"
         )
+    }
+
+    override suspend fun preloadScreens(): List<NoCodeScreen> {
+        return try {
+            val request = requestConfigurator.configurePreloadScreensRequest()
+            when (val response = apiInteractor.execute(request)) {
+                is Response.Success -> {
+                    if (response.arrayData.isEmpty()) {
+                        logger.info("preloadScreens() -> No screens to preload")
+                        return emptyList()
+                    }
+
+                    val screens = response.arrayData.mapNotNull { data ->
+                        mapper.fromMap(data as Map<*, *>)
+                    }
+
+                    if (screens.isNotEmpty()) {
+                        screens.forEach { screen ->
+                            screensById[screen.id] = screen
+                            screensByContextKey[screen.contextKey] = screen
+                        }
+                        logger.info("preloadScreens() -> Successfully preloaded ${screens.size} screens")
+                    }
+
+                    screens
+                }
+                is Response.Error -> {
+                    logger.warn("preloadScreens() -> Failed to preload screens: ${response.message}")
+                    emptyList()
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("preloadScreens() -> Error during preload: ${e.message}")
+            emptyList()
+        }
     }
 
     private suspend fun executeWithFallback(
@@ -68,6 +119,12 @@ internal class ScreenServiceImpl(
                     }
 
                     screen ?: throw NoCodesException(ErrorCode.Mapping)
+                    
+                    // Cache successfully loaded screen
+                    screensById[screen.id] = screen
+                    screensByContextKey[screen.contextKey] = screen
+                    
+                    screen
                 }
                 is Response.Error -> {
                     if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
