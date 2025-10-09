@@ -26,8 +26,6 @@
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
-    <ID>FinalNewline:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:1</ID>
-    <ID>FinalNewline:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:1</ID>
     <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
@@ -82,9 +80,9 @@
     <ID>MatchingDeclarationName:util.kt$Util</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20201 -&gt; "For more details please check our guide [Troubleshooting](https://documentation.qonversion.io/docs/troubleshooting)"</ID>
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
-    <ID>MaxLineLength:FallbackServiceTest.kt$FallbackServiceTest$assertNotNull(FallbackService::class.java.getDeclaredMethod("isFallbackFileAvailable", String::class.java, Context::class.java))</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
+    <ID>MaxLineLength:NoCodesInternal.kt$NoCodesInternal$logger.info("NoCodesInternal -&gt; Successfully preloaded ${preloadedScreens.size} screens during initialization")</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest.&lt;no name provided&gt;$assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)</ID>
@@ -153,19 +151,18 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:30</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:43</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
+    <ID>NestedBlockDepth:ScreenServiceImpl.kt$ScreenServiceImpl$override suspend fun preloadScreens(): List&lt;NoCodeScreen&gt;</ID>
     <ID>NestedBlockDepth:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
-    <ID>NewLineAtEndOfFile:ErrorUtilsTest.kt$io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt</ID>
-    <ID>NewLineAtEndOfFile:FallbackServiceTest.kt$io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt</ID>
     <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.internal.requests.OsRequestTest.kt</ID>
@@ -181,15 +178,6 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.QonversionConfigTest.kt:144</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:141</ID>
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:66</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:69</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:72</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:77</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:89</ID>
-    <ID>NoTrailingSpaces:io.qonversion.nocodes.internal.utils.FallbackUtils.kt:17</ID>
-    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:14</ID>
-    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:15</ID>
-    <ID>NoUnusedImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.products.QProduct.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.AdvertisingProvider.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.EnvironmentProvider.kt:11</ID>
@@ -213,8 +201,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.service.FallbackServiceTest.kt:11</ID>
-    <ID>NoWildcardImports:io.qonversion.nocodes.internal.utils.ErrorUtilsTest.kt:4</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
@@ -237,7 +223,6 @@
     <ID>SwallowedException:EnvironmentProvider.kt$EnvironmentProvider$catch (throwable: Throwable) { UNKNOWN }</ID>
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
-    <ID>SwallowedException:FallbackService.kt$FallbackService.Companion$catch (e: Exception) { false }</ID>
     <ID>SwallowedException:FallbackUtils.kt$FallbackUtils$catch (e: Exception) { false }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:ScreenFragment.kt$ScreenFragment$catch (e: ActivityNotFoundException) { logger.error("ScreenActivity -&gt; Couldn't find any Activity to handle the Intent with deeplink $url") delegate?.onActionFailedToExecute(action) }</ID>
@@ -252,11 +237,11 @@
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:ExceptionHandler.kt$ExceptionHandler$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:FallbackService.kt$FallbackService.Companion$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FallbackServiceImpl.kt$FallbackServiceImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FallbackUtils.kt$FallbackUtils$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
+    <ID>TooGenericExceptionCaught:NoCodesInternal.kt$NoCodesInternal$e: Exception</ID>
     <ID>TooGenericExceptionCaught:QExceptionManager.kt$QExceptionManager$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:QFallbacksService.kt$QFallbacksService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
@@ -284,7 +269,6 @@
     <ID>TooManyFunctions:extensions.kt$com.qonversion.android.sdk.internal.extensions.kt</ID>
     <ID>UnnecessaryAbstractClass:BaseClass.kt$BaseClass</ID>
     <ID>UnnecessaryAbstractClass:RequestData.kt$RequestData</ID>
-    <ID>UnusedPrivateMember:FallbackServiceTest.kt$FallbackServiceTest$@Mock private lateinit var mockScreen: NoCodeScreen</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QDateAdapter$@ToJson private fun toJson(date: Date): Long</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityAdapter$@ToJson private fun toJson( @Suppress("UNUSED_PARAMETER") eligibilities: Map&lt;String, QEligibility&gt; ): List&lt;ProductEligibility&gt;</ID>
     <ID>UnusedPrivateMember:QonversionMappingAdapters.kt$QEligibilityStatusAdapter$@ToJson private fun toJson(enum: QIntroEligibilityStatus): String</ID>

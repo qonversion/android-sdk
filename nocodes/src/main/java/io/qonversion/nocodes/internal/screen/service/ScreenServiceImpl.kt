@@ -119,11 +119,11 @@ internal class ScreenServiceImpl(
                     }
 
                     screen ?: throw NoCodesException(ErrorCode.Mapping)
-                    
+
                     // Cache successfully loaded screen
                     screensById[screen.id] = screen
                     screensByContextKey[screen.contextKey] = screen
-                    
+
                     screen
                 }
                 is Response.Error -> {
