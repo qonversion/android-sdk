@@ -2,13 +2,13 @@ package io.qonversion.nocodes.internal.screen.view
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.core.graphics.toColorInt
 
 /**
  * Simplified SkeletonView for integration into existing NoCodes architecture
@@ -24,10 +24,10 @@ class NoCodesSkeletonView @JvmOverloads constructor(
         private set
     private var isAnimating: Boolean = false
     
-    private val skeletonColor = Color.parseColor(SkeletonConstants.SKELETON_COLOR)
-    private val backgroundColor = Color.parseColor(SkeletonConstants.BACKGROUND_COLOR_LIGHT)
-    private val darkBackgroundColor = Color.parseColor(SkeletonConstants.BACKGROUND_COLOR_DARK)
-    
+    private val skeletonColor = SkeletonConstants.SKELETON_COLOR.toColorInt()
+    private val backgroundColor = SkeletonConstants.BACKGROUND_COLOR_LIGHT.toColorInt()
+    private val darkBackgroundColor = SkeletonConstants.BACKGROUND_COLOR_DARK.toColorInt()
+
     private val animationValues = listOf(SkeletonConstants.LIGHT_THEME_ALPHA_START, SkeletonConstants.LIGHT_THEME_ALPHA_END)
     private val darkAnimationValues = listOf(SkeletonConstants.DARK_THEME_ALPHA_START, SkeletonConstants.DARK_THEME_ALPHA_END)
     
