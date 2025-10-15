@@ -23,6 +23,10 @@ internal class ScreenContract {
         fun sendProductsToWebView(jsonData: String)
 
         fun finishScreenPreparation()
+        
+        fun showSkeleton()
+        
+        fun hideSkeleton()
     }
 
     internal interface Presenter {

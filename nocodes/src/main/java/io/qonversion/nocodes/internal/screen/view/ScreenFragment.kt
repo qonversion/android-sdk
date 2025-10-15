@@ -62,6 +62,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun displayScreen(screenId: String, html: String) {
         activity?.runOnUiThread {
+            // Скрыть скелетон перед загрузкой контента
+            binding?.skeletonView?.hideSkeleton()
+            
             binding?.webView?.loadDataWithBaseURL(
                 null,
                 html,
@@ -116,7 +119,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun purchase(productId: String, screenId: String?) {
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        binding?.skeletonView?.showSkeleton()
 
         activity?.let {
             Qonversion.shared.products(object : QonversionProductsCallback {
@@ -163,7 +166,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun restore() {
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        binding?.skeletonView?.showSkeleton()
 
         Qonversion.shared.restore(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
@@ -177,7 +180,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun close(action: QAction) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
         val wasLast = (activity as? ScreenActivity)?.goBack() ?: false
         delegate?.onActionFinishedExecuting(action)
 
@@ -187,7 +190,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun closeAll(action: QAction) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
         activity?.finish()
         delegate?.onActionFinishedExecuting(action)
         delegate?.onFinished()
@@ -199,7 +202,15 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun finishScreenPreparation() {
         binding?.webView?.visibility = View.VISIBLE
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
+    }
+
+    override fun showSkeleton() {
+        binding?.skeletonView?.showSkeleton()
+    }
+
+    override fun hideSkeleton() {
+        binding?.skeletonView?.hideSkeleton()
     }
 
     @JavascriptInterface
@@ -235,7 +246,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         description: String,
         actionResult: QAction
     ) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
         logger.error("ScreenActivity $functionName -> $description")
         delegate?.onActionFailedToExecute(actionResult)
     }
