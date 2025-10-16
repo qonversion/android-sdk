@@ -35,6 +35,8 @@ internal class ScreenPresenter(
     private var currentScreen: NoCodeScreen? = null
 
     override fun onStart(contextKey: String?, screenId: String?) {
+        view.showSkeleton()
+
         scope.launch {
             logger.verbose("ScreenPresenter -> loading the screen to present")
 
@@ -56,6 +58,12 @@ internal class ScreenPresenter(
                 logger.error("ScreenPresenter -> Failed to fetch No-Code screen. $e")
 
                 delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(e))
+
+                return@launch
+            } catch (e: Exception) {
+                logger.error("ScreenPresenter -> Unexpected error while fetching screen. $e")
+
+                delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(ErrorCode.BackendError, e.message ?: "Unknown error"))
 
                 return@launch
             }
@@ -98,6 +106,7 @@ internal class ScreenPresenter(
             }
             QAction.Type.ShowScreen -> {
                 view.finishScreenPreparation()
+                view.hideSkeleton()
             }
             QAction.Type.Navigation -> {
                 action.parameters?.get(QAction.Parameter.ScreenId)?.let { screenId ->
