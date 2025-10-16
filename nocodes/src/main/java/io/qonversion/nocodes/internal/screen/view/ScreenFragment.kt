@@ -202,7 +202,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun finishScreenPreparation() {
         binding?.webView?.visibility = View.VISIBLE
-        binding?.skeletonView?.hideSkeleton()
+        hideSkeleton()
     }
 
     override fun showSkeleton() {

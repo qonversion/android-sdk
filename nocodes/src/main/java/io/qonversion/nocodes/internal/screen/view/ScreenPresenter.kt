@@ -35,10 +35,10 @@ internal class ScreenPresenter(
     private var currentScreen: NoCodeScreen? = null
 
     override fun onStart(contextKey: String?, screenId: String?) {
+        view.showSkeleton()
+
         scope.launch {
             logger.verbose("ScreenPresenter -> loading the screen to present")
-            
-            view.showSkeleton()
 
             val screen = try { contextKey?.let {
                     service.getScreen(contextKey)
