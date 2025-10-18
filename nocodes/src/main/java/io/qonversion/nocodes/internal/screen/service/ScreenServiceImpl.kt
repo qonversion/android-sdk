@@ -100,20 +100,23 @@ internal class ScreenServiceImpl(
             val request = requestProvider()
             return when (val response = apiInteractor.execute(request)) {
                 is Response.Success -> {
+                    val arrayData = response.arrayData
+                    val mapData = response.mapData
+
                     // Check if response has any data
-                    if (response.arrayData.isEmpty() && response.mapData.isEmpty()) {
+                    if (arrayData.isNullOrEmpty() && mapData.isNullOrEmpty()) {
                         throw NoCodesException(ErrorCode.ScreenNotFound, errorContext)
                     }
 
                     val screen = when {
-                        response.arrayData.isNotEmpty() -> {
+                        arrayData?.isNotEmpty() == true -> {
                             // Handle array response (for context key requests)
-                            mapper.fromMap(response.arrayData[0] as Map<*, *>)
+                            mapper.fromMap(arrayData[0] as Map<*, *>)
                         }
-                        response.mapData.isNotEmpty() -> {
+                        mapData?.isNotEmpty() == true -> {
                             // Handle map response (for screen ID requests)
                             logger.verbose("$methodName -> mapping the screen from the API")
-                            mapper.fromMap(response.mapData)
+                            mapper.fromMap(mapData)
                         }
                         else -> null
                     }
