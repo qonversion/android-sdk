@@ -1,6 +1,5 @@
 package io.qonversion.nocodes.internal.networkLayer.dto
 
-import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesException
 
 internal sealed class Response(
@@ -15,17 +14,11 @@ internal sealed class Response(
 
     class Success(code: Int, val data: Any) : Response(code) {
 
-        val mapData: Map<*, *> get() = getTypedData()
+        val mapData: Map<*, *>? get() = getTypedData()
 
-        val arrayData: List<*> get() = getTypedData()
+        val arrayData: List<*>? get() = getTypedData()
 
         @Throws(NoCodesException::class)
-        inline fun <reified T> getTypedData(): T {
-            return if (data is T) {
-                data
-            } else {
-                throw NoCodesException(ErrorCode.Mapping, "Unexpected data type.")
-            }
-        }
+        inline fun <reified T> getTypedData() = data as? T
     }
 }
