@@ -23,6 +23,6 @@ internal class RequestConfiguratorImpl(
     override fun configurePreloadScreensRequest(): Request {
         val headers = headerBuilder.buildCommonHeaders()
 
-        return Request.get("${baseUrl}v3/${ApiEndpoint.Preload.path}?preload=true", headers)
+        return Request.get("${baseUrl}v3/${ApiEndpoint.Screens.path}?preload=true", headers)
     }
 }

@@ -60,12 +60,13 @@ internal class ScreenServiceImpl(
             val request = requestConfigurator.configurePreloadScreensRequest()
             when (val response = apiInteractor.execute(request)) {
                 is Response.Success -> {
-                    if (response.arrayData.isEmpty()) {
+                    val arrayData = response.arrayData
+                    if (arrayData.isNullOrEmpty()) {
                         logger.info("preloadScreens() -> No screens to preload")
                         return emptyList()
                     }
 
-                    val screens = response.arrayData.mapNotNull { data ->
+                    val screens = arrayData.mapNotNull { data ->
                         mapper.fromMap(data as Map<*, *>)
                     }
 
