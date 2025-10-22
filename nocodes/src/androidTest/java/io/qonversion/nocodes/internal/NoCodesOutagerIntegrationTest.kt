@@ -193,7 +193,7 @@ internal class NoCodesOutagerIntegrationTest {
             ApplicationProvider.getApplicationContext(),
             projectKey
         )
-            .setProxyURL("https://outager-dev.qonversion.workers.dev/")
+            .setProxyURL("<paste outager link here>")
             .setLogLevel(LogLevel.Verbose)
             .build()
 
