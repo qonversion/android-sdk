@@ -9,10 +9,9 @@ enum class QPurchaseCompletionType {
      * Legacy callback type with separate parameters for entitlements, error, and cancellation status
      */
     LEGACY,
-    
+
     /**
      * New result-based callback type with a single PurchaseResult object
      */
     RESULT
 }
-

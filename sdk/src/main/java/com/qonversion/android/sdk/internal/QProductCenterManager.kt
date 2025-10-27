@@ -420,7 +420,7 @@ internal class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[purchaseOptions.product.storeId]
         val purchasingResultCallback = purchasingResultCallbacks[purchaseOptions.product.storeId]
-        
+
         if (purchasingCallback != null || purchasingResultCallback != null) {
             logger.release(
                 "purchaseProduct() -> Purchase of the product " +
@@ -439,7 +439,7 @@ internal class QProductCenterManager internal constructor(
                     override fun onSuccess(result: QPurchaseResult) {
                         callback.onSuccess(result.entitlements, result.purchase!!)
                     }
-                    
+
                     override fun onError(result: QPurchaseResult) {
                         callback.onError(result.error!!)
                     }
@@ -466,7 +466,7 @@ internal class QProductCenterManager internal constructor(
 
         val purchasingCallback = purchasingCallbacks[purchaseOptions.product.storeId]
         val purchasingResultCallback = purchasingResultCallbacks[purchaseOptions.product.storeId]
-        
+
         if (purchasingCallback != null || purchasingResultCallback != null) {
             logger.release(
                 "purchaseProduct() -> Purchase of the product " +
@@ -483,12 +483,12 @@ internal class QProductCenterManager internal constructor(
                         val result = QPurchaseResult(entitlements, purchase)
                         callback.onSuccess(result)
                     }
-                    
+
                     override fun onSuccess(entitlements: Map<String, QEntitlement>) {
                         val result = QPurchaseResult(entitlements, null, null, false)
                         callback.onSuccess(result)
                     }
-                    
+
                     override fun onError(error: QonversionError) {
                         val result = QPurchaseResult(error, false)
                         callback.onError(result)
@@ -615,16 +615,16 @@ internal class QProductCenterManager internal constructor(
         // Handle user cancellation for all pending purchases
         val legacyCallbacks = purchasingCallbacks.toMap()
         val resultCallbacks = purchasingResultCallbacks.toMap()
-        
+
         purchasingCallbacks.clear()
         purchasingResultCallbacks.clear()
-        
+
         // Call all legacy callbacks with cancellation
         legacyCallbacks.values.forEach {
             @Suppress("UNNECESSARY_SAFE_CALL")
             it?.onError(QonversionError(QonversionErrorCode.PurchaseCanceled))
         }
-        
+
         // Call all result callbacks with cancellation
         resultCallbacks.values.forEach {
             @Suppress("UNNECESSARY_SAFE_CALL")
@@ -637,13 +637,13 @@ internal class QProductCenterManager internal constructor(
             purchases.forEach { purchase ->
                 val purchaseCallback = purchasingCallbacks[purchase.productId]
                 val purchaseResultCallback = purchasingResultCallbacks[purchase.productId]
-                
+
                 // Remove both callbacks
                 purchasingCallbacks.remove(purchase.productId)
                 purchasingResultCallbacks.remove(purchase.productId)
-                
+
                 val qonversionError = error.toQonversionError()
-                
+
                 // Call both callback types if they exist
                 purchaseCallback?.onError(qonversionError)
                 purchaseResultCallback?.onError(QPurchaseResult(qonversionError, false))
@@ -652,18 +652,18 @@ internal class QProductCenterManager internal constructor(
             // Handle all pending purchases
             val legacyCallbacks = purchasingCallbacks.toMap()
             val resultCallbacks = purchasingResultCallbacks.toMap()
-            
+
             purchasingCallbacks.clear()
             purchasingResultCallbacks.clear()
-            
+
             val qonversionError = error.toQonversionError()
-            
+
             // Call all legacy callbacks
             legacyCallbacks.values.forEach {
                 @Suppress("UNNECESSARY_SAFE_CALL")
                 it?.onError(qonversionError)
             }
-            
+
             // Call all result callbacks
             resultCallbacks.values.forEach {
                 @Suppress("UNNECESSARY_SAFE_CALL")
@@ -731,9 +731,9 @@ internal class QProductCenterManager internal constructor(
             purchasedProduct,
             productPermissions
         )
-        
+
         val entitlements = permissions.toEntitlementsMap()
-        
+
         // Call both callback types if they exist
         purchaseCallback?.onSuccess(entitlements, purchase)
         purchaseResultCallback?.onSuccess(QPurchaseResult(entitlements, purchase))
@@ -745,7 +745,7 @@ internal class QProductCenterManager internal constructor(
         error: QonversionError
     ) {
         launchResultCache.clearPermissionsCache()
-        
+
         // Call both callback types if they exist
         callback?.onError(error)
         purchaseResultCallback?.onError(QPurchaseResult(error, false))
@@ -1225,7 +1225,7 @@ internal class QProductCenterManager internal constructor(
         purchases.forEach { purchase ->
             val purchaseCallback = purchasingCallbacks[purchase.productId]
             val purchaseResultCallback = purchasingResultCallbacks[purchase.productId]
-            
+
             // Remove both callbacks to prevent duplicate processing
             purchasingCallbacks.remove(purchase.productId)
             purchasingResultCallbacks.remove(purchase.productId)
@@ -1268,12 +1268,12 @@ internal class QProductCenterManager internal constructor(
                         // Call both callback types if they exist
                         purchaseCallback?.onSuccess(entitlements, purchase)
                         purchaseResultCallback?.onSuccess(QPurchaseResult(entitlements, purchase))
-                        
+
                         // If no callbacks, notify entitlements update listener
                         if (purchaseCallback == null && purchaseResultCallback == null) {
                             internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
                         }
-                        
+
                         handledPurchasesCache.saveHandledPurchase(purchase)
                     }
 

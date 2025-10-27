@@ -306,7 +306,7 @@ internal class QonversionBillingService internal constructor(
             purchasesListener.onPurchasesCompleted(purchases)
         } else {
             val errorMessage = billingResult.getDescription()
-            
+
             // Check if user canceled the purchase
             if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
                 logger.debug("onPurchasesUpdated() -> user canceled purchase")

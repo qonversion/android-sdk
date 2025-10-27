@@ -86,7 +86,7 @@ interface QonversionEmptyCallback {
  * Callback interface for purchase operations that return a single PurchaseResult object.
  * This is the new recommended way to handle purchase results as it provides
  * all relevant information in a single object.
- * 
+ *
  * @see QPurchaseResult for details about the result object
  */
 interface QonversionPurchaseResultCallback {
@@ -95,7 +95,7 @@ interface QonversionPurchaseResultCallback {
      * @param result PurchaseResult containing entitlements and purchase details
      */
     fun onSuccess(result: QPurchaseResult)
-    
+
     /**
      * Called when the purchase operation fails
      * @param result PurchaseResult containing error information
