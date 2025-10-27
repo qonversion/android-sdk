@@ -225,7 +225,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         error: QonversionError,
         actionResult: QAction
     ) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         actionResult.error = NoCodesError(error)
 
         handleOnErrorCallback(
@@ -240,6 +239,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         description: String,
         actionResult: QAction
     ) {
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         binding?.skeletonView?.hideSkeleton()
         logger.error("ScreenActivity $functionName -> $description")
         delegate?.onActionFailedToExecute(actionResult)
