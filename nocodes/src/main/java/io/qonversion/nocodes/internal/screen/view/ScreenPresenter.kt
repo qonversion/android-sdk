@@ -35,8 +35,6 @@ internal class ScreenPresenter(
     private var currentScreen: NoCodeScreen? = null
 
     override fun onStart(contextKey: String?, screenId: String?) {
-        view.showSkeleton()
-
         scope.launch {
             logger.verbose("ScreenPresenter -> loading the screen to present")
 
@@ -106,7 +104,6 @@ internal class ScreenPresenter(
             }
             QAction.Type.ShowScreen -> {
                 view.finishScreenPreparation()
-                view.hideSkeleton()
             }
             QAction.Type.Navigation -> {
                 action.parameters?.get(QAction.Parameter.ScreenId)?.let { screenId ->

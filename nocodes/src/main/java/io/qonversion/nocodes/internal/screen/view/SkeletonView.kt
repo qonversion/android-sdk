@@ -19,12 +19,12 @@ class SkeletonView @JvmOverloads constructor(
     init {
         skeletonView = NoCodesSkeletonView(context)
         addView(skeletonView)
-        
+
         // Automatically detect system theme
-        val isDarkTheme = (resources.configuration.uiMode and 
+        val isDarkTheme = (resources.configuration.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         skeletonView.setDarkTheme(isDarkTheme)
-        
+
         // Skeleton is hidden by default
         visibility = GONE
     }
@@ -35,7 +35,7 @@ class SkeletonView @JvmOverloads constructor(
     fun showSkeleton() {
         visibility = VISIBLE
         android.util.Log.d("SkeletonView", "showSkeleton() called")
-        
+
         // Start animation
         skeletonView.setAnimating(true)
     }
@@ -66,15 +66,13 @@ class SkeletonView @JvmOverloads constructor(
     fun setAnimating(animating: Boolean) {
         skeletonView.setAnimating(animating)
     }
-    
+
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
-        
+
         // Update theme when configuration changes
-        val isDarkTheme = (newConfig.uiMode and 
+        val isDarkTheme = (newConfig.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         skeletonView.setDarkTheme(isDarkTheme)
     }
 }
-
-
