@@ -115,6 +115,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun purchase(productId: String, screenId: String?) {
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
 
@@ -161,6 +163,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun restore() {
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
 
@@ -176,7 +180,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun close(action: QAction) {
-        binding?.skeletonView?.hideSkeleton()
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         val wasLast = (activity as? ScreenActivity)?.goBack() ?: false
         delegate?.onActionFinishedExecuting(action)
 
@@ -186,7 +190,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun closeAll(action: QAction) {
-        binding?.skeletonView?.hideSkeleton()
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         activity?.finish()
         delegate?.onActionFinishedExecuting(action)
         delegate?.onFinished()
@@ -197,6 +201,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun finishScreenPreparation() {
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         binding?.webView?.visibility = View.VISIBLE
         binding?.skeletonView?.hideSkeleton()
     }
@@ -220,6 +225,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         error: QonversionError,
         actionResult: QAction
     ) {
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         actionResult.error = NoCodesError(error)
 
         handleOnErrorCallback(

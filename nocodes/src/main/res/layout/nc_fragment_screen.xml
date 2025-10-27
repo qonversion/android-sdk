@@ -10,6 +10,10 @@
         android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <include
+        android:id="@+id/progressBarLayout"
+        android:visibility="visible"
+        layout="@layout/nc_progress_bar"/>
     <io.qonversion.nocodes.internal.screen.view.SkeletonView
         android:id="@+id/skeletonView"
         android:layout_width="match_parent"
