@@ -38,6 +38,8 @@ import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -186,6 +188,27 @@ internal class QonversionInternal(
             PurchaseOptionsInternal(product, options),
             mainPurchaseCallback(callback)
         )
+    }
+
+    override fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions?,
+        callback: QonversionPurchaseResultCallback
+    ) {
+        productCenterManager.purchaseProduct(
+            context,
+            PurchaseOptionsInternal(product, options),
+            mainPurchaseResultCallback(callback)
+        )
+    }
+
+    override fun purchase(
+        context: Activity,
+        product: QProduct,
+        callback: QonversionPurchaseResultCallback
+    ) {
+        purchase(context, product, null, callback)
     }
 
     override fun products(callback: QonversionProductsCallback) {
@@ -391,6 +414,15 @@ internal class QonversionInternal(
                 postToMainThread { purchaseCallback.onError(error) }
         }
     }
+
+    private fun mainPurchaseResultCallback(callback: QonversionPurchaseResultCallback): QonversionPurchaseResultCallback =
+        object : QonversionPurchaseResultCallback {
+            override fun onSuccess(result: QPurchaseResult) =
+                postToMainThread { callback.onSuccess(result) }
+
+            override fun onError(result: QPurchaseResult) =
+                postToMainThread { callback.onError(result) }
+        }
 
     private fun mainUserCallback(callback: QonversionUserCallback): QonversionUserCallback =
         object : QonversionUserCallback {

@@ -25,6 +25,8 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -303,18 +305,37 @@ class HomeFragment : Fragment(), NoCodesDelegate {
         Qonversion.shared.purchase(
             requireActivity(),
             product,
-            object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    when (product.qonversionId) {
-                        subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
-                        inAppProductId -> binding.buttonInApp.toSuccessState()
+            object : QonversionPurchaseResultCallback {
+                override fun onSuccess(result: QPurchaseResult) {
+                    if (result.isSuccess) {
+                        when (product.qonversionId) {
+                            subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
+                            inAppProductId -> binding.buttonInApp.toSuccessState()
+                        }
+                        Toast.makeText(requireContext(), "Purchase successful!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        handlePurchaseResult(result)
                     }
                 }
 
-                override fun onError(error: QonversionError) {
-                    showError(requireContext(), error, TAG)
+                override fun onError(result: QPurchaseResult) {
+                    handlePurchaseResult(result)
                 }
             })
+    }
+
+    private fun handlePurchaseResult(result: QPurchaseResult) {
+        when {
+            result.isCanceled -> {
+                Toast.makeText(requireContext(), "Purchase canceled by user", Toast.LENGTH_SHORT).show()
+            }
+            result.error != null -> {
+                showError(requireContext(), result.error!!, TAG)
+            }
+            else -> {
+                Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {

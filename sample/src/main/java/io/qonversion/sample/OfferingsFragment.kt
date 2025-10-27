@@ -16,6 +16,8 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import io.qonversion.sample.databinding.FragmentOfferingsBinding
 
 private const val TAG = "OfferingsFragment"
@@ -58,15 +60,40 @@ class OfferingsFragment : Fragment() {
     }
 
     private fun purchase(product: QProduct) {
-        Qonversion.shared.purchase(requireActivity(), product, callback = object :
-            QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
-            }
+        Qonversion.shared.purchase(
+            requireActivity(),
+            product,
+            object : QonversionPurchaseResultCallback {
+                override fun onSuccess(result: QPurchaseResult) {
+                    when {
+                        result.isSuccess -> {
+                            Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
+                        }
+                        result.isCanceled -> {
+                            Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
+                        }
+                        result.error != null -> {
+                            showError(requireContext(), result.error!!, TAG)
+                        }
+                        else -> {
+                            Toast.makeText(context, "Purchase failed", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
 
-            override fun onError(error: QonversionError) {
-                showError(requireContext(), error, TAG)
-            }
-        })
+                override fun onError(result: QPurchaseResult) {
+                    when {
+                        result.isCanceled -> {
+                            Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
+                        }
+                        result.error != null -> {
+                            showError(requireContext(), result.error!!, TAG)
+                        }
+                        else -> {
+                            Toast.makeText(context, "Purchase failed", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            })
     }
 }

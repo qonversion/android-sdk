@@ -19,6 +19,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
 
 interface Qonversion {
 
@@ -121,6 +122,40 @@ interface Qonversion {
         product: QProduct,
         options: QPurchaseOptions,
         callback: QonversionEntitlementsCallback
+    )
+
+    /**
+     * Purchase a product and validate it through server-to-server using Qonversion's Backend.
+     * This is the new recommended method that returns a single PurchaseResult object containing
+     * all relevant information about the purchase outcome.
+     * @param context current activity context
+     * @param product product for purchase
+     * @param options optional purchase options (can be null)
+     * @param callback callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @see QPurchaseResult for details about the result object
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions?,
+        callback: QonversionPurchaseResultCallback
+    )
+
+    /**
+     * Purchase a product and validate it through server-to-server using Qonversion's Backend.
+     * This is the new recommended method that returns a single PurchaseResult object containing
+     * all relevant information about the purchase outcome.
+     * @param context current activity context
+     * @param product product for purchase
+     * @param callback callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @see QPurchaseResult for details about the result object
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        callback: QonversionPurchaseResultCallback
     )
 
     /**
