@@ -48,6 +48,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
         configureWebClient()
 
+        binding?.skeletonView?.showSkeleton()
         binding?.webView?.visibility = View.GONE
         presenter.onStart(
             arguments?.getString(EX_CONTEXT_KEY),
@@ -114,9 +115,10 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun purchase(productId: String, screenId: String?) {
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         activity?.let {
             Qonversion.shared.products(object : QonversionProductsCallback {
@@ -161,9 +163,10 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun restore() {
+        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         Qonversion.shared.restore(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
@@ -198,8 +201,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun finishScreenPreparation() {
-        binding?.webView?.visibility = View.VISIBLE
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.webView?.visibility = View.VISIBLE
+        binding?.skeletonView?.hideSkeleton()
     }
 
     @JavascriptInterface
@@ -236,6 +240,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         actionResult: QAction
     ) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
         logger.error("ScreenActivity $functionName -> $description")
         delegate?.onActionFailedToExecute(actionResult)
     }

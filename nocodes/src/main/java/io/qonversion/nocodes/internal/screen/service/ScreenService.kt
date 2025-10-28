@@ -10,4 +10,6 @@ internal interface ScreenService {
 
     @Throws(NoCodesException::class)
     suspend fun getScreenById(screenId: String): NoCodeScreen
+
+    suspend fun preloadScreens(): List<NoCodeScreen>
 }

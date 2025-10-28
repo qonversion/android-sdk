@@ -18,14 +18,18 @@ internal class ServicesAssemblyImpl(
     private val effectiveFallbackFileName: String
 ) : ServicesAssembly {
 
-    override fun screenService(): ScreenService {
-        return ScreenServiceImpl(
+    private val screenServiceInstance by lazy {
+        ScreenServiceImpl(
             networkAssembly.requestConfigurator(),
             networkAssembly.exponentialApiInteractor(),
             mappersAssembly.screenMapper(),
             fallbackService(),
             miscAssembly.logger()
         )
+    }
+
+    override fun screenService(): ScreenService {
+        return screenServiceInstance
     }
 
     override fun fallbackService(): FallbackService? {

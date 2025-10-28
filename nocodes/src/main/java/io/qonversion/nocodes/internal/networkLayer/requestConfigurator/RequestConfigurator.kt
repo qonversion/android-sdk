@@ -7,4 +7,6 @@ internal interface RequestConfigurator {
     fun configureScreenRequest(contextKey: String): Request
 
     fun configureScreenRequestById(screenId: String): Request
+
+    fun configurePreloadScreensRequest(): Request
 }
