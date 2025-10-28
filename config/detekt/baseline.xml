@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>CommentSpacing:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:171</ID>
+    <ID>ComplexMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
     <ID>ComplexMethod:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
@@ -28,6 +29,7 @@
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>ImplicitDefaultLocale:HomeFragment.kt$HomeFragment$String.format( "%s %s", getStr(R.string.buy_for), inApp.prettyPrice )</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
+    <ID>LongMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
@@ -59,6 +61,12 @@
     <ID>MagicNumber:LogLevel.kt$LogLevel.Error$30</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Info$10</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Warning$20</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView$0.02f</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView$100</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView$3</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView$4</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView$40</ID>
+    <ID>MagicNumber:NoCodesSkeletonView.kt$NoCodesSkeletonView.&lt;no name provided&gt;$20</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.Month$30</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.SixMonths$180</ID>
     <ID>MagicNumber:QEntitlementsCacheLifetime.kt$QEntitlementsCacheLifetime.ThreeMonths$90</ID>
@@ -83,6 +91,12 @@
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
     <ID>MaxLineLength:NoCodesInternal.kt$NoCodesInternal$logger.info("NoCodesInternal -&gt; Successfully preloaded ${preloadedScreens.size} screens during initialization")</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val animationValues = listOf(SkeletonConstants.LIGHT_THEME_ALPHA_START, SkeletonConstants.LIGHT_THEME_ALPHA_END)</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val darkAnimationValues = listOf(SkeletonConstants.DARK_THEME_ALPHA_START, SkeletonConstants.DARK_THEME_ALPHA_END)</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$topMargin = dpToPx(SkeletonConstants.MID_LAYER_TOP_OFFSET_DP + SkeletonConstants.MID_LAYER_HEIGHT_DP + SkeletonConstants.MID_CONTAINER_TOP_OFFSET_DP)</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$val availableWidth = screenWidth - dpToPx(SkeletonConstants.DEFAULT_OFFSET_DP * 2) - dpToPx(SkeletonConstants.MIDDLE_SIZE_LAYERS_BETWEEN_SPACE_DP) // padding + spacing</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$val botAvailableWidth = screenWidth - dpToPx(SkeletonConstants.DEFAULT_OFFSET_DP * 2) - dpToPx(SkeletonConstants.BOT_LAYER_OFFSET_DP * 2) // padding + 2*8dp spacing</ID>
+    <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$val spacerHeight = if (rowIndex == 1) SkeletonConstants.MID_CONTAINER_VIEWS_SPACE_DP else SkeletonConstants.MIDDLE_SIZE_LAYERS_TOP_SPACE_DP</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest.&lt;no name provided&gt;$assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)</ID>
@@ -109,6 +123,7 @@
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:ScreenControllerImpl.kt$ScreenControllerImpl$val error = NoCodesError(ErrorCode.ActivityStart, "Failed to open the screen with the context key $contextKey")</ID>
     <ID>MaxLineLength:ScreenFragment.kt$ScreenFragment$binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\", {detail: $jsonData} ))", null)</ID>
+    <ID>MaxLineLength:ScreenPresenter.kt$ScreenPresenter$delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(ErrorCode.BackendError, e.message ?: "Unknown error"))</ID>
     <ID>MaxLineLength:ScreenPresenter.kt$ScreenPresenter$logger.verbose("ScreenPresenter -&gt; displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong available offerings size value", 1, realValue?.offerings?.availableOfferings?.size) }</ID>
     <ID>MaxLineLength:SharedPreferencesCacheTest.kt$SharedPreferencesCacheTest.Object${ Assert.assertEquals("Wrong offering products value", expectedValue.offerings?.main?.products, realValue?.offerings?.main?.products) }</ID>
@@ -153,9 +168,17 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:30</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:197</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:118</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:144</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:31</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:32</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:78</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:89</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:200</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:70</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
+    <ID>MemberNameEqualsClassName:SkeletonView.kt$SkeletonView$private val skeletonView: NoCodesSkeletonView</ID>
     <ID>NestedBlockDepth:ActionMapper.kt$ActionMapper$override fun fromMap(data: Map&lt;*, *&gt;): QAction</ID>
     <ID>NestedBlockDepth:ApiErrorMapper.kt$ApiErrorMapper$fun &lt;T&gt; getErrorFromResponse(value: Response&lt;T&gt;): QonversionError</ID>
     <ID>NestedBlockDepth:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
@@ -201,6 +224,7 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
+    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.view.SkeletonManager.kt:3</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
@@ -256,6 +280,7 @@
     <ID>TooManyFunctions:DefaultRepository.kt$DefaultRepository : QRepository</ID>
     <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : FragmentNoCodesDelegate</ID>
     <ID>TooManyFunctions:LaunchResultCacheWrapper.kt$LaunchResultCacheWrapper</ID>
+    <ID>TooManyFunctions:NoCodesSkeletonView.kt$NoCodesSkeletonView : FrameLayout</ID>
     <ID>TooManyFunctions:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>TooManyFunctions:QRemoteConfigManager.kt$QRemoteConfigManager</ID>
     <ID>TooManyFunctions:QRepository.kt$QRepository</ID>
@@ -290,5 +315,6 @@
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:QProduct.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
+    <ID>WildcardImport:SkeletonManager.kt$import kotlinx.coroutines.*</ID>
   </CurrentIssues>
 </SmellBaseline>
