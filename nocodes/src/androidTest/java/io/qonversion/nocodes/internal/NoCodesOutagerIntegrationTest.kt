@@ -46,6 +46,7 @@ internal class NoCodesOutagerIntegrationTest {
                 assertNotNull("Screen should not be null", screen)
                 assertEquals("Context key should match", VALID_CONTEXT_KEY, screen.contextKey)
                 assertEquals("Screen ID should match", ID_FOR_SCREEN_BY_CONTEXT_KEY, screen.id)
+                assertNotNull("Screen content should exist", screen.body)
 
                 signal.countDown()
             } catch (e: Exception) {
@@ -122,6 +123,7 @@ internal class NoCodesOutagerIntegrationTest {
                 assertNotNull("Screen should not be null", screen)
                 assertEquals("Screen ID should match", VALID_SCREEN_ID, screen.id)
                 assertEquals("Context key should march", CONTEXT_KEY_FOR_SCREEN_BY_ID, screen.contextKey)
+                assertNotNull("Screen content should exist", screen.body)
 
                 signal.countDown()
             } catch (e: Exception) {
@@ -175,9 +177,11 @@ internal class NoCodesOutagerIntegrationTest {
 
                 assertEquals("Screen ID for second screen should match", ID_FOR_SCREEN_BY_CONTEXT_KEY, screens[0].id)
                 assertEquals("Context key for second screen should match", VALID_CONTEXT_KEY, screens[0].contextKey)
+                assertNotNull("First screen content should exist", screens[0].body)
 
                 assertEquals("Screen ID for first screen should match", VALID_SCREEN_ID, screens[1].id)
                 assertEquals("Context key for first screen should match", CONTEXT_KEY_FOR_SCREEN_BY_ID, screens[1].contextKey)
+                assertNotNull("Second screen content should exist", screens[1].body)
 
                 signal.countDown()
             } catch (e: Exception) {
