@@ -145,7 +145,7 @@ internal class ScreenServiceImpl(
             if (ErrorUtils.shouldTriggerFallback(e)) {
                 logger.warn("$methodName() -> Network/Server error detected, attempting fallback: ${e.message}")
 
-                fallbackService?.let { service ->
+                fallbackService?.let {
                     try {
                         val fallbackScreen = fallbackProvider()
                         if (fallbackScreen != null) {

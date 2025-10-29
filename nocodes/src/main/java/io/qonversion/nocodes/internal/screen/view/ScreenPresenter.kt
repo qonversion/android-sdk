@@ -58,6 +58,12 @@ internal class ScreenPresenter(
                 delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(e))
 
                 return@launch
+            } catch (e: Exception) {
+                logger.error("ScreenPresenter -> Unexpected error while fetching screen. $e")
+
+                delegateProvider.noCodesDelegate?.onScreenFailedToLoad(NoCodesError(ErrorCode.BackendError, e.message ?: "Unknown error"))
+
+                return@launch
             }
 
             currentScreen = screen
