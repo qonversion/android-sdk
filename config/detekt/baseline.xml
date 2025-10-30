@@ -90,7 +90,9 @@
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
+    <ID>MaxLineLength:NoCodesIntegrationTest.kt$NoCodesIntegrationTest$assertEquals("Context key for first screen should match", CONTEXT_KEY_FOR_SCREEN_BY_ID, screens[1].contextKey)</ID>
     <ID>MaxLineLength:NoCodesInternal.kt$NoCodesInternal$logger.info("NoCodesInternal -&gt; Successfully preloaded ${preloadedScreens.size} screens during initialization")</ID>
+    <ID>MaxLineLength:NoCodesOutagerIntegrationTest.kt$NoCodesOutagerIntegrationTest$assertEquals("Context key for first screen should match", CONTEXT_KEY_FOR_SCREEN_BY_ID, screens[1].contextKey)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val animationValues = listOf(SkeletonConstants.LIGHT_THEME_ALPHA_START, SkeletonConstants.LIGHT_THEME_ALPHA_END)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val darkAnimationValues = listOf(SkeletonConstants.DARK_THEME_ALPHA_START, SkeletonConstants.DARK_THEME_ALPHA_END)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$topMargin = dpToPx(SkeletonConstants.MID_LAYER_TOP_OFFSET_DP + SkeletonConstants.MID_LAYER_HEIGHT_DP + SkeletonConstants.MID_CONTAINER_TOP_OFFSET_DP)</ID>
@@ -166,7 +168,9 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesIntegrationTest.kt:263</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:30</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesOutagerIntegrationTest.kt:183</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:118</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:144</ID>
@@ -224,7 +228,6 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.view.SkeletonManager.kt:3</ID>
     <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
@@ -315,6 +318,5 @@
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:QProduct.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
-    <ID>WildcardImport:SkeletonManager.kt$import kotlinx.coroutines.*</ID>
   </CurrentIssues>
 </SmellBaseline>
