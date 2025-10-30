@@ -11,6 +11,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.properties.QUserProperties
+import com.qonversion.android.sdk.dto.QPurchaseResult
 
 internal interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -79,4 +80,18 @@ interface QonversionUserPropertiesCallback {
 interface QonversionEmptyCallback {
 
    fun onComplete()
+}
+
+/**
+ * Callback interface for purchase operations that return a single PurchaseResult object.
+ * This is the new recommended way to handle purchase results as it provides
+ * all relevant information in a single object.
+ *
+ * @see QPurchaseResult for details about the result object
+ */
+interface QonversionPurchaseResultCallback {
+    /**
+     * Unified result callback for both success and error cases.
+     */
+    fun onResult(result: QPurchaseResult)
 }

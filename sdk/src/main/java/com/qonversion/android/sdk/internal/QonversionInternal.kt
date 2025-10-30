@@ -38,6 +38,9 @@ import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
+import com.qonversion.android.sdk.internal.purchase.InternalPurchaseCallbackFactory
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -156,10 +159,11 @@ internal class QonversionInternal(
         options: QPurchaseOptions,
         callback: QonversionEntitlementsCallback
     ) {
+        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product, options),
-            mainPurchaseCallback(callback)
+            internalCb
         )
     }
 
@@ -168,10 +172,11 @@ internal class QonversionInternal(
         product: QProduct,
         callback: QonversionEntitlementsCallback
     ) {
+        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product),
-            mainPurchaseCallback(callback)
+            internalCb
         )
     }
 
@@ -181,11 +186,34 @@ internal class QonversionInternal(
         options: QPurchaseOptions,
         callback: QonversionEntitlementsCallback
     ) {
+        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product, options),
-            mainPurchaseCallback(callback)
+            internalCb
         )
+    }
+
+    override fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions?,
+        callback: QonversionPurchaseResultCallback
+    ) {
+        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseResultCallback(callback))
+        productCenterManager.purchaseProduct(
+            context,
+            PurchaseOptionsInternal(product, options),
+            internalCb
+        )
+    }
+
+    override fun purchase(
+        context: Activity,
+        product: QProduct,
+        callback: QonversionPurchaseResultCallback
+    ) {
+        purchase(context, product, null, callback)
     }
 
     override fun products(callback: QonversionProductsCallback) {
@@ -391,6 +419,12 @@ internal class QonversionInternal(
                 postToMainThread { purchaseCallback.onError(error) }
         }
     }
+
+    private fun mainPurchaseResultCallback(callback: QonversionPurchaseResultCallback): QonversionPurchaseResultCallback =
+        object : QonversionPurchaseResultCallback {
+            override fun onResult(result: QPurchaseResult) =
+                postToMainThread { callback.onResult(result) }
+        }
 
     private fun mainUserCallback(callback: QonversionUserCallback): QonversionUserCallback =
         object : QonversionUserCallback {
