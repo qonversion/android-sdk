@@ -91,14 +91,7 @@ interface QonversionEmptyCallback {
  */
 interface QonversionPurchaseResultCallback {
     /**
-     * Called when the purchase operation completes successfully
-     * @param result PurchaseResult containing entitlements and purchase details
+     * Unified result callback for both success and error cases.
      */
-    fun onSuccess(result: QPurchaseResult)
-
-    /**
-     * Called when the purchase operation fails
-     * @param result PurchaseResult containing error information
-     */
-    fun onError(result: QPurchaseResult)
+    fun onResult(result: QPurchaseResult)
 }

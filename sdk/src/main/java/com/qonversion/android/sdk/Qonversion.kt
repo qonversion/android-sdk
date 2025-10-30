@@ -126,14 +126,14 @@ interface Qonversion {
 
     /**
      * Purchase a product and validate it through server-to-server using Qonversion's Backend.
-     * This is the new recommended method that returns a single PurchaseResult object containing
+     * This is the new recommended method that returns a single [QPurchaseResult] object containing
      * all relevant information about the purchase outcome.
      * @param context current activity context
      * @param product product for purchase
-     * @param options optional purchase options (can be null)
+     * @param options optional purchase options
      * @param callback callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     * @see QPurchaseResult for details about the result object
+     * @see [QPurchaseResult] for details about the result object
      */
     fun purchase(
         context: Activity,
@@ -144,13 +144,13 @@ interface Qonversion {
 
     /**
      * Purchase a product and validate it through server-to-server using Qonversion's Backend.
-     * This is the new recommended method that returns a single PurchaseResult object containing
+     * This is the new recommended method that returns a single [QPurchaseResult] object containing
      * all relevant information about the purchase outcome.
      * @param context current activity context
      * @param product product for purchase
      * @param callback callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     * @see QPurchaseResult for details about the result object
+     * @see [QPurchaseResult] for details about the result object
      */
     fun purchase(
         context: Activity,

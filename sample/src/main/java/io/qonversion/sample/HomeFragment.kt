@@ -314,17 +314,17 @@ class HomeFragment : Fragment(), NoCodesDelegate {
                         }
                         Toast.makeText(requireContext(), "Purchase successful!", Toast.LENGTH_SHORT).show()
                     } else {
-                        handlePurchaseResult(result)
+                        handlePurchaseError(result)
                     }
                 }
 
                 override fun onError(result: QPurchaseResult) {
-                    handlePurchaseResult(result)
+                    handlePurchaseError(result)
                 }
             })
     }
 
-    private fun handlePurchaseResult(result: QPurchaseResult) {
+    private fun handlePurchaseError(result: QPurchaseResult) {
         when {
             result.isCanceled -> {
                 Toast.makeText(requireContext(), "Purchase canceled by user", Toast.LENGTH_SHORT).show()
