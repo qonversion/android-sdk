@@ -24,10 +24,12 @@ def update_gradle(lib, new_version)
 end
 
 def update_outager_url_in_tests(url)
-	path = Dir['../**/OutagerIntegrationTest.kt'].first
     regex = /\<paste outager link here\>/
+	path1 = Dir['../**/OutagerIntegrationTest.kt'].first
+	path2 = Dir['../**/NoCodesOutagerIntegrationTest.kt'].first
 
-    update_file(path, regex, url)
+    update_file(path1, regex, url)
+    update_file(path2, regex, url)
 end
 
 def add_junit_platform_to_tests()
