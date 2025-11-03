@@ -9,6 +9,10 @@ jobs:
   testing:
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: android_integration_tests
+      cancel-in-progress: true
+
     steps:
     - uses: actions/checkout@v2
 
