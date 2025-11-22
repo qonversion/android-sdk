@@ -32,6 +32,7 @@
     <ID>LongMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
+    <ID>LongParameterList:NoCodesConfig.kt$NoCodesConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val networkConfig: NetworkConfig, internal val loggerConfig: LoggerConfig, internal val noCodesDelegate: NoCodesDelegate?, internal val screenCustomizationDelegate: ScreenCustomizationDelegate?, internal val purchaseHandlerDelegate: PurchaseHandlerDelegate?, )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
@@ -102,6 +103,7 @@
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest.&lt;no name provided&gt;$assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)</ID>
+    <ID>MaxLineLength:PurchaseHandlerDelegate.kt$PurchaseHandlerDelegate$*</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
@@ -169,7 +171,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesIntegrationTest.kt:263</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:30</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:31</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesOutagerIntegrationTest.kt:183</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:118</ID>
@@ -178,7 +180,7 @@
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:32</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:78</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:89</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:200</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:248</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:70</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>

@@ -1,6 +1,7 @@
 package io.qonversion.nocodes.internal.screen.view
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -28,6 +29,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val presenter = DependenciesAssembly.instance.screenPresenter(this)
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
+    private val purchaseHandlerDelegateProvider = DependenciesAssembly.instance.purchaseHandlerDelegateProvider()
 
     private val delegate = delegateProvider.noCodesDelegate
 
@@ -131,26 +133,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                         )
                     }
 
-                    val purchaseOptionsBuilder = QPurchaseOptions.Builder()
-                    screenId?.let { nonNullScreenId ->
-                        purchaseOptionsBuilder.setScreenUid(nonNullScreenId)
-                    }
-                    val purchaseOptions = purchaseOptionsBuilder.build()
-
-                    Qonversion.shared.purchase(
-                        it,
-                        product,
-                        purchaseOptions,
-                        object : QonversionEntitlementsCallback {
-                            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                                close(action)
-
-                            override fun onError(error: QonversionError) = handleOnErrorCallback(
-                                object {}.javaClass.enclosingMethod?.name,
-                                error,
-                                action
-                            )
-                        })
+                    handlePurchaseForProduct(it, product, action, screenId)
                 }
 
                 override fun onError(error: QonversionError) = handleOnErrorCallback(
@@ -162,21 +145,86 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
+    private fun handlePurchaseForProduct(context: Activity, product: QProduct, action: QAction, screenId: String?) {
+        // Check if custom purchase handler delegate is provided
+        val purchaseHandlerDelegate = purchaseHandlerDelegateProvider.purchaseHandlerDelegate
+        if (purchaseHandlerDelegate != null) {
+            // Use custom purchase handler
+            purchaseHandlerDelegate.purchase(
+                product,
+                onSuccess = {
+                    close(action)
+                },
+                onError = { throwable: Throwable? ->
+                    val error = NoCodesError.fromClientThrowable(throwable)
+                    action.error = error
+                    handleOnErrorCallback(
+                        object {}.javaClass.enclosingMethod?.name,
+                        error.details ?: "",
+                        action
+                    )
+                }
+            )
+        } else {
+            val purchaseOptionsBuilder = QPurchaseOptions.Builder()
+            screenId?.let { nonNullScreenId ->
+                purchaseOptionsBuilder.setScreenUid(nonNullScreenId)
+            }
+            val purchaseOptions = purchaseOptionsBuilder.build()
+
+            Qonversion.shared.purchase(
+                context,
+                product,
+                purchaseOptions,
+                object : QonversionEntitlementsCallback {
+                    override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                        close(action)
+
+                    override fun onError(error: QonversionError) = handleOnErrorCallback(
+                        object {}.javaClass.enclosingMethod?.name,
+                        error,
+                        action
+                    )
+                })
+        }
+    }
+
     override fun restore() {
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
 
-        Qonversion.shared.restore(object : QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
-
-            override fun onError(error: QonversionError) = handleOnErrorCallback(
-                object {}.javaClass.enclosingMethod?.name,
-                error,
-                action
+        // Check if custom purchase handler delegate is provided
+        val purchaseHandlerDelegate = purchaseHandlerDelegateProvider.purchaseHandlerDelegate
+        if (purchaseHandlerDelegate != null) {
+            // Use custom restore handler
+            purchaseHandlerDelegate.restore(
+                onSuccess = {
+                    close(action)
+                },
+                onError = { throwable: Throwable? ->
+                    val error = NoCodesError.fromClientThrowable(throwable)
+                    action.error = error
+                    handleOnErrorCallback(
+                        object {}.javaClass.enclosingMethod?.name,
+                        error.details ?: "",
+                        action
+                    )
+                }
             )
-        })
+        } else {
+            // Use default Qonversion SDK restore flow
+            Qonversion.shared.restore(object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
+
+                override fun onError(error: QonversionError) = handleOnErrorCallback(
+                    object {}.javaClass.enclosingMethod?.name,
+                    error,
+                    action
+                )
+            })
+        }
     }
 
     override fun close(action: QAction) {

@@ -4,6 +4,7 @@ import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
+import io.qonversion.nocodes.internal.provider.PurchaseHandlerDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
 import java.util.Locale
 
@@ -20,4 +21,6 @@ internal interface MiscAssembly {
     fun activityProvider(): ActivityProvider
 
     fun noCodesDelegateProvider(): NoCodesDelegateProvider
+
+    fun purchaseHandlerDelegateProvider(): PurchaseHandlerDelegateProvider
 }

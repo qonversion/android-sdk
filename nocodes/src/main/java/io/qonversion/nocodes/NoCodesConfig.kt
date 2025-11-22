@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.PurchaseHandlerDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.dto.config.LoggerConfig
 import io.qonversion.nocodes.internal.dto.config.NetworkConfig
@@ -27,6 +28,7 @@ class NoCodesConfig internal constructor(
     internal val loggerConfig: LoggerConfig,
     internal val noCodesDelegate: NoCodesDelegate?,
     internal val screenCustomizationDelegate: ScreenCustomizationDelegate?,
+    internal val purchaseHandlerDelegate: PurchaseHandlerDelegate?,
 ) {
 
     /**
@@ -45,6 +47,7 @@ class NoCodesConfig internal constructor(
     ) {
         private var noCodesDelegate: NoCodesDelegate? = null
         private var screenCustomizationDelegate: ScreenCustomizationDelegate? = null
+        private var purchaseHandlerDelegate: PurchaseHandlerDelegate? = null
         private var proxyUrl: String? = null
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
@@ -70,6 +73,18 @@ class NoCodesConfig internal constructor(
          */
         fun setScreenCustomizationDelegate(screenCustomizationDelegate: ScreenCustomizationDelegate): Builder = apply {
             this.screenCustomizationDelegate = screenCustomizationDelegate
+        }
+
+        /**
+         * Provide a delegate to handle No-Codes purchase and restore operations on your own.
+         * If this delegate is provided, it will be used instead of the default Qonversion SDK
+         * purchase and restore flows.
+         *
+         * @param purchaseHandlerDelegate delegate responsible for handling purchase and restores operations.
+         * @return builder instance for chain calls.
+         */
+        fun setPurchaseHandlerDelegate(purchaseHandlerDelegate: PurchaseHandlerDelegate): Builder = apply {
+            this.purchaseHandlerDelegate = purchaseHandlerDelegate
         }
 
         /**
@@ -148,6 +163,7 @@ class NoCodesConfig internal constructor(
                 loggerConfig,
                 noCodesDelegate,
                 screenCustomizationDelegate,
+                purchaseHandlerDelegate,
             )
         }
     }

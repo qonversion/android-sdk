@@ -9,6 +9,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculator
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
+import io.qonversion.nocodes.internal.provider.PurchaseHandlerDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
 import kotlin.random.Random
 import java.util.Locale
@@ -34,4 +35,6 @@ internal class MiscAssemblyImpl(
     override fun activityProvider(): ActivityProvider = activityProvider
 
     override fun noCodesDelegateProvider(): NoCodesDelegateProvider = internalConfig
+
+    override fun purchaseHandlerDelegateProvider(): PurchaseHandlerDelegateProvider = internalConfig
 }
