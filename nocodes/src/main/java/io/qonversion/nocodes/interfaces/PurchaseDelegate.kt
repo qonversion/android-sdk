@@ -3,7 +3,7 @@ package io.qonversion.nocodes.interfaces
 import com.qonversion.android.sdk.dto.products.QProduct
 
 /**
- * The delegate is responsible for handling custom purchase and restore operations.
+ * This delegate should be used if you want to handle purchases and restore operations on your end.
  * If this delegate is provided, it will be used instead of the default Qonversion SDK purchase flow.
  *
  * This interface uses Kotlin coroutines with suspend functions.

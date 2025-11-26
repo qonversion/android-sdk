@@ -78,7 +78,7 @@ interface NoCodes {
     fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate)
 
     /**
-     * The delegate is responsible for handling custom purchase and restore operations.
+     * The delegate should be used if you want to handle purchases and restore operations on your end.
      * If this delegate is provided, it will be used instead of the default Qonversion SDK purchase flow.
      * You can also provide it during the initialization via [NoCodesConfig.Builder.setPurchaseDelegate].
      *
@@ -87,7 +87,7 @@ interface NoCodes {
     fun setPurchaseDelegate(delegate: PurchaseDelegate)
 
     /**
-     * The delegate is responsible for handling custom purchase and restore operations.
+     * The delegate should be used if you want to handle purchases and restore operations on your end.
      * If this delegate is provided, it will be used instead of the default Qonversion SDK purchase flow.
      * You can also provide it during the initialization via [NoCodesConfig.Builder.setPurchaseDelegate].
      *
