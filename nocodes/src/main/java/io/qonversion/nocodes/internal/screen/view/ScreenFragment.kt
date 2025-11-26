@@ -12,6 +12,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QonversionError
@@ -29,7 +33,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val presenter = DependenciesAssembly.instance.screenPresenter(this)
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
-    private val purchaseHandlerDelegateProvider = DependenciesAssembly.instance.purchaseHandlerDelegateProvider()
+    private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
 
     private val delegate = delegateProvider.noCodesDelegate
 
@@ -147,24 +151,27 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     private fun handlePurchaseForProduct(context: Activity, product: QProduct, action: QAction, screenId: String?) {
         // Check if custom purchase handler delegate is provided
-        val purchaseHandlerDelegate = purchaseHandlerDelegateProvider.purchaseHandlerDelegate
-        if (purchaseHandlerDelegate != null) {
-            // Use custom purchase handler
-            purchaseHandlerDelegate.purchase(
-                product,
-                onSuccess = {
-                    close(action)
-                },
-                onError = { throwable: Throwable? ->
-                    val error = NoCodesError.fromClientThrowable(throwable)
-                    action.error = error
-                    handleOnErrorCallback(
-                        object {}.javaClass.enclosingMethod?.name,
-                        error.details ?: "",
-                        action
-                    )
+        val purchaseDelegate = purchaseDelegateProvider.purchaseDelegate
+        if (purchaseDelegate != null) {
+            // Use custom purchase handler with coroutines
+            lifecycleScope.launch {
+                try {
+                    purchaseDelegate.purchase(product)
+                    withContext(Dispatchers.Main) {
+                        close(action)
+                    }
+                } catch (throwable: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        val error = NoCodesError.fromClientThrowable(throwable)
+                        action.error = error
+                        handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error.details ?: "",
+                            action
+                        )
+                    }
                 }
-            )
+            }
         } else {
             val purchaseOptionsBuilder = QPurchaseOptions.Builder()
             screenId?.let { nonNullScreenId ->
@@ -196,23 +203,27 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onActionStartedExecuting(action)
 
         // Check if custom purchase handler delegate is provided
-        val purchaseHandlerDelegate = purchaseHandlerDelegateProvider.purchaseHandlerDelegate
-        if (purchaseHandlerDelegate != null) {
-            // Use custom restore handler
-            purchaseHandlerDelegate.restore(
-                onSuccess = {
-                    close(action)
-                },
-                onError = { throwable: Throwable? ->
-                    val error = NoCodesError.fromClientThrowable(throwable)
-                    action.error = error
-                    handleOnErrorCallback(
-                        object {}.javaClass.enclosingMethod?.name,
-                        error.details ?: "",
-                        action
-                    )
+        val purchaseDelegate = purchaseDelegateProvider.purchaseDelegate
+        if (purchaseDelegate != null) {
+            // Use custom restore handler with coroutines
+            lifecycleScope.launch {
+                try {
+                    purchaseDelegate.restore()
+                    withContext(Dispatchers.Main) {
+                        close(action)
+                    }
+                } catch (throwable: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        val error = NoCodesError.fromClientThrowable(throwable)
+                        action.error = error
+                        handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error.details ?: "",
+                            action
+                        )
+                    }
                 }
-            )
+            }
         } else {
             // Use default Qonversion SDK restore flow
             Qonversion.shared.restore(object : QonversionEntitlementsCallback {

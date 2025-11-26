@@ -4,7 +4,8 @@ import android.app.Application
 import android.content.Context
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
-import io.qonversion.nocodes.interfaces.PurchaseHandlerDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.dto.config.LoggerConfig
 import io.qonversion.nocodes.internal.dto.config.NetworkConfig
@@ -28,7 +29,8 @@ class NoCodesConfig internal constructor(
     internal val loggerConfig: LoggerConfig,
     internal val noCodesDelegate: NoCodesDelegate?,
     internal val screenCustomizationDelegate: ScreenCustomizationDelegate?,
-    internal val purchaseHandlerDelegate: PurchaseHandlerDelegate?,
+    internal val purchaseDelegate: PurchaseDelegate?,
+    internal val purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks?,
 ) {
 
     /**
@@ -47,7 +49,8 @@ class NoCodesConfig internal constructor(
     ) {
         private var noCodesDelegate: NoCodesDelegate? = null
         private var screenCustomizationDelegate: ScreenCustomizationDelegate? = null
-        private var purchaseHandlerDelegate: PurchaseHandlerDelegate? = null
+        private var purchaseDelegate: PurchaseDelegate? = null
+        private var purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks? = null
         private var proxyUrl: String? = null
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
@@ -80,11 +83,25 @@ class NoCodesConfig internal constructor(
          * If this delegate is provided, it will be used instead of the default Qonversion SDK
          * purchase and restore flows.
          *
-         * @param purchaseHandlerDelegate delegate responsible for handling purchase and restores operations.
+         * @param purchaseDelegate delegate responsible for handling purchase and restores operations.
          * @return builder instance for chain calls.
          */
-        fun setPurchaseHandlerDelegate(purchaseHandlerDelegate: PurchaseHandlerDelegate): Builder = apply {
-            this.purchaseHandlerDelegate = purchaseHandlerDelegate
+        fun setPurchaseDelegate(purchaseDelegate: PurchaseDelegate): Builder = apply {
+            this.purchaseDelegate = purchaseDelegate
+        }
+
+        /**
+         * Provide a callback-based delegate for Java developers to handle No-Codes purchase and restore operations.
+         * If this delegate is provided, it will be used instead of the default Qonversion SDK
+         * purchase and restore flows.
+         *
+         * This method is designed for Java developers who prefer callback-based APIs.
+         *
+         * @param purchaseDelegateWithCallbacks delegate with callbacks responsible for handling purchase and restores operations.
+         * @return builder instance for chain calls.
+         */
+        fun setPurchaseDelegate(purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks): Builder = apply {
+            this.purchaseDelegateWithCallbacks = purchaseDelegateWithCallbacks
         }
 
         /**
@@ -163,7 +180,8 @@ class NoCodesConfig internal constructor(
                 loggerConfig,
                 noCodesDelegate,
                 screenCustomizationDelegate,
-                purchaseHandlerDelegate,
+                purchaseDelegate,
+                purchaseDelegateWithCallbacks,
             )
         }
     }
