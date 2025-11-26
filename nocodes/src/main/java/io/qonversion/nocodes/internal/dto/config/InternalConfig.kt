@@ -31,8 +31,8 @@ internal class InternalConfig(
         noCodesConfig.noCodesDelegate?.let { NoCodesDelegateWrapper(it) },
         noCodesConfig.screenCustomizationDelegate,
         // If PurchaseDelegate is provided, use it directly. Otherwise, wrap PurchaseDelegateWithCallbacks.
-        noCodesConfig.purchaseDelegate ?:
-            noCodesConfig.purchaseDelegateWithCallbacks?.let { PurchaseDelegateWithCallbacksAdapter(it) }
+        noCodesConfig.purchaseDelegate
+            ?: noCodesConfig.purchaseDelegateWithCallbacks?.let { PurchaseDelegateWithCallbacksAdapter(it) }
     )
 
     override var canSendRequests: Boolean
