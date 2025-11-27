@@ -3,6 +3,8 @@ package io.qonversion.nocodes
 import android.util.Log
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.internal.NoCodesInternal
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
@@ -74,6 +76,24 @@ interface NoCodes {
      * @param delegate delegate that would be called before opening Qonversion No-Code screens.
      */
     fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate)
+
+    /**
+     * The delegate should be used if you want to handle purchases and restore operations on your end.
+     * If this delegate is provided, it will be used instead of the default Qonversion SDK purchase flow.
+     * You can also provide it during the initialization via [NoCodesConfig.Builder.setPurchaseDelegate].
+     *
+     * @param delegate delegate responsible for handling purchases and restore operations.
+     */
+    fun setPurchaseDelegate(delegate: PurchaseDelegate)
+
+    /**
+     * The delegate should be used if you want to handle purchases and restore operations on your end.
+     * If this delegate is provided, it will be used instead of the default Qonversion SDK purchase flow.
+     * You can also provide it during the initialization via [NoCodesConfig.Builder.setPurchaseDelegate].
+     *
+     * @param delegate delegate responsible for handling purchases and restore operations.
+     */
+    fun setPurchaseDelegate(delegate: PurchaseDelegateWithCallbacks)
 
     /**
      * Show the screen using its context key.

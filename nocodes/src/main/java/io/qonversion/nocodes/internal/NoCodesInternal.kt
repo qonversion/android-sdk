@@ -3,14 +3,16 @@ package io.qonversion.nocodes.internal
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
 import io.qonversion.nocodes.internal.dto.config.NoCodesDelegateWrapper
+import io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 internal class NoCodesInternal(
     private val internalConfig: InternalConfig,
@@ -39,7 +41,15 @@ internal class NoCodesInternal(
     }
 
     override fun setScreenCustomizationDelegate(delegate: ScreenCustomizationDelegate) {
-        internalConfig.screenCustomizationDelegate = WeakReference(delegate)
+        internalConfig.screenCustomizationDelegate = delegate
+    }
+
+    override fun setPurchaseDelegate(delegate: PurchaseDelegate) {
+        internalConfig.purchaseDelegate = delegate
+    }
+
+    override fun setPurchaseDelegate(delegate: PurchaseDelegateWithCallbacks) {
+        internalConfig.purchaseDelegate = PurchaseDelegateWithCallbacksAdapter(delegate)
     }
 
     override fun showScreen(contextKey: String) {

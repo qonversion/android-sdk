@@ -1,9 +1,9 @@
 package io.qonversion.nocodes.internal.screen.view
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QonversionError
@@ -22,12 +26,14 @@ import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
+import androidx.core.net.toUri
 
 class ScreenFragment : Fragment(), ScreenContract.View {
 
     private val presenter = DependenciesAssembly.instance.screenPresenter(this)
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
+    private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
 
     private val delegate = delegateProvider.noCodesDelegate
 
@@ -91,7 +97,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onActionStartedExecuting(action)
 
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
             delegate?.onActionFinishedExecuting(action)
         } catch (e: ActivityNotFoundException) {
@@ -105,9 +111,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onActionStartedExecuting(action)
 
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
-            close(action)
+            closeAll(action)
         } catch (e: ActivityNotFoundException) {
             logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with deeplink $url")
             delegate?.onActionFailedToExecute(action)
@@ -131,26 +137,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                         )
                     }
 
-                    val purchaseOptionsBuilder = QPurchaseOptions.Builder()
-                    screenId?.let { nonNullScreenId ->
-                        purchaseOptionsBuilder.setScreenUid(nonNullScreenId)
-                    }
-                    val purchaseOptions = purchaseOptionsBuilder.build()
-
-                    Qonversion.shared.purchase(
-                        it,
-                        product,
-                        purchaseOptions,
-                        object : QonversionEntitlementsCallback {
-                            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                                close(action)
-
-                            override fun onError(error: QonversionError) = handleOnErrorCallback(
-                                object {}.javaClass.enclosingMethod?.name,
-                                error,
-                                action
-                            )
-                        })
+                    handlePurchaseForProduct(it, product, action, screenId)
                 }
 
                 override fun onError(error: QonversionError) = handleOnErrorCallback(
@@ -162,21 +149,93 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
+    private fun handlePurchaseForProduct(context: Activity, product: QProduct, action: QAction, screenId: String?) {
+        // Check if custom purchase handler delegate is provided
+        val purchaseDelegate = purchaseDelegateProvider.purchaseDelegate
+        if (purchaseDelegate != null) {
+            // Use custom purchase handler with coroutines
+            lifecycleScope.launch {
+                try {
+                    purchaseDelegate.purchase(product)
+                    withContext(Dispatchers.Main) {
+                        closeAll(action)
+                    }
+                } catch (throwable: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        val error = NoCodesError.fromClientThrowable(throwable)
+                        action.error = error
+                        handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error.details ?: "",
+                            action
+                        )
+                    }
+                }
+            }
+        } else {
+            val purchaseOptionsBuilder = QPurchaseOptions.Builder()
+            screenId?.let { nonNullScreenId ->
+                purchaseOptionsBuilder.setScreenUid(nonNullScreenId)
+            }
+            val purchaseOptions = purchaseOptionsBuilder.build()
+
+            Qonversion.shared.purchase(
+                context,
+                product,
+                purchaseOptions,
+                object : QonversionEntitlementsCallback {
+                    override fun onSuccess(entitlements: Map<String, QEntitlement>) =
+                        closeAll(action)
+
+                    override fun onError(error: QonversionError) = handleOnErrorCallback(
+                        object {}.javaClass.enclosingMethod?.name,
+                        error,
+                        action
+                    )
+                })
+        }
+    }
+
     override fun restore() {
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
 
-        Qonversion.shared.restore(object : QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
+        // Check if custom purchase handler delegate is provided
+        val purchaseDelegate = purchaseDelegateProvider.purchaseDelegate
+        if (purchaseDelegate != null) {
+            // Use custom restore handler with coroutines
+            lifecycleScope.launch {
+                try {
+                    purchaseDelegate.restore()
+                    withContext(Dispatchers.Main) {
+                        closeAll(action)
+                    }
+                } catch (throwable: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        val error = NoCodesError.fromClientThrowable(throwable)
+                        action.error = error
+                        handleOnErrorCallback(
+                            object {}.javaClass.enclosingMethod?.name,
+                            error.details ?: "",
+                            action
+                        )
+                    }
+                }
+            }
+        } else {
+            // Use default Qonversion SDK restore flow
+            Qonversion.shared.restore(object : QonversionEntitlementsCallback {
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) = closeAll(action)
 
-            override fun onError(error: QonversionError) = handleOnErrorCallback(
-                object {}.javaClass.enclosingMethod?.name,
-                error,
-                action
-            )
-        })
+                override fun onError(error: QonversionError) = handleOnErrorCallback(
+                    object {}.javaClass.enclosingMethod?.name,
+                    error,
+                    action
+                )
+            })
+        }
     }
 
     override fun close(action: QAction) {

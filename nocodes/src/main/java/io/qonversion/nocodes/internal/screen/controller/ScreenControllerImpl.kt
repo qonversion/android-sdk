@@ -25,7 +25,7 @@ internal class ScreenControllerImpl(
         logger.verbose("showScreen() -> Fetching the screen with the context key $contextKey from the API")
         val context: Context = activityProvider.getCurrentActivity() ?: appContext
 
-        val screenPresentationConfig = internalConfig.screenCustomizationDelegate?.get()
+        val screenPresentationConfig = internalConfig.screenCustomizationDelegate
             ?.getPresentationConfigurationForScreen(contextKey) ?: QScreenPresentationConfig()
         val intent = ScreenActivity.getCallingIntent(
             context,
