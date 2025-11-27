@@ -14,4 +14,13 @@ class NoCodesError(
     override fun toString(): String {
         return "NoCodesError: {code=$code, description=${code.defaultMessage}, details=${details ?: ""}"
     }
+
+    companion object {
+        fun fromClientThrowable(throwable: Throwable?): NoCodesError {
+            return NoCodesError(
+                ErrorCode.ClientError,
+                throwable?.message ?: throwable?.toString() ?: "Unknown error"
+            )
+        }
+    }
 }

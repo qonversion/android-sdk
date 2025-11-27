@@ -15,4 +15,5 @@ enum class ErrorCode(val defaultMessage: String) {
     BackendError("Qonversion API returned an error"),
     ScreenNotFound("No-Code screen not found"),
     QonversionError("An internal error from Qonversion SDK. For more details look at the nested error."),
+    ClientError("An error occurred in the client code"),
 }
