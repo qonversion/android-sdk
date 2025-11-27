@@ -19,8 +19,8 @@ internal class PurchaseDelegateWithCallbacksAdapter(
         suspendCancellableCoroutine { continuation ->
             delegate.purchase(
                 product,
-                onSuccess = PurchaseDelegateWithCallbacks.OnSuccess { continuation.resume(Unit) },
-                onError = PurchaseDelegateWithCallbacks.OnError { throwable -> continuation.resumeWithException(throwable) }
+                onSuccess = { continuation.resume(Unit) },
+                onError = { throwable -> continuation.resumeWithException(throwable) }
             )
         }
     }
@@ -28,8 +28,8 @@ internal class PurchaseDelegateWithCallbacksAdapter(
     override suspend fun restore() {
         suspendCancellableCoroutine { continuation ->
             delegate.restore(
-                onSuccess = PurchaseDelegateWithCallbacks.OnSuccess { continuation.resume(Unit) },
-                onError = PurchaseDelegateWithCallbacks.OnError { throwable -> continuation.resumeWithException(throwable) }
+                onSuccess = { continuation.resume(Unit) },
+                onError = { throwable -> continuation.resumeWithException(throwable) }
             )
         }
     }

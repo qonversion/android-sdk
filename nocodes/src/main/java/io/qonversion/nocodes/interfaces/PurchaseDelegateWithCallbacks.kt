@@ -18,7 +18,7 @@ interface PurchaseDelegateWithCallbacks {
         /**
          * Invoked when the operation succeeds.
          */
-        fun invoke()
+        operator fun invoke()
     }
 
     /**
@@ -30,7 +30,7 @@ interface PurchaseDelegateWithCallbacks {
          *
          * @param throwable the error that occurred
          */
-        fun invoke(throwable: Throwable)
+        operator fun invoke(throwable: Throwable)
     }
 
     /**
