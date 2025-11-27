@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,6 +26,7 @@ import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
+import androidx.core.net.toUri
 
 class ScreenFragment : Fragment(), ScreenContract.View {
 
@@ -97,7 +97,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onActionStartedExecuting(action)
 
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
             delegate?.onActionFinishedExecuting(action)
         } catch (e: ActivityNotFoundException) {
@@ -111,9 +111,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         delegate?.onActionStartedExecuting(action)
 
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
-            close(action)
+            closeAll(action)
         } catch (e: ActivityNotFoundException) {
             logger.error("ScreenActivity -> Couldn't find any Activity to handle the Intent with deeplink $url")
             delegate?.onActionFailedToExecute(action)
@@ -158,7 +158,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.purchase(product)
                     withContext(Dispatchers.Main) {
-                        close(action)
+                        closeAll(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
@@ -185,7 +185,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 purchaseOptions,
                 object : QonversionEntitlementsCallback {
                     override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                        close(action)
+                        closeAll(action)
 
                     override fun onError(error: QonversionError) = handleOnErrorCallback(
                         object {}.javaClass.enclosingMethod?.name,
@@ -210,7 +210,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.restore()
                     withContext(Dispatchers.Main) {
-                        close(action)
+                        closeAll(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
@@ -227,7 +227,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         } else {
             // Use default Qonversion SDK restore flow
             Qonversion.shared.restore(object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) = close(action)
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) = closeAll(action)
 
                 override fun onError(error: QonversionError) = handleOnErrorCallback(
                     object {}.javaClass.enclosingMethod?.name,
