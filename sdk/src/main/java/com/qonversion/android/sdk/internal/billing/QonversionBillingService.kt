@@ -24,11 +24,8 @@ internal class QonversionBillingService internal constructor(
 
     interface PurchasesListener {
         fun onPurchasesCompleted(purchases: List<Purchase>)
-        fun onPurchasesFailed(
-            error: BillingError,
-            purchases: List<Purchase> = emptyList()
-        )
-        fun onPurchasesCanceled()
+        fun onPurchasesFailed(error: BillingError, purchases: List<Purchase> = emptyList())
+        fun onPurchasesCanceled(purchases: List<Purchase>)
     }
 
     init {
@@ -310,7 +307,7 @@ internal class QonversionBillingService internal constructor(
             // Check if user canceled the purchase
             if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
                 logger.debug("onPurchasesUpdated() -> user canceled purchase")
-                purchasesListener.onPurchasesCanceled()
+                purchasesListener.onPurchasesCanceled(purchases ?: emptyList())
             } else {
                 purchasesListener.onPurchasesFailed(
                     BillingError(

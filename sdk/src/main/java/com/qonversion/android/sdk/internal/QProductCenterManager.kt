@@ -302,15 +302,6 @@ internal class QProductCenterManager internal constructor(
         purchaseOptions: PurchaseOptionsInternal,
         callback: QonversionPurchaseCallback
     ) {
-        // route result callback via result path
-        purchaseProductInternal(context, purchaseOptions, callback)
-    }
-
-    private fun purchaseProductInternal(
-        context: Activity,
-        purchaseOptions: PurchaseOptionsInternal,
-        callback: QonversionPurchaseCallback
-    ) {
         if (internalConfig.isAnalyticsMode) {
             logger.warn(
                 "Making purchases via Qonversion in the Analytics mode can lead to " +
@@ -453,43 +444,44 @@ internal class QProductCenterManager internal constructor(
         restore(RequestTrigger.SyncPurchases)
     }
 
+    fun logout() {
+        pendingPartnersIdentityId = null
+        val isLogoutNeeded = identityManager.logoutIfNeeded()
+
+        if (isLogoutNeeded) {
+            remoteConfigManager.onUserUpdate()
+            launchResultCache.clearPermissionsCache()
+
+            unhandledLogoutAvailable = true
+
+            val userId = userInfoService.obtainUserId()
+            internalConfig.uid = userId
+        }
+    }
+
+    fun getUserInfo(callback: QonversionUserCallback) {
+        val user = QUser(internalConfig.uid, identityManager.currentPartnersIdentityId)
+        callback.onSuccess(user)
+    }
+
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
+        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
+    }
+
     override fun onPurchasesCompleted(purchases: List<Purchase>) {
         handlePurchases(purchases, RequestTrigger.Purchase)
     }
 
-    override fun onPurchasesCanceled() {
-        // Handle user cancellation for all pending purchases
-        val callbacks = purchasingCallbacks.toMap()
-
-        purchasingCallbacks.clear()
-
-        // Call all result callbacks with cancellation
-        callbacks.values.forEach {
-            // Sometimes the callback might be dead at the moment of invocation
-            @Suppress("UNNECESSARY_SAFE_CALL")
-            it?.onResult(QPurchaseResult.userCanceled())
+    override fun onPurchasesCanceled(purchases: List<Purchase>) {
+        forEachPurchaseCallback(purchases) { callback ->
+            callback.onResult(QPurchaseResult.userCanceled())
         }
     }
 
     override fun onPurchasesFailed(error: BillingError, purchases: List<Purchase>) {
-        if (purchases.isNotEmpty()) {
-            purchases.forEach { purchase ->
-                val purchaseCallback = purchasingCallbacks[purchase.productId]
-                purchasingCallbacks.remove(purchase.productId)
-
-                val qonversionError = error.toQonversionError()
-                purchaseCallback?.onResult(QPurchaseResult.error(qonversionError))
-            }
-        } else {
-            val callbacks = purchasingCallbacks.toMap()
-            purchasingCallbacks.clear()
-
-            val qonversionError = error.toQonversionError()
-
-            callbacks.values.forEach {
-                @Suppress("UNNECESSARY_SAFE_CALL")
-                it?.onResult(QPurchaseResult.error(qonversionError))
-            }
+        val qonversionError = error.toQonversionError()
+        forEachPurchaseCallback(purchases) { callback ->
+            callback.onResult(QPurchaseResult.error(qonversionError))
         }
     }
 
@@ -793,30 +785,6 @@ internal class QProductCenterManager internal constructor(
         }
     }
 
-    fun logout() {
-        pendingPartnersIdentityId = null
-        val isLogoutNeeded = identityManager.logoutIfNeeded()
-
-        if (isLogoutNeeded) {
-            remoteConfigManager.onUserUpdate()
-            launchResultCache.clearPermissionsCache()
-
-            unhandledLogoutAvailable = true
-
-            val userId = userInfoService.obtainUserId()
-            internalConfig.uid = userId
-        }
-    }
-
-    fun getUserInfo(callback: QonversionUserCallback) {
-        val user = QUser(internalConfig.uid, identityManager.currentPartnersIdentityId)
-        callback.onSuccess(user)
-    }
-
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
-        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
-    }
-
     private fun handleLogout() {
         unhandledLogoutAvailable = false
         launch(RequestTrigger.Logout)
@@ -1070,11 +1038,11 @@ internal class QProductCenterManager internal constructor(
 
                         removePurchaseOptions(product?.storeId)
 
-                        purchaseCallback?.onResult(QPurchaseResult.success(entitlements, purchase))
-
-                        // If no callback, notify entitlements update listener
                         if (purchaseCallback == null) {
+                            // If no callback, notify entitlements update listener
                             internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+                        } else {
+                            purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }
 
                         handledPurchasesCache.saveHandledPurchase(purchase)
@@ -1127,6 +1095,26 @@ internal class QProductCenterManager internal constructor(
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         error.httpCode?.isInternalServerError() == true
                 )
+    }
+
+    private inline fun forEachPurchaseCallback(purchases: List<Purchase>, action: (QonversionPurchaseCallback) -> Unit) {
+        if (purchases.isNotEmpty()) {
+            purchases.forEach { purchase ->
+                val purchaseCallback = purchasingCallbacks[purchase.productId]
+                purchasingCallbacks.remove(purchase.productId)
+
+                purchaseCallback?.let { action(it) }
+            }
+        } else {
+            val callbacks = purchasingCallbacks.toMap()
+            purchasingCallbacks.clear()
+
+            callbacks.values.forEach { callback ->
+                // Sometimes the callback might be dead at the moment of invocation
+                @Suppress("UNNECESSARY_SAFE_CALL")
+                callback?.let { action(it) }
+            }
+        }
     }
 
     private fun addIdentityCallback(identityId: String, callback: QonversionUserCallback?) {
