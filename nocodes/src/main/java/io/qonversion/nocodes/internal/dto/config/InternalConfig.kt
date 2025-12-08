@@ -3,30 +3,36 @@ package io.qonversion.nocodes.internal.dto.config
 import io.qonversion.nocodes.NoCodesConfig
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.provider.LoggerConfigProvider
 import io.qonversion.nocodes.internal.provider.NetworkConfigHolder
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.provider.PrimaryConfigProvider
-import java.lang.ref.WeakReference
+import io.qonversion.nocodes.internal.provider.PurchaseDelegateProvider
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     val networkConfig: NetworkConfig,
     var loggerConfig: LoggerConfig,
     override var noCodesDelegate: NoCodesDelegate?,
-    var screenCustomizationDelegate: WeakReference<ScreenCustomizationDelegate>?,
+    var screenCustomizationDelegate: ScreenCustomizationDelegate?,
+    override var purchaseDelegate: PurchaseDelegate?,
 ) : PrimaryConfigProvider,
     LoggerConfigProvider,
     NetworkConfigHolder,
-    NoCodesDelegateProvider {
+    NoCodesDelegateProvider,
+    PurchaseDelegateProvider {
 
     constructor(noCodesConfig: NoCodesConfig) : this(
         noCodesConfig.primaryConfig,
         noCodesConfig.networkConfig,
         noCodesConfig.loggerConfig,
         noCodesConfig.noCodesDelegate?.let { NoCodesDelegateWrapper(it) },
-        noCodesConfig.screenCustomizationDelegate?.let { WeakReference(it) }
+        noCodesConfig.screenCustomizationDelegate,
+        // If PurchaseDelegate is provided, use it directly. Otherwise, wrap PurchaseDelegateWithCallbacks.
+        noCodesConfig.purchaseDelegate
+            ?: noCodesConfig.purchaseDelegateWithCallbacks?.let { PurchaseDelegateWithCallbacksAdapter(it) }
     )
 
     override var canSendRequests: Boolean

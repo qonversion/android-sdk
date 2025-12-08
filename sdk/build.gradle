@@ -6,7 +6,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 34
 
         consumerProguardFiles 'consumer-rules.pro'
@@ -65,7 +65,7 @@ ext {
     moshiVersion = '1.15.2'
     retrofit_version = '2.9.0'
     okhttp_version = '3.12.13'
-    billing = '8.0.0'
+    billing = '8.1.0'
     lifecycle_version = '2.1.0'
     assertj_version = '3.16.1'
     junit_version = '5.6.2'
@@ -165,17 +165,13 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.3.1'
 
     testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'androidx.test.ext:junit:1.1.5'
+    testImplementation "org.json:json:20180813"
+    testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
     androidTestImplementation 'androidx.test:core:1.5.0'
     androidTestImplementation "androidx.test:runner:1.5.2"
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-
-    testImplementation 'androidx.test.ext:junit:1.1.5'
-
-    testImplementation "org.json:json:20180813"
-
-    testImplementation 'com.github.IvanShafran:shared-preferences-mock:1.0'
-
 }
 
 apply from: "../scripts/maven-release.gradle"

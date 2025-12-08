@@ -9,6 +9,10 @@ jobs:
   testing:
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: android_integration_tests
+      cancel-in-progress: true
+
     steps:
     - uses: actions/checkout@v2
 
@@ -21,15 +25,28 @@ jobs:
       run: |
         fastlane setOutagerUrl url:${{ secrets.OUTAGER_URL }}
 
-    - name: Build and Tests
+    - name: Build and Tests SDK
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 28
         script: ./gradlew sdk:connectedAndroidTest
 
-    - name: Unit tests results
+    - name: Build and Tests NoCodes
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 28
+        script: ./gradlew nocodes:connectedAndroidTest
+
+    - name: SDK tests results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results
+        name: sdk-test-results
         path: sdk/build/reports/androidTests/connected/**
+
+    - name: NoCodes tests results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: nocodes-test-results
+        path: nocodes/build/reports/androidTests/connected/**

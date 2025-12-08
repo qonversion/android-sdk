@@ -15,7 +15,7 @@ data class QAction(
         Url("url"),
         DeepLink("deeplink"),
         Navigation("navigation"),
-        Purchase("makePurchase"),
+        Purchase("purchase"),
         Restore("restore"),
         Close("close"),
         CloseAll("closeAll"),
@@ -23,7 +23,12 @@ data class QAction(
         ShowScreen("showScreen");
 
         companion object {
-            fun from(type: String?) = entries.find { it.type == type } ?: Unknown
+            fun from(type: String?): Type {
+                if (type == "makePurchase") {
+                    return Purchase
+                }
+                return entries.find { it.type == type } ?: Unknown
+            }
         }
     }
 

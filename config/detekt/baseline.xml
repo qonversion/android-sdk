@@ -32,6 +32,7 @@
     <ID>LongMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
     <ID>LongParameterList:IBillingClientWrapper.kt$IBillingClientWrapper$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean? = true, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>LongParameterList:ManagersModule.kt$ManagersModule$( appContext: Application, repository: QRepository, propertiesStorage: UserPropertiesStorage, incrementalDelayCalculator: IncrementalDelayCalculator, appStateProvider: AppStateProvider, logger: Logger )</ID>
+    <ID>LongParameterList:NoCodesConfig.kt$NoCodesConfig$( internal val application: Application, internal val primaryConfig: PrimaryConfig, internal val networkConfig: NetworkConfig, internal val loggerConfig: LoggerConfig, internal val noCodesDelegate: NoCodesDelegate?, internal val screenCustomizationDelegate: ScreenCustomizationDelegate?, internal val purchaseDelegate: PurchaseDelegate?, internal val purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks?, )</ID>
     <ID>LongParameterList:QonversionBillingService.kt$QonversionBillingService$( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, oldProduct: QProduct, updatePolicy: QPurchaseUpdatePolicy? )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator )</ID>
     <ID>LongParameterList:RepositoryModule.kt$RepositoryModule$( retrofit: Retrofit, environmentProvider: EnvironmentProvider, config: InternalConfig, logger: Logger, apiErrorMapper: ApiErrorMapper, delayCalculator: IncrementalDelayCalculator, rateLimiter: RateLimiter )</ID>
@@ -90,7 +91,10 @@
     <ID>MaxLineLength:ApiErrorMapper.kt$ApiErrorMapper$20203 -&gt; "Possible reasons for this error are fraud purchases and incorrect configuration of the project key in the Qonversion Dashboard"</ID>
     <ID>MaxLineLength:GooglePurchaseConverter.kt$GooglePurchaseConverter$override</ID>
     <ID>MaxLineLength:LaunchResultCacheWrapperTest.kt$LaunchResultCacheWrapperTest$cacheWrapper = LaunchResultCacheWrapper(mockMoshi, mockPrefsCache, mockCacheConfigProvider, mockQFallbacksService)</ID>
+    <ID>MaxLineLength:NoCodesConfig.kt$NoCodesConfig.Builder$*</ID>
+    <ID>MaxLineLength:NoCodesIntegrationTest.kt$NoCodesIntegrationTest$assertEquals("Context key for first screen should match", CONTEXT_KEY_FOR_SCREEN_BY_ID, screens[1].contextKey)</ID>
     <ID>MaxLineLength:NoCodesInternal.kt$NoCodesInternal$logger.info("NoCodesInternal -&gt; Successfully preloaded ${preloadedScreens.size} screens during initialization")</ID>
+    <ID>MaxLineLength:NoCodesOutagerIntegrationTest.kt$NoCodesOutagerIntegrationTest$assertEquals("Context key for first screen should match", CONTEXT_KEY_FOR_SCREEN_BY_ID, screens[1].contextKey)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val animationValues = listOf(SkeletonConstants.LIGHT_THEME_ALPHA_START, SkeletonConstants.LIGHT_THEME_ALPHA_END)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$private val darkAnimationValues = listOf(SkeletonConstants.DARK_THEME_ALPHA_START, SkeletonConstants.DARK_THEME_ALPHA_END)</ID>
     <ID>MaxLineLength:NoCodesSkeletonView.kt$NoCodesSkeletonView$topMargin = dpToPx(SkeletonConstants.MID_LAYER_TOP_OFFSET_DP + SkeletonConstants.MID_LAYER_HEIGHT_DP + SkeletonConstants.MID_CONTAINER_TOP_OFFSET_DP)</ID>
@@ -100,6 +104,8 @@
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest$purchaseToken = "lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
     <ID>MaxLineLength:OutagerIntegrationTest.kt$OutagerIntegrationTest.&lt;no name provided&gt;$assertEquals(error.additionalMessage, """HTTP status code=503, data={"message":"Service Unavailable","code":0,"status":503}. """)</ID>
+    <ID>MaxLineLength:PurchaseDelegate.kt$PurchaseDelegate$*</ID>
+    <ID>MaxLineLength:PurchaseDelegateWithCallbacksAdapter.kt$PurchaseDelegateWithCallbacksAdapter$onError = PurchaseDelegateWithCallbacks.OnError { throwable -&gt; continuation.resumeWithException(throwable) }</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$"\"purchaseToken\":\"gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g\","</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$private val fourPurchasesStr = "[${generatePurchaseJson()},${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")}]"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
@@ -117,8 +123,6 @@
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
     <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Due to the Google Play Billing Library 8 limitations, this method doesn't restore historical purchases anymore.")</ID>
-    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$private</ID>
-    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal.&lt;no name provided&gt;$QPurchaseResultStatus.USER_CANCELED -&gt; onError(QonversionError(QonversionErrorCode.PurchaseCanceled))</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"""HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -136,7 +140,7 @@
     <ID>MaxLineLength:util.kt$Util.Companion$"\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]},"</ID>
     <ID>MaxLineLength:util.kt$Util.Companion$"{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}],"</ID>
     <ID>MaxLineLength:utils.kt$val msg = "error code: ${error.code}, description: ${error.description}, additionalMessage: ${error.additionalMessage}"</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:81</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.Qonversion.kt:79</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.QonversionConfig.kt:163</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.QonversionError.kt:46</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.dto.products.QProductStoreDetails.kt:130</ID>
@@ -147,9 +151,7 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:133</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:396</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:408</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:131</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:289</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:358</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:724</ID>
@@ -170,7 +172,11 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:137</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:138</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.storage.util.kt:140</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:30</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesIntegrationTest.kt:263</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesInternal.kt:32</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.NoCodesOutagerIntegrationTest.kt:183</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAdapter.kt:23</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAdapter.kt:32</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.controller.ScreenControllerImpl.kt:54</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:118</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:144</ID>
@@ -178,7 +184,7 @@
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:32</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:78</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.NoCodesSkeletonView.kt:89</ID>
-    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:200</ID>
+    <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenFragment.kt:259</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:64</ID>
     <ID>MaximumLineLength:io.qonversion.nocodes.internal.screen.view.ScreenPresenter.kt:70</ID>
     <ID>MaximumLineLength:io.qonversion.sample.utils.kt:49</ID>
@@ -228,15 +234,14 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.utils.kt:4</ID>
-    <ID>NoWildcardImports:io.qonversion.nocodes.internal.screen.view.SkeletonManager.kt:3</ID>
-    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:35</ID>
+    <ID>NoWildcardImports:io.qonversion.sample.HomeFragment.kt:33</ID>
     <ID>ReturnCount:BillingClientWrapper.kt$BillingClientWrapper$override fun makePurchase( activity: Activity, product: QProduct, offerId: String?, applyOffer: Boolean?, updatePurchaseInfo: UpdatePurchaseInfo?, onFailed: (error: BillingError) -&gt; Unit )</ID>
     <ID>ReturnCount:ErrorUtils.kt$ErrorUtils$ fun isServerError(error: Exception): Boolean</ID>
     <ID>ReturnCount:ExceptionHandler.kt$ExceptionHandler$private fun isQonversionException(exception: Throwable): Boolean</ID>
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$fun identify(identityId: String, callback: QonversionUserCallback? = null)</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionPurchaseResultCallback?, purchaseError: QonversionError )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionPurchaseCallback?, purchaseError: QonversionError )</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:39</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:54</ID>
@@ -274,6 +279,7 @@
     <ID>TooGenericExceptionCaught:QFallbacksService.kt$QFallbacksService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenControllerImpl.kt$ScreenControllerImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScreenFragment.kt$ScreenFragment$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:ScreenPresenter.kt$ScreenPresenter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScreenServiceImpl.kt$ScreenServiceImpl$fallbackError: Exception</ID>
@@ -319,6 +325,5 @@
     <ID>WildcardImport:AdvertisingProvider.kt$import android.os.*</ID>
     <ID>WildcardImport:QProduct.kt$import com.android.billingclient.api.*</ID>
     <ID>WildcardImport:QonversionBillingService.kt$import com.android.billingclient.api.*</ID>
-    <ID>WildcardImport:SkeletonManager.kt$import kotlinx.coroutines.*</ID>
   </CurrentIssues>
 </SmellBaseline>

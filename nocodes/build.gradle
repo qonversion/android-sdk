@@ -8,7 +8,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
         targetSdk 34
 
         group = 'io.qonversion.nocodes'
@@ -58,6 +58,11 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
     
     api project(':sdk')
+
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation "androidx.test:runner:1.5.2"
+    androidTestImplementation "androidx.test:rules:1.5.0"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
 apply from: "../scripts/maven-release.gradle"
