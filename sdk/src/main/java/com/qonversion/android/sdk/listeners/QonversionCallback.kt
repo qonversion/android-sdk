@@ -47,17 +47,7 @@ interface QonversionRemoteConfigurationAttachCallback {
    fun onError(error: QonversionError)
 }
 
-/**
- * Callback interface for purchase operations that return a single PurchaseResult object.
- * This is the new recommended way to handle purchase results as it provides
- * all relevant information in a single object.
- *
- * @see QPurchaseResult for details about the result object
- */
-interface QonversionPurchaseResultCallback {
-   /**
-    * Unified result callback for both success and error cases.
-    */
+interface QonversionPurchaseCallback {
    fun onResult(result: QPurchaseResult)
 }
 

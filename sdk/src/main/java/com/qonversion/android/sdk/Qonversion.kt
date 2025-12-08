@@ -20,7 +20,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
-import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 
 interface Qonversion {
 
@@ -140,7 +140,7 @@ interface Qonversion {
         context: Activity,
         product: QProduct,
         options: QPurchaseOptions?,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     )
 
     /**
@@ -156,7 +156,7 @@ interface Qonversion {
     fun purchase(
         context: Activity,
         product: QProduct,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     )
 
     /**

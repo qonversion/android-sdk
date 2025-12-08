@@ -36,7 +36,7 @@ import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
-import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QPurchaseResultStatus
 import com.qonversion.android.sdk.dto.QonversionErrorCode
@@ -194,7 +194,7 @@ internal class QonversionInternal(
         context: Activity,
         product: QProduct,
         options: QPurchaseOptions?,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         productCenterManager.purchaseProduct(
             context,
@@ -206,7 +206,7 @@ internal class QonversionInternal(
     override fun purchase(
         context: Activity,
         product: QProduct,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         purchase(context, product, null, mainPurchaseResultCallback(callback))
     }
@@ -387,8 +387,8 @@ internal class QonversionInternal(
                 postToMainThread { callback.onError(error) }
         }
 
-    private fun QonversionEntitlementsCallback.toPurchaseResultCallback(): QonversionPurchaseResultCallback {
-        val purchaseResultCallback = object : QonversionPurchaseResultCallback {
+    private fun QonversionEntitlementsCallback.toPurchaseResultCallback(): QonversionPurchaseCallback {
+        val purchaseResultCallback = object : QonversionPurchaseCallback {
             override fun onResult(result: QPurchaseResult) {
                 when (result.status) {
                     QPurchaseResultStatus.SUCCESS -> onSuccess(result.entitlements)
@@ -405,8 +405,8 @@ internal class QonversionInternal(
         return mainPurchaseResultCallback(purchaseResultCallback)
     }
 
-    private fun mainPurchaseResultCallback(callback: QonversionPurchaseResultCallback): QonversionPurchaseResultCallback =
-        object : QonversionPurchaseResultCallback {
+    private fun mainPurchaseResultCallback(callback: QonversionPurchaseCallback): QonversionPurchaseCallback =
+        object : QonversionPurchaseCallback {
             override fun onResult(result: QPurchaseResult) =
                 postToMainThread { callback.onResult(result) }
         }

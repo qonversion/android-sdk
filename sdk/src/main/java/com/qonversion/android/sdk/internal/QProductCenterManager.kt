@@ -47,7 +47,7 @@ import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
-import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import kotlin.math.min
 import java.util.Date
@@ -82,7 +82,7 @@ internal class QProductCenterManager internal constructor(
 
     private var productsCallbacks = mutableListOf<QonversionProductsCallback>()
     private var entitlementCallbacks = mutableListOf<QonversionEntitlementsCallback>()
-    private var purchasingCallbacks = mutableMapOf<String, QonversionPurchaseResultCallback>()
+    private var purchasingCallbacks = mutableMapOf<String, QonversionPurchaseCallback>()
     private var restoreCallbacks = mutableListOf<QonversionEntitlementsCallback>()
 
     private var processingPartnersIdentityId: String? = null
@@ -300,7 +300,7 @@ internal class QProductCenterManager internal constructor(
     fun purchaseProduct(
         context: Activity,
         purchaseOptions: PurchaseOptionsInternal,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         // route result callback via result path
         purchaseProductInternal(context, purchaseOptions, callback)
@@ -309,7 +309,7 @@ internal class QProductCenterManager internal constructor(
     private fun purchaseProductInternal(
         context: Activity,
         purchaseOptions: PurchaseOptionsInternal,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         if (internalConfig.isAnalyticsMode) {
             logger.warn(
@@ -336,7 +336,7 @@ internal class QProductCenterManager internal constructor(
     private fun tryToPurchase(
         context: Activity,
         purchaseOptions: PurchaseOptionsInternal,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         val products = launchResultCache.getActualProducts() ?: run {
             handlePurchaseError(QonversionError(QonversionErrorCode.LaunchError), callback)
@@ -352,7 +352,7 @@ internal class QProductCenterManager internal constructor(
     private fun processPurchase(
         context: Activity,
         purchaseOptions: PurchaseOptionsInternalEnriched,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         if (purchaseOptions.product.storeId == null) {
             handlePurchaseError(QonversionError(QonversionErrorCode.ProductNotFound), callback)
@@ -395,7 +395,7 @@ internal class QProductCenterManager internal constructor(
 
     private fun handlePurchaseError(
         error: QonversionError,
-        callback: QonversionPurchaseResultCallback
+        callback: QonversionPurchaseCallback
     ) {
         val result = QPurchaseResult.error(error)
         callback.onResult(result)
@@ -522,26 +522,26 @@ internal class QProductCenterManager internal constructor(
 
     private fun calculatePurchasePermissionsLocally(
         purchase: Purchase,
-        purchaseCallback: QonversionPurchaseResultCallback?,
+        callback: QonversionPurchaseCallback?,
         purchaseError: QonversionError
     ) {
         val products = launchResultCache.getActualProducts() ?: run {
             failLocallyGrantingPurchasePermissionsWithError(
-                purchaseCallback,
+                callback,
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
             return
         }
 
         val productPermissions = launchResultCache.getProductPermissions() ?: run {
-            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            failLocallyGrantingPurchasePermissionsWithError(callback, purchaseError)
             return
         }
 
         val purchasedProduct = products.values.find { product ->
             product.storeId == purchase.productId
         } ?: run {
-            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            failLocallyGrantingPurchasePermissionsWithError(callback, purchaseError)
             return
         }
 
@@ -552,11 +552,11 @@ internal class QProductCenterManager internal constructor(
         )
 
         val entitlements = permissions.toEntitlementsMap()
-        purchaseCallback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        callback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
-        callback: QonversionPurchaseResultCallback?,
+        callback: QonversionPurchaseCallback?,
         error: QonversionError
     ) {
         launchResultCache.clearPermissionsCache()

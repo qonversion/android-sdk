@@ -14,7 +14,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
-import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import io.qonversion.sample.databinding.FragmentOfferingsBinding
 
@@ -61,7 +61,7 @@ class OfferingsFragment : Fragment() {
         Qonversion.shared.purchase(
             requireActivity(),
             product,
-            object : QonversionPurchaseResultCallback {
+            object : QonversionPurchaseCallback {
                 override fun onResult(result: QPurchaseResult) {
                     when {
                         result.isSuccessful -> {

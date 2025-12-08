@@ -25,7 +25,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
-import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.error.NoCodesError
@@ -305,7 +305,7 @@ class HomeFragment : Fragment(), NoCodesDelegate {
         Qonversion.shared.purchase(
             requireActivity(),
             product,
-            object : QonversionPurchaseResultCallback {
+            object : QonversionPurchaseCallback {
                 override fun onResult(result: QPurchaseResult) {
                     when {
                         result.isSuccessful -> {
