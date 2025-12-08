@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -133,7 +134,7 @@ interface Qonversion {
      * @param options optional purchase options
      * @param callback callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     * @see [QPurchaseResult] for details about the result object
+     * @see QPurchaseResult for details about the result object
      */
     fun purchase(
         context: Activity,
@@ -150,7 +151,7 @@ interface Qonversion {
      * @param product product for purchase
      * @param callback callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
-     * @see [QPurchaseResult] for details about the result object
+     * @see QPurchaseResult for details about the result object
      */
     fun purchase(
         context: Activity,

@@ -306,35 +306,40 @@ class HomeFragment : Fragment(), NoCodesDelegate {
             requireActivity(),
             product,
             object : QonversionPurchaseResultCallback {
-                override fun onSuccess(result: QPurchaseResult) {
-                    if (result.isSuccess) {
-                        when (product.qonversionId) {
-                            subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
-                            inAppProductId -> binding.buttonInApp.toSuccessState()
-                        }
-                        Toast.makeText(requireContext(), "Purchase successful!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        handlePurchaseError(result)
-                    }
-                }
+                override fun onResult(result: QPurchaseResult) {
+                    when {
+                        result.isSuccessful -> {
+                            when (product.qonversionId) {
+                                subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
+                                inAppProductId -> binding.buttonInApp.toSuccessState()
+                            }
 
-                override fun onError(result: QPurchaseResult) {
-                    handlePurchaseError(result)
+                            val message = if (result.isFallbackGenerated) {
+                                "Purchase succeeded with fallback"
+                            } else {
+                                "Purchase succeeded"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                        }
+                        result.isCanceledByUser -> {
+                            Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
+                        }
+                        result.isPending -> {
+                            Toast.makeText(context, "Purchase is pending", Toast.LENGTH_LONG).show()
+                        }
+                        result.isError -> {
+                            handlePurchaseError(result.error)
+                        }
+                    }
                 }
             })
     }
 
-    private fun handlePurchaseError(result: QPurchaseResult) {
-        when {
-            result.isCanceled -> {
-                Toast.makeText(requireContext(), "Purchase canceled by user", Toast.LENGTH_SHORT).show()
-            }
-            result.error != null -> {
-                showError(requireContext(), result.error!!, TAG)
-            }
-            else -> {
-                Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
-            }
+    private fun handlePurchaseError(error: QonversionError?) {
+        if (error != null) {
+            showError(requireContext(), error, TAG)
+        } else {
+            Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
         }
     }
 

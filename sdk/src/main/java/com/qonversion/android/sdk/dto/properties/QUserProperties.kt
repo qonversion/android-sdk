@@ -11,7 +11,7 @@ data class QUserProperties(
     /**
      * List of user properties, set for the Qonversion defined keys.
      * This is a subset of all [properties] list.
-     * @see [Qonversion.setUserProperty]
+     * @see Qonversion.setUserProperty
      */
     val definedProperties: List<QUserProperty> = properties
         .filter { it.definedKey !== QUserPropertyKey.Custom }
@@ -19,7 +19,7 @@ data class QUserProperties(
     /**
      * List of user properties, set for custom keys.
      * This is a subset of all [properties] list.
-     * @see [Qonversion.setCustomUserProperty]
+     * @see Qonversion.setCustomUserProperty
      */
     val customProperties: List<QUserProperty> = properties
         .filter { it.definedKey === QUserPropertyKey.Custom }
@@ -34,7 +34,7 @@ data class QUserProperties(
     /**
      * Map of user properties, set for the Qonversion defined keys.
      * This is a flattened version of the [definedProperties] list as a key-value map.
-     * @see [Qonversion.setUserProperty]
+     * @see Qonversion.setUserProperty
      */
     val flatDefinedPropertiesMap: Map<QUserPropertyKey, String> = definedProperties
         .associate { it.definedKey to it.value }
@@ -42,7 +42,7 @@ data class QUserProperties(
     /**
      * Map of user properties, set for custom keys.
      * This is a flattened version of the [customProperties] list as a key-value map.
-     * @see [Qonversion.setCustomUserProperty]
+     * @see Qonversion.setCustomUserProperty
      */
     val flatCustomPropertiesMap: Map<String, String> = customProperties
         .associate { it.key to it.value }

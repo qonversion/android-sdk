@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.listeners
 
-import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -48,8 +47,18 @@ interface QonversionRemoteConfigurationAttachCallback {
    fun onError(error: QonversionError)
 }
 
-interface QonversionPurchaseCallback : QonversionEntitlementsCallback {
-   fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) = onSuccess(entitlements)
+/**
+ * Callback interface for purchase operations that return a single PurchaseResult object.
+ * This is the new recommended way to handle purchase results as it provides
+ * all relevant information in a single object.
+ *
+ * @see QPurchaseResult for details about the result object
+ */
+interface QonversionPurchaseResultCallback {
+   /**
+    * Unified result callback for both success and error cases.
+    */
+   fun onResult(result: QPurchaseResult)
 }
 
 interface QonversionEntitlementsCallback {
@@ -60,11 +69,6 @@ interface QonversionEntitlementsCallback {
 interface QonversionEligibilityCallback {
     fun onSuccess(eligibilities: Map<String, QEligibility>)
     fun onError(error: QonversionError)
-}
-
-interface QonversionShowScreenCallback {
-   fun onSuccess()
-   fun onError(error: QonversionError)
 }
 
 interface QonversionUserCallback {
@@ -80,18 +84,4 @@ interface QonversionUserPropertiesCallback {
 interface QonversionEmptyCallback {
 
    fun onComplete()
-}
-
-/**
- * Callback interface for purchase operations that return a single PurchaseResult object.
- * This is the new recommended way to handle purchase results as it provides
- * all relevant information in a single object.
- *
- * @see QPurchaseResult for details about the result object
- */
-interface QonversionPurchaseResultCallback {
-    /**
-     * Unified result callback for both success and error cases.
-     */
-    fun onResult(result: QPurchaseResult)
 }

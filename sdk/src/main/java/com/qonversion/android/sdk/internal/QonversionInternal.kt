@@ -5,7 +5,6 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
@@ -34,13 +33,13 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseResultCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
-import com.qonversion.android.sdk.internal.purchase.InternalPurchaseCallbackFactory
+import com.qonversion.android.sdk.dto.QPurchaseResultStatus
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 
 internal class QonversionInternal(
     internalConfig: InternalConfig,
@@ -159,11 +158,10 @@ internal class QonversionInternal(
         options: QPurchaseOptions,
         callback: QonversionEntitlementsCallback
     ) {
-        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product, options),
-            internalCb
+            callback.toPurchaseResultCallback()
         )
     }
 
@@ -172,11 +170,10 @@ internal class QonversionInternal(
         product: QProduct,
         callback: QonversionEntitlementsCallback
     ) {
-        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product),
-            internalCb
+            callback.toPurchaseResultCallback()
         )
     }
 
@@ -186,11 +183,10 @@ internal class QonversionInternal(
         options: QPurchaseOptions,
         callback: QonversionEntitlementsCallback
     ) {
-        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product, options),
-            internalCb
+            callback.toPurchaseResultCallback()
         )
     }
 
@@ -200,11 +196,10 @@ internal class QonversionInternal(
         options: QPurchaseOptions?,
         callback: QonversionPurchaseResultCallback
     ) {
-        val internalCb = InternalPurchaseCallbackFactory.from(mainPurchaseResultCallback(callback))
         productCenterManager.purchaseProduct(
             context,
             PurchaseOptionsInternal(product, options),
-            internalCb
+            mainPurchaseResultCallback(callback)
         )
     }
 
@@ -213,7 +208,7 @@ internal class QonversionInternal(
         product: QProduct,
         callback: QonversionPurchaseResultCallback
     ) {
-        purchase(context, product, null, callback)
+        purchase(context, product, null, mainPurchaseResultCallback(callback))
     }
 
     override fun products(callback: QonversionProductsCallback) {
@@ -392,32 +387,22 @@ internal class QonversionInternal(
                 postToMainThread { callback.onError(error) }
         }
 
-    private fun mainPurchaseCallback(callback: QonversionEntitlementsCallback): QonversionPurchaseCallback {
-        val purchaseCallback = if (callback is QonversionPurchaseCallback) {
-            callback
-        } else {
-            object : QonversionPurchaseCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    callback.onSuccess(entitlements)
-                }
-
-                override fun onError(error: QonversionError) {
-                    callback.onError(error)
+    private fun QonversionEntitlementsCallback.toPurchaseResultCallback(): QonversionPurchaseResultCallback {
+        val purchaseResultCallback = object : QonversionPurchaseResultCallback {
+            override fun onResult(result: QPurchaseResult) {
+                when (result.status) {
+                    QPurchaseResultStatus.SUCCESS -> onSuccess(result.entitlements)
+                    QPurchaseResultStatus.PENDING -> onError(QonversionError(QonversionErrorCode.PurchasePending))
+                    QPurchaseResultStatus.USER_CANCELED -> onError(QonversionError(QonversionErrorCode.PurchaseCanceled))
+                    QPurchaseResultStatus.ERROR -> {
+                        val error = result.error ?: QonversionError(QonversionErrorCode.Unknown)
+                        onError(error)
+                    }
                 }
             }
         }
 
-        return object : QonversionPurchaseCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) {
-                postToMainThread { purchaseCallback.onSuccess(entitlements, purchase) }
-            }
-
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                postToMainThread { purchaseCallback.onSuccess(entitlements) }
-
-            override fun onError(error: QonversionError) =
-                postToMainThread { purchaseCallback.onError(error) }
-        }
+        return mainPurchaseResultCallback(purchaseResultCallback)
     }
 
     private fun mainPurchaseResultCallback(callback: QonversionPurchaseResultCallback): QonversionPurchaseResultCallback =

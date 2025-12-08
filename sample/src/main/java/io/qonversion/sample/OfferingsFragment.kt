@@ -62,27 +62,21 @@ class OfferingsFragment : Fragment() {
             requireActivity(),
             product,
             object : QonversionPurchaseResultCallback {
-                override fun onSuccess(result: QPurchaseResult) {
+                override fun onResult(result: QPurchaseResult) {
                     when {
-                        result.isSuccess -> {
-                            Toast.makeText(context, "Purchase succeeded", Toast.LENGTH_LONG).show()
+                        result.isSuccessful -> {
+                            val message = if (result.isFallbackGenerated) {
+                                "Purchase succeeded with fallback"
+                            } else {
+                                "Purchase succeeded"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                         }
-                        result.isCanceled -> {
+                        result.isCanceledByUser -> {
                             Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
                         }
-                        result.error != null -> {
-                            showError(requireContext(), result.error!!, TAG)
-                        }
-                        else -> {
-                            Toast.makeText(context, "Purchase failed", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-
-                override fun onError(result: QPurchaseResult) {
-                    when {
-                        result.isCanceled -> {
-                            Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
+                        result.isPending -> {
+                            Toast.makeText(context, "Purchase is pending", Toast.LENGTH_LONG).show()
                         }
                         result.error != null -> {
                             showError(requireContext(), result.error!!, TAG)
