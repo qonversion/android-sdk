@@ -110,6 +110,7 @@
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest$purchaseToken = "gfegjilekkmecbonpfjiaakm.AO-J1OxQCaAn0NPlHTh5CoOiXK0p19X7qEymW9SHtssrggp7S9YafjA1oPBPlWO4Ur3W5rtyNJBzIrVoLOb5In0Jxofv4xV_7t1HaUYYd_f8xOBk7nRIY7g"</ID>
     <ID>MaxLineLength:PurchasesCacheTest.kt$PurchasesCacheTest.SavePurchase$"[${generatePurchaseJson("2")},${generatePurchaseJson("3")},${generatePurchaseJson("4")},${generatePurchaseJson("5")}]"</ID>
     <ID>MaxLineLength:QEntitlementsUpdateListener.kt$QEntitlementsUpdateListener$*</ID>
+    <ID>MaxLineLength:QProductCenterManager.kt$QProductCenterManager$private inline</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }</ID>
     <ID>MaxLineLength:QProductCenterManagerTest.kt$QProductCenterManagerTest${ Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) }</ID>
     <ID>MaxLineLength:QProductStoreDetails.kt$QProductStoreDetails$basePlanSubscriptionOfferDetails?.basePlan?.recurrenceMode == QProductPricingPhase.RecurrenceMode.NonRecurring</ID>
@@ -122,8 +123,6 @@
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$*</ID>
     <ID>MaxLineLength:QonversionError.kt$QonversionErrorCode$RemoteConfigurationNotAvailable : QonversionErrorCode</ID>
     <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$@Deprecated("Due to the Google Play Billing Library 8 limitations, this method doesn't restore historical purchases anymore.")</ID>
-    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal$private</ID>
-    <ID>MaxLineLength:QonversionInternal.kt$QonversionInternal.&lt;no name provided&gt;$QPurchaseResultStatus.USER_CANCELED -&gt; onError(QonversionError(QonversionErrorCode.PurchaseCanceled))</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"""HTTP status code=400, data={"message":"Invalid access token received","code":10003,"status":400,"extra":[]}. """</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"efnkoceomiocidgigbalneag.AO-J1Ow8JyXX8gs8W9blILbU9Nqy3Mr-RMTLgFG2DLOhO1urkWpr80PUSE6eA0IuEzl_k4Guecep5JZJwcnSYOWzTZhqwusafayRCbv4kRMUR-rR9Ot11nQ"</ID>
     <ID>MaxLineLength:QonversionRepositoryIntegrationTest.kt$QonversionRepositoryIntegrationTest$"lgeigljfpmeoddkcebkcepjc.AO-J1Oy305qZj99jXTPEVBN8UZGoYAtjDLj4uTjRQvUFaG0vie-nr6VBlN0qnNDMU8eJR-sI7o3CwQyMOEHKl8eJsoQ86KSFzxKBR07PSpHLI_o7agXhNKY"</ID>
@@ -148,13 +147,12 @@
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:214</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:371</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.OutagerIntegrationTest.kt:87</ID>
+    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManager.kt:1100</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:151</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:152</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QRemoteConfigManager.kt:225</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:178</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:133</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:396</ID>
-    <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionInternal.kt:408</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:289</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:358</ID>
     <ID>MaximumLineLength:com.qonversion.android.sdk.internal.QonversionRepositoryIntegrationTest.kt:724</ID>
@@ -242,7 +240,7 @@
     <ID>ReturnCount:QExceptionManager.kt$QExceptionManager$private fun getContentOfCrashReport(filename: String): CrashRequest.ExceptionInfo?</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$fun identify(identityId: String, callback: QonversionUserCallback? = null)</ID>
-    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, purchaseCallback: QonversionPurchaseResultCallback?, purchaseError: QonversionError )</ID>
+    <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, callback: QonversionPurchaseCallback?, purchaseError: QonversionError )</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:39</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:54</ID>
