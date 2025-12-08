@@ -78,11 +78,13 @@ class OfferingsFragment : Fragment() {
                         result.isPending -> {
                             Toast.makeText(context, "Purchase is pending", Toast.LENGTH_LONG).show()
                         }
-                        result.error != null -> {
-                            showError(requireContext(), result.error!!, TAG)
-                        }
-                        else -> {
-                            Toast.makeText(context, "Purchase failed", Toast.LENGTH_LONG).show()
+                        result.isError -> {
+                            val error = result.error
+                            if (error != null) {
+                                showError(requireContext(), error, TAG)
+                            } else {
+                                Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
