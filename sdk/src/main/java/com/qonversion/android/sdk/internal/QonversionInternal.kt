@@ -391,10 +391,10 @@ internal class QonversionInternal(
         val purchaseResultCallback = object : QonversionPurchaseCallback {
             override fun onResult(result: QPurchaseResult) {
                 when (result.status) {
-                    QPurchaseResultStatus.SUCCESS -> onSuccess(result.entitlements)
-                    QPurchaseResultStatus.PENDING -> onError(QonversionError(QonversionErrorCode.PurchasePending))
-                    QPurchaseResultStatus.USER_CANCELED -> onError(QonversionError(QonversionErrorCode.PurchaseCanceled))
-                    QPurchaseResultStatus.ERROR -> {
+                    QPurchaseResultStatus.Success -> onSuccess(result.entitlements)
+                    QPurchaseResultStatus.Pending -> onError(QonversionError(QonversionErrorCode.PurchasePending))
+                    QPurchaseResultStatus.UserCanceled -> onError(QonversionError(QonversionErrorCode.PurchaseCanceled))
+                    QPurchaseResultStatus.Error -> {
                         val error = result.error ?: QonversionError(QonversionErrorCode.Unknown)
                         onError(error)
                     }

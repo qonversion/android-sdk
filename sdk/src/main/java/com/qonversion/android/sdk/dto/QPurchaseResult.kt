@@ -32,25 +32,25 @@ class QPurchaseResult private constructor(
      * Indicates whether the purchase was completed successfully (either through the API or fallback system)
      */
     val isSuccessful: Boolean
-        get() = status == QPurchaseResultStatus.SUCCESS
+        get() = status == QPurchaseResultStatus.Success
 
     /**
      * Indicates whether the user canceled the purchase
      */
     val isCanceledByUser: Boolean
-        get() = status == QPurchaseResultStatus.USER_CANCELED
+        get() = status == QPurchaseResultStatus.UserCanceled
 
     /**
      * Indicates whether the purchase is pending (awaiting completion)
      */
     val isPending: Boolean
-        get() = status == QPurchaseResultStatus.PENDING
+        get() = status == QPurchaseResultStatus.Pending
 
     /**
      * Indicates whether the purchase failed due to an error
      */
     val isError: Boolean
-        get() = status == QPurchaseResultStatus.ERROR
+        get() = status == QPurchaseResultStatus.Error
 
     internal companion object {
         fun success(
@@ -58,7 +58,7 @@ class QPurchaseResult private constructor(
             purchase: Purchase
         ): QPurchaseResult {
             return QPurchaseResult(
-                QPurchaseResultStatus.SUCCESS,
+                QPurchaseResultStatus.Success,
                 entitlements,
                 purchase,
                 null,
@@ -71,7 +71,7 @@ class QPurchaseResult private constructor(
             purchase: Purchase
         ): QPurchaseResult {
             return QPurchaseResult(
-                QPurchaseResultStatus.SUCCESS,
+                QPurchaseResultStatus.Success,
                 entitlements,
                 purchase,
                 null,
@@ -81,7 +81,7 @@ class QPurchaseResult private constructor(
 
         fun userCanceled(): QPurchaseResult {
             return QPurchaseResult(
-                QPurchaseResultStatus.USER_CANCELED,
+                QPurchaseResultStatus.UserCanceled,
                 emptyMap(),
                 null,
                 null,
@@ -91,7 +91,7 @@ class QPurchaseResult private constructor(
 
         fun pending(): QPurchaseResult {
             return QPurchaseResult(
-                QPurchaseResultStatus.PENDING,
+                QPurchaseResultStatus.Pending,
                 emptyMap(),
                 null,
                 null,
@@ -101,7 +101,7 @@ class QPurchaseResult private constructor(
 
         fun error(error: QonversionError): QPurchaseResult {
             return QPurchaseResult(
-                QPurchaseResultStatus.ERROR,
+                QPurchaseResultStatus.Error,
                 emptyMap(),
                 null,
                 error,

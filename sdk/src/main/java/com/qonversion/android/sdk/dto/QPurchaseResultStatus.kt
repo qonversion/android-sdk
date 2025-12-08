@@ -9,8 +9,8 @@ package com.qonversion.android.sdk.dto
  * - ERROR: The purchase failed due to an error (and fallback system could not handle it)
  */
 enum class QPurchaseResultStatus {
-    SUCCESS,
-    USER_CANCELED,
-    PENDING,
-    ERROR
+    Success,
+    UserCanceled,
+    Pending,
+    Error
 }
