@@ -328,19 +328,16 @@ class HomeFragment : Fragment(), NoCodesDelegate {
                             Toast.makeText(context, "Purchase is pending", Toast.LENGTH_LONG).show()
                         }
                         result.isError -> {
-                            handlePurchaseError(result.error)
+                            val error = result.error
+                            if (error != null) {
+                                showError(requireContext(), error, TAG)
+                            } else {
+                                Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
             })
-    }
-
-    private fun handlePurchaseError(error: QonversionError?) {
-        if (error != null) {
-            showError(requireContext(), error, TAG)
-        } else {
-            Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun showLoading(isLoading: Boolean) {
