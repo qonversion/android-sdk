@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
@@ -19,6 +20,7 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 
 interface Qonversion {
 
@@ -80,13 +82,49 @@ interface Qonversion {
     fun syncHistoricalData()
 
     /**
+     * Purchase a product and validate it through server-to-server using Qonversion's Backend.
+     * This is the new recommended method that returns a single [QPurchaseResult] object containing
+     * all relevant information about the purchase outcome.
+     * @param context current activity context
+     * @param product product for purchase
+     * @param options optional purchase options
+     * @param callback callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @see QPurchaseResult for details about the result object
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        options: QPurchaseOptions?,
+        callback: QonversionPurchaseCallback
+    )
+
+    /**
+     * Purchase a product and validate it through server-to-server using Qonversion's Backend.
+     * This is the new recommended method that returns a single [QPurchaseResult] object containing
+     * all relevant information about the purchase outcome.
+     * @param context current activity context
+     * @param product product for purchase
+     * @param callback callback that will be called when response is received
+     * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @see QPurchaseResult for details about the result object
+     */
+    fun purchase(
+        context: Activity,
+        product: QProduct,
+        callback: QonversionPurchaseCallback
+    )
+
+    /**
      * Make a purchase and validate it through server-to-server using Qonversion's Backend
      * @param context current activity context
      * @param product product for purchase
      * @param options necessary information for purchase
      * @param callback - callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @deprecated Use [purchase] with [QonversionPurchaseCallback] instead. This method will be removed in a future version.
      */
+    @Deprecated(message = "Use purchase(context, product, options, callback: QonversionPurchaseCallback) instead")
     fun purchase(
         context: Activity,
         product: QProduct,
@@ -100,7 +138,9 @@ interface Qonversion {
      * @param product product for purchase
      * @param callback - callback that will be called when response is received
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @deprecated Use [purchase] with [QonversionPurchaseCallback] instead. This method will be removed in a future version.
      */
+    @Deprecated(message = "Use purchase(context, product, callback: QonversionPurchaseCallback) instead")
     fun purchase(
         context: Activity,
         product: QProduct,
@@ -115,7 +155,9 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      * @see [Update policy](https://developer.android.com/google/play/billing/subscriptions#replacement-modes)
      * @see [Making Purchases](https://documentation.qonversion.io/docs/making-purchases)
+     * @deprecated Use [purchase] with [QonversionPurchaseCallback] instead. This method will be removed in a future version.
      */
+    @Deprecated(message = "Use purchase(context, product, options, callback: QonversionPurchaseCallback) instead")
     fun updatePurchase(
         context: Activity,
         product: QProduct,

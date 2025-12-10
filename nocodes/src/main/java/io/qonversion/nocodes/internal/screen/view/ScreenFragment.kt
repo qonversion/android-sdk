@@ -17,16 +17,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QPurchaseOptions
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import androidx.core.net.toUri
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 
 class ScreenFragment : Fragment(), ScreenContract.View {
 
@@ -183,15 +186,22 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 context,
                 product,
                 purchaseOptions,
-                object : QonversionEntitlementsCallback {
-                    override fun onSuccess(entitlements: Map<String, QEntitlement>) =
-                        closeAll(action)
-
-                    override fun onError(error: QonversionError) = handleOnErrorCallback(
-                        object {}.javaClass.enclosingMethod?.name,
-                        error,
-                        action
-                    )
+                object : QonversionPurchaseCallback {
+                    override fun onResult(result: QPurchaseResult) {
+                        if (result.isSuccessful) {
+                            closeAll(action)
+                        } else {
+                            val error = result.error ?: QonversionError(
+                                code = QonversionErrorCode.Unknown,
+                                additionalMessage = "Purchase failed"
+                            )
+                            handleOnErrorCallback(
+                                object {}.javaClass.enclosingMethod?.name,
+                                error,
+                                action
+                            )
+                        }
+                    }
                 })
         }
     }
