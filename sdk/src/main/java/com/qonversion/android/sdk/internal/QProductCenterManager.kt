@@ -46,8 +46,9 @@ import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import kotlin.math.min
 import java.util.Date
 
@@ -113,7 +114,6 @@ internal class QProductCenterManager internal constructor(
                 PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong())
             )
         } else {
-            @Suppress("DEPRECATION")
             context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
         }
         installDate = packageInfo.firstInstallTime.milliSecondsToSeconds()
@@ -330,12 +330,12 @@ internal class QProductCenterManager internal constructor(
         callback: QonversionPurchaseCallback
     ) {
         val products = launchResultCache.getActualProducts() ?: run {
-            callback.onError(launchError ?: QonversionError(QonversionErrorCode.LaunchError))
+            handlePurchaseError(QonversionError(QonversionErrorCode.LaunchError), callback)
             return
         }
 
         val oldProduct: QProduct? = purchaseOptions.options?.oldProduct
-            ?: getProductForPurchase(purchaseOptions.oldProductId, products)
+            ?: products[purchaseOptions.oldProductId]
         val purchaseOptionsEnriched = purchaseOptions.enrich(oldProduct)
         processPurchase(context, purchaseOptionsEnriched, callback)
     }
@@ -346,12 +346,13 @@ internal class QProductCenterManager internal constructor(
         callback: QonversionPurchaseCallback
     ) {
         if (purchaseOptions.product.storeId == null) {
-            callback.onError(QonversionError(QonversionErrorCode.ProductNotFound))
+            handlePurchaseError(QonversionError(QonversionErrorCode.ProductNotFound), callback)
             return
         }
 
         val purchasingCallback = purchasingCallbacks[purchaseOptions.product.storeId]
-        purchasingCallback?.let {
+
+        if (purchasingCallback != null) {
             logger.release(
                 "purchaseProduct() -> Purchase of the product " +
                         "${purchaseOptions.product.qonversionId} is already in progress. This call will be ignored"
@@ -359,6 +360,7 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
+        // Save result callback directly
         purchasingCallbacks[purchaseOptions.product.storeId] = callback
 
         updatePurchaseOptions(purchaseOptions.options, purchaseOptions.product.storeId)
@@ -382,15 +384,12 @@ internal class QProductCenterManager internal constructor(
         updatePurchaseOptions(null, productId)
     }
 
-    private fun getProductForPurchase(
-        productId: String?,
-        products: Map<String, QProduct>
-    ): QProduct? {
-        if (productId == null) {
-            return null
-        }
-
-        return products[productId]
+    private fun handlePurchaseError(
+        error: QonversionError,
+        callback: QonversionPurchaseCallback
+    ) {
+        val result = QPurchaseResult.error(error)
+        callback.onResult(result)
     }
 
     fun checkEntitlements(callback: QonversionEntitlementsCallback) {
@@ -445,24 +444,44 @@ internal class QProductCenterManager internal constructor(
         restore(RequestTrigger.SyncPurchases)
     }
 
+    fun logout() {
+        pendingPartnersIdentityId = null
+        val isLogoutNeeded = identityManager.logoutIfNeeded()
+
+        if (isLogoutNeeded) {
+            remoteConfigManager.onUserUpdate()
+            launchResultCache.clearPermissionsCache()
+
+            unhandledLogoutAvailable = true
+
+            val userId = userInfoService.obtainUserId()
+            internalConfig.uid = userId
+        }
+    }
+
+    fun getUserInfo(callback: QonversionUserCallback) {
+        val user = QUser(internalConfig.uid, identityManager.currentPartnersIdentityId)
+        callback.onSuccess(user)
+    }
+
+    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
+        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
+    }
+
     override fun onPurchasesCompleted(purchases: List<Purchase>) {
         handlePurchases(purchases, RequestTrigger.Purchase)
     }
 
+    override fun onPurchasesCanceled(purchases: List<Purchase>) {
+        forEachPurchaseCallback(purchases) { callback ->
+            callback.onResult(QPurchaseResult.userCanceled())
+        }
+    }
+
     override fun onPurchasesFailed(error: BillingError, purchases: List<Purchase>) {
-        if (purchases.isNotEmpty()) {
-            purchases.forEach { purchase ->
-                val purchaseCallback = purchasingCallbacks[purchase.productId]
-                purchasingCallbacks.remove(purchase.productId)
-                purchaseCallback?.onError(error.toQonversionError())
-            }
-        } else {
-            purchasingCallbacks.values.forEach {
-                // Sometimes the callback might be dead at the moment of invocation
-                @Suppress("UNNECESSARY_SAFE_CALL")
-                it?.onError(error.toQonversionError())
-            }
-            purchasingCallbacks.clear()
+        val qonversionError = error.toQonversionError()
+        forEachPurchaseCallback(purchases) { callback ->
+            callback.onResult(QPurchaseResult.error(qonversionError))
         }
     }
 
@@ -495,26 +514,26 @@ internal class QProductCenterManager internal constructor(
 
     private fun calculatePurchasePermissionsLocally(
         purchase: Purchase,
-        purchaseCallback: QonversionPurchaseCallback?,
+        callback: QonversionPurchaseCallback?,
         purchaseError: QonversionError
     ) {
         val products = launchResultCache.getActualProducts() ?: run {
             failLocallyGrantingPurchasePermissionsWithError(
-                purchaseCallback,
+                callback,
                 launchError ?: QonversionError(QonversionErrorCode.LaunchError)
             )
             return
         }
 
         val productPermissions = launchResultCache.getProductPermissions() ?: run {
-            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            failLocallyGrantingPurchasePermissionsWithError(callback, purchaseError)
             return
         }
 
         val purchasedProduct = products.values.find { product ->
             product.storeId == purchase.productId
         } ?: run {
-            failLocallyGrantingPurchasePermissionsWithError(purchaseCallback, purchaseError)
+            failLocallyGrantingPurchasePermissionsWithError(callback, purchaseError)
             return
         }
 
@@ -523,7 +542,9 @@ internal class QProductCenterManager internal constructor(
             purchasedProduct,
             productPermissions
         )
-        purchaseCallback?.onSuccess(permissions.toEntitlementsMap(), purchase)
+
+        val entitlements = permissions.toEntitlementsMap()
+        callback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -531,7 +552,7 @@ internal class QProductCenterManager internal constructor(
         error: QonversionError
     ) {
         launchResultCache.clearPermissionsCache()
-        callback?.onError(error)
+        callback?.onResult(QPurchaseResult.error(error))
     }
 
     private fun failLocallyGrantingRestorePermissionsWithError(
@@ -764,30 +785,6 @@ internal class QProductCenterManager internal constructor(
         }
     }
 
-    fun logout() {
-        pendingPartnersIdentityId = null
-        val isLogoutNeeded = identityManager.logoutIfNeeded()
-
-        if (isLogoutNeeded) {
-            remoteConfigManager.onUserUpdate()
-            launchResultCache.clearPermissionsCache()
-
-            unhandledLogoutAvailable = true
-
-            val userId = userInfoService.obtainUserId()
-            internalConfig.uid = userId
-        }
-    }
-
-    fun getUserInfo(callback: QonversionUserCallback) {
-        val user = QUser(internalConfig.uid, identityManager.currentPartnersIdentityId)
-        callback.onSuccess(user)
-    }
-
-    fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
-        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
-    }
-
     private fun handleLogout() {
         unhandledLogoutAvailable = false
         launch(RequestTrigger.Logout)
@@ -1011,11 +1008,12 @@ internal class QProductCenterManager internal constructor(
 
             when (purchase.purchaseState) {
                 Purchase.PurchaseState.PENDING -> {
-                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchasePending))
+                    purchaseCallback?.onResult(QPurchaseResult.pending())
                     return@forEach
                 }
                 Purchase.PurchaseState.UNSPECIFIED_STATE -> {
-                    purchaseCallback?.onError(QonversionError(QonversionErrorCode.PurchaseUnspecified))
+                    val error = QonversionError(QonversionErrorCode.PurchaseUnspecified)
+                    purchaseCallback?.onResult(QPurchaseResult.error(error))
                     return@forEach
                 }
             }
@@ -1039,11 +1037,14 @@ internal class QProductCenterManager internal constructor(
                         val entitlements = launchResult.permissions.toEntitlementsMap()
 
                         removePurchaseOptions(product?.storeId)
-                        purchaseCallback?.onSuccess(entitlements, purchase) ?: run {
-                            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(
-                                entitlements
-                            )
+
+                        if (purchaseCallback == null) {
+                            // If no callback, notify entitlements update listener
+                            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+                        } else {
+                            purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }
+
                         handledPurchasesCache.saveHandledPurchase(purchase)
                     }
 
@@ -1059,7 +1060,7 @@ internal class QProductCenterManager internal constructor(
                                 error
                             )
                         } else {
-                            purchaseCallback?.onError(error)
+                            purchaseCallback?.onResult(QPurchaseResult.error(error))
                         }
                     }
                 })
@@ -1094,6 +1095,26 @@ internal class QProductCenterManager internal constructor(
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         error.httpCode?.isInternalServerError() == true
                 )
+    }
+
+    private inline fun forEachPurchaseCallback(purchases: List<Purchase>, action: (QonversionPurchaseCallback) -> Unit) {
+        if (purchases.isNotEmpty()) {
+            purchases.forEach { purchase ->
+                val purchaseCallback = purchasingCallbacks[purchase.productId]
+                purchasingCallbacks.remove(purchase.productId)
+
+                purchaseCallback?.let { action(it) }
+            }
+        } else {
+            val callbacks = purchasingCallbacks.toMap()
+            purchasingCallbacks.clear()
+
+            callbacks.values.forEach { callback ->
+                // Sometimes the callback might be dead at the moment of invocation
+                @Suppress("UNNECESSARY_SAFE_CALL")
+                callback?.let { action(it) }
+            }
+        }
     }
 
     private fun addIdentityCallback(identityId: String, callback: QonversionUserCallback?) {

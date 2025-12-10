@@ -9,7 +9,7 @@ enum class QEntitlementSource(internal val key: String) {
 
     companion object {
         fun fromKey(key: String): QEntitlementSource {
-            return values().find { it.key == key } ?: Unknown
+            return entries.find { it.key == key } ?: Unknown
         }
     }
 }

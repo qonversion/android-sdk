@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.listeners
 
-import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -11,6 +10,7 @@ import com.qonversion.android.sdk.dto.offerings.QOfferings
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.eligibility.QEligibility
 import com.qonversion.android.sdk.dto.properties.QUserProperties
+import com.qonversion.android.sdk.dto.QPurchaseResult
 
 internal interface QonversionLaunchCallback {
    fun onSuccess(launchResult: QLaunchResult)
@@ -47,8 +47,8 @@ interface QonversionRemoteConfigurationAttachCallback {
    fun onError(error: QonversionError)
 }
 
-interface QonversionPurchaseCallback : QonversionEntitlementsCallback {
-   fun onSuccess(entitlements: Map<String, QEntitlement>, purchase: Purchase) = onSuccess(entitlements)
+interface QonversionPurchaseCallback {
+   fun onResult(result: QPurchaseResult)
 }
 
 interface QonversionEntitlementsCallback {
@@ -59,11 +59,6 @@ interface QonversionEntitlementsCallback {
 interface QonversionEligibilityCallback {
     fun onSuccess(eligibilities: Map<String, QEligibility>)
     fun onError(error: QonversionError)
-}
-
-interface QonversionShowScreenCallback {
-   fun onSuccess()
-   fun onError(error: QonversionError)
 }
 
 interface QonversionUserCallback {

@@ -25,6 +25,8 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -303,16 +305,37 @@ class HomeFragment : Fragment(), NoCodesDelegate {
         Qonversion.shared.purchase(
             requireActivity(),
             product,
-            object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                    when (product.qonversionId) {
-                        subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
-                        inAppProductId -> binding.buttonInApp.toSuccessState()
-                    }
-                }
+            object : QonversionPurchaseCallback {
+                override fun onResult(result: QPurchaseResult) {
+                    when {
+                        result.isSuccessful -> {
+                            when (product.qonversionId) {
+                                subscriptionProductId -> binding.buttonSubscribe.toSuccessState()
+                                inAppProductId -> binding.buttonInApp.toSuccessState()
+                            }
 
-                override fun onError(error: QonversionError) {
-                    showError(requireContext(), error, TAG)
+                            val message = if (result.isFallbackGenerated) {
+                                "Purchase succeeded with fallback"
+                            } else {
+                                "Purchase succeeded"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                        }
+                        result.isCanceledByUser -> {
+                            Toast.makeText(context, "Purchase canceled by user", Toast.LENGTH_LONG).show()
+                        }
+                        result.isPending -> {
+                            Toast.makeText(context, "Purchase is pending", Toast.LENGTH_LONG).show()
+                        }
+                        result.isError -> {
+                            val error = result.error
+                            if (error != null) {
+                                showError(requireContext(), error, TAG)
+                            } else {
+                                Toast.makeText(requireContext(), "Purchase failed", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
             })
     }
