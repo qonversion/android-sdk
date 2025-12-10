@@ -81,7 +81,6 @@ interface Qonversion {
     @Deprecated("Due to the Google Play Billing Library 8 limitations, this method doesn't restore historical purchases anymore.")
     fun syncHistoricalData()
 
-
     /**
      * Purchase a product and validate it through server-to-server using Qonversion's Backend.
      * This is the new recommended method that returns a single [QPurchaseResult] object containing
