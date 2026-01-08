@@ -25,7 +25,19 @@ internal class MiscAssemblyImpl(
 
     override fun logger(): Logger = ConsoleLogger(internalConfig)
 
-    override fun locale(): Locale = Locale.getDefault()
+    override fun locale(): Locale {
+        return internalConfig.customLocale?.let { customLocale ->
+            // Parse custom locale string (e.g., "en", "en-US", "ru-RU")
+            val parts = customLocale.replace("_", "-").split("-")
+            when (parts.size) {
+                1 -> Locale(parts[0])
+                2 -> Locale(parts[0], parts[1])
+                else -> Locale(parts[0], parts[1], parts.drop(2).joinToString("-"))
+            }
+        } ?: Locale.getDefault()
+    }
+
+    override fun customLocale(): String? = internalConfig.customLocale
 
     override fun jsonSerializer(): Serializer = JsonSerializer()
 
