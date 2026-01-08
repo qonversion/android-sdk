@@ -69,4 +69,8 @@ internal class NoCodesInternal(
     override fun setLogTag(logTag: String) {
         internalConfig.loggerConfig = internalConfig.loggerConfig.copy(logTag = logTag)
     }
+
+    override fun setLocale(locale: String?) {
+        internalConfig.customLocale = locale
+    }
 }
