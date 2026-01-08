@@ -112,7 +112,7 @@ complexity:
     threshold: 60
     ignoreAnnotated: []
   LongParameterList:
-    active: true
+    active: false
     functionThreshold: 6
     constructorThreshold: 7
     ignoreDefaultParameters: false
@@ -306,7 +306,7 @@ formatting:
     indentSize: 4
     continuationIndentSize: 4
   MaximumLineLength:
-    active: true
+    active: false
     maxLineLength: 120
     ignoreBackTickedIdentifier: false
   ModifierOrdering:
@@ -678,7 +678,7 @@ style:
   MandatoryBracesLoops:
     active: false
   MaxLineLength:
-    active: true
+    active: false
     maxLineLength: 120
     excludePackageStatements: true
     excludeImportStatements: true

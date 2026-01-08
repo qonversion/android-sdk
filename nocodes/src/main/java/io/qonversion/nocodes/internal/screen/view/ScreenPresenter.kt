@@ -29,6 +29,7 @@ internal class ScreenPresenter(
     private val delegateProvider: NoCodesDelegateProvider,
     private val serializer: Serializer,
     private val actionMapper: Mapper<QAction>,
+    private val customLocaleProvider: () -> String? = { null },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
 
@@ -68,7 +69,29 @@ internal class ScreenPresenter(
 
             currentScreen = screen
             logger.verbose("ScreenPresenter -> displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")
-            view.displayScreen(screen.id, screen.body)
+
+            val htmlWithLocale = injectCustomLocale(screen.body)
+            view.displayScreen(screen.id, htmlWithLocale)
+        }
+    }
+
+    /**
+     * Injects a script tag with the custom locale into the HTML's head section.
+     * This allows the JavaScript localization script to use the client-specified locale.
+     */
+    private fun injectCustomLocale(html: String): String {
+        val customLocale = customLocaleProvider() ?: return html
+
+        val localeScript = "<script>window.noCodesCustomLocale = \"$customLocale\";</script>"
+
+        // Try to inject after <head> tag
+        val headIndex = html.indexOf("<head>", ignoreCase = true)
+        return if (headIndex != -1) {
+            val insertPosition = headIndex + "<head>".length
+            html.substring(0, insertPosition) + localeScript + html.substring(insertPosition)
+        } else {
+            // Fallback: prepend to HTML
+            localeScript + html
         }
     }
 

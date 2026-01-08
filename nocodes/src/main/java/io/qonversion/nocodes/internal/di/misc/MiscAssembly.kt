@@ -14,6 +14,11 @@ internal interface MiscAssembly {
 
     fun locale(): Locale
 
+    /**
+     * Returns the custom locale string set by the client, or null if using system default.
+     */
+    fun customLocale(): String?
+
     fun jsonSerializer(): Serializer
 
     fun exponentialDelayCalculator(): RetryDelayCalculator

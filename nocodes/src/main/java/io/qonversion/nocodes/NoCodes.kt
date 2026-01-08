@@ -130,4 +130,19 @@ interface NoCodes {
      * @param logTag the desired log tag.
      */
     fun setLogTag(logTag: String)
+
+    /**
+     * Set a custom locale for No-Code screens localization.
+     * If set, this locale will take priority over the system default locale when determining
+     * which localization to show on No-Code screens.
+     * The locale should be in standard format (e.g., "en", "en-US", "de", "de-DE").
+     *
+     * You may set locale both *after* Qonversion No-Codes SDK initializing with [NoCodes.setLocale]
+     * and *while* Qonversion No-Codes initializing via [NoCodesConfig.Builder.setLocale]
+     *
+     * Pass null to reset to system default locale.
+     *
+     * @param locale the custom locale code, or null to use system default.
+     */
+    fun setLocale(locale: String?)
 }

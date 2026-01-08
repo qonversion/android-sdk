@@ -31,6 +31,7 @@ class NoCodesConfig internal constructor(
     internal val screenCustomizationDelegate: ScreenCustomizationDelegate?,
     internal val purchaseDelegate: PurchaseDelegate?,
     internal val purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks?,
+    internal val locale: String?,
 ) {
 
     /**
@@ -55,6 +56,7 @@ class NoCodesConfig internal constructor(
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
         private var customFallbackFileName: String? = null
+        private var locale: String? = null
 
         /**
          * Provide a delegate to be notified about the no-code screens events.
@@ -158,6 +160,18 @@ class NoCodesConfig internal constructor(
         }
 
         /**
+         * Set a custom locale for No-Code screens localization.
+         * If set, this locale will take priority over the system default locale.
+         * The locale should be in standard format (e.g., "en", "en-US", "de", "de-DE").
+         *
+         * @param locale the custom locale code.
+         * @return builder instance for chain calls.
+         */
+        fun setLocale(locale: String): Builder = apply {
+            this.locale = locale
+        }
+
+        /**
          * Generate [NoCodesConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -182,6 +196,7 @@ class NoCodesConfig internal constructor(
                 screenCustomizationDelegate,
                 purchaseDelegate,
                 purchaseDelegateWithCallbacks,
+                locale,
             )
         }
     }
