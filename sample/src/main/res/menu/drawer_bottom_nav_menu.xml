@@ -3,17 +3,27 @@
 
     <item
         android:id="@+id/homeFragment"
-        android:icon="@drawable/ic_notification"
-        android:title="Home" />
+        android:icon="@drawable/ic_home"
+        android:title="@string/home" />
+
+    <item
+        android:id="@+id/productsFragment"
+        android:icon="@drawable/ic_products"
+        android:title="@string/products" />
 
     <item
         android:id="@+id/entitlementsFragment"
         android:icon="@drawable/ic_entitlement"
-        android:title="Entitlements" />
+        android:title="@string/entitlements" />
 
     <item
-        android:id="@+id/offeringsFragment"
-        android:icon="@drawable/ic_offering"
-        android:title="Offerings" />
+        android:id="@+id/userFragment"
+        android:icon="@drawable/ic_user"
+        android:title="@string/user" />
+
+    <item
+        android:id="@+id/otherFragment"
+        android:icon="@drawable/ic_other"
+        android:title="@string/other" />
 
 </menu>
