@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val isTopLevel = appBarConfiguration.topLevelDestinations.contains(destination.id)
             binding.bottomNav.visibility = if (isTopLevel) View.VISIBLE else View.GONE
-            
+
             // Show toolbar title
             binding.toolbar.title = destination.label
         }

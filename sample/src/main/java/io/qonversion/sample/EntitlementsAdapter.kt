@@ -30,11 +30,11 @@ class EntitlementsAdapter(
     override fun onBindViewHolder(holder: EntitlementViewHolder, position: Int) {
         val entitlement = entitlements[position]
         val context = holder.itemView.context
-        
+
         with(holder.binding) {
             entitlementId.text = entitlement.id
             productId.text = entitlement.productId
-            
+
             if (entitlement.isActive) {
                 statusIndicator.setBackgroundColor(ContextCompat.getColor(context, R.color.colorGreen))
                 statusText.text = context.getString(R.string.active)
@@ -44,12 +44,12 @@ class EntitlementsAdapter(
                 statusText.text = context.getString(R.string.inactive)
                 statusText.setTextColor(ContextCompat.getColor(context, R.color.colorRed))
             }
-            
+
             renewState.text = entitlement.renewState.name
             source.text = entitlement.source.name
-            
+
             startedDate.text = formatDate(entitlement.startedDate)
-            expirationDate.text = entitlement.expirationDate?.let { formatDate(it) } 
+            expirationDate.text = entitlement.expirationDate?.let { formatDate(it) }
                 ?: context.getString(R.string.not_available)
         }
     }

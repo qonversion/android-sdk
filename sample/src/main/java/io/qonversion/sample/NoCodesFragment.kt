@@ -12,8 +12,6 @@ import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.sample.databinding.FragmentNocodesBinding
 
-private const val TAG = "NoCodesFragment"
-
 class NoCodesFragment : Fragment(), NoCodesDelegate {
 
     private var _binding: FragmentNocodesBinding? = null

@@ -82,20 +82,20 @@ class ProductDetailFragment : Fragment() {
         binding.offerId.text = product.storeDetails?.defaultSubscriptionOfferDetails?.offerId ?: getString(R.string.not_available)
         binding.offeringId.text = product.offeringId ?: getString(R.string.not_available)
         binding.productType.text = product.type.name
-        
+
         val storeDetails = product.storeDetails
         if (storeDetails != null) {
             binding.storeTitle.text = storeDetails.title
             binding.storeDescription.text = storeDetails.description
             binding.price.text = product.prettyPrice ?: getString(R.string.not_available)
-            
+
             val period = product.subscriptionPeriod
             if (period != null) {
                 binding.subscriptionPeriod.text = "${period.unitCount} ${period.unit.name}"
             } else {
                 binding.subscriptionPeriod.text = getString(R.string.not_applicable)
             }
-            
+
             val trialPeriod = product.trialPeriod
             if (trialPeriod != null) {
                 binding.trialPeriod.text = "${trialPeriod.unitCount} ${trialPeriod.unit.name}"

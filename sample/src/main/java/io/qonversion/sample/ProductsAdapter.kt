@@ -29,7 +29,7 @@ class ProductsAdapter(
             storeId.text = product.storeId ?: "N/A"
             productType.text = product.type.name
             price.text = product.prettyPrice ?: "N/A"
-            
+
             val period = product.subscriptionPeriod
             subscriptionPeriod.text = if (period != null) {
                 "${period.unitCount} ${period.unit.name}"

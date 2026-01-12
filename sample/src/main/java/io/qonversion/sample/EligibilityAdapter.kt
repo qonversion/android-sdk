@@ -30,11 +30,11 @@ class EligibilityAdapter(
         val productId = item.key
         val eligibility = item.value
         val context = holder.itemView.context
-        
+
         with(holder.binding) {
             this.productId.text = productId
             status.text = eligibility.status.name
-            
+
             val color = when (eligibility.status) {
                 QIntroEligibilityStatus.Eligible -> R.color.colorGreen
                 QIntroEligibilityStatus.Ineligible -> R.color.colorRed

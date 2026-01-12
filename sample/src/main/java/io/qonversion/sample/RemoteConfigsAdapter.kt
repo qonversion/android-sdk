@@ -25,12 +25,12 @@ class RemoteConfigsAdapter(
     override fun onBindViewHolder(holder: ConfigViewHolder, position: Int) {
         val config = configs[position]
         val context = holder.itemView.context
-        
+
         with(holder.binding) {
             contextKey.text = config.source.contextKey ?: context.getString(R.string.empty_context_key)
             sourceName.text = config.source.name
             sourceType.text = config.source.type.name
-            
+
             val payloadJson = config.payload
             payload.text = if (payloadJson != null) {
                 try {

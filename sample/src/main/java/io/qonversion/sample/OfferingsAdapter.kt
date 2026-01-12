@@ -28,7 +28,7 @@ class OfferingsAdapter(
     override fun onBindViewHolder(holder: OfferingViewHolder, position: Int) {
         val offering = offerings[position]
         val context = holder.itemView.context
-        
+
         with(holder.binding) {
             offeringId.text = offering.offeringId
             offeringTag.text = context.getString(R.string.tag_format, offering.tag.name)
@@ -63,7 +63,7 @@ class OfferingProductsAdapter(
         with(holder.binding) {
             productId.text = product.qonversionId
             price.text = product.prettyPrice ?: "N/A"
-            
+
             buttonPurchase.setOnClickListener {
                 onProductClick(product)
             }
