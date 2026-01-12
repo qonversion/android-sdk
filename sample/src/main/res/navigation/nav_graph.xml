@@ -8,23 +8,63 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="io.qonversion.sample.HomeFragment"
-        android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        android:label="@string/home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/productsFragment"
+        android:name="io.qonversion.sample.ProductsFragment"
+        android:label="@string/products"
+        tools:layout="@layout/fragment_products">
         <action
-            android:id="@+id/action_homeFragment_to_entitlementsFragment"
-            app:destination="@id/entitlementsFragment" />
-        <action
-            android:id="@+id/action_homeFragment_to_offeringsFragment"
-            app:destination="@id/offeringsFragment" />
+            android:id="@+id/action_productsFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="io.qonversion.sample.ProductDetailFragment"
+        android:label="@string/product_details"
+        tools:layout="@layout/fragment_product_detail">
+        <argument
+            android:name="productId"
+            app:argType="string" />
+    </fragment>
+
     <fragment
         android:id="@+id/entitlementsFragment"
         android:name="io.qonversion.sample.EntitlementsFragment"
-        android:label="fragment_entitlements"
+        android:label="@string/entitlements"
         tools:layout="@layout/fragment_entitlements" />
+
     <fragment
         android:id="@+id/offeringsFragment"
         android:name="io.qonversion.sample.OfferingsFragment"
-        android:label="fragment_offerings"
+        android:label="@string/offerings"
         tools:layout="@layout/fragment_offerings" />
+
+    <fragment
+        android:id="@+id/remoteConfigsFragment"
+        android:name="io.qonversion.sample.RemoteConfigsFragment"
+        android:label="@string/remote_configs"
+        tools:layout="@layout/fragment_remote_configs" />
+
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="io.qonversion.sample.UserFragment"
+        android:label="@string/user"
+        tools:layout="@layout/fragment_user" />
+
+    <fragment
+        android:id="@+id/noCodesFragment"
+        android:name="io.qonversion.sample.NoCodesFragment"
+        android:label="@string/nocodes"
+        tools:layout="@layout/fragment_nocodes" />
+
+    <fragment
+        android:id="@+id/otherFragment"
+        android:name="io.qonversion.sample.OtherFragment"
+        android:label="@string/other"
+        tools:layout="@layout/fragment_other" />
+
 </navigation>
