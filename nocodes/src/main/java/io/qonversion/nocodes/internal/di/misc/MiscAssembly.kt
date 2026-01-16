@@ -5,6 +5,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.provider.PurchaseDelegateProvider
+import io.qonversion.nocodes.internal.provider.ThemeConfigProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
 import java.util.Locale
 
@@ -28,4 +29,6 @@ internal interface MiscAssembly {
     fun noCodesDelegateProvider(): NoCodesDelegateProvider
 
     fun purchaseDelegateProvider(): PurchaseDelegateProvider
+
+    fun themeConfigProvider(): ThemeConfigProvider
 }

@@ -25,6 +25,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
@@ -37,6 +38,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
     private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
+    private val themeConfigProvider = DependenciesAssembly.instance.themeConfigProvider()
 
     private val delegate = delegateProvider.noCodesDelegate
 
@@ -72,14 +74,26 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun displayScreen(screenId: String, html: String) {
         activity?.runOnUiThread {
+            val themedHtml = injectTheme(html, themeConfigProvider.theme)
             binding?.webView?.loadDataWithBaseURL(
                 null,
-                html,
+                themedHtml,
                 MIME_TYPE,
                 ENCODING,
                 null
             )
             delegate?.onScreenShown(screenId)
+        }
+    }
+
+    private fun injectTheme(html: String, theme: NoCodesTheme): String {
+        val themeScript = "<script>window.noCodesTheme = \"${theme.value}\";</script>"
+        val headIndex = html.indexOf("<head>", ignoreCase = true)
+        return if (headIndex != -1) {
+            val insertIndex = headIndex + "<head>".length
+            html.substring(0, insertIndex) + themeScript + html.substring(insertIndex)
+        } else {
+            themeScript + html
         }
     }
 
