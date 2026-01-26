@@ -61,5 +61,4 @@ class SkeletonView @JvmOverloads constructor(
     fun setAnimating(animating: Boolean) {
         skeletonView.setAnimating(animating)
     }
-
 }

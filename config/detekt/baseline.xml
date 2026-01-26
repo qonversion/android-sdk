@@ -51,6 +51,8 @@
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20303</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$20399</ID>
     <ID>MagicNumber:ApiInteractorImpl.kt$418</ID>
+    <ID>MagicNumber:ImagePreloaderImpl.kt$ImagePreloaderImpl$200</ID>
+    <ID>MagicNumber:ImagePreloaderImpl.kt$ImagePreloaderImpl$299</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Error$30</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Info$10</ID>
     <ID>MagicNumber:LogLevel.kt$LogLevel.Warning$20</ID>
@@ -146,6 +148,7 @@
     <ID>SwallowedException:ExceptionHandler.kt$ExceptionHandler$catch (e: Exception) { "" }</ID>
     <ID>SwallowedException:FacebookAttribution.kt$FacebookAttribution$catch (e: Exception) { null }</ID>
     <ID>SwallowedException:FallbackUtils.kt$FallbackUtils$catch (e: Exception) { false }</ID>
+    <ID>SwallowedException:ImagePreloaderImpl.kt$ImagePreloaderImpl$catch (e: Exception) { urlString to null }</ID>
     <ID>SwallowedException:OtherFragment.kt$OtherFragment$catch (e: Exception) { binding.progressBar.visibility = View.GONE Toast.makeText(context, getString(R.string.error_checking_fallback), Toast.LENGTH_SHORT).show() }</ID>
     <ID>SwallowedException:PurchasesCache.kt$PurchasesCache$catch (e: IOException) { setOf() }</ID>
     <ID>SwallowedException:RemoteConfigsAdapter.kt$RemoteConfigsAdapter$catch (e: Exception) { payloadJson.toString() }</ID>
@@ -164,6 +167,7 @@
     <ID>TooGenericExceptionCaught:FacebookAttribution.kt$FacebookAttribution$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FallbackServiceImpl.kt$FallbackServiceImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:FallbackUtils.kt$FallbackUtils$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ImagePreloaderImpl.kt$ImagePreloaderImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonSerializer.kt$JsonSerializer$cause: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:NetworkClientImpl.kt$NetworkClientImpl$cause: Exception</ID>
     <ID>TooGenericExceptionCaught:NoCodesInternal.kt$NoCodesInternal$e: Exception</ID>
