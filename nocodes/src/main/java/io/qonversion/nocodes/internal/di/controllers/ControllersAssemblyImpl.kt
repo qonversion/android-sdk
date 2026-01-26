@@ -35,7 +35,8 @@ internal class ControllersAssemblyImpl(
             miscAssembly.noCodesDelegateProvider(),
             miscAssembly.jsonSerializer(),
             mappersAssembly.actionMapper(),
-            { miscAssembly.customLocale() }
+            { miscAssembly.customLocale() },
+            { miscAssembly.theme() }
         )
     }
 }

@@ -2,6 +2,7 @@ package io.qonversion.nocodes.internal.dto.config
 
 import io.qonversion.nocodes.NoCodesConfig
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
@@ -11,6 +12,7 @@ import io.qonversion.nocodes.internal.provider.NetworkConfigHolder
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.provider.PrimaryConfigProvider
 import io.qonversion.nocodes.internal.provider.PurchaseDelegateProvider
+import io.qonversion.nocodes.internal.provider.ThemeConfigProvider
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
@@ -20,12 +22,14 @@ internal class InternalConfig(
     var screenCustomizationDelegate: ScreenCustomizationDelegate?,
     override var purchaseDelegate: PurchaseDelegate?,
     override var customLocale: String? = null,
+    override var theme: NoCodesTheme = NoCodesTheme.Auto,
 ) : PrimaryConfigProvider,
     LoggerConfigProvider,
     NetworkConfigHolder,
     NoCodesDelegateProvider,
     PurchaseDelegateProvider,
-    LocaleConfigProvider {
+    LocaleConfigProvider,
+    ThemeConfigProvider {
 
     constructor(noCodesConfig: NoCodesConfig) : this(
         noCodesConfig.primaryConfig,
@@ -36,7 +40,8 @@ internal class InternalConfig(
         // If PurchaseDelegate is provided, use it directly. Otherwise, wrap PurchaseDelegateWithCallbacks.
         noCodesConfig.purchaseDelegate
             ?: noCodesConfig.purchaseDelegateWithCallbacks?.let { PurchaseDelegateWithCallbacksAdapter(it) },
-        noCodesConfig.locale
+        noCodesConfig.locale,
+        noCodesConfig.theme
     )
 
     override var canSendRequests: Boolean

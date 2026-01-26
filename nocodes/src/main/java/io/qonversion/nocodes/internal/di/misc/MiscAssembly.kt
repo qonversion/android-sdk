@@ -1,5 +1,6 @@
 package io.qonversion.nocodes.internal.di.misc
 
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
@@ -18,6 +19,11 @@ internal interface MiscAssembly {
      * Returns the custom locale string set by the client, or null if using system default.
      */
     fun customLocale(): String?
+
+    /**
+     * Returns the current theme setting for No-Code screens.
+     */
+    fun theme(): NoCodesTheme
 
     fun jsonSerializer(): Serializer
 

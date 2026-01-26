@@ -6,6 +6,8 @@ import io.qonversion.nocodes.internal.di.misc.MiscAssembly
 import io.qonversion.nocodes.internal.di.network.NetworkAssembly
 import io.qonversion.nocodes.internal.screen.service.FallbackService
 import io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl
+import io.qonversion.nocodes.internal.screen.service.ImagePreloader
+import io.qonversion.nocodes.internal.screen.service.ImagePreloaderImpl
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl
 import io.qonversion.nocodes.internal.utils.FallbackUtils
@@ -18,12 +20,17 @@ internal class ServicesAssemblyImpl(
     private val effectiveFallbackFileName: String
 ) : ServicesAssembly {
 
+    private val imagePreloaderInstance by lazy {
+        ImagePreloaderImpl()
+    }
+
     private val screenServiceInstance by lazy {
         ScreenServiceImpl(
             networkAssembly.requestConfigurator(),
             networkAssembly.exponentialApiInteractor(),
             mappersAssembly.screenMapper(),
             fallbackService(),
+            imagePreloader(),
             miscAssembly.logger()
         )
     }
@@ -44,5 +51,9 @@ internal class ServicesAssemblyImpl(
             mappersAssembly.screenMapper(),
             miscAssembly.logger()
         )
+    }
+
+    override fun imagePreloader(): ImagePreloader {
+        return imagePreloaderInstance
     }
 }
