@@ -2,6 +2,7 @@ package io.qonversion.nocodes.internal
 
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
@@ -72,5 +73,9 @@ internal class NoCodesInternal(
 
     override fun setLocale(locale: String?) {
         internalConfig.customLocale = locale
+    }
+
+    override fun setTheme(theme: NoCodesTheme) {
+        internalConfig.theme = theme
     }
 }

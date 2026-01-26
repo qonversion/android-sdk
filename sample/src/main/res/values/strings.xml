@@ -163,6 +163,11 @@
     <string name="action_finished">Action finished: %1$s</string>
     <string name="action_failed">Action failed: %1$s</string>
     <string name="flow_finished">Flow finished</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_set">Theme set: %1$s</string>
     
     <!-- Other -->
     <string name="more_features">More Features</string>

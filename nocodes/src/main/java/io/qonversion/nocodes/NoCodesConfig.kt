@@ -3,6 +3,7 @@ package io.qonversion.nocodes
 import android.app.Application
 import android.content.Context
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
@@ -32,6 +33,7 @@ class NoCodesConfig internal constructor(
     internal val purchaseDelegate: PurchaseDelegate?,
     internal val purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks?,
     internal val locale: String?,
+    internal val theme: NoCodesTheme,
 ) {
 
     /**
@@ -57,6 +59,7 @@ class NoCodesConfig internal constructor(
         private var logTag = DEFAULT_LOG_TAG
         private var customFallbackFileName: String? = null
         private var locale: String? = null
+        private var theme: NoCodesTheme = NoCodesTheme.Auto
 
         /**
          * Provide a delegate to be notified about the no-code screens events.
@@ -172,6 +175,18 @@ class NoCodesConfig internal constructor(
         }
 
         /**
+         * Set the theme mode for No-Code screens.
+         * Controls how screens adapt to light/dark themes.
+         *
+         * @param theme the desired theme mode. Use [NoCodesTheme.Auto] to follow device settings,
+         *              [NoCodesTheme.Light] to force light theme, or [NoCodesTheme.Dark] to force dark theme.
+         * @return builder instance for chain calls.
+         */
+        fun setTheme(theme: NoCodesTheme): Builder = apply {
+            this.theme = theme
+        }
+
+        /**
          * Generate [NoCodesConfig] instance with all the provided configurations.
          * This method also validates some of the provided data.
          *
@@ -197,6 +212,7 @@ class NoCodesConfig internal constructor(
                 purchaseDelegate,
                 purchaseDelegateWithCallbacks,
                 locale,
+                theme,
             )
         }
     }

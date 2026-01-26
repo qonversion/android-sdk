@@ -25,6 +25,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
@@ -37,6 +38,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val logger = DependenciesAssembly.instance.logger()
     private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
     private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
+    private val themeProvider = { DependenciesAssembly.instance.theme() }
 
     private val delegate = delegateProvider.noCodesDelegate
 
@@ -57,12 +59,30 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
         configureWebClient()
 
+        // Apply theme to skeleton
+        applyThemeToSkeleton()
+
         binding?.skeletonView?.showSkeleton()
         binding?.webView?.visibility = View.GONE
         presenter.onStart(
             arguments?.getString(EX_CONTEXT_KEY),
             arguments?.getString(EX_SCREEN_ID)
         )
+    }
+
+    private fun applyThemeToSkeleton() {
+        val theme = themeProvider()
+        val isDark = when (theme) {
+            NoCodesTheme.Dark -> true
+            NoCodesTheme.Light -> false
+            NoCodesTheme.Auto -> {
+                // Use system theme
+                val nightModeFlags = resources.configuration.uiMode and
+                    android.content.res.Configuration.UI_MODE_NIGHT_MASK
+                nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            }
+        }
+        binding?.skeletonView?.setDarkTheme(isDark)
     }
 
     override fun onDestroyView() {

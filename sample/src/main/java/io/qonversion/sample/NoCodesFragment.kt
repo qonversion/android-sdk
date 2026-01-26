@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import io.qonversion.nocodes.NoCodes
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -59,6 +60,19 @@ class NoCodesFragment : Fragment(), NoCodesDelegate {
         binding.buttonClearEvents.setOnClickListener {
             events.clear()
             updateEventsDisplay()
+        }
+
+        // Theme radio buttons
+        binding.radioThemeAuto.isChecked = true // Default
+        binding.radioGroupTheme.setOnCheckedChangeListener { _, checkedId ->
+            val theme = when (checkedId) {
+                R.id.radioThemeAuto -> NoCodesTheme.Auto
+                R.id.radioThemeLight -> NoCodesTheme.Light
+                R.id.radioThemeDark -> NoCodesTheme.Dark
+                else -> NoCodesTheme.Auto
+            }
+            NoCodes.shared.setTheme(theme)
+            addEvent(getString(R.string.theme_set, theme.name))
         }
     }
 
