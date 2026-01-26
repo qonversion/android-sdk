@@ -1,6 +1,7 @@
 package io.qonversion.nocodes.internal.di.misc
 
 import android.app.Application
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.internal.common.serializers.JsonSerializer
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
@@ -38,6 +39,8 @@ internal class MiscAssemblyImpl(
     }
 
     override fun customLocale(): String? = internalConfig.customLocale
+
+    override fun theme(): NoCodesTheme = internalConfig.theme
 
     override fun jsonSerializer(): Serializer = JsonSerializer()
 

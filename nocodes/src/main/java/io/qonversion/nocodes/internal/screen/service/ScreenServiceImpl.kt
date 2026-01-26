@@ -19,6 +19,7 @@ internal class ScreenServiceImpl(
     private val apiInteractor: ApiInteractor,
     private val mapper: Mapper<NoCodeScreen?>,
     private val fallbackService: FallbackService?,
+    private val imagePreloader: ImagePreloader?,
     logger: Logger
 ) : ScreenService, BaseClass(logger) {
 
@@ -71,14 +72,22 @@ internal class ScreenServiceImpl(
                     }
 
                     if (screens.isNotEmpty()) {
-                        screens.forEach { screen ->
+                        // Preload images for all screens
+                        val processedScreens = screens.map { screen ->
+                            val processedHtml = imagePreloader?.preloadImages(screen.body) ?: screen.body
+                            screen.copy(body = processedHtml)
+                        }
+
+                        processedScreens.forEach { screen ->
                             screensById[screen.id] = screen
                             screensByContextKey[screen.contextKey] = screen
                         }
-                        logger.info("preloadScreens() -> Successfully preloaded ${screens.size} screens")
-                    }
+                        logger.info("preloadScreens() -> Successfully preloaded ${processedScreens.size} screens with images")
 
-                    screens
+                        processedScreens
+                    } else {
+                        screens
+                    }
                 }
                 is Response.Error -> {
                     logger.warn("preloadScreens() -> Failed to preload screens: ${response.message}")

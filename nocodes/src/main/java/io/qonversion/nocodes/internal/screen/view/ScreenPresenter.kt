@@ -7,6 +7,7 @@ import com.qonversion.android.sdk.dto.products.QProductPrice
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.ErrorCode
 import io.qonversion.nocodes.error.NoCodesError
@@ -30,6 +31,7 @@ internal class ScreenPresenter(
     private val serializer: Serializer,
     private val actionMapper: Mapper<QAction>,
     private val customLocaleProvider: () -> String? = { null },
+    private val themeProvider: () -> NoCodesTheme = { NoCodesTheme.Auto },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
 
@@ -70,8 +72,9 @@ internal class ScreenPresenter(
             currentScreen = screen
             logger.verbose("ScreenPresenter -> displaying the screen with id ${screen.id}, context key: ${screen.contextKey}")
 
-            val htmlWithLocale = injectCustomLocale(screen.body)
-            view.displayScreen(screen.id, htmlWithLocale)
+            var processedHtml = injectCustomLocale(screen.body)
+            processedHtml = injectTheme(processedHtml)
+            view.displayScreen(screen.id, processedHtml)
         }
     }
 
@@ -92,6 +95,24 @@ internal class ScreenPresenter(
         } else {
             // Fallback: prepend to HTML
             localeScript + html
+        }
+    }
+
+    /**
+     * Injects a script tag with the theme setting into the HTML's head section.
+     * This allows the JavaScript to use the specified theme mode.
+     */
+    private fun injectTheme(html: String): String {
+        val theme = themeProvider()
+        val themeScript = "<script>window.noCodesTheme = \"${theme.value}\";</script>"
+
+        val headIndex = html.indexOf("<head>", ignoreCase = true)
+        return if (headIndex != -1) {
+            val insertPosition = headIndex + "<head>".length
+            html.substring(0, insertPosition) + themeScript + html.substring(insertPosition)
+        } else {
+            // Fallback: prepend to HTML
+            themeScript + html
         }
     }
 

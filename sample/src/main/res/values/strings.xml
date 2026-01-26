@@ -1,26 +1,197 @@
 <resources>
-    <string name="app_name">Qonversion Sample Application</string>
+    <string name="app_name">Qonversion Sample</string>
     <string name="application_icon">Application icon</string>
-    <string name="welcome_text">Welcome to Qonversion sample\u00A0app.</string>
-    <string name="google_sign_in_explanation">Please use the\u00A0sign-in with\u00A0Google option to\u00A0test cross-platform subscription management.</string>
-    <string name="skip">Skip</string>
-    <string name="auth_with_google">Authorize with Google</string>
-    <string name="entitlement_id">Entitlement Id</string>
-    <string name="product_id">Product Id</string>
-    <string name="renew_state">Renew state</string>
-    <string name="active_entitlements">Active entitlements</string>
-    <string name="build_in_app_subscriptions_without_server_code">Build in-app subscriptions\n without server code</string>
-    <string name="loading">Loading…</string>
+    
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="products">Products</string>
+    <string name="entitlements">Entitlements</string>
+    <string name="offerings">Offerings</string>
+    <string name="remote_configs">Remote Configs</string>
+    <string name="user">User</string>
+    <string name="nocodes">No-Codes</string>
+    <string name="other">Other</string>
+    <string name="more">More</string>
+    
+    <!-- Home -->
+    <string name="qonversion_sdk_demo">Qonversion SDK Demo</string>
+    <string name="initializing">Initializing...</string>
+    <string name="initialization_successful">Initialization successful</string>
+    <string name="initialization_error">Initialization error</string>
+    <string name="current_user">Current User</string>
+    <string name="qonversion_id">Qonversion ID:</string>
+    <string name="identity_id">Identity ID:</string>
+    <string name="anonymous">Anonymous</string>
+    <string name="sample_app_description">This sample app demonstrates all the features of the Qonversion SDK. Use the bottom navigation to explore different SDK capabilities.</string>
+    <string name="tap_logo_hint">Tap the logo 5 times to configure SDK settings</string>
+    <string name="qonversion_configuration">Qonversion Configuration</string>
+    <string name="apply">Apply</string>
+    <string name="reset">Reset</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Products -->
+    <string name="load_products">Load Products</string>
+    <string name="no_products_loaded">No Products Loaded</string>
+    <string name="tap_button_to_load_products">Tap the button above to load available products</string>
+    <string name="no_products_found">No products found</string>
+    <string name="error_loading_products">Error loading products</string>
+    <string name="product_details">Product Details</string>
+    <string name="product_id">Product ID:</string>
+    <string name="store_id">Store ID:</string>
+    <string name="base_plan_id">Base Plan ID:</string>
+    <string name="offer_id">Offer ID:</string>
+    <string name="offering_id">Offering ID:</string>
+    <string name="product_type">Type:</string>
+    <string name="subscription_period">Period:</string>
+    <string name="trial_period">Trial Period:</string>
+    <string name="not_available">N/A</string>
+    <string name="not_applicable">N/A</string>
+    <string name="product_not_found">Product not found</string>
+    <string name="purchase">Purchase</string>
+    <string name="purchase_for">Purchase for %1$s</string>
+    <string name="successfully_purchased">Successfully Purchased</string>
+    <string name="purchase_succeeded">Purchase succeeded</string>
+    <string name="purchase_succeeded_with_fallback">Purchase succeeded with fallback</string>
+    <string name="purchase_canceled">Purchase canceled by user</string>
+    <string name="purchase_pending">Purchase is pending</string>
+    <string name="purchase_failed">Purchase failed</string>
+    <string name="type">Type:</string>
+    <string name="period">Period:</string>
+    
+    <!-- Entitlements -->
+    <string name="load_entitlements">Load Entitlements</string>
+    <string name="set_entitlements_listener">Set Entitlements Update Listener</string>
+    <string name="listener_set">Listener Set ✓</string>
+    <string name="restore">Restore</string>
+    <string name="sync_purchases">Sync Purchases</string>
+    <string name="no_entitlements_loaded">No Entitlements Loaded</string>
+    <string name="tap_button_to_load_entitlements">Tap the button above to load your entitlements</string>
+    <string name="no_entitlements_found">No entitlements found</string>
+    <string name="error_loading_entitlements">Error loading entitlements</string>
+    <string name="entitlements_listener_set">Entitlements update listener set</string>
+    <string name="entitlements_updated_via_listener">Entitlements updated via listener</string>
+    <string name="purchases_restored">Purchases restored successfully</string>
+    <string name="purchases_synced">Purchases synced</string>
+    <string name="active">Active</string>
+    <string name="inactive">Inactive</string>
+    <string name="renew_state">Renew State:</string>
+    <string name="source">Source:</string>
+    <string name="started">Started:</string>
+    <string name="expires">Expires:</string>
+    
+    <!-- Offerings -->
+    <string name="load_offerings">Load Offerings</string>
+    <string name="no_offerings_loaded">No Offerings Loaded</string>
+    <string name="tap_button_to_load_offerings">Tap the button above to load available offerings</string>
+    <string name="no_offerings_found">No offerings found</string>
+    <string name="error_loading_offerings">Error loading offerings</string>
+    <string name="main_offering_id">Main Offering ID: %1$s</string>
+    <string name="tag_format">Tag: %1$s</string>
+    <string name="products_count">Products: %1$d</string>
+    
+    <!-- Remote Configs -->
+    <string name="remote_config_list">Remote Config List</string>
+    <string name="context_keys_comma_separated">Context Keys (comma-separated)</string>
+    <string name="get_remote_config_list">Get Remote Config List</string>
+    <string name="single_remote_config">Single Remote Config</string>
+    <string name="context_key_optional">Context Key (optional)</string>
+    <string name="get_remote_config">Get Remote Config</string>
+    <string name="experiments">Experiments</string>
+    <string name="experiment_id">Experiment ID</string>
+    <string name="group_id">Group ID</string>
+    <string name="attach">Attach</string>
+    <string name="detach">Detach</string>
+    <string name="no_remote_configs_loaded">No remote configs loaded</string>
+    <string name="please_enter_experiment_and_group">Please enter experiment ID and group ID</string>
+    <string name="please_enter_experiment_id">Please enter experiment ID</string>
+    <string name="attached_to_experiment">User attached to experiment</string>
+    <string name="detached_from_experiment">User detached from experiment</string>
+    <string name="empty_context_key">(empty context key)</string>
+    <string name="source_name">Source Name:</string>
+    <string name="source_type">Source Type:</string>
+    <string name="payload">Payload:</string>
+    <string name="no_payload">No payload</string>
+    <string name="experiment">Experiment:</string>
+    <string name="no_experiment">No experiment</string>
+    <string name="experiment_info_format">ID: %1$s\nName: %2$s\nGroup ID: %3$s\nGroup Name: %4$s</string>
+    
+    <!-- User -->
+    <string name="identity">Identity</string>
+    <string name="identify">Identify</string>
     <string name="logout">Logout</string>
-    <string name="presentPaywall">Present Paywall</string>
-    <string name="name">Name</string>
-    <string name="description">Description</string>
-    <string name="price">Price</string>
-    <string name="firebase_web_client_id">11599271839-jg1njos9hp2d07jg7d3oqi523io0pdr6.apps.googleusercontent.com</string>
-    <string name="subscribe_for">Subscribe for</string>
-    <string name="buy_for">Buy for</string>
-    <string name="nothing_to_restore">Nothing to restore</string>
-    <string name="successfully_purchased">Successfully purchased</string>
-    <string name="restore_purchases">Restore purchases</string>
-    <string name="offerings">Main Offering products</string>
+    <string name="load_user_info">Load User Info</string>
+    <string name="user_properties">User Properties</string>
+    <string name="load_user_properties">Load User Properties</string>
+    <string name="set_property">Set Property</string>
+    <string name="custom_property_key">Custom Property Key</string>
+    <string name="property_value">Property Value</string>
+    <string name="attribution">Attribution</string>
+    <string name="attribution_data_json">Attribution Data (JSON)</string>
+    <string name="attribution_provider">Attribution Provider:</string>
+    <string name="send_attribution">Send Attribution</string>
+    <string name="please_enter_identity_id">Please enter identity ID</string>
+    <string name="user_identified">User identified successfully</string>
+    <string name="user_logged_out">User logged out</string>
+    <string name="no_properties_set">No properties set</string>
+    <string name="please_enter_property_value">Please enter property value</string>
+    <string name="please_enter_custom_key">Please enter custom property key</string>
+    <string name="property_set_successfully">Property set successfully</string>
+    <string name="please_enter_attribution_data">Please enter attribution data</string>
+    <string name="attribution_sent">Attribution data sent</string>
+    <string name="invalid_json_format">Invalid JSON format</string>
+    
+    <!-- NoCodes -->
+    <string name="show_screen">Show Screen</string>
+    <string name="context_key">Context Key</string>
+    <string name="show_nocodes_screen">Show No-Code Screen</string>
+    <string name="presentation_config">Presentation Config</string>
+    <string name="presentation_style">Presentation Style:</string>
+    <string name="set_presentation_config">Set Presentation Config</string>
+    <string name="close_nocodes">Close No-Codes</string>
+    <string name="nocodes_events">No-Codes Events:</string>
+    <string name="clear">Clear</string>
+    <string name="no_events_yet">No events yet</string>
+    <string name="please_enter_context_key">Please enter context key</string>
+    <string name="presentation_config_set">Presentation config set</string>
+    <string name="presentation_config_set_for">Presentation config set for %1$s: %2$s</string>
+    <string name="nocodes_delegate_set">No-Codes delegate set</string>
+    <string name="nocodes_closed">No-Codes closed</string>
+    <string name="showing_screen">Showing screen: %1$s</string>
+    <string name="screen_shown">Screen shown: %1$s</string>
+    <string name="screen_failed_to_load">Screen failed to load: %1$s</string>
+    <string name="action_started">Action started: %1$s</string>
+    <string name="action_finished">Action finished: %1$s</string>
+    <string name="action_failed">Action failed: %1$s</string>
+    <string name="flow_finished">Flow finished</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_set">Theme set: %1$s</string>
+    
+    <!-- Other -->
+    <string name="more_features">More Features</string>
+    <string name="fallback_file">Fallback File</string>
+    <string name="check_fallback_accessibility">Check Fallback File Accessibility</string>
+    <string name="fallback_accessible">Fallback file is accessible</string>
+    <string name="fallback_not_accessible">Fallback file is not accessible</string>
+    <string name="error_checking_fallback">Error checking fallback file</string>
+    <string name="trial_intro_eligibility">Trial/Intro Eligibility</string>
+    <string name="check_eligibility">Check Trial/Intro Eligibility</string>
+    <string name="no_eligibility_data">No eligibility data</string>
+    <string name="no_products_to_check">No products to check</string>
+    <string name="sync_purchases_title">Sync Purchases</string>
+    <string name="sync_purchases_description">Call this when using Qonversion in analytics mode to sync purchases handled by your own implementation.</string>
+    
+    <!-- Configuration Dialog -->
+    <string name="project_key">Project Key</string>
+    <string name="enter_project_key">Enter project key</string>
+    <string name="api_endpoint">API Endpoint</string>
+    <string name="production_default">Production (default)</string>
+    <string name="custom_url">Custom URL</string>
+    <string name="enter_custom_url">Enter custom URL</string>
+    <string name="configuration_note">Note: Changing these settings will restart the app.</string>
+    
+    <!-- Legacy (keeping for backwards compatibility) -->
+    <string name="loading">Loading…</string>
 </resources>

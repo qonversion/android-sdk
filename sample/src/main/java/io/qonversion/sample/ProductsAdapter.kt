@@ -1,47 +1,47 @@
 package io.qonversion.sample
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.qonversion.android.sdk.dto.products.QProduct
-import io.qonversion.sample.databinding.TableRowProductBinding
+import io.qonversion.sample.databinding.ItemProductBinding
 
 class ProductsAdapter(
     private val products: List<QProduct>,
-    private val onItemClicked: (QProduct) -> Unit
-) : RecyclerView.Adapter<ProductsAdapter.RowViewHolder>() {
+    private val onProductClick: (QProduct) -> Unit
+) : RecyclerView.Adapter<ProductsAdapter.ProductViewHolder>() {
 
-    private lateinit var binding: TableRowProductBinding
+    class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowViewHolder {
-        binding = TableRowProductBinding.inflate(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
+        val binding = ItemProductBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
         )
-        return RowViewHolder(binding.root) { index ->
-            onItemClicked(products[index])
-        }
+        return ProductViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RowViewHolder, position: Int) =
-        holder.bind(products[position])
+    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+        val product = products[position]
+        with(holder.binding) {
+            productId.text = product.qonversionId
+            storeId.text = product.storeId ?: "N/A"
+            productType.text = product.type.name
+            price.text = product.prettyPrice ?: "N/A"
 
-    override fun getItemCount() = products.size
+            val period = product.subscriptionPeriod
+            subscriptionPeriod.text = if (period != null) {
+                "${period.unitCount} ${period.unit.name}"
+            } else {
+                "N/A"
+            }
 
-    inner class RowViewHolder(itemView: View, onItemClicked: (Int) -> Unit) :
-        RecyclerView.ViewHolder(itemView) {
-        init {
-            itemView.setOnClickListener {
-                onItemClicked(adapterPosition)
+            root.setOnClickListener {
+                onProductClick(product)
             }
         }
-
-        fun bind(product: QProduct) = with(itemView) {
-            binding.txtName.text = product.qonversionId
-            binding.txtDescription.text = product.storeDetails?.description
-            binding.txtPrice.text = product.prettyPrice
-        }
     }
+
+    override fun getItemCount() = products.size
 }

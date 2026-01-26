@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/contextKey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="paywall_main" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/source_name"
+                android:textColor="@color/colorGrayText"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/sourceName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                tools:text="Main Config" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/source_type"
+                android:textColor="@color/colorGrayText"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/sourceType"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp"
+                tools:text="RemoteConfiguration" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/payload"
+            android:textColor="@color/colorGrayText"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/payload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@color/colorLightGray"
+            android:fontFamily="monospace"
+            android:padding="8dp"
+            android:textColor="@color/colorBlack"
+            android:textSize="11sp"
+            tools:text="{&quot;key&quot;: &quot;value&quot;}" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/experiment"
+            android:textColor="@color/colorGrayText"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/experimentInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/colorBlack"
+            android:textSize="12sp"
+            tools:text="No experiment" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

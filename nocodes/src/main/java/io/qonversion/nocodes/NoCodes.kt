@@ -2,6 +2,7 @@ package io.qonversion.nocodes
 
 import android.util.Log
 import io.qonversion.nocodes.dto.LogLevel
+import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
@@ -145,4 +146,16 @@ interface NoCodes {
      * @param locale the custom locale code, or null to use system default.
      */
     fun setLocale(locale: String?)
+
+    /**
+     * Set the theme mode for No-Code screens.
+     * Controls how screens adapt to light/dark themes.
+     *
+     * You may set theme both *after* Qonversion No-Codes SDK initializing with [NoCodes.setTheme]
+     * and *while* Qonversion No-Codes initializing via [NoCodesConfig.Builder.setTheme]
+     *
+     * @param theme the desired theme mode. Use [NoCodesTheme.Auto] to follow device settings,
+     *              [NoCodesTheme.Light] to force light theme, or [NoCodesTheme.Dark] to force dark theme.
+     */
+    fun setTheme(theme: NoCodesTheme)
 }

@@ -3,58 +3,73 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Projecy Key"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:text="@string/project_key"
+        android:textColor="@color/colorBlack"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/projectKeyInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Project Key"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/spinner_background"
+        android:hint="@string/enter_project_key"
         android:inputType="text"
-        android:layout_marginBottom="16dp"/>
+        android:paddingHorizontal="12dp" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select API"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginTop="24dp"
+        android:text="@string/api_endpoint"
+        android:textColor="@color/colorBlack"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <RadioGroup
         android:id="@+id/apiRadioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:orientation="vertical">
 
         <RadioButton
             android:id="@+id/radioProduction"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Production"/>
+            android:text="@string/production_default" />
 
         <RadioButton
             android:id="@+id/radioCustom"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Custom"/>
+            android:text="@string/custom_url" />
 
     </RadioGroup>
 
     <EditText
         android:id="@+id/customUrlInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Custom API URL"
-        android:inputType="textUri"
+        android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:visibility="gone"/>
+        android:background="@drawable/spinner_background"
+        android:hint="@string/enter_custom_url"
+        android:inputType="textUri"
+        android:paddingHorizontal="12dp"
+        android:visibility="gone" />
 
-</LinearLayout> 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/configuration_note"
+        android:textColor="@color/colorGrayText"
+        android:textSize="12sp" />
+
+</LinearLayout>
