@@ -12,9 +12,9 @@ internal class ScreenContract {
 
         fun openDeepLink(url: String)
 
-        fun purchase(productId: String, screenId: String?)
+        fun purchase(productId: String, screenId: String?, action: QAction)
 
-        fun restore()
+        fun restore(action: QAction)
 
         fun close(action: QAction = QAction(QAction.Type.Close))
 
