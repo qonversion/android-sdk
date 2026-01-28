@@ -156,11 +156,11 @@ internal class ScreenPresenter(
             }
             QAction.Type.Purchase -> {
                 action.parameters?.get(QAction.Parameter.ProductId)?.let { productId ->
-                    view.purchase(productId as String, currentScreen?.id, action)
+                    view.purchase(productId as String, currentScreen?.id)
                 }
             }
             QAction.Type.Restore -> {
-                view.restore(action)
+                view.restore()
             }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")

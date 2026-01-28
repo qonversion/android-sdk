@@ -27,8 +27,6 @@ import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
-import io.qonversion.nocodes.dto.QSuccessFailureAction
-import io.qonversion.nocodes.dto.QSuccessFailureActionType
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import androidx.core.net.toUri
@@ -145,25 +143,23 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
-    override fun purchase(productId: String, screenId: String?, action: QAction) {
+    override fun purchase(productId: String, screenId: String?) {
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
+        val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
 
         activity?.let {
             Qonversion.shared.products(object : QonversionProductsCallback {
                 override fun onSuccess(products: Map<String, QProduct>) {
                     val product = products[productId] ?: run {
-                        return handleActionFailure(
-                            action,
-                            "Product with id $productId not found"
-                        )
+                        return sendFailureEvent(action, "Product with id $productId not found")
                     }
 
                     handlePurchaseForProduct(it, product, action, screenId)
                 }
 
-                override fun onError(error: QonversionError) = handleActionFailure(action, error)
+                override fun onError(error: QonversionError) = sendFailureEvent(action, error)
             })
         }
     }
@@ -177,13 +173,13 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.purchase(product)
                     withContext(Dispatchers.Main) {
-                        handleActionSuccess(action)
+                        sendSuccessEvent(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
                         val error = NoCodesError.fromClientThrowable(throwable)
                         action.error = error
-                        handleActionFailure(action, error.details ?: "")
+                        sendFailureEvent(action, error.details ?: "")
                     }
                 }
             }
@@ -201,22 +197,23 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 object : QonversionPurchaseCallback {
                     override fun onResult(result: QPurchaseResult) {
                         if (result.isSuccessful) {
-                            handleActionSuccess(action)
+                            sendSuccessEvent(action)
                         } else {
                             val error = result.error ?: QonversionError(
                                 code = QonversionErrorCode.Unknown,
                                 additionalMessage = "Purchase failed"
                             )
-                            handleActionFailure(action, error)
+                            sendFailureEvent(action, error)
                         }
                     }
                 })
         }
     }
 
-    override fun restore(action: QAction) {
+    override fun restore() {
         binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
 
+        val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
 
         // Check if custom purchase handler delegate is provided
@@ -227,115 +224,57 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.restore()
                     withContext(Dispatchers.Main) {
-                        handleActionSuccess(action)
+                        sendSuccessEvent(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
                         val error = NoCodesError.fromClientThrowable(throwable)
                         action.error = error
-                        handleActionFailure(action, error.details ?: "")
+                        sendFailureEvent(action, error.details ?: "")
                     }
                 }
             }
         } else {
             // Use default Qonversion SDK restore flow
             Qonversion.shared.restore(object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) = handleActionSuccess(action)
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) = sendSuccessEvent(action)
 
-                override fun onError(error: QonversionError) = handleActionFailure(action, error)
+                override fun onError(error: QonversionError) = sendFailureEvent(action, error)
             })
         }
     }
 
-    // MARK: - Success/Failure Action Handling
+    // MARK: - Success/Failure Event Sending
 
-    private fun handleActionSuccess(action: QAction) {
+    /**
+     * Sends successEvent to WebView. WebView will handle executing the configured success action.
+     */
+    private fun sendSuccessEvent(action: QAction) {
         delegate?.onActionFinishedExecuting(action)
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-
-        val successAction = action.successAction
-        if (successAction != null) {
-            // New behavior: execute the configured success action
-            executeSuccessFailureAction(successAction)
-        } else {
-            // Backward compatibility: close all screens (default behavior)
-            activity?.finish()
-            delegate?.onFinished()
-        }
+        binding?.webView?.evaluateJavascript(
+            "window.dispatchEvent(new CustomEvent(\"successEvent\", {detail: {}}))",
+            null
+        )
     }
 
-    private fun handleActionFailure(action: QAction, error: QonversionError) {
+    private fun sendFailureEvent(action: QAction, error: QonversionError) {
         action.error = NoCodesError(error)
-        handleActionFailure(action, error.description)
+        sendFailureEvent(action, error.description)
     }
 
-    private fun handleActionFailure(action: QAction, errorMessage: String) {
+    /**
+     * Sends failureEvent to WebView. WebView will handle executing the configured failure action.
+     */
+    private fun sendFailureEvent(action: QAction, errorMessage: String) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         binding?.skeletonView?.hideSkeleton()
         logger.error("ScreenFragment -> Action failed: $errorMessage")
         delegate?.onActionFailedToExecute(action)
-
-        val failureAction = action.failureAction
-        if (failureAction != null) {
-            // New behavior: execute the configured failure action
-            executeSuccessFailureAction(failureAction)
-        }
-        // Backward compatibility: no action on failure (stay on screen)
-    }
-
-    private fun executeSuccessFailureAction(sfAction: QSuccessFailureAction) {
-        when (sfAction.type) {
-            QSuccessFailureActionType.None -> {
-                // Do nothing, stay on screen
-            }
-            QSuccessFailureActionType.Close -> {
-                val wasLast = (activity as? ScreenActivity)?.goBack() ?: false
-                if (wasLast) {
-                    delegate?.onFinished()
-                }
-            }
-            QSuccessFailureActionType.CloseAll -> {
-                activity?.finish()
-                delegate?.onFinished()
-            }
-            QSuccessFailureActionType.Navigation -> {
-                sfAction.value?.let { screenId ->
-                    try {
-                        (activity as ScreenActivity).showScreen(null, screenId)
-                    } catch (e: Exception) {
-                        logger.error("Failed to navigate to screen $screenId: $e")
-                    }
-                }
-            }
-            QSuccessFailureActionType.Url -> {
-                sfAction.value?.let { url ->
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                        startActivity(intent)
-                    } catch (e: ActivityNotFoundException) {
-                        logger.error("Couldn't find any Activity to handle the Intent with url $url")
-                    }
-                }
-            }
-            QSuccessFailureActionType.DeepLink -> {
-                sfAction.value?.let { deeplink ->
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, deeplink.toUri())
-                        startActivity(intent)
-                    } catch (e: ActivityNotFoundException) {
-                        logger.error("Couldn't find any Activity to handle the Intent with deeplink $deeplink")
-                    }
-                }
-            }
-            QSuccessFailureActionType.GoToPage -> {
-                sfAction.value?.let { pageId ->
-                    binding?.webView?.evaluateJavascript(
-                        "window.dispatchEvent(new CustomEvent(\"goToPage\",  {detail: \"$pageId\"} ))",
-                        null
-                    )
-                }
-            }
-        }
+        binding?.webView?.evaluateJavascript(
+            "window.dispatchEvent(new CustomEvent(\"failureEvent\", {detail: {}}))",
+            null
+        )
     }
 
     override fun close(action: QAction) {
