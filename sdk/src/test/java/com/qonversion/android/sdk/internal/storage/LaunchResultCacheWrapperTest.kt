@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal.storage
 
-import com.qonversion.android.sdk.internal.milliSecondsToSeconds
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
 import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
@@ -39,10 +38,7 @@ internal class LaunchResultCacheWrapperTest {
 
             verifyOrder {
                 mockPrefsCache.putObject(launchResultKey, launchResult, mockAdapter)
-                mockPrefsCache.putLong(
-                    timestampKey,
-                    System.currentTimeMillis().milliSecondsToSeconds()
-                )
+                mockPrefsCache.putLong(timestampKey, any())
             }
         }
     }

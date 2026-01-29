@@ -153,21 +153,13 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             Qonversion.shared.products(object : QonversionProductsCallback {
                 override fun onSuccess(products: Map<String, QProduct>) {
                     val product = products[productId] ?: run {
-                        return handleOnErrorCallback(
-                            object {}.javaClass.enclosingMethod?.name,
-                            "Product with id $productId not found",
-                            action
-                        )
+                        return sendFailureEvent(action, "Product with id $productId not found")
                     }
 
                     handlePurchaseForProduct(it, product, action, screenId)
                 }
 
-                override fun onError(error: QonversionError) = handleOnErrorCallback(
-                    object {}.javaClass.enclosingMethod?.name,
-                    error,
-                    action
-                )
+                override fun onError(error: QonversionError) = sendFailureEvent(action, error)
             })
         }
     }
@@ -181,17 +173,13 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.purchase(product)
                     withContext(Dispatchers.Main) {
-                        closeAll(action)
+                        sendSuccessEvent(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
                         val error = NoCodesError.fromClientThrowable(throwable)
                         action.error = error
-                        handleOnErrorCallback(
-                            object {}.javaClass.enclosingMethod?.name,
-                            error.details ?: "",
-                            action
-                        )
+                        sendFailureEvent(action, error.details ?: "")
                     }
                 }
             }
@@ -209,17 +197,13 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 object : QonversionPurchaseCallback {
                     override fun onResult(result: QPurchaseResult) {
                         if (result.isSuccessful) {
-                            closeAll(action)
+                            sendSuccessEvent(action)
                         } else {
                             val error = result.error ?: QonversionError(
                                 code = QonversionErrorCode.Unknown,
                                 additionalMessage = "Purchase failed"
                             )
-                            handleOnErrorCallback(
-                                object {}.javaClass.enclosingMethod?.name,
-                                error,
-                                action
-                            )
+                            sendFailureEvent(action, error)
                         }
                     }
                 })
@@ -240,32 +224,57 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 try {
                     purchaseDelegate.restore()
                     withContext(Dispatchers.Main) {
-                        closeAll(action)
+                        sendSuccessEvent(action)
                     }
                 } catch (throwable: Throwable) {
                     withContext(Dispatchers.Main) {
                         val error = NoCodesError.fromClientThrowable(throwable)
                         action.error = error
-                        handleOnErrorCallback(
-                            object {}.javaClass.enclosingMethod?.name,
-                            error.details ?: "",
-                            action
-                        )
+                        sendFailureEvent(action, error.details ?: "")
                     }
                 }
             }
         } else {
             // Use default Qonversion SDK restore flow
             Qonversion.shared.restore(object : QonversionEntitlementsCallback {
-                override fun onSuccess(entitlements: Map<String, QEntitlement>) = closeAll(action)
+                override fun onSuccess(entitlements: Map<String, QEntitlement>) = sendSuccessEvent(action)
 
-                override fun onError(error: QonversionError) = handleOnErrorCallback(
-                    object {}.javaClass.enclosingMethod?.name,
-                    error,
-                    action
-                )
+                override fun onError(error: QonversionError) = sendFailureEvent(action, error)
             })
         }
+    }
+
+    // MARK: - Success/Failure Event Sending
+
+    /**
+     * Sends successEvent to WebView. WebView will handle executing the configured success action.
+     */
+    private fun sendSuccessEvent(action: QAction) {
+        delegate?.onActionFinishedExecuting(action)
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.webView?.evaluateJavascript(
+            "window.dispatchEvent(new CustomEvent(\"successEvent\", {detail: {}}))",
+            null
+        )
+    }
+
+    private fun sendFailureEvent(action: QAction, error: QonversionError) {
+        action.error = NoCodesError(error)
+        sendFailureEvent(action, error.description)
+    }
+
+    /**
+     * Sends failureEvent to WebView. WebView will handle executing the configured failure action.
+     */
+    private fun sendFailureEvent(action: QAction, errorMessage: String) {
+        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+        binding?.skeletonView?.hideSkeleton()
+        logger.error("ScreenFragment -> Action failed: $errorMessage")
+        delegate?.onActionFailedToExecute(action)
+        binding?.webView?.evaluateJavascript(
+            "window.dispatchEvent(new CustomEvent(\"failureEvent\", {detail: {}}))",
+            null
+        )
     }
 
     override fun close(action: QAction) {
@@ -307,31 +316,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private fun configureWebClient() {
         binding?.webView?.settings?.javaScriptEnabled = true
         binding?.webView?.addJavascriptInterface(this, "NoCodesMessageHandler")
-    }
-
-    private fun handleOnErrorCallback(
-        functionName: String?,
-        error: QonversionError,
-        actionResult: QAction
-    ) {
-        actionResult.error = NoCodesError(error)
-
-        handleOnErrorCallback(
-            functionName,
-            error.description,
-            actionResult
-        )
-    }
-
-    private fun handleOnErrorCallback(
-        functionName: String?,
-        description: String,
-        actionResult: QAction
-    ) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-        binding?.skeletonView?.hideSkeleton()
-        logger.error("ScreenActivity $functionName -> $description")
-        delegate?.onActionFailedToExecute(actionResult)
     }
 
     companion object {
