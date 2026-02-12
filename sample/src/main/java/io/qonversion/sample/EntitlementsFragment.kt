@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
@@ -85,11 +86,23 @@ class EntitlementsFragment : Fragment() {
 
     private fun setEntitlementsListener() {
         Qonversion.shared.setEntitlementsUpdateListener(object : QEntitlementsUpdateListener {
-            override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
+            override fun onEntitlementsUpdated(
+                entitlements: Map<String, QEntitlement>,
+                purchaseResult: QPurchaseResult?
+            ) {
                 _binding?.let {
                     displayEntitlements(entitlements)
                 }
-                Toast.makeText(context, getString(R.string.entitlements_updated_via_listener), Toast.LENGTH_SHORT).show()
+
+                if (purchaseResult?.isSuccessful == true && entitlements.isEmpty()) {
+                    Toast.makeText(
+                        context,
+                        "Consumable purchase completed in background",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(context, getString(R.string.entitlements_updated_via_listener), Toast.LENGTH_SHORT).show()
+                }
             }
         })
         isListenerSet = true

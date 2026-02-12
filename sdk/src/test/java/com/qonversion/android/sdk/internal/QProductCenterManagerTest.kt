@@ -7,14 +7,19 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.QPurchaseOptions
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
+import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
+import com.qonversion.android.sdk.internal.dto.QPermission
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.repository.QRepository
@@ -271,6 +276,78 @@ internal class QProductCenterManagerTest {
         every { purchase.isAcknowledged } returns isAcknowledged
 
         return purchase
+    }
+
+    @Test
+    fun `deferred purchase with no callback notifies listener with purchaseResult`() {
+        val spykProductCenterManager = spyk(productCenterManager, recordPrivateCalls = true)
+        spykProductCenterManager.mockPrivateField("processingPurchaseOptions", emptyMap<String, QPurchaseOptions>())
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        val purchases = listOf(purchase)
+        every {
+            mockBillingService.queryPurchases(any(), captureLambda())
+        } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(purchases)
+        }
+
+        every { mockBillingService.consumePurchases(any()) } just Runs
+
+        val mockListener = mockk<QEntitlementsUpdateListener>(relaxed = true)
+        every { mockConfig.entitlementsUpdateListener } returns mockListener
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.purchase(any(), any(), any(), any(), capture(callbackSlot))
+        } just Runs
+
+        spykProductCenterManager.onAppForeground()
+
+        // Simulate server response with permissions
+        val launchResult = QLaunchResult("uid", Date(), offerings = null)
+        callbackSlot.captured.onSuccess(launchResult)
+
+        // Verify listener was called with entitlements AND purchaseResult
+        verify(exactly = 1) {
+            mockListener.onEntitlementsUpdated(any(), match { it != null && it.isSuccessful })
+        }
+    }
+
+    @Test
+    fun `normal purchase with callback does not notify listener`() {
+        val spykProductCenterManager = spyk(productCenterManager, recordPrivateCalls = true)
+        val purchasingCallbacks = mutableMapOf<String, QonversionPurchaseCallback>()
+        val mockCallback = mockk<QonversionPurchaseCallback>(relaxed = true)
+        purchasingCallbacks[productId] = mockCallback
+        spykProductCenterManager.mockPrivateField("purchasingCallbacks", purchasingCallbacks)
+        spykProductCenterManager.mockPrivateField("processingPurchaseOptions", emptyMap<String, QPurchaseOptions>())
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        val purchases = listOf(purchase)
+        every {
+            mockBillingService.queryPurchases(any(), captureLambda())
+        } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(purchases)
+        }
+
+        every { mockBillingService.consumePurchases(any()) } just Runs
+
+        val mockListener = mockk<QEntitlementsUpdateListener>(relaxed = true)
+        every { mockConfig.entitlementsUpdateListener } returns mockListener
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.purchase(any(), any(), any(), any(), capture(callbackSlot))
+        } just Runs
+
+        spykProductCenterManager.onAppForeground()
+
+        val launchResult = QLaunchResult("uid", Date(), offerings = null)
+        callbackSlot.captured.onSuccess(launchResult)
+
+        // Verify callback received result but listener was NOT called
+        verify(exactly = 1) { mockCallback.onResult(any()) }
+        verify(exactly = 0) { mockListener.onEntitlementsUpdated(any(), any()) }
     }
 
     private fun mockInstallDate() {

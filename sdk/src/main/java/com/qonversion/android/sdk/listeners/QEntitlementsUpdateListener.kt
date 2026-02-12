@@ -1,5 +1,6 @@
 package com.qonversion.android.sdk.listeners
 
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 
 /**
@@ -18,5 +19,30 @@ interface QEntitlementsUpdateListener {
      *
      * @param entitlements all the current entitlements of the user.
      */
-    fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>)
+    @Deprecated(
+        "Use onEntitlementsUpdated(entitlements, purchaseResult) instead",
+        ReplaceWith("onEntitlementsUpdated(entitlements, null)")
+    )
+    fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
+        onEntitlementsUpdated(entitlements, null)
+    }
+
+    /**
+     * Called when user entitlements are updated asynchronously. For example when the purchase is made
+     * with SCA or parental control and thus needs additional confirmation.
+     *
+     * For consumable purchases that complete in the background (deferred purchases),
+     * entitlements may be empty while [purchaseResult] contains the purchase details.
+     *
+     * @param entitlements all the current entitlements of the user.
+     * @param purchaseResult the purchase result associated with this update, if available.
+     *                       This is especially useful for consumable purchases that don't create entitlements.
+     */
+    fun onEntitlementsUpdated(
+        entitlements: Map<String, QEntitlement>,
+        purchaseResult: QPurchaseResult?
+    ) {
+        @Suppress("DEPRECATION")
+        onEntitlementsUpdated(entitlements)
+    }
 }

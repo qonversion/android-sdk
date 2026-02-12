@@ -563,7 +563,12 @@ internal class QProductCenterManager internal constructor(
         )
 
         val entitlements = permissions.toEntitlementsMap()
-        callback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        if (callback != null) {
+            callback.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        } else {
+            val purchaseResult = QPurchaseResult.successFromFallback(entitlements, purchase)
+            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements, purchaseResult)
+        }
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -1058,8 +1063,8 @@ internal class QProductCenterManager internal constructor(
                         removePurchaseOptions(product?.storeId)
 
                         if (purchaseCallback == null) {
-                            // If no callback, notify entitlements update listener
-                            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+                            val purchaseResult = QPurchaseResult.success(entitlements, purchase)
+                            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements, purchaseResult)
                         } else {
                             purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }
