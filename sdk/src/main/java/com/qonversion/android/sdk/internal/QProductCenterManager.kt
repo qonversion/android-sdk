@@ -496,7 +496,7 @@ internal class QProductCenterManager internal constructor(
             return
         }
 
-        logger.release(
+        logger.debug(
             "restore() -> User switch detected. Switching from $currentUserId to $newUserId"
         )
 

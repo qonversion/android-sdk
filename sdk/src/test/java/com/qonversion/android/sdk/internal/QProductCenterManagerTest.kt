@@ -195,7 +195,7 @@ internal class QProductCenterManagerTest {
             mockLaunchResultCacheWrapper.clearPermissionsCache()
         }
         verify { callback.onSuccess(any()) }
-        verify { mockLogger.release(match { it.contains("User switch detected") }) }
+        verify { mockLogger.debug(match { it.contains("User switch detected") }) }
     }
 
     @Test
