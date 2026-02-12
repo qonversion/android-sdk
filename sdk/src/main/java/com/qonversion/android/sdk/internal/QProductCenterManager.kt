@@ -424,6 +424,7 @@ internal class QProductCenterManager internal constructor(
                 requestTrigger,
                 object : QonversionLaunchCallback {
                     override fun onSuccess(launchResult: QLaunchResult) {
+                        handleUserSwitchingOnRestore(launchResult)
                         updateLaunchResult(launchResult)
                         executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
                     }
@@ -486,6 +487,24 @@ internal class QProductCenterManager internal constructor(
     }
 
     // Private functions
+
+    private fun handleUserSwitchingOnRestore(launchResult: QLaunchResult) {
+        val currentUserId = userInfoService.obtainUserId()
+        val newUserId = launchResult.uid
+
+        if (newUserId.isEmpty() || newUserId == currentUserId) {
+            return
+        }
+
+        logger.release(
+            "restore() -> User switch detected. Switching from $currentUserId to $newUserId"
+        )
+
+        userInfoService.storeQonversionUserId(newUserId)
+        internalConfig.uid = newUserId
+        remoteConfigManager.onUserUpdate()
+        launchResultCache.clearPermissionsCache()
+    }
 
     private fun calculateRestorePermissionsLocally(
         purchases: List<Purchase>,

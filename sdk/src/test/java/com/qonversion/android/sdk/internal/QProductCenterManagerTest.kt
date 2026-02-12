@@ -7,7 +7,11 @@ import android.os.Build
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.qonversion.android.sdk.dto.QPurchaseOptions
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionLaunchCallback
+import com.qonversion.android.sdk.internal.api.RequestTrigger
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.qonversion.android.sdk.internal.billing.QonversionBillingService
 import com.qonversion.android.sdk.internal.dto.QLaunchResult
@@ -151,6 +155,107 @@ internal class QProductCenterManagerTest {
             { Assert.assertEquals("Wrong purchaseToken value", purchaseToken, entityPurchaseSlot.captured.purchaseToken) },
             { Assert.assertEquals("Wrong installDate value", installDate.milliSecondsToSeconds(), installDateSlot.captured) }
         )
+    }
+
+    // User switching on restore tests
+
+    @Test
+    fun `restore with same uid should not trigger user switch`() {
+        val currentUid = "user_old"
+        val launchResult = QLaunchResult(currentUid, Date(), offerings = null)
+
+        every { mockUserInfoService.obtainUserId() } returns currentUid
+        mockRestoreFlow(launchResult)
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
+        verify { callback.onSuccess(any()) }
+    }
+
+    @Test
+    fun `restore with different uid should trigger user switch`() {
+        val currentUid = "user_new"
+        val originalOwnerUid = "user_old"
+        val launchResult = QLaunchResult(originalOwnerUid, Date(), offerings = null)
+
+        every { mockUserInfoService.obtainUserId() } returns currentUid
+        mockRestoreFlow(launchResult)
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        verifyOrder {
+            mockUserInfoService.storeQonversionUserId(originalOwnerUid)
+            mockConfig.uid = originalOwnerUid
+            mockRemoteConfigManager.onUserUpdate()
+            mockLaunchResultCacheWrapper.clearPermissionsCache()
+        }
+        verify { callback.onSuccess(any()) }
+        verify { mockLogger.release(match { it.contains("User switch detected") }) }
+    }
+
+    @Test
+    fun `restore with error should not trigger user switch`() {
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(
+                listOf(mockPurchase(Purchase.PurchaseState.PURCHASED, false))
+            )
+        }
+        every { mockBillingService.consumePurchases(any()) } just Runs
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.restore(any(), any(), any(), capture(callbackSlot))
+        } answers {
+            callbackSlot.captured.onError(
+                QonversionError(QonversionErrorCode.BackendError)
+            )
+        }
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
+        verify { callback.onError(any()) }
+    }
+
+    @Test
+    fun `restore with empty uid in response should not trigger user switch`() {
+        val currentUid = "user_current"
+        val launchResult = QLaunchResult("", Date(), offerings = null)
+
+        every { mockUserInfoService.obtainUserId() } returns currentUid
+        mockRestoreFlow(launchResult)
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
+        verify { callback.onSuccess(any()) }
+    }
+
+    private fun mockRestoreFlow(launchResult: QLaunchResult) {
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(
+                listOf(mockPurchase(Purchase.PurchaseState.PURCHASED, false))
+            )
+        }
+        every { mockBillingService.consumePurchases(any()) } just Runs
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.restore(any(), any(), any(), capture(callbackSlot))
+        } answers {
+            callbackSlot.captured.onSuccess(launchResult)
+        }
     }
 
     private fun mockPurchase(
