@@ -24,7 +24,7 @@ interface QEntitlementsUpdateListener {
         ReplaceWith("onEntitlementsUpdated(entitlements, null)")
     )
     fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
-        onEntitlementsUpdated(entitlements, null)
+        // No-op default. Overridden by existing consumers.
     }
 
     /**
