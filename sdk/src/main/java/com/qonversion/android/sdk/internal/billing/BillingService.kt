@@ -21,7 +21,7 @@ internal interface BillingService {
         purchaseOptions: PurchaseOptionsInternalEnriched,
     )
 
-    fun consumePurchases(purchases: List<Purchase>)
+    fun consumePurchases(purchases: List<Purchase>, nonConsumableStoreIds: Set<String> = emptySet())
 
     fun queryPurchases(
         onFailed: (error: BillingError) -> Unit,

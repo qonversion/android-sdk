@@ -115,7 +115,7 @@ internal class QonversionBillingService internal constructor(
         }
     }
 
-    override fun consumePurchases(purchases: List<Purchase>) {
+    override fun consumePurchases(purchases: List<Purchase>, nonConsumableStoreIds: Set<String>) {
         if (isAnalyticsMode) {
             return
         }
@@ -130,7 +130,13 @@ internal class QonversionBillingService internal constructor(
                 ) { productType ->
                     when (productType) {
                         QStoreProductType.InApp -> {
-                            consume(purchase.purchaseToken)
+                            if (nonConsumableStoreIds.contains(productId)) {
+                                if (!purchase.isAcknowledged) {
+                                    acknowledge(purchase.purchaseToken)
+                                }
+                            } else {
+                                consume(purchase.purchaseToken)
+                            }
                         }
                         QStoreProductType.Subscription -> {
                             if (!purchase.isAcknowledged) {

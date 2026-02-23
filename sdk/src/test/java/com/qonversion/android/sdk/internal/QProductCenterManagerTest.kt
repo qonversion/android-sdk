@@ -110,7 +110,7 @@ internal class QProductCenterManagerTest {
         }
 
         verify { mockRepository wasNot Called }
-        verify(exactly = 0) { mockBillingService.consumePurchases(any()) }
+        verify(exactly = 0) { mockBillingService.consumePurchases(any(), any()) }
     }
 
     @Test
@@ -141,13 +141,13 @@ internal class QProductCenterManagerTest {
             )
         } just Runs
 
-        every { mockBillingService.consumePurchases(any()) } just Runs
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
 
         spykProductCenterManager.onAppForeground()
 
         verify(exactly = 1) {
             mockBillingService.queryPurchases(any(), any())
-            mockBillingService.consumePurchases(purchases)
+            mockBillingService.consumePurchases(purchases, any())
         }
 
         assertAll(
@@ -205,7 +205,7 @@ internal class QProductCenterManagerTest {
                 listOf(mockPurchase(Purchase.PurchaseState.PURCHASED, false))
             )
         }
-        every { mockBillingService.consumePurchases(any()) } just Runs
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
 
         val callbackSlot = slot<QonversionLaunchCallback>()
         every {
@@ -248,7 +248,7 @@ internal class QProductCenterManagerTest {
                 listOf(mockPurchase(Purchase.PurchaseState.PURCHASED, false))
             )
         }
-        every { mockBillingService.consumePurchases(any()) } just Runs
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
 
         val callbackSlot = slot<QonversionLaunchCallback>()
         every {
