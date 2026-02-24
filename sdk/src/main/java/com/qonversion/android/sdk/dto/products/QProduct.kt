@@ -9,7 +9,15 @@ data class QProduct(
     @Json(name = "id") val qonversionId: String,
     @Json(name = "store_id") val storeId: String?,
     @Json(name = "base_plan_id") val basePlanId: String?,
+    @Json(name = "type") internal val apiType: Int = TYPE_CONSUMABLE,
 ) {
+    internal val isNonConsumable: Boolean get() = apiType == TYPE_NON_CONSUMABLE
+
+    companion object {
+        internal const val TYPE_CONSUMABLE = 2
+        internal const val TYPE_NON_CONSUMABLE = 3
+    }
+
     /**
      * The store details of this product containing all the information from Google Play including
      * the offers for purchasing the base plan of this product (specified by [basePlanId])

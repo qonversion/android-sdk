@@ -131,13 +131,13 @@ internal class Util {
 
         const val LAUNCH_RESULT_JSON_STR = "{\"uid\":\"Og-97RMtD0tXhKg-O_ELSQFDpdyuq9Nj\"," +
                 "\"timestamp\":1612903277," +
-                "\"products\":[{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\"}," +
-                "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"}," +
-                "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\"}]," +
+                "\"products\":[{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":2}," +
+                "{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}," +
+                "{\"id\":\"annual\",\"store_id\":\"qonversion_subs_annual\",\"type\":2}]," +
                 "\"permissions\":[{\"id\":\"standart\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"playstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}," +
                 "{\"id\":\"Test Permission\",\"associated_product\":\"in_app\",\"renew_state\":-1,\"started_timestamp\":1612880300,\"source\":\"appstore\",\"active\":1,\"renews_count\":0,\"grant_type\":\"Purchase\",\"store_transactions\":[]}]," +
-                "\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"}]," +
-                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\"},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\"}]" +
+                "\"user_products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2}]," +
+                "\"offerings\":[{\"id\":\"main\",\"tag\":1,\"products\":[{\"id\":\"in_app\",\"store_id\":\"qonversion_inapp_consumable\",\"type\":2},{\"id\":\"main\",\"store_id\":\"qonversion_subs_weekly\",\"type\":2}]" +
                 "}]}"
 
         fun buildMoshi(): Moshi =
