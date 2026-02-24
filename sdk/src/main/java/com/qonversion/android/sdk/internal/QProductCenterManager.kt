@@ -415,7 +415,7 @@ internal class QProductCenterManager internal constructor(
                 return@queryPurchases
             }
 
-            billingService.consumePurchases(purchases)
+            billingService.consumePurchases(purchases, getNonConsumableStoreIds())
 
             val purchaseRecords = purchases.map { PurchaseRecord(it) }
             repository.restore(
@@ -783,7 +783,7 @@ internal class QProductCenterManager internal constructor(
                 if (processingPurchases.isNotEmpty()) {
                     handledPurchasesCache.saveHandledPurchases(processingPurchases)
 
-                    billingService.consumePurchases(processingPurchases.toList())
+                    billingService.consumePurchases(processingPurchases.toList(), getNonConsumableStoreIds())
                     processingPurchases = emptyList()
                 }
 
@@ -1019,7 +1019,7 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun handlePurchases(purchases: List<Purchase>, requestTrigger: RequestTrigger) {
-        billingService.consumePurchases(purchases)
+        billingService.consumePurchases(purchases, getNonConsumableStoreIds())
 
         purchases.forEach { purchase ->
             val purchaseCallback = purchasingCallbacks[purchase.productId]
@@ -1114,6 +1114,13 @@ internal class QProductCenterManager internal constructor(
                 error.code == QonversionErrorCode.NetworkConnectionFailed ||
                         error.httpCode?.isInternalServerError() == true
                 )
+    }
+
+    private fun getNonConsumableStoreIds(): Set<String> {
+        return launchResultCache.getActualProducts()?.values
+            ?.filter { it.isNonConsumable }
+            ?.mapNotNull { it.storeId }
+            ?.toSet() ?: emptySet()
     }
 
     private inline fun forEachPurchaseCallback(purchases: List<Purchase>, action: (QonversionPurchaseCallback) -> Unit) {
