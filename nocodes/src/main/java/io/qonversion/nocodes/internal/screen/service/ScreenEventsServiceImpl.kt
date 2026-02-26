@@ -59,38 +59,43 @@ internal class ScreenEventsServiceImpl(
     }
 
     override suspend fun flushAndWait() {
-        // Wait for any in-flight flush to complete
-        val eventsToSend: List<ScreenEvent>
-        while (true) {
-            synchronized(lock) {
-                if (!isFlushing) {
-                    if (buffer.isEmpty()) return
-                    isFlushing = true
-                    eventsToSend = buffer.toList()
-                    buffer.clear()
-                    break
+        val maxAttempts = 3
+        var attempts = 0
+
+        while (attempts < maxAttempts) {
+            val eventsToSend: List<ScreenEvent>
+
+            // Wait for any in-flight flush to complete
+            while (true) {
+                synchronized(lock) {
+                    if (!isFlushing) {
+                        if (buffer.isEmpty()) return  // Nothing to send, done
+                        isFlushing = true
+                        eventsToSend = buffer.toList()
+                        buffer.clear()
+                        break
+                    }
+                }
+                delay(50)
+            }
+
+            try {
+                doSendEvents(eventsToSend, reBufferOnFailure = false)
+            } catch (e: Exception) {
+                logger.error("ScreenEventsService -> flushAndWait failed: $e")
+            } finally {
+                synchronized(lock) {
+                    isFlushing = false
                 }
             }
-            // Another flush is in progress, wait briefly and retry
-            delay(50)
-        }
 
-        // Send events directly (not via scope.launch) so we block until done
-        try {
-            doSendEvents(eventsToSend)
-        } finally {
-            synchronized(lock) {
-                isFlushing = false
-            }
+            attempts++
         }
-
-        // Check if more events accumulated during send
-        flushAndWait()
     }
 
     private suspend fun sendEvents(eventsToSend: List<ScreenEvent>) {
         try {
-            doSendEvents(eventsToSend)
+            doSendEvents(eventsToSend, reBufferOnFailure = true)
         } finally {
             val shouldFlushAgain: Boolean
             synchronized(lock) {
@@ -103,7 +108,10 @@ internal class ScreenEventsServiceImpl(
         }
     }
 
-    private suspend fun doSendEvents(eventsToSend: List<ScreenEvent>) {
+    private suspend fun doSendEvents(
+        eventsToSend: List<ScreenEvent>,
+        reBufferOnFailure: Boolean = true
+    ) {
         try {
             val uid = getUserId()
             val eventMaps = eventsToSend.map { it.toMap() }
@@ -113,13 +121,17 @@ internal class ScreenEventsServiceImpl(
 
             if (response is Response.Error) {
                 logger.error("ScreenEventsService -> failed to send events: ${response.message}")
-                reBuffer(eventsToSend)
+                if (reBufferOnFailure) {
+                    reBuffer(eventsToSend)
+                }
             } else {
                 logger.verbose("ScreenEventsService -> sent ${eventsToSend.size} events")
             }
         } catch (e: Exception) {
             logger.error("ScreenEventsService -> failed to send events: $e")
-            reBuffer(eventsToSend)
+            if (reBufferOnFailure) {
+                reBuffer(eventsToSend)
+            }
         }
     }
 
