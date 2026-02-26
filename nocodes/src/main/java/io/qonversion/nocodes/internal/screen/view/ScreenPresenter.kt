@@ -182,20 +182,21 @@ internal class ScreenPresenter(
     private fun handleScreenAnalyticsAction(action: QAction) {
         val screenId = currentScreen?.id ?: return
         val params = action.parameters ?: return
-        val eventTypeString = params[QAction.Parameter.AnalyticsType] as? String ?: return
+        val eventTypeString = params[QAction.Parameter.AnalyticsType] as? String
 
         val eventType = when (eventTypeString) {
             "screen_cta_tap" -> ScreenEventType.CtaTap
             "screen_page_view" -> ScreenEventType.PageView
-            else -> {
-                logger.warn("ScreenPresenter -> Unknown screen analytics event type: $eventTypeString")
-                return
-            }
+            else -> null
         }
 
-        val pageIndex = (params[QAction.Parameter.PageIndex] as? Number)?.toInt()
-        val event = ScreenEvent(type = eventType, screenUid = screenId, pageIndex = pageIndex)
-        screenEventsService.track(event)
+        if (eventType == null) {
+            logger.warn("ScreenPresenter -> Unknown or missing screen analytics event type: $eventTypeString")
+        } else {
+            val pageIndex = (params[QAction.Parameter.PageIndex] as? Number)?.toInt()
+            val event = ScreenEvent(type = eventType, screenUid = screenId, pageIndex = pageIndex)
+            screenEventsService.track(event)
+        }
     }
 
     override fun onScreenClosed() {

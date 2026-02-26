@@ -4,6 +4,8 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QUser
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import io.qonversion.nocodes.error.ErrorCode
+import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.dto.ScreenEvent
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.apiInteractor.ApiInteractor
@@ -63,7 +65,7 @@ internal class ScreenEventsServiceImpl(
                 } else {
                     logger.verbose("ScreenEventsService -> sent ${eventsToSend.size} events")
                 }
-            } catch (e: Exception) {
+            } catch (e: NoCodesException) {
                 logger.error("ScreenEventsService -> failed to send events: $e")
                 reBuffer(eventsToSend)
             } finally {
@@ -86,7 +88,7 @@ internal class ScreenEventsServiceImpl(
 
                 override fun onError(error: QonversionError) {
                     continuation.resumeWithException(
-                        RuntimeException("Failed to get user info: ${error.description}")
+                        NoCodesException(ErrorCode.BackendError, "Failed to get user info: ${error.description}")
                     )
                 }
             })
