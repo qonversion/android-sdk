@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -28,6 +29,7 @@ internal class ScreenEventsServiceImpl(
     private val lock = Any()
     private val buffer = mutableListOf<ScreenEvent>()
     private var isFlushing = false
+    @Volatile
     private var cachedUserId: String? = null
 
     override fun track(event: ScreenEvent) {
@@ -52,26 +54,49 @@ internal class ScreenEventsServiceImpl(
         }
 
         scope.launch {
-            try {
-                val uid = getUserId()
-                val eventMaps = eventsToSend.map { it.toMap() }
-                val body = mapOf<String, Any?>("events" to eventMaps)
-                val request = requestConfigurator.configureScreenEventsRequest(uid, body)
-                val response = apiInteractor.execute(request)
+            sendEvents(eventsToSend)
+        }
+    }
 
-                if (response is Response.Error) {
-                    logger.error("ScreenEventsService -> failed to send events: ${response.message}")
-                    reBuffer(eventsToSend)
-                } else {
-                    logger.verbose("ScreenEventsService -> sent ${eventsToSend.size} events")
-                }
-            } catch (e: NoCodesException) {
-                logger.error("ScreenEventsService -> failed to send events: $e")
+    override suspend fun flushAndWait() {
+        val eventsToSend: List<ScreenEvent>
+        synchronized(lock) {
+            if (isFlushing || buffer.isEmpty()) return
+            isFlushing = true
+            eventsToSend = buffer.toList()
+            buffer.clear()
+        }
+
+        withContext(scope.coroutineContext) {
+            sendEvents(eventsToSend)
+        }
+    }
+
+    private suspend fun sendEvents(eventsToSend: List<ScreenEvent>) {
+        try {
+            val uid = getUserId()
+            val eventMaps = eventsToSend.map { it.toMap() }
+            val body = mapOf<String, Any?>("events" to eventMaps)
+            val request = requestConfigurator.configureScreenEventsRequest(uid, body)
+            val response = apiInteractor.execute(request)
+
+            if (response is Response.Error) {
+                logger.error("ScreenEventsService -> failed to send events: ${response.message}")
                 reBuffer(eventsToSend)
-            } finally {
-                synchronized(lock) {
-                    isFlushing = false
-                }
+            } else {
+                logger.verbose("ScreenEventsService -> sent ${eventsToSend.size} events")
+            }
+        } catch (e: Exception) {
+            logger.error("ScreenEventsService -> failed to send events: $e")
+            reBuffer(eventsToSend)
+        } finally {
+            val shouldFlushAgain: Boolean
+            synchronized(lock) {
+                isFlushing = false
+                shouldFlushAgain = buffer.isNotEmpty()
+            }
+            if (shouldFlushAgain) {
+                flush()
             }
         }
     }
@@ -99,8 +124,10 @@ internal class ScreenEventsServiceImpl(
         synchronized(lock) {
             buffer.addAll(0, events)
             if (buffer.size > MAX_BUFFER_SIZE) {
-                val excess = buffer.size - MAX_BUFFER_SIZE
-                repeat(excess) { buffer.removeAt(0) }
+                // Keep oldest (failed) events, trim newest
+                while (buffer.size > MAX_BUFFER_SIZE) {
+                    buffer.removeAt(buffer.size - 1)
+                }
             }
         }
     }

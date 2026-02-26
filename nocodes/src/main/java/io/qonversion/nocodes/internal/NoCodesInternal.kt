@@ -14,6 +14,7 @@ import io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 internal class NoCodesInternal(
     private val internalConfig: InternalConfig,
@@ -61,7 +62,9 @@ internal class NoCodesInternal(
     }
 
     override fun close() {
-        screenEventsService.flush()
+        runBlocking {
+            screenEventsService.flushAndWait()
+        }
         screenController.close()
     }
 
