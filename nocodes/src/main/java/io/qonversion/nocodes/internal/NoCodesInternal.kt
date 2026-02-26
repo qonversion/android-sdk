@@ -23,6 +23,7 @@ internal class NoCodesInternal(
 
     private val screenController = dependenciesAssembly.screenController()
     private val screenService = dependenciesAssembly.screenService()
+    private val screenEventsService = dependenciesAssembly.screenEventsService()
     private val logger = dependenciesAssembly.logger()
 
     init {
@@ -60,6 +61,7 @@ internal class NoCodesInternal(
     }
 
     override fun close() {
+        screenEventsService.flush()
         screenController.close()
     }
 

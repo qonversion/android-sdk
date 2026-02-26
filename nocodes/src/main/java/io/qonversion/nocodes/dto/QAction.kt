@@ -20,7 +20,8 @@ data class QAction(
         Close("close"),
         CloseAll("closeAll"),
         LoadProducts("getProducts"),
-        ShowScreen("showScreen");
+        ShowScreen("showScreen"),
+        ScreenAnalytics("screenAnalytics");
 
         companion object {
             fun from(type: String?): Type {
@@ -37,7 +38,9 @@ data class QAction(
         Deeplink("deeplink"),
         ProductId("productId"),
         ProductIds("productIds"),
-        ScreenId("screenId");
+        ScreenId("screenId"),
+        AnalyticsType("type"),
+        PageIndex("page_index");
 
         companion object {
             fun from(key: String?) = entries.find { it.key == key }

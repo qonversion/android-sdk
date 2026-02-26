@@ -87,6 +87,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        presenter.onScreenClosed()
         binding = null
     }
 

@@ -16,8 +16,11 @@ import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.dto.NoCodeScreen
+import io.qonversion.nocodes.internal.dto.ScreenEvent
+import io.qonversion.nocodes.internal.dto.ScreenEventType
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
+import io.qonversion.nocodes.internal.screen.service.ScreenEventsService
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +33,7 @@ internal class ScreenPresenter(
     private val delegateProvider: NoCodesDelegateProvider,
     private val serializer: Serializer,
     private val actionMapper: Mapper<QAction>,
+    private val screenEventsService: ScreenEventsService,
     private val customLocaleProvider: () -> String? = { null },
     private val themeProvider: () -> NoCodesTheme = { NoCodesTheme.Auto },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
@@ -75,6 +79,9 @@ internal class ScreenPresenter(
             var processedHtml = injectCustomLocale(screen.body)
             processedHtml = injectTheme(processedHtml)
             view.displayScreen(screen.id, processedHtml)
+
+            val shownEvent = ScreenEvent(type = ScreenEventType.ScreenShown, screenUid = screen.id)
+            screenEventsService.track(shownEvent)
         }
     }
 
@@ -162,11 +169,39 @@ internal class ScreenPresenter(
             QAction.Type.Restore -> {
                 view.restore()
             }
+            QAction.Type.ScreenAnalytics -> {
+                handleScreenAnalyticsAction(action)
+            }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
             }
         }
         return
+    }
+
+    private fun handleScreenAnalyticsAction(action: QAction) {
+        val screenId = currentScreen?.id ?: return
+        val params = action.parameters ?: return
+        val eventTypeString = params[QAction.Parameter.AnalyticsType] as? String ?: return
+
+        val eventType = when (eventTypeString) {
+            "screen_cta_tap" -> ScreenEventType.CtaTap
+            "screen_page_view" -> ScreenEventType.PageView
+            else -> {
+                logger.warn("ScreenPresenter -> Unknown screen analytics event type: $eventTypeString")
+                return
+            }
+        }
+
+        val pageIndex = (params[QAction.Parameter.PageIndex] as? Number)?.toInt()
+        val event = ScreenEvent(type = eventType, screenUid = screenId, pageIndex = pageIndex)
+        screenEventsService.track(event)
+    }
+
+    override fun onScreenClosed() {
+        val screenId = currentScreen?.id ?: return
+        val event = ScreenEvent(type = ScreenEventType.ScreenClosed, screenUid = screenId)
+        screenEventsService.track(event)
     }
 
     private fun handleLoadProductsAction(action: QAction) {
