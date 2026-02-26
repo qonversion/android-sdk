@@ -13,9 +13,9 @@ import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestCo
 import io.qonversion.nocodes.internal.networkLayer.dto.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -59,20 +59,51 @@ internal class ScreenEventsServiceImpl(
     }
 
     override suspend fun flushAndWait() {
+        // Wait for any in-flight flush to complete
         val eventsToSend: List<ScreenEvent>
-        synchronized(lock) {
-            if (isFlushing || buffer.isEmpty()) return
-            isFlushing = true
-            eventsToSend = buffer.toList()
-            buffer.clear()
+        while (true) {
+            synchronized(lock) {
+                if (!isFlushing) {
+                    if (buffer.isEmpty()) return
+                    isFlushing = true
+                    eventsToSend = buffer.toList()
+                    buffer.clear()
+                    break
+                }
+            }
+            // Another flush is in progress, wait briefly and retry
+            delay(50)
         }
 
-        withContext(scope.coroutineContext) {
-            sendEvents(eventsToSend)
+        // Send events directly (not via scope.launch) so we block until done
+        try {
+            doSendEvents(eventsToSend)
+        } finally {
+            synchronized(lock) {
+                isFlushing = false
+            }
         }
+
+        // Check if more events accumulated during send
+        flushAndWait()
     }
 
     private suspend fun sendEvents(eventsToSend: List<ScreenEvent>) {
+        try {
+            doSendEvents(eventsToSend)
+        } finally {
+            val shouldFlushAgain: Boolean
+            synchronized(lock) {
+                isFlushing = false
+                shouldFlushAgain = buffer.isNotEmpty()
+            }
+            if (shouldFlushAgain) {
+                flush()
+            }
+        }
+    }
+
+    private suspend fun doSendEvents(eventsToSend: List<ScreenEvent>) {
         try {
             val uid = getUserId()
             val eventMaps = eventsToSend.map { it.toMap() }
@@ -89,15 +120,6 @@ internal class ScreenEventsServiceImpl(
         } catch (e: Exception) {
             logger.error("ScreenEventsService -> failed to send events: $e")
             reBuffer(eventsToSend)
-        } finally {
-            val shouldFlushAgain: Boolean
-            synchronized(lock) {
-                isFlushing = false
-                shouldFlushAgain = buffer.isNotEmpty()
-            }
-            if (shouldFlushAgain) {
-                flush()
-            }
         }
     }
 
