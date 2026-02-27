@@ -1,9 +1,8 @@
 package io.qonversion.nocodes.internal.dto
 
 internal data class ScreenEvent(
-    val type: ScreenEventType,
+    val data: Map<String, Any>,
     val screenUid: String,
-    val pageIndex: Int? = null,
     val happenedAt: Long = System.currentTimeMillis() / MILLIS_PER_SECOND
 ) {
     companion object {
@@ -11,12 +10,10 @@ internal data class ScreenEvent(
     }
 
     fun toMap(): Map<String, Any> {
-        val map = mutableMapOf<String, Any>(
-            "type" to type.value,
-            "screen_uid" to screenUid,
-            "happened_at" to happenedAt
-        )
-        pageIndex?.let { map["page_index"] = it }
+        val map = mutableMapOf<String, Any>()
+        map.putAll(data)  // All JS-provided fields first
+        map["screen_uid"] = screenUid  // SDK enrichment (override if JS sent it)
+        map["happened_at"] = happenedAt
         return map
     }
 }

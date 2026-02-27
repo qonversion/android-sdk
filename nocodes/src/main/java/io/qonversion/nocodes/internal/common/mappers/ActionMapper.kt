@@ -9,21 +9,26 @@ internal class ActionMapper : Mapper<QAction> {
         val type = QAction.Type.from(typeString)
 
         var parameters: MutableMap<QAction.Parameter, Any>? = null
+        var rawParameters: MutableMap<String, Any>? = null
+
         if (data.containsKey("parameters")) {
             parameters = mutableMapOf()
+            rawParameters = mutableMapOf()
             val parametersMap = data["parameters"] as? Map<*, *>
             parametersMap?.forEach { (key, value) ->
-                key.takeIf { it is String }
-                    ?.let { QAction.Parameter.from(it as String) }
-                    ?.let { parameter ->
-                        value?.let { parameters[parameter] = value }
+                if (key is String && value != null) {
+                    rawParameters[key] = value  // Always preserve raw
+                    QAction.Parameter.from(key)?.let { parameter ->
+                        parameters[parameter] = value
                     }
+                }
             }
         }
 
         return QAction(
             type,
             parameters,
+            rawParameters,
         )
     }
 }

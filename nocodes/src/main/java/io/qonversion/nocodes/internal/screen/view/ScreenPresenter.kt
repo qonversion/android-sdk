@@ -80,7 +80,10 @@ internal class ScreenPresenter(
             processedHtml = injectTheme(processedHtml)
             view.displayScreen(screen.id, processedHtml)
 
-            val shownEvent = ScreenEvent(type = ScreenEventType.ScreenShown, screenUid = screen.id)
+            val shownEvent = ScreenEvent(
+                data = mapOf("type" to ScreenEventType.ScreenShown.value),
+                screenUid = screen.id
+            )
             screenEventsService.track(shownEvent)
         }
     }
@@ -181,27 +184,24 @@ internal class ScreenPresenter(
 
     private fun handleScreenAnalyticsAction(action: QAction) {
         val screenId = currentScreen?.id ?: return
-        val params = action.parameters ?: return
-        val eventTypeString = params[QAction.Parameter.AnalyticsType] as? String
+        val rawParams = action.rawParameters
+        if (rawParams.isNullOrEmpty()) return
 
-        val eventType = when (eventTypeString) {
-            "screen_cta_tap" -> ScreenEventType.CtaTap
-            "screen_page_view" -> ScreenEventType.PageView
-            else -> null
+        if (!rawParams.containsKey("type")) {
+            logger.warn("ScreenPresenter -> screenAnalytics action missing 'type' parameter")
+            return
         }
 
-        if (eventType == null) {
-            logger.warn("ScreenPresenter -> Unknown or missing screen analytics event type: $eventTypeString")
-        } else {
-            val pageIndex = (params[QAction.Parameter.PageIndex] as? Number)?.toInt()
-            val event = ScreenEvent(type = eventType, screenUid = screenId, pageIndex = pageIndex)
-            screenEventsService.track(event)
-        }
+        val event = ScreenEvent(data = rawParams, screenUid = screenId)
+        screenEventsService.track(event)
     }
 
     override fun onScreenClosed() {
         val screenId = currentScreen?.id ?: return
-        val event = ScreenEvent(type = ScreenEventType.ScreenClosed, screenUid = screenId)
+        val event = ScreenEvent(
+            data = mapOf("type" to ScreenEventType.ScreenClosed.value),
+            screenUid = screenId
+        )
         screenEventsService.track(event)
     }
 

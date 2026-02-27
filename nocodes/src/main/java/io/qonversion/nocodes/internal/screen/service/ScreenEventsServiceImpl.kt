@@ -38,7 +38,7 @@ internal class ScreenEventsServiceImpl(
             buffer.add(event)
             shouldFlush = buffer.size >= BATCH_SIZE
         }
-        logger.verbose("ScreenEventsService -> tracked event: ${event.type.value}")
+        logger.verbose("ScreenEventsService -> tracked event: ${event.data["type"] ?: "unknown"}")
         if (shouldFlush) {
             flush()
         }

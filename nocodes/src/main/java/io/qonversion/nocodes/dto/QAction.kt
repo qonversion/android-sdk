@@ -4,7 +4,8 @@ import io.qonversion.nocodes.error.NoCodesError
 
 data class QAction(
     val type: Type,
-    val parameters: Map<Parameter, Any>? = null
+    val parameters: Map<Parameter, Any>? = null,
+    val rawParameters: Map<String, Any>? = null
 ) {
     var error: NoCodesError? = null
 
