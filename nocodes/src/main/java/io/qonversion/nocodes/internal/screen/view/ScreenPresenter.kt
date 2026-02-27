@@ -192,7 +192,9 @@ internal class ScreenPresenter(
             return
         }
 
-        val event = ScreenEvent(data = rawParams)
+        val eventData = rawParams.toMutableMap()
+        currentScreen?.id?.let { eventData["screen_uid"] = it }
+        val event = ScreenEvent(data = eventData)
         screenEventsService.track(event)
     }
 
