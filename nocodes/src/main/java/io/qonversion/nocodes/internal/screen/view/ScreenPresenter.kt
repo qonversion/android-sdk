@@ -80,10 +80,11 @@ internal class ScreenPresenter(
             processedHtml = injectTheme(processedHtml)
             view.displayScreen(screen.id, processedHtml)
 
-            val shownEvent = ScreenEvent(
-                data = mapOf("type" to ScreenEventType.ScreenShown.value),
-                screenUid = screen.id
-            )
+            val shownEvent = ScreenEvent(data = mapOf(
+                "type" to ScreenEventType.ScreenShown.value,
+                "screen_uid" to screen.id,
+                "happened_at" to System.currentTimeMillis() / 1000
+            ))
             screenEventsService.track(shownEvent)
         }
     }
@@ -183,7 +184,6 @@ internal class ScreenPresenter(
     }
 
     private fun handleScreenAnalyticsAction(action: QAction) {
-        val screenId = currentScreen?.id ?: return
         val rawParams = action.rawParameters
         if (rawParams.isNullOrEmpty()) return
 
@@ -192,16 +192,17 @@ internal class ScreenPresenter(
             return
         }
 
-        val event = ScreenEvent(data = rawParams, screenUid = screenId)
+        val event = ScreenEvent(data = rawParams)
         screenEventsService.track(event)
     }
 
     override fun onScreenClosed() {
         val screenId = currentScreen?.id ?: return
-        val event = ScreenEvent(
-            data = mapOf("type" to ScreenEventType.ScreenClosed.value),
-            screenUid = screenId
-        )
+        val event = ScreenEvent(data = mapOf(
+            "type" to ScreenEventType.ScreenClosed.value,
+            "screen_uid" to screenId,
+            "happened_at" to System.currentTimeMillis() / 1000
+        ))
         screenEventsService.track(event)
     }
 
