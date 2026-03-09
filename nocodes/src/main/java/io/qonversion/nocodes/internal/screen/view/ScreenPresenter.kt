@@ -183,6 +183,8 @@ internal class ScreenPresenter(
         return
     }
 
+    // JS analytics events are forwarded as-is without type validation against ScreenEventType.
+    // The SDK only injects screen_uid; the event type and all other fields come straight from JS.
     private fun handleScreenAnalyticsAction(action: QAction) {
         val rawParams = action.rawParameters
         if (rawParams.isNullOrEmpty()) return
