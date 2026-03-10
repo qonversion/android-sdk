@@ -60,24 +60,8 @@ internal class ScreenEventsServiceImpl(
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun flushAndWait() {
-        var attempts = 0
-
-        while (attempts < MAX_FLUSH_ATTEMPTS) {
-            val eventsToSend: List<ScreenEvent>
-
-            // Wait for any in-flight flush to complete
-            while (true) {
-                synchronized(lock) {
-                    if (!isFlushing) {
-                        if (buffer.isEmpty()) return // Nothing to send, done
-                        isFlushing = true
-                        eventsToSend = buffer.toList()
-                        buffer.clear()
-                        break
-                    }
-                }
-                delay(FLUSH_WAIT_DELAY_MS)
-            }
+        for (attempt in 0 until MAX_FLUSH_ATTEMPTS) {
+            val eventsToSend = waitAndDrainBuffer() ?: return
 
             try {
                 doSendEvents(eventsToSend, reBufferOnFailure = false)
@@ -88,8 +72,25 @@ internal class ScreenEventsServiceImpl(
                     isFlushing = false
                 }
             }
+        }
+    }
 
-            attempts++
+    private suspend fun waitAndDrainBuffer(): List<ScreenEvent>? {
+        while (true) {
+            var ready = false
+            var events: List<ScreenEvent>? = null
+            synchronized(lock) {
+                if (!isFlushing) {
+                    ready = true
+                    if (buffer.isNotEmpty()) {
+                        isFlushing = true
+                        events = buffer.toList()
+                        buffer.clear()
+                    }
+                }
+            }
+            if (ready) return events
+            delay(FLUSH_WAIT_DELAY_MS)
         }
     }
 
