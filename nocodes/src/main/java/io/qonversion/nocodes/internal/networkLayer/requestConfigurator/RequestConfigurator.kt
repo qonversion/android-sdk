@@ -9,4 +9,6 @@ internal interface RequestConfigurator {
     fun configureScreenRequestById(screenId: String): Request
 
     fun configurePreloadScreensRequest(): Request
+
+    fun configureScreenEventsRequest(uid: String, body: Map<String, Any?>): Request
 }

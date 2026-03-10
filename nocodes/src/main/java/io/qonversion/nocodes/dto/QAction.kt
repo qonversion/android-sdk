@@ -4,7 +4,8 @@ import io.qonversion.nocodes.error.NoCodesError
 
 data class QAction(
     val type: Type,
-    val parameters: Map<Parameter, Any>? = null
+    val parameters: Map<Parameter, Any>? = null,
+    val rawParameters: Map<String, Any>? = null
 ) {
     var error: NoCodesError? = null
 
@@ -20,7 +21,8 @@ data class QAction(
         Close("close"),
         CloseAll("closeAll"),
         LoadProducts("getProducts"),
-        ShowScreen("showScreen");
+        ShowScreen("showScreen"),
+        ScreenAnalytics("screenAnalytics");
 
         companion object {
             fun from(type: String?): Type {
@@ -37,7 +39,9 @@ data class QAction(
         Deeplink("deeplink"),
         ProductId("productId"),
         ProductIds("productIds"),
-        ScreenId("screenId");
+        ScreenId("screenId"),
+        AnalyticsType("type"),
+        PageIndex("page_index");
 
         companion object {
             fun from(key: String?) = entries.find { it.key == key }
