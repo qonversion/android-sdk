@@ -16,9 +16,13 @@ import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.dto.NoCodeScreen
+import io.qonversion.nocodes.internal.dto.ScreenEvent
+import io.qonversion.nocodes.internal.dto.ScreenEventType
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
+import io.qonversion.nocodes.internal.screen.service.ScreenEventsService
 import io.qonversion.nocodes.internal.screen.service.ScreenService
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +34,7 @@ internal class ScreenPresenter(
     private val delegateProvider: NoCodesDelegateProvider,
     private val serializer: Serializer,
     private val actionMapper: Mapper<QAction>,
+    private val screenEventsService: ScreenEventsService,
     private val customLocaleProvider: () -> String? = { null },
     private val themeProvider: () -> NoCodesTheme = { NoCodesTheme.Auto },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
@@ -75,6 +80,13 @@ internal class ScreenPresenter(
             var processedHtml = injectCustomLocale(screen.body)
             processedHtml = injectTheme(processedHtml)
             view.displayScreen(screen.id, processedHtml)
+
+            val shownEvent = ScreenEvent(data = mapOf(
+                "type" to ScreenEventType.ScreenShown.value,
+                "screen_uid" to screen.id,
+                "happened_at" to currentUnixTimestamp()
+            ))
+            screenEventsService.track(shownEvent)
         }
     }
 
@@ -162,12 +174,45 @@ internal class ScreenPresenter(
             QAction.Type.Restore -> {
                 view.restore()
             }
+            QAction.Type.ScreenAnalytics -> {
+                handleScreenAnalyticsAction(action)
+            }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
             }
         }
         return
     }
+
+    // JS analytics events are forwarded as-is without type validation against ScreenEventType.
+    // The SDK only injects screen_uid; the event type and all other fields come straight from JS.
+    private fun handleScreenAnalyticsAction(action: QAction) {
+        val rawParams = action.rawParameters
+        if (rawParams.isNullOrEmpty()) return
+
+        if (!rawParams.containsKey("type")) {
+            logger.warn("ScreenPresenter -> screenAnalytics action missing 'type' parameter")
+            return
+        }
+
+        val eventData = rawParams.toMutableMap()
+        currentScreen?.id?.let { eventData["screen_uid"] = it }
+        val event = ScreenEvent(data = eventData)
+        screenEventsService.track(event)
+    }
+
+    override fun onScreenClosed() {
+        val screenId = currentScreen?.id ?: return
+        val event = ScreenEvent(data = mapOf(
+            "type" to ScreenEventType.ScreenClosed.value,
+            "screen_uid" to screenId,
+            "happened_at" to currentUnixTimestamp()
+        ))
+        screenEventsService.track(event)
+    }
+
+    private fun currentUnixTimestamp(): Long =
+        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
 
     private fun handleLoadProductsAction(action: QAction) {
         val productIds = action.parameters?.get(QAction.Parameter.ProductIds) as? List<*>

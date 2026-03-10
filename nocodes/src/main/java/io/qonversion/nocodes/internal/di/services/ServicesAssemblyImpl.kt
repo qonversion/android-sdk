@@ -8,6 +8,8 @@ import io.qonversion.nocodes.internal.screen.service.FallbackService
 import io.qonversion.nocodes.internal.screen.service.FallbackServiceImpl
 import io.qonversion.nocodes.internal.screen.service.ImagePreloader
 import io.qonversion.nocodes.internal.screen.service.ImagePreloaderImpl
+import io.qonversion.nocodes.internal.screen.service.ScreenEventsService
+import io.qonversion.nocodes.internal.screen.service.ScreenEventsServiceImpl
 import io.qonversion.nocodes.internal.screen.service.ScreenService
 import io.qonversion.nocodes.internal.screen.service.ScreenServiceImpl
 import io.qonversion.nocodes.internal.utils.FallbackUtils
@@ -55,5 +57,17 @@ internal class ServicesAssemblyImpl(
 
     override fun imagePreloader(): ImagePreloader {
         return imagePreloaderInstance
+    }
+
+    private val screenEventsServiceInstance by lazy {
+        ScreenEventsServiceImpl(
+            networkAssembly.requestConfigurator(),
+            networkAssembly.exponentialApiInteractor(),
+            miscAssembly.logger()
+        )
+    }
+
+    override fun screenEventsService(): ScreenEventsService {
+        return screenEventsServiceInstance
     }
 }

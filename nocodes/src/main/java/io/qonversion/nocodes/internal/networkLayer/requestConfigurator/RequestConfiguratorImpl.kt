@@ -25,4 +25,13 @@ internal class RequestConfiguratorImpl(
 
         return Request.get("${baseUrl}v3/${ApiEndpoint.Screens.path}?preload=true", headers)
     }
+
+    override fun configureScreenEventsRequest(uid: String, body: Map<String, Any?>): Request {
+        val headers = headerBuilder.buildCommonHeaders()
+        return Request.post(
+            "${baseUrl}v3/${ApiEndpoint.Users.path}/$uid/${ApiEndpoint.ScreenEvents.path}",
+            headers,
+            body
+        )
+    }
 }

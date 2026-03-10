@@ -29,5 +29,7 @@ internal class ScreenContract {
         fun onStart(contextKey: String?, screenId: String?)
 
         fun onWebViewMessageReceived(message: String)
+
+        fun onScreenClosed()
     }
 }
