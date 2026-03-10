@@ -17,7 +17,7 @@ internal class ActionMapper : Mapper<QAction> {
             val parametersMap = data["parameters"] as? Map<*, *>
             parametersMap?.forEach { (key, value) ->
                 if (key is String && value != null) {
-                    rawParameters[key] = value  // Always preserve raw
+                    rawParameters[key] = value // Always preserve raw
                     QAction.Parameter.from(key)?.let { parameter ->
                         parameters[parameter] = value
                     }

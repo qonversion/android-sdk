@@ -58,25 +58,25 @@ internal class ScreenEventsServiceImpl(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun flushAndWait() {
-        val maxAttempts = 3
         var attempts = 0
 
-        while (attempts < maxAttempts) {
+        while (attempts < MAX_FLUSH_ATTEMPTS) {
             val eventsToSend: List<ScreenEvent>
 
             // Wait for any in-flight flush to complete
             while (true) {
                 synchronized(lock) {
                     if (!isFlushing) {
-                        if (buffer.isEmpty()) return  // Nothing to send, done
+                        if (buffer.isEmpty()) return // Nothing to send, done
                         isFlushing = true
                         eventsToSend = buffer.toList()
                         buffer.clear()
                         break
                     }
                 }
-                delay(50)
+                delay(FLUSH_WAIT_DELAY_MS)
             }
 
             try {
@@ -127,7 +127,7 @@ internal class ScreenEventsServiceImpl(
             } else {
                 logger.verbose("ScreenEventsService -> sent ${eventsToSend.size} events")
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             logger.error("ScreenEventsService -> failed to send events: $e")
             if (reBufferOnFailure) {
                 reBuffer(eventsToSend)
@@ -169,5 +169,7 @@ internal class ScreenEventsServiceImpl(
     companion object {
         private const val BATCH_SIZE = 10
         private const val MAX_BUFFER_SIZE = 100
+        private const val MAX_FLUSH_ATTEMPTS = 3
+        private const val FLUSH_WAIT_DELAY_MS = 50L
     }
 }

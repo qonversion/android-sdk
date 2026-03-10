@@ -22,6 +22,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.screen.service.ScreenEventsService
 import io.qonversion.nocodes.internal.screen.service.ScreenService
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,7 +84,7 @@ internal class ScreenPresenter(
             val shownEvent = ScreenEvent(data = mapOf(
                 "type" to ScreenEventType.ScreenShown.value,
                 "screen_uid" to screen.id,
-                "happened_at" to System.currentTimeMillis() / 1000
+                "happened_at" to currentUnixTimestamp()
             ))
             screenEventsService.track(shownEvent)
         }
@@ -205,10 +206,13 @@ internal class ScreenPresenter(
         val event = ScreenEvent(data = mapOf(
             "type" to ScreenEventType.ScreenClosed.value,
             "screen_uid" to screenId,
-            "happened_at" to System.currentTimeMillis() / 1000
+            "happened_at" to currentUnixTimestamp()
         ))
         screenEventsService.track(event)
     }
+
+    private fun currentUnixTimestamp(): Long =
+        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
 
     private fun handleLoadProductsAction(action: QAction) {
         val productIds = action.parameters?.get(QAction.Parameter.ProductIds) as? List<*>
