@@ -60,7 +60,7 @@ internal class ScreenEventsServiceImpl(
 
     @Suppress("TooGenericExceptionCaught")
     override suspend fun flushAndWait() {
-        for (attempt in 0 until MAX_FLUSH_ATTEMPTS) {
+        repeat(MAX_FLUSH_ATTEMPTS) {
             val eventsToSend = waitAndDrainBuffer() ?: return
 
             try {
