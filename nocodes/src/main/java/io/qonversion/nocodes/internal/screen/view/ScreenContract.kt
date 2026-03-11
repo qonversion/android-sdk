@@ -22,6 +22,8 @@ internal class ScreenContract {
 
         fun sendProductsToWebView(jsonData: String)
 
+        fun injectProductsContext(jsScript: String)
+
         fun finishScreenPreparation()
     }
 

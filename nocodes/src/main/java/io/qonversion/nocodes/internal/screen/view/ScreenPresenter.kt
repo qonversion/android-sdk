@@ -3,6 +3,7 @@ package io.qonversion.nocodes.internal.screen.view
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QProductPrice
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
@@ -231,12 +232,46 @@ internal class ScreenPresenter(
                 val jsonData = serializer.serialize(data)
 
                 view.sendProductsToWebView(jsonData)
+                view.injectProductsContext(buildProductsContextScript(filteredProducts))
             }
 
             override fun onError(error: QonversionError) {
                 logger.error("Failed to load products for the screen:\n$error")
             }
         })
+    }
+
+    private fun buildProductsContextScript(products: Map<String, QProduct>): String {
+        var hasAnyIntro = false
+
+        val productEntries = products.map { (id, product) ->
+            val offerDetails: QProductOfferDetails? = product.storeDetails?.defaultSubscriptionOfferDetails
+            val hasIntro = offerDetails?.let {
+                it.trialPhase != null || it.introPhase != null
+            } ?: false
+            if (hasIntro) hasAnyIntro = true
+
+            val introType = offerDetails?.let { offer ->
+                val phase = offer.trialPhase ?: offer.introPhase
+                when (phase?.type) {
+                    QProductPricingPhase.Type.FreeTrial -> "\"trial\""
+                    QProductPricingPhase.Type.DiscountedSinglePayment -> "\"pay_up_front\""
+                    QProductPricingPhase.Type.DiscountedRecurringPayment -> "\"pay_as_you_go\""
+                    else -> "null"
+                }
+            } ?: "null"
+
+            "\"$id\": { hasIntro: $hasIntro, introType: $introType }"
+        }
+
+        val productsJS = "{ " + productEntries.joinToString(", ") + " }"
+        return """
+            if (window.noCodesContext) {
+                window.noCodesContext.products = $productsJS;
+                window.noCodesContext.products.hasAnyIntro = $hasAnyIntro;
+                window.dispatchEvent(new Event("noCodesContextUpdate"));
+            }
+        """.trimIndent()
     }
 
     private fun mapProductInfo(product: QProduct): Map<String, Any?> {

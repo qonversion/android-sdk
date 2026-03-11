@@ -6,6 +6,7 @@
             android:name=".internal.screen.view.ScreenActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait"
+            android:configChanges="uiMode"
         />
     </application>
 

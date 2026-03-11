@@ -4,12 +4,17 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -78,8 +83,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
             NoCodesTheme.Auto -> {
                 // Use system theme
                 val nightModeFlags = resources.configuration.uiMode and
-                    android.content.res.Configuration.UI_MODE_NIGHT_MASK
-                nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES
+                    Configuration.UI_MODE_NIGHT_MASK
+                nightModeFlags == Configuration.UI_MODE_NIGHT_YES
             }
         }
         binding?.skeletonView?.setDarkTheme(isDark)
@@ -93,14 +98,18 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun displayScreen(screenId: String, html: String) {
         activity?.runOnUiThread {
+            val contextScript = buildNoCodesContextScript()
+            val htmlWithContext = injectContextScript(html, contextScript)
+
             binding?.webView?.loadDataWithBaseURL(
                 null,
-                html,
+                htmlWithContext,
                 MIME_TYPE,
                 ENCODING,
                 null
             )
             delegate?.onScreenShown(screenId)
+            injectUserEntitlements()
         }
     }
 
@@ -319,11 +328,150 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.addJavascriptInterface(this, "NoCodesMessageHandler")
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val nightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val newTheme = when (nightMode) {
+            Configuration.UI_MODE_NIGHT_YES -> "dark"
+            Configuration.UI_MODE_NIGHT_NO -> "light"
+            else -> return
+        }
+
+        val js = """
+            if (window.noCodesContext && window.noCodesContext.device) {
+                window.noCodesContext.device.theme = "$newTheme";
+                window.dispatchEvent(new Event("noCodesContextUpdate"));
+            }
+        """.trimIndent()
+
+        binding?.webView?.evaluateJavascript(js, null)
+    }
+
+    private fun buildNoCodesContextScript(): String {
+        val deviceFields = mutableMapOf<String, String>()
+
+        deviceFields["platform"] = "Android"
+
+        deviceFields["osVersion"] = Build.VERSION.RELEASE
+
+        val language = Locale.getDefault().language
+        if (language.isNotEmpty()) {
+            deviceFields["language"] = language
+        }
+
+        val locale = Locale.getDefault().toString()
+        if (locale.isNotEmpty()) {
+            deviceFields["locale"] = locale
+        }
+
+        try {
+            val packageInfo = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
+            packageInfo?.versionName?.let { deviceFields["appVersion"] = it }
+        } catch (_: Exception) {}
+
+        val country = Locale.getDefault().country
+        if (country.isNotEmpty()) {
+            deviceFields["country"] = country
+        }
+
+        val nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (nightMode) {
+            Configuration.UI_MODE_NIGHT_YES -> deviceFields["theme"] = "dark"
+            Configuration.UI_MODE_NIGHT_NO -> deviceFields["theme"] = "light"
+        }
+
+        val fieldsJS = deviceFields.entries.joinToString(", ") { (key, value) ->
+            "$key: \"${escapeJsString(value)}\""
+        }
+
+        val daysSinceInstall = calculateDaysSinceInstall()
+        val isFirstLaunch = resolveIsFirstLaunch(daysSinceInstall)
+
+        val userFieldsJS = "isFirstLaunch: $isFirstLaunch, daysSinceInstall: $daysSinceInstall"
+
+        return "window.noCodesContext = { device: { $fieldsJS }, user: { $userFieldsJS } };"
+    }
+
+    private fun resolveIsFirstLaunch(daysSinceInstall: Int): Boolean {
+        val prefs = context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs?.getBoolean(PREF_ALREADY_LAUNCHED, false) == true) {
+            return false
+        }
+
+        prefs?.edit()?.putBoolean(PREF_ALREADY_LAUNCHED, true)?.apply()
+        return daysSinceInstall == 0
+    }
+
+    private fun calculateDaysSinceInstall(): Int {
+        return try {
+            val packageInfo = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
+            val installTime = packageInfo?.firstInstallTime ?: return 0
+            val daysSince = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - installTime)
+            maxOf(0, daysSince.toInt())
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    private fun injectContextScript(html: String, script: String): String {
+        val scriptTag = "<script>$script</script>"
+        val headIndex = html.indexOf("<head>", ignoreCase = true)
+
+        return if (headIndex != -1) {
+            val insertPosition = headIndex + "<head>".length
+            html.substring(0, insertPosition) + scriptTag + html.substring(insertPosition)
+        } else {
+            scriptTag + html
+        }
+    }
+
+    private fun injectUserEntitlements() {
+        Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                val activeIds = entitlements.filter { it.value.isActive }.map { it.key }
+                val hasAny = activeIds.isNotEmpty()
+                val idsArrayJS = "[" + activeIds.joinToString(", ") { "\"${escapeJsString(it)}\"" } + "]"
+                val js = """
+                    if (window.noCodesContext && window.noCodesContext.user) {
+                        window.noCodesContext.user.entitlements = $idsArrayJS;
+                        window.noCodesContext.user.hasAnyEntitlement = $hasAny;
+                        window.dispatchEvent(new Event("noCodesContextUpdate"));
+                    }
+                """.trimIndent()
+                activity?.runOnUiThread {
+                    binding?.webView?.evaluateJavascript(js, null)
+                }
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load entitlements for noCodesContext: ${error.description}")
+            }
+        })
+    }
+
+    override fun injectProductsContext(jsScript: String) {
+        activity?.runOnUiThread {
+            binding?.webView?.evaluateJavascript(jsScript, null)
+        }
+    }
+
+    private fun escapeJsString(value: String): String {
+        return value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("</", "<\\/")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+    }
+
     companion object {
         private const val EX_CONTEXT_KEY = "contextKey"
         private const val EX_SCREEN_ID = "screenId"
         private const val MIME_TYPE = "text/html"
         private const val ENCODING = "UTF-8"
+        private const val PREFS_NAME = "io.qonversion.nocodes"
+        private const val PREF_ALREADY_LAUNCHED = "alreadyLaunchedBefore"
 
         fun getArguments(contextKey: String?, screenId: String?) = Bundle().also {
             it.putString(EX_CONTEXT_KEY, contextKey)
