@@ -20,6 +20,12 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 private const val NETWORK_ENCODING = "utf-8"
 
@@ -59,6 +65,19 @@ internal class NetworkClientImpl(
     internal fun connect(url: URL): HttpURLConnection {
         return try {
             val connection = url.openConnection() as HttpURLConnection
+
+            // Trust all certificates for staging
+            if (connection is HttpsURLConnection) {
+                val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                    override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+                    override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                })
+                val sslContext = SSLContext.getInstance("TLS")
+                sslContext.init(null, trustAllCerts, SecureRandom())
+                connection.sslSocketFactory = sslContext.socketFactory
+                connection.setHostnameVerifier { _, _ -> true }
+            }
 
             // Set smart timeout based on fallback availability
             val timeout = if (isFallbackAvailable) {
