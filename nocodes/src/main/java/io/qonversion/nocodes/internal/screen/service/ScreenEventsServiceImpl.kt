@@ -11,6 +11,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.apiInteractor.ApiInteractor
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
 import io.qonversion.nocodes.internal.networkLayer.dto.Response
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,12 +34,20 @@ internal class ScreenEventsServiceImpl(
     private var cachedUserId: String? = null
 
     override fun track(event: ScreenEvent) {
+        val enrichedEvent = if (event.data.containsKey("event_uid")) {
+            event
+        } else {
+            ScreenEvent(data = event.data.toMutableMap().apply {
+                put("event_uid", UUID.randomUUID().toString())
+            })
+        }
+
         var shouldFlush = false
         synchronized(lock) {
-            buffer.add(event)
+            buffer.add(enrichedEvent)
             shouldFlush = buffer.size >= BATCH_SIZE
         }
-        logger.verbose("ScreenEventsService -> tracked event: ${event.data["type"] ?: "unknown"}")
+        logger.verbose("ScreenEventsService -> tracked event: ${enrichedEvent.data["type"] ?: "unknown"}")
         if (shouldFlush) {
             flush()
         }
@@ -118,11 +127,12 @@ internal class ScreenEventsServiceImpl(
             val eventMaps = eventsToSend.map { it.toMap() }
             val body = mapOf<String, Any?>("events" to eventMaps)
             val request = requestConfigurator.configureScreenEventsRequest(uid, body)
+            logger.verbose("ScreenEventsService -> sending ${eventsToSend.size} events to ${request.url}")
             val response = apiInteractor.execute(request)
 
             if (response is Response.Error) {
-                logger.error("ScreenEventsService -> failed to send events: ${response.message}")
-                if (reBufferOnFailure) {
+                logger.error("ScreenEventsService -> failed to send events (code=${response.code}): ${response.message}")
+                if (reBufferOnFailure && response.code >= 500) {
                     reBuffer(eventsToSend)
                 }
             } else {
