@@ -11,6 +11,7 @@ import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.apiInteractor.ApiInteractor
 import io.qonversion.nocodes.internal.networkLayer.requestConfigurator.RequestConfigurator
 import io.qonversion.nocodes.internal.networkLayer.dto.Response
+import io.qonversion.nocodes.internal.networkLayer.utils.isInternalServerErrorHttpCode
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -132,7 +133,7 @@ internal class ScreenEventsServiceImpl(
 
             if (response is Response.Error) {
                 logger.error("ScreenEventsService -> failed to send events (code=${response.code}): ${response.message}")
-                if (reBufferOnFailure && response.code >= 500) {
+                if (reBufferOnFailure && response.code.isInternalServerErrorHttpCode) {
                     reBuffer(eventsToSend)
                 }
             } else {
