@@ -5,11 +5,14 @@ import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 /**
  * The listener of user entitlements updates.
  *
- * It can be provided to the [QonversionConfig](com.qonversion.android.sdk.QonversionConfig)
- * via [QonversionConfig.Builder.setEntitlementsUpdateListener](com.qonversion.android.sdk.QonversionConfig.Builder.setEntitlementsUpdateListener)
- * or set directly to the current [Qonversion](com.qonversion.android.sdk.Qonversion) instance
- * via [Qonversion.setEntitlementsUpdateListener](com.qonversion.android.sdk.Qonversion.setEntitlementsUpdateListener).
+ * @deprecated Use [QDeferredPurchasesListener] instead. It provides full transaction details
+ * including product ID, transaction ID, and value - critical for consumable products
+ * without entitlements.
  */
+@Deprecated(
+    "Use QDeferredPurchasesListener instead",
+    ReplaceWith("QDeferredPurchasesListener")
+)
 interface QEntitlementsUpdateListener {
 
     /**

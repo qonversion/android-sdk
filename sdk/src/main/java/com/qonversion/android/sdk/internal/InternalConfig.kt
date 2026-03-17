@@ -12,11 +12,13 @@ import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     override val cacheConfig: CacheConfig,
-    override var entitlementsUpdateListener: QEntitlementsUpdateListener?
+    override var entitlementsUpdateListener: QEntitlementsUpdateListener?,
+    var deferredPurchasesListener: QDeferredPurchasesListener? = null
 ) : EnvironmentProvider,
     PrimaryConfigProvider,
     CacheConfigProvider,
@@ -36,7 +38,8 @@ internal class InternalConfig(
     constructor(qonversionConfig: QonversionConfig) : this(
         qonversionConfig.primaryConfig,
         qonversionConfig.cacheConfig,
-        qonversionConfig.entitlementsUpdateListener
+        qonversionConfig.entitlementsUpdateListener,
+        qonversionConfig.deferredPurchasesListener
     )
 
     override val apiUrl: String

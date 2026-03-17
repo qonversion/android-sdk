@@ -45,7 +45,10 @@ import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.dto.QDeferredTransaction
+import com.qonversion.android.sdk.dto.QDeferredTransactionType
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
@@ -469,6 +472,10 @@ internal class QProductCenterManager internal constructor(
         internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
     }
 
+    fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener) {
+        internalConfig.deferredPurchasesListener = listener
+    }
+
     override fun onPurchasesCompleted(purchases: List<Purchase>) {
         handlePurchases(purchases, RequestTrigger.Purchase)
     }
@@ -563,7 +570,22 @@ internal class QProductCenterManager internal constructor(
         )
 
         val entitlements = permissions.toEntitlementsMap()
-        callback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        if (callback != null) {
+            callback.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        } else {
+            // Deferred purchase fallback - notify both listeners
+            @Suppress("DEPRECATION")
+            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+            val deferredTransaction = QDeferredTransaction(
+                productId = purchase.productId,
+                transactionId = purchase.purchaseToken,
+                originalTransactionId = purchase.orderId,
+                type = QDeferredTransactionType.Unknown,
+                value = 0.0,
+                currency = null
+            )
+            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(deferredTransaction)
+        }
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -1058,8 +1080,19 @@ internal class QProductCenterManager internal constructor(
                         removePurchaseOptions(product?.storeId)
 
                         if (purchaseCallback == null) {
-                            // If no callback, notify entitlements update listener
+                            // Notify deprecated EntitlementsUpdateListener (backward compat)
+                            @Suppress("DEPRECATION")
                             internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+                            // Notify new DeferredPurchasesListener with full transaction details
+                            val deferredTransaction = QDeferredTransaction(
+                                productId = purchase.productId,
+                                transactionId = purchase.purchaseToken,
+                                originalTransactionId = purchase.orderId,
+                                type = QDeferredTransactionType.Unknown,
+                                value = 0.0, // price not available from Purchase object
+                                currency = null
+                            )
+                            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(deferredTransaction)
                         } else {
                             purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }

@@ -32,6 +32,7 @@ import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
@@ -375,6 +376,10 @@ internal class QonversionInternal(
 
     override fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
         productCenterManager.setEntitlementsUpdateListener(entitlementsUpdateListener)
+    }
+
+    override fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener) {
+        productCenterManager.setDeferredPurchasesListener(listener)
     }
 
     // Private functions
