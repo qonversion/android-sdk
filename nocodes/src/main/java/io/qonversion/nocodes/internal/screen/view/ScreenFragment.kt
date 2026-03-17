@@ -33,6 +33,7 @@ import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.interfaces.NoCodesLoadingView
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import androidx.core.net.toUri
 import com.qonversion.android.sdk.dto.QonversionErrorCode
@@ -45,9 +46,12 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
     private val themeProvider = { DependenciesAssembly.instance.theme() }
 
+    private val screenCustomizationDelegate = DependenciesAssembly.instance.screenCustomizationDelegate()
+
     private val delegate = delegateProvider.noCodesDelegate
 
     private var binding: NcFragmentScreenBinding? = null
+    private var loadingView: NoCodesLoadingView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,10 +68,11 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
         configureWebClient()
 
-        // Apply theme to skeleton
-        applyThemeToSkeleton()
+        // Set up loading view
+        setupLoadingView()
 
-        binding?.skeletonView?.showSkeleton()
+        loadingView?.startAnimating()
+        binding?.loadingViewContainer?.visibility = View.VISIBLE
         binding?.webView?.visibility = View.GONE
         presenter.onStart(
             arguments?.getString(EX_CONTEXT_KEY),
@@ -75,7 +80,20 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         )
     }
 
-    private fun applyThemeToSkeleton() {
+    private fun setupLoadingView() {
+        val customView = screenCustomizationDelegate?.noCodesCustomLoadingView()
+        if (customView != null && customView is NoCodesLoadingView) {
+            loadingView = customView
+            binding?.loadingViewContainer?.addView(customView)
+        } else {
+            val skeletonView = SkeletonView(requireContext())
+            applyThemeToSkeleton(skeletonView)
+            loadingView = skeletonView
+            binding?.loadingViewContainer?.addView(skeletonView)
+        }
+    }
+
+    private fun applyThemeToSkeleton(skeletonView: SkeletonView) {
         val theme = themeProvider()
         val isDark = when (theme) {
             NoCodesTheme.Dark -> true
@@ -87,7 +105,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 nightModeFlags == Configuration.UI_MODE_NIGHT_YES
             }
         }
-        binding?.skeletonView?.setDarkTheme(isDark)
+        skeletonView.setDarkTheme(isDark)
     }
 
     override fun onDestroyView() {
@@ -278,7 +296,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
      */
     private fun sendFailureEvent(action: QAction, errorMessage: String) {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-        binding?.skeletonView?.hideSkeleton()
+        loadingView?.stopAnimating()
+        binding?.loadingViewContainer?.visibility = View.GONE
         logger.error("ScreenFragment -> Action failed: $errorMessage")
         delegate?.onActionFailedToExecute(action)
         binding?.webView?.evaluateJavascript(
@@ -311,7 +330,8 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun finishScreenPreparation() {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         binding?.webView?.visibility = View.VISIBLE
-        binding?.skeletonView?.hideSkeleton()
+        loadingView?.stopAnimating()
+        binding?.loadingViewContainer?.visibility = View.GONE
     }
 
     @JavascriptInterface
