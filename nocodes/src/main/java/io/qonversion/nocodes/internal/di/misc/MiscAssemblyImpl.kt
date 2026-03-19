@@ -9,6 +9,7 @@ import io.qonversion.nocodes.internal.logger.ConsoleLogger
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.ExponentialDelayCalculator
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
+import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.provider.PurchaseDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
@@ -52,4 +53,6 @@ internal class MiscAssemblyImpl(
     override fun noCodesDelegateProvider(): NoCodesDelegateProvider = internalConfig
 
     override fun purchaseDelegateProvider(): PurchaseDelegateProvider = internalConfig
+
+    override fun screenCustomizationDelegate(): ScreenCustomizationDelegate? = internalConfig.screenCustomizationDelegate
 }

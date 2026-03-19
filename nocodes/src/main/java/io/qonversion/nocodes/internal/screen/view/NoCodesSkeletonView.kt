@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.graphics.toColorInt
+import io.qonversion.nocodes.interfaces.NoCodesLoadingView
 
 /**
  * Simplified SkeletonView for integration into existing NoCodes architecture
@@ -18,7 +19,7 @@ class NoCodesSkeletonView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr), NoCodesLoadingView {
 
     var isDarkTheme: Boolean = false
         private set
@@ -268,6 +269,14 @@ class NoCodesSkeletonView @JvmOverloads constructor(
         } else if (view.background != null) {
             view.alpha = alpha
         }
+    }
+
+    override fun startAnimating() {
+        setAnimating(true)
+    }
+
+    override fun stopAnimating() {
+        setAnimating(false)
     }
 
     override fun onAttachedToWindow() {

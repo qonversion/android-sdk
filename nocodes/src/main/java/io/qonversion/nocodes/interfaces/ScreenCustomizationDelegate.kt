@@ -1,5 +1,6 @@
 package io.qonversion.nocodes.interfaces
 
+import android.view.View
 import io.qonversion.nocodes.dto.QScreenPresentationConfig
 
 /**
@@ -13,4 +14,13 @@ interface ScreenCustomizationDelegate {
      * @return screen presentation configuration.
      */
     fun getPresentationConfigurationForScreen(contextKey: String): QScreenPresentationConfig
+
+    /**
+     * Returns a custom loading view to display while the NoCodes screen is loading.
+     * The returned View must implement [NoCodesLoadingView].
+     * If null is returned, the default skeleton loading view will be used.
+     *
+     * @return a View implementing NoCodesLoadingView, or null for default skeleton
+     */
+    fun noCodesCustomLoadingView(): View? = null
 }
