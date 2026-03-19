@@ -159,6 +159,11 @@ internal class ScreenPresenter(
             QAction.Type.LoadProducts -> {
                 handleLoadProductsAction(action)
             }
+            QAction.Type.GetContext -> {
+                val variables = (action.rawParameters?.get("variables") as? List<*>)
+                    ?.filterIsInstance<String>() ?: emptyList()
+                view.handleGetContext(variables)
+            }
             QAction.Type.ShowScreen -> {
                 view.finishScreenPreparation()
             }
@@ -266,11 +271,10 @@ internal class ScreenPresenter(
 
         val productsJS = "{ " + productEntries.joinToString(", ") + " }"
         return """
-            if (window.noCodesContext) {
-                window.noCodesContext.products = $productsJS;
-                window.noCodesContext.products.hasAnyIntro = $hasAnyIntro;
-                window.dispatchEvent(new Event("noCodesContextUpdate"));
-            }
+            window.noCodesContext = window.noCodesContext || {};
+            window.noCodesContext.products = $productsJS;
+            window.noCodesContext.products.hasAnyIntro = $hasAnyIntro;
+            window.dispatchEvent(new Event("noCodesContextUpdate"));
         """.trimIndent()
     }
 

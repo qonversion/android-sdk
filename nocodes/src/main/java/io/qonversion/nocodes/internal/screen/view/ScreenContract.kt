@@ -24,6 +24,8 @@ internal class ScreenContract {
 
         fun injectProductsContext(jsScript: String)
 
+        fun handleGetContext(variables: List<String>)
+
         fun finishScreenPreparation()
     }
 

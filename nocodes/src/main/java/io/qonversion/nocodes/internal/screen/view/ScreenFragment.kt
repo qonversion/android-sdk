@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -26,6 +24,7 @@ import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
@@ -116,18 +115,14 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     override fun displayScreen(screenId: String, html: String) {
         activity?.runOnUiThread {
-            val contextScript = buildNoCodesContextScript()
-            val htmlWithContext = injectContextScript(html, contextScript)
-
             binding?.webView?.loadDataWithBaseURL(
                 null,
-                htmlWithContext,
+                html,
                 MIME_TYPE,
                 ENCODING,
                 null
             )
             delegate?.onScreenShown(screenId)
-            injectUserEntitlements()
         }
     }
 
@@ -327,6 +322,133 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\",  {detail: $jsonData} ))", null)
     }
 
+    override fun handleGetContext(variables: List<String>) {
+        val productIds = extractProductIds(variables)
+
+        Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
+            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
+                val activeIds = entitlements.filter { it.value.isActive }.map { it.key }
+                if (productIds.isNotEmpty()) {
+                    loadProductsAndSendContext(activeIds, productIds)
+                } else {
+                    sendContextResponse(activeIds, org.json.JSONObject())
+                }
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load entitlements for context: ${error.description}")
+                if (productIds.isNotEmpty()) {
+                    loadProductsAndSendContext(emptyList(), productIds)
+                } else {
+                    sendContextResponse(emptyList(), org.json.JSONObject())
+                }
+            }
+        })
+    }
+
+    private fun extractProductIds(variables: List<String>): List<String> {
+        return variables.mapNotNull { variable ->
+            val parts = variable.split(".")
+            if (parts.size == 3 && parts[0] == "products" && parts[1] != "hasAnyIntro" && parts[1] != "selected") {
+                parts[1]
+            } else null
+        }.distinct()
+    }
+
+    private fun loadProductsAndSendContext(activeIds: List<String>, productIds: List<String>) {
+        Qonversion.shared.products(object : QonversionProductsCallback {
+            override fun onSuccess(products: Map<String, QProduct>) {
+                val productsContext = buildProductsContextJSON(products, productIds)
+                sendContextResponse(activeIds, productsContext)
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load products for context: ${error.description}")
+                sendContextResponse(activeIds, org.json.JSONObject())
+            }
+        })
+    }
+
+    private fun buildProductsContextJSON(products: Map<String, QProduct>, productIds: List<String>): org.json.JSONObject {
+        val json = org.json.JSONObject()
+        var hasAnyIntro = false
+
+        for (id in productIds) {
+            val product = products[id] ?: continue
+            val offerDetails = product.storeDetails?.defaultSubscriptionOfferDetails
+            val hasIntro = offerDetails?.let { it.trialPhase != null || it.introPhase != null } ?: false
+            if (hasIntro) hasAnyIntro = true
+
+            val introType = offerDetails?.let { offer ->
+                val phase = offer.trialPhase ?: offer.introPhase
+                when (phase?.type) {
+                    QProductPricingPhase.Type.FreeTrial -> "free_trial"
+                    QProductPricingPhase.Type.DiscountedSinglePayment -> "pay_up_front"
+                    QProductPricingPhase.Type.DiscountedRecurringPayment -> "pay_as_you_go"
+                    else -> ""
+                }
+            } ?: ""
+
+            val productJson = org.json.JSONObject()
+            productJson.put("hasIntro", if (hasIntro) "true" else "false")
+            productJson.put("introType", introType)
+            json.put(id, productJson)
+        }
+
+        json.put("hasAnyIntro", if (hasAnyIntro) "true" else "false")
+        return json
+    }
+
+    private fun sendContextResponse(activeEntitlementIds: List<String>, productsContext: org.json.JSONObject) {
+        val deviceJson = org.json.JSONObject()
+        deviceJson.put("platform", "Android")
+        deviceJson.put("osVersion", Build.VERSION.RELEASE)
+
+        val language = Locale.getDefault().language
+        if (language.isNotEmpty()) deviceJson.put("language", language)
+
+        val locale = Locale.getDefault().toString()
+        if (locale.isNotEmpty()) deviceJson.put("locale", locale)
+
+        try {
+            val packageInfo = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
+            packageInfo?.versionName?.let { deviceJson.put("appVersion", it) }
+        } catch (_: Exception) {}
+
+        val nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (nightMode) {
+            Configuration.UI_MODE_NIGHT_YES -> deviceJson.put("theme", "dark")
+            Configuration.UI_MODE_NIGHT_NO -> deviceJson.put("theme", "light")
+            else -> deviceJson.put("theme", "light")
+        }
+
+        val country = Locale.getDefault().country
+        if (country.isNotEmpty()) deviceJson.put("country", country)
+
+        val userJson = org.json.JSONObject()
+        userJson.put("isFirstLaunch", if (resolveIsFirstLaunch()) "true" else "false")
+        userJson.put("daysSinceInstall", calculateDaysSinceInstall())
+        userJson.put("hasAnyEntitlement", if (activeEntitlementIds.isNotEmpty()) "true" else "false")
+        userJson.put("entitlements", org.json.JSONArray(activeEntitlementIds))
+
+        val dataJson = org.json.JSONObject()
+        dataJson.put("device", deviceJson)
+        dataJson.put("user", userJson)
+        if (productsContext.length() > 0) {
+            dataJson.put("products", productsContext)
+        }
+
+        val responseJson = org.json.JSONObject()
+        responseJson.put("data", dataJson)
+
+        activity?.runOnUiThread {
+            binding?.webView?.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent(\"setContext\", {detail: $responseJson}))",
+                null
+            )
+        }
+    }
+
     override fun finishScreenPreparation() {
         binding?.progressBarLayout?.progressBar?.visibility = View.GONE
         binding?.webView?.visibility = View.VISIBLE
@@ -359,130 +481,40 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
 
         val js = """
-            if (window.noCodesContext && window.noCodesContext.device) {
-                window.noCodesContext.device.theme = "$newTheme";
-                window.dispatchEvent(new Event("noCodesContextUpdate"));
-            }
+            window.noCodesContext = window.noCodesContext || {};
+            window.noCodesContext.device = window.noCodesContext.device || {};
+            window.noCodesContext.device.theme = "$newTheme";
+            window.dispatchEvent(new Event("noCodesContextUpdate"));
         """.trimIndent()
 
         binding?.webView?.evaluateJavascript(js, null)
     }
 
-    private fun buildNoCodesContextScript(): String {
-        val deviceFields = mutableMapOf<String, String>()
-
-        deviceFields["platform"] = "Android"
-
-        deviceFields["osVersion"] = Build.VERSION.RELEASE
-
-        val language = Locale.getDefault().language
-        if (language.isNotEmpty()) {
-            deviceFields["language"] = language
-        }
-
-        val locale = Locale.getDefault().toString()
-        if (locale.isNotEmpty()) {
-            deviceFields["locale"] = locale
-        }
-
-        try {
-            val packageInfo = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
-            packageInfo?.versionName?.let { deviceFields["appVersion"] = it }
-        } catch (_: Exception) {}
-
-        val country = Locale.getDefault().country
-        if (country.isNotEmpty()) {
-            deviceFields["country"] = country
-        }
-
-        val nightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        when (nightMode) {
-            Configuration.UI_MODE_NIGHT_YES -> deviceFields["theme"] = "dark"
-            Configuration.UI_MODE_NIGHT_NO -> deviceFields["theme"] = "light"
-        }
-
-        val fieldsJS = deviceFields.entries.joinToString(", ") { (key, value) ->
-            "$key: \"${escapeJsString(value)}\""
-        }
-
-        val daysSinceInstall = calculateDaysSinceInstall()
-        val isFirstLaunch = resolveIsFirstLaunch(daysSinceInstall)
-
-        val userFieldsJS = "isFirstLaunch: $isFirstLaunch, daysSinceInstall: $daysSinceInstall"
-
-        return "window.noCodesContext = { device: { $fieldsJS }, user: { $userFieldsJS } };"
-    }
-
-    private fun resolveIsFirstLaunch(daysSinceInstall: Int): Boolean {
-        val prefs = context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private fun resolveIsFirstLaunch(): Boolean {
+        val prefs = context?.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
         if (prefs?.getBoolean(PREF_ALREADY_LAUNCHED, false) == true) {
             return false
         }
 
         prefs?.edit()?.putBoolean(PREF_ALREADY_LAUNCHED, true)?.apply()
-        return daysSinceInstall == 0
+        return calculateDaysSinceInstall() == 0
     }
 
     private fun calculateDaysSinceInstall(): Int {
         return try {
             val packageInfo = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
             val installTime = packageInfo?.firstInstallTime ?: return 0
-            val daysSince = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - installTime)
+            val daysSince = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - installTime)
             maxOf(0, daysSince.toInt())
         } catch (_: Exception) {
             0
         }
     }
 
-    private fun injectContextScript(html: String, script: String): String {
-        val scriptTag = "<script>$script</script>"
-        val headIndex = html.indexOf("<head>", ignoreCase = true)
-
-        return if (headIndex != -1) {
-            val insertPosition = headIndex + "<head>".length
-            html.substring(0, insertPosition) + scriptTag + html.substring(insertPosition)
-        } else {
-            scriptTag + html
-        }
-    }
-
-    private fun injectUserEntitlements() {
-        Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
-            override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                val activeIds = entitlements.filter { it.value.isActive }.map { it.key }
-                val hasAny = activeIds.isNotEmpty()
-                val idsArrayJS = "[" + activeIds.joinToString(", ") { "\"${escapeJsString(it)}\"" } + "]"
-                val js = """
-                    if (window.noCodesContext && window.noCodesContext.user) {
-                        window.noCodesContext.user.entitlements = $idsArrayJS;
-                        window.noCodesContext.user.hasAnyEntitlement = $hasAny;
-                        window.dispatchEvent(new Event("noCodesContextUpdate"));
-                    }
-                """.trimIndent()
-                activity?.runOnUiThread {
-                    binding?.webView?.evaluateJavascript(js, null)
-                }
-            }
-
-            override fun onError(error: QonversionError) {
-                logger.error("Failed to load entitlements for noCodesContext: ${error.description}")
-            }
-        })
-    }
-
     override fun injectProductsContext(jsScript: String) {
         activity?.runOnUiThread {
             binding?.webView?.evaluateJavascript(jsScript, null)
         }
-    }
-
-    private fun escapeJsString(value: String): String {
-        return value
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("</", "<\\/")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r")
     }
 
     companion object {
