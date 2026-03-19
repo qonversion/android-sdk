@@ -2,6 +2,9 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Build
 import com.qonversion.android.sdk.dto.QDeferredTransaction
+import com.qonversion.android.sdk.dto.QDeferredTransactionType
+import com.qonversion.android.sdk.dto.QPurchaseResult
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import io.mockk.*
@@ -22,6 +25,73 @@ internal class DeferredPurchasesListenerTest {
     fun setUp() {
         clearAllMocks()
     }
+
+    // -- Adapter pattern tests (review feedback: Task 6) --
+
+    @Test
+    fun `adapter forwards entitlements from purchaseResult to legacy listener`() {
+        // The adapter extracts entitlements from QPurchaseResult and passes them
+        // to the wrapped QEntitlementsUpdateListener - this is the core adapter behavior.
+        val legacyListener = mockk<QEntitlementsUpdateListener>()
+        every { legacyListener.onEntitlementsUpdated(any()) } just Runs
+
+        val adapter = EntitlementsUpdateListenerAdapter(legacyListener)
+
+        val entitlements = mapOf("premium" to mockk<QEntitlement>())
+        val purchaseResult = mockk<QPurchaseResult>()
+        every { purchaseResult.entitlements } returns entitlements
+
+        val transaction = QDeferredTransaction(
+            productId = "com.app.premium",
+            transactionId = "token_123",
+            originalTransactionId = "order_456",
+            type = QDeferredTransactionType.Subscription,
+            value = 9.99,
+            currency = "USD"
+        )
+
+        adapter.deferredPurchaseCompleted(transaction, purchaseResult)
+
+        verify(exactly = 1) { legacyListener.onEntitlementsUpdated(entitlements) }
+    }
+
+    @Test
+    fun `adapter forwards empty entitlements for consumable products`() {
+        // Consumable products may have no entitlements - the adapter should still
+        // forward the empty map to the legacy listener.
+        val legacyListener = mockk<QEntitlementsUpdateListener>()
+        every { legacyListener.onEntitlementsUpdated(any()) } just Runs
+
+        val adapter = EntitlementsUpdateListenerAdapter(legacyListener)
+
+        val purchaseResult = mockk<QPurchaseResult>()
+        every { purchaseResult.entitlements } returns emptyMap()
+
+        val transaction = QDeferredTransaction(
+            productId = "com.app.coins",
+            transactionId = "token_456",
+            originalTransactionId = null,
+            type = QDeferredTransactionType.Consumable,
+            value = 0.0,
+            currency = null
+        )
+
+        adapter.deferredPurchaseCompleted(transaction, purchaseResult)
+
+        verify(exactly = 1) { legacyListener.onEntitlementsUpdated(emptyMap()) }
+    }
+
+    @Test
+    fun `adapter implements QDeferredPurchasesListener interface`() {
+        // The adapter must be a valid QDeferredPurchasesListener so it can replace
+        // the entitlementsUpdateListener everywhere internally.
+        val legacyListener = mockk<QEntitlementsUpdateListener>()
+        val adapter = EntitlementsUpdateListenerAdapter(legacyListener)
+
+        assertTrue(adapter is QDeferredPurchasesListener)
+    }
+
+    // -- Config tests --
 
     @Test
     fun `setDeferredPurchasesListener stores listener in config`() {
@@ -45,37 +115,7 @@ internal class DeferredPurchasesListenerTest {
         assertNull(mockConfig.deferredPurchasesListener)
     }
 
-    @Test
-    fun `both listeners can be set independently`() {
-        val deferredListener = mockk<QDeferredPurchasesListener>()
-        val entitlementsListener = mockk<QEntitlementsUpdateListener>()
-
-        every { mockConfig.deferredPurchasesListener = any() } just Runs
-        every { mockConfig.entitlementsUpdateListener = any() } just Runs
-        every { mockConfig.deferredPurchasesListener } returns deferredListener
-        every { mockConfig.entitlementsUpdateListener } returns entitlementsListener
-
-        mockConfig.deferredPurchasesListener = deferredListener
-        mockConfig.entitlementsUpdateListener = entitlementsListener
-
-        assertEquals(deferredListener, mockConfig.deferredPurchasesListener)
-        assertEquals(entitlementsListener, mockConfig.entitlementsUpdateListener)
-    }
-
-    @Test
-    fun `setting deferred listener does not affect entitlements listener`() {
-        val deferredListener = mockk<QDeferredPurchasesListener>()
-        val entitlementsListener = mockk<QEntitlementsUpdateListener>()
-
-        every { mockConfig.entitlementsUpdateListener = any() } just Runs
-        every { mockConfig.deferredPurchasesListener = any() } just Runs
-        every { mockConfig.entitlementsUpdateListener } returns entitlementsListener
-
-        mockConfig.entitlementsUpdateListener = entitlementsListener
-        mockConfig.deferredPurchasesListener = deferredListener
-
-        assertEquals(entitlementsListener, mockConfig.entitlementsUpdateListener)
-    }
+    // -- DeferredTransaction data class tests --
 
     @Test
     fun `DeferredTransaction data class holds correct values`() {
@@ -83,7 +123,7 @@ internal class DeferredPurchasesListenerTest {
             productId = "com.app.premium",
             transactionId = "token_123",
             originalTransactionId = "order_456",
-            type = com.qonversion.android.sdk.dto.QDeferredTransactionType.Subscription,
+            type = QDeferredTransactionType.Subscription,
             value = 9.99,
             currency = "USD"
         )
@@ -91,7 +131,7 @@ internal class DeferredPurchasesListenerTest {
         assertEquals("com.app.premium", transaction.productId)
         assertEquals("token_123", transaction.transactionId)
         assertEquals("order_456", transaction.originalTransactionId)
-        assertEquals(com.qonversion.android.sdk.dto.QDeferredTransactionType.Subscription, transaction.type)
+        assertEquals(QDeferredTransactionType.Subscription, transaction.type)
         assertEquals(9.99, transaction.value, 0.001)
         assertEquals("USD", transaction.currency)
     }
@@ -102,7 +142,7 @@ internal class DeferredPurchasesListenerTest {
             productId = "com.app.consumable",
             transactionId = null,
             originalTransactionId = null,
-            type = com.qonversion.android.sdk.dto.QDeferredTransactionType.Consumable,
+            type = QDeferredTransactionType.Consumable,
             value = 0.0,
             currency = null
         )
@@ -110,7 +150,7 @@ internal class DeferredPurchasesListenerTest {
         assertEquals("com.app.consumable", transaction.productId)
         assertNull(transaction.transactionId)
         assertNull(transaction.originalTransactionId)
-        assertEquals(com.qonversion.android.sdk.dto.QDeferredTransactionType.Consumable, transaction.type)
+        assertEquals(QDeferredTransactionType.Consumable, transaction.type)
         assertEquals(0.0, transaction.value, 0.001)
         assertNull(transaction.currency)
     }
