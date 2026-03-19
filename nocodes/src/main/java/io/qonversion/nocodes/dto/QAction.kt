@@ -21,6 +21,7 @@ data class QAction(
         Close("close"),
         CloseAll("closeAll"),
         LoadProducts("getProducts"),
+        GetContext("getContext"),
         ShowScreen("showScreen"),
         ScreenAnalytics("screenAnalytics");
 

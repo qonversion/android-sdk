@@ -12,6 +12,7 @@
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">qonversion.io</domain>
+        <domain includeSubdomains="true">qmoons.me</domain>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

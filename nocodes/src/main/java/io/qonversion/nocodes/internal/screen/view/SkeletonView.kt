@@ -3,6 +3,7 @@ package io.qonversion.nocodes.internal.screen.view
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import io.qonversion.nocodes.interfaces.NoCodesLoadingView
 
 /**
  * Wrapper for integrating SkeletonView into existing layout
@@ -12,7 +13,7 @@ class SkeletonView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr), NoCodesLoadingView {
 
     private val skeletonView: NoCodesSkeletonView
 
@@ -60,5 +61,13 @@ class SkeletonView @JvmOverloads constructor(
      */
     fun setAnimating(animating: Boolean) {
         skeletonView.setAnimating(animating)
+    }
+
+    override fun startAnimating() {
+        showSkeleton()
+    }
+
+    override fun stopAnimating() {
+        hideSkeleton()
     }
 }

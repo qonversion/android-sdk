@@ -14,8 +14,8 @@
         android:id="@+id/progressBarLayout"
         android:visibility="visible"
         layout="@layout/nc_progress_bar"/>
-    <io.qonversion.nocodes.internal.screen.view.SkeletonView
-        android:id="@+id/skeletonView"
+    <FrameLayout
+        android:id="@+id/loadingViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone" />

@@ -4,6 +4,7 @@ import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.logger.Logger
 import io.qonversion.nocodes.internal.networkLayer.retryDelayCalculator.RetryDelayCalculator
+import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.provider.NoCodesDelegateProvider
 import io.qonversion.nocodes.internal.provider.PurchaseDelegateProvider
 import io.qonversion.nocodes.internal.screen.misc.ActivityProvider
@@ -34,4 +35,6 @@ internal interface MiscAssembly {
     fun noCodesDelegateProvider(): NoCodesDelegateProvider
 
     fun purchaseDelegateProvider(): PurchaseDelegateProvider
+
+    fun screenCustomizationDelegate(): ScreenCustomizationDelegate?
 }

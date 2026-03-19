@@ -3,7 +3,9 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>CommentSpacing:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:171</ID>
+    <ID>ComplexCondition:ScreenFragment.kt$ScreenFragment$parts.size == 3 &amp;&amp; parts[0] == "products" &amp;&amp; parts[1] != "hasAnyIntro" &amp;&amp; parts[1] != "selected"</ID>
     <ID>ComplexMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
+    <ID>ComplexMethod:ScreenFragment.kt$ScreenFragment$private fun buildProductsContextJSON(products: Map&lt;String, QProduct&gt;, productIds: List&lt;String&gt;): org.json.JSONObject</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
     <ID>ComplexMethod:ScreenPresenter.kt$ScreenPresenter$private fun mapProductInfo(product: QProduct): Map&lt;String, Any?&gt;</ID>
     <ID>ComplexMethod:ScreenServiceImpl.kt$ScreenServiceImpl$private suspend fun executeWithFallback( requestProvider: () -&gt; Request, fallbackProvider: suspend () -&gt; NoCodeScreen?, errorContext: String, methodName: String ): NoCodeScreen</ID>
@@ -11,6 +13,8 @@
     <ID>ConstructorParameterNaming:Environment.kt$Environment$@Json(name = "app_version") val app_version: String</ID>
     <ID>EmptyCatchBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${ }</ID>
     <ID>EmptyFunctionBlock:AdvertisingProvider.kt$AdvertisingProvider.AdvertisingConnection${}</ID>
+    <ID>EmptyFunctionBlock:NetworkClientImpl.kt$NetworkClientImpl.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:NetworkModule.kt$NetworkModule.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QIdentityManagerTest.kt$QIdentityManagerTest.Identify.&lt;no name provided&gt;${}</ID>
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
@@ -73,6 +77,7 @@
     <ID>MagicNumber:QProductPricingPhase.kt$QProductPricingPhase.RecurrenceMode.NonRecurring$3</ID>
     <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.BillingIssue$3</ID>
     <ID>MagicNumber:QProductRenewState.kt$QProductRenewState.Companion$3</ID>
+    <ID>MagicNumber:ScreenFragment.kt$ScreenFragment$3</ID>
     <ID>MagicNumber:extensions.kt$1000</ID>
     <ID>MagicNumber:utils.kt$1000</ID>
     <ID>MagicNumber:utils.kt$24L</ID>
@@ -115,14 +120,14 @@
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt:4</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QIdentityManagerTest.kt:9</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:21</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:29</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:25</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:33</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:19</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.billing.QonversionBillingService.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.services.QUserInfoServiceTest.kt:5</ID>
-    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapperTest.kt:7</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt:6</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.SharedPreferencesCacheTest.kt:5</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.storage.util.kt:24</ID>
