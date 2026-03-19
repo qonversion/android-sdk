@@ -14,7 +14,7 @@ import io.qonversion.nocodes.NoCodes;
 import io.qonversion.nocodes.NoCodesConfig;
 
 public class App extends MultiDexApplication {
-    private static final String DEFAULT_PROJECT_KEY = "zpNSvpNoNEp3ty6RnaB6z0Iqr43ny9ID";
+    private static final String DEFAULT_PROJECT_KEY = "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2";
 
     @Override
     public void onCreate() {
