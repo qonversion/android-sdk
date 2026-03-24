@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.internal
 
-import com.qonversion.android.sdk.dto.QDeferredTransaction
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
@@ -19,10 +18,7 @@ internal class EntitlementsUpdateListenerAdapter(
     private val legacyListener: QEntitlementsUpdateListener
 ) : QDeferredPurchasesListener {
 
-    override fun deferredPurchaseCompleted(
-        transaction: QDeferredTransaction,
-        purchaseResult: QPurchaseResult
-    ) {
+    override fun deferredPurchaseCompleted(purchaseResult: QPurchaseResult) {
         legacyListener.onEntitlementsUpdated(purchaseResult.entitlements)
     }
 }

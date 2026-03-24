@@ -47,8 +47,6 @@ import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
-import com.qonversion.android.sdk.dto.QDeferredTransaction
-import com.qonversion.android.sdk.dto.QDeferredTransactionType
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import com.qonversion.android.sdk.dto.QPurchaseResult
@@ -468,8 +466,6 @@ internal class QProductCenterManager internal constructor(
         callback.onSuccess(user)
     }
 
-    // Review feedback (Task 6): deprecated setter wraps legacy listener in adapter.
-    // QProductCenterManager only works with deferredPurchasesListener internally.
     fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
         internalConfig.deferredPurchasesListener = EntitlementsUpdateListenerAdapter(entitlementsUpdateListener)
     }
@@ -576,17 +572,7 @@ internal class QProductCenterManager internal constructor(
         if (callback != null) {
             callback.onResult(purchaseResult)
         } else {
-            // Review feedback (Task 6): single listener invocation.
-            // The adapter handles forwarding entitlements to legacy listeners.
-            val deferredTransaction = QDeferredTransaction(
-                productId = purchase.productId ?: "",
-                transactionId = purchase.purchaseToken,
-                originalTransactionId = purchase.orderId,
-                type = QDeferredTransactionType.Unknown,
-                value = 0.0,
-                currency = null
-            )
-            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(deferredTransaction, purchaseResult)
+            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(purchaseResult)
         }
     }
 
@@ -1081,19 +1067,9 @@ internal class QProductCenterManager internal constructor(
 
                         removePurchaseOptions(product?.storeId)
 
-                        // Review feedback (Task 6): single listener invocation.
-                        // The adapter handles forwarding entitlements to legacy listeners.
                         if (purchaseCallback == null) {
-                            val deferredTransaction = QDeferredTransaction(
-                                productId = purchase.productId ?: "",
-                                transactionId = purchase.purchaseToken,
-                                originalTransactionId = purchase.orderId,
-                                type = QDeferredTransactionType.Unknown,
-                                value = 0.0,
-                                currency = null
-                            )
                             val purchaseResult = QPurchaseResult.success(entitlements, purchase)
-                            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(deferredTransaction, purchaseResult)
+                            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(purchaseResult)
                         } else {
                             purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }

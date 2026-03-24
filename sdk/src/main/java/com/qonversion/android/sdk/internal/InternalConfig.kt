@@ -11,11 +11,6 @@ import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 
-// Review feedback (Task 6): removed entitlementsUpdateListener property.
-// InternalConfig now only holds deferredPurchasesListener. When the deprecated
-// setEntitlementsUpdateListener() is called, the legacy listener is wrapped in
-// EntitlementsUpdateListenerAdapter and stored as deferredPurchasesListener.
-// This eliminates duplicate listener storage and dual invocation logic.
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     override val cacheConfig: CacheConfig,

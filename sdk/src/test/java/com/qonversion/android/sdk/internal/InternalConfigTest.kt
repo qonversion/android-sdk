@@ -13,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-// Review feedback (Task 6): updated tests to reflect removal of entitlementsUpdateListener
-// from InternalConfig. Only deferredPurchasesListener remains.
 internal class InternalConfigTest {
     private lateinit var internalConfig: InternalConfig
 

@@ -1,6 +1,5 @@
 package com.qonversion.android.sdk.listeners
 
-import com.qonversion.android.sdk.dto.QDeferredTransaction
 import com.qonversion.android.sdk.dto.QPurchaseResult
 
 /**
@@ -8,7 +7,7 @@ import com.qonversion.android.sdk.dto.QPurchaseResult
  *
  * Deferred purchases happen when transactions require additional steps to complete,
  * such as pending transactions on Google Play or purchases requiring additional access grants.
- * This listener provides full transaction details and the purchase result with entitlements.
+ * This listener provides the purchase result with entitlements.
  *
  * It can be provided to the [QonversionConfig](com.qonversion.android.sdk.QonversionConfig)
  * via [QonversionConfig.Builder.setDeferredPurchasesListener](com.qonversion.android.sdk.QonversionConfig.Builder.setDeferredPurchasesListener)
@@ -20,12 +19,9 @@ interface QDeferredPurchasesListener {
     /**
      * Called when a deferred purchase completes.
      *
-     * A deferred purchase is fundamentally a purchase, so the callback provides both
-     * the transaction details and the full purchase result containing entitlements.
-     *
-     * @param transaction the completed deferred transaction with full details
-     *                    including product ID, transaction ID, type, value, and currency.
      * @param purchaseResult the purchase result containing entitlements granted by this purchase.
+     *                       It also contains the underlying Google Play [Purchase] object with
+     *                       productId, purchaseToken, orderId, etc.
      */
-    fun deferredPurchaseCompleted(transaction: QDeferredTransaction, purchaseResult: QPurchaseResult)
+    fun deferredPurchaseCompleted(purchaseResult: QPurchaseResult)
 }

@@ -28,8 +28,6 @@ class QonversionConfig internal constructor(
     internal val application: Application,
     internal val primaryConfig: PrimaryConfig,
     internal val cacheConfig: CacheConfig,
-    // Review feedback (Task 6): removed entitlementsUpdateListener from config.
-    // The deprecated builder method now wraps it in an adapter stored as deferredPurchasesListener.
     internal val deferredPurchasesListener: QDeferredPurchasesListener? = null
 ) {
 
