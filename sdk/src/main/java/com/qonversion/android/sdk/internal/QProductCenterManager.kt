@@ -579,7 +579,7 @@ internal class QProductCenterManager internal constructor(
             // Review feedback (Task 6): single listener invocation.
             // The adapter handles forwarding entitlements to legacy listeners.
             val deferredTransaction = QDeferredTransaction(
-                productId = purchase.productId,
+                productId = purchase.productId ?: "",
                 transactionId = purchase.purchaseToken,
                 originalTransactionId = purchase.orderId,
                 type = QDeferredTransactionType.Unknown,
@@ -1085,7 +1085,7 @@ internal class QProductCenterManager internal constructor(
                         // The adapter handles forwarding entitlements to legacy listeners.
                         if (purchaseCallback == null) {
                             val deferredTransaction = QDeferredTransaction(
-                                productId = purchase.productId,
+                                productId = purchase.productId ?: "",
                                 transactionId = purchase.purchaseToken,
                                 originalTransactionId = purchase.orderId,
                                 type = QDeferredTransactionType.Unknown,
