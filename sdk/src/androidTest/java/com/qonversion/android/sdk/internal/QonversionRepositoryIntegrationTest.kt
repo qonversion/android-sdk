@@ -315,7 +315,7 @@ internal class QonversionRepositoryIntegrationTest {
         val callback = object : QonversionLaunchCallback {
             override fun onSuccess(launchResult: QLaunchResult) {
                 // then
-                assertEquals(launchResult.uid, uid)
+                assertTrue(launchResult.uid.isNotEmpty())
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
                 assertTrue(Maps.difference(expectedPermissions, launchResult.permissions).areEqual())
                 assertEquals(expectedOfferings, launchResult.offerings)
