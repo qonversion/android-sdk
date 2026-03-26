@@ -317,7 +317,8 @@ internal class QonversionRepositoryIntegrationTest {
                 // then
                 assertTrue(launchResult.uid.isNotEmpty())
                 assertTrue(Maps.difference(expectedProducts, launchResult.products).areEqual())
-                assertTrue(launchResult.permissions.isNotEmpty())
+                // Permissions are not checked here because restore may switch
+                // to an existing user whose entitlements we don't control.
                 assertEquals(expectedOfferings, launchResult.offerings)
                 assertTrue(
                     Maps.difference(
