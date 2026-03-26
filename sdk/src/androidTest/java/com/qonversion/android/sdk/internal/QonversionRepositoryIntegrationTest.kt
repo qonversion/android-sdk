@@ -52,9 +52,9 @@ internal class QonversionRepositoryIntegrationTest {
 
     private val installDate = 1679652674L
 
-    private val monthlyProduct = QProduct("test_monthly", "google_monthly", null)
-    private val annualProduct = QProduct("test_annual", "google_annual", null)
-    private val inappProduct = QProduct("test_inapp", "no_ads", null)
+    private val monthlyProduct = QProduct("test_monthly", "google_monthly", null, apiType = 1)
+    private val annualProduct = QProduct("test_annual", "google_annual", null, apiType = 0)
+    private val inappProduct = QProduct("test_inapp", "no_ads", null, apiType = 2)
     private val expectedProducts = mapOf(
         monthlyProduct.qonversionId to monthlyProduct,
         annualProduct.qonversionId to annualProduct,
