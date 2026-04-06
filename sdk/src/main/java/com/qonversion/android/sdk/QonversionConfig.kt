@@ -7,11 +7,13 @@ import com.qonversion.android.sdk.dto.QLaunchMode
 import android.content.Context
 import androidx.annotation.RawRes
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.internal.EntitlementsUpdateListenerAdapter
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.isDebuggable
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 
 /**
  * This class contains all the available configurations for the initialization of Qonversion SDK.
@@ -26,7 +28,7 @@ class QonversionConfig internal constructor(
     internal val application: Application,
     internal val primaryConfig: PrimaryConfig,
     internal val cacheConfig: CacheConfig,
-    internal val entitlementsUpdateListener: QEntitlementsUpdateListener?
+    internal val deferredPurchasesListener: QDeferredPurchasesListener? = null
 ) {
 
     /**
@@ -47,7 +49,7 @@ class QonversionConfig internal constructor(
     ) {
         internal var environment = QEnvironment.Production
         internal var entitlementsCacheLifetime = QEntitlementsCacheLifetime.Month
-        internal var entitlementsUpdateListener: QEntitlementsUpdateListener? = null
+        internal var deferredPurchasesListener: QDeferredPurchasesListener? = null
         internal var proxyUrl: String? = null
         internal var isKidsMode: Boolean = false
         internal var sendFbAttribution: Boolean = true
@@ -96,15 +98,32 @@ class QonversionConfig internal constructor(
         /**
          * Provide a listener to be notified about asynchronous user entitlements updates.
          *
-         * Make sure you provide this listener for being up-to-date with the user entitlements.
-         * Else you can lose some important updates. Also, please, consider that this listener
-         * should live for the whole lifetime of the application.
+         * @deprecated Use [setDeferredPurchasesListener] instead. It provides full transaction
+         * details including product ID, transaction ID, and value.
          *
          * @param entitlementsUpdateListener listener to be called when entitlements update.
          * @return builder instance for chain calls.
          */
+        @Deprecated("Use setDeferredPurchasesListener instead", ReplaceWith("setDeferredPurchasesListener(listener)"))
         fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener): Builder = apply {
-            this.entitlementsUpdateListener = entitlementsUpdateListener
+            // Adapter pattern: wrap the legacy listener so the SDK internally works
+            // with a single listener type (QDeferredPurchasesListener).
+            this.deferredPurchasesListener = EntitlementsUpdateListenerAdapter(entitlementsUpdateListener)
+        }
+
+        /**
+         * Provide a listener to be notified about deferred purchase completions.
+         *
+         * Deferred purchases happen when transactions require additional steps to complete,
+         * such as pending transactions on Google Play.
+         * This listener provides full transaction details, including for consumable products
+         * without associated entitlements.
+         *
+         * @param listener listener to be called when a deferred purchase completes.
+         * @return builder instance for chain calls.
+         */
+        fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener): Builder = apply {
+            this.deferredPurchasesListener = listener
         }
 
         /**
@@ -128,7 +147,7 @@ class QonversionConfig internal constructor(
 
         /**
          * Use this function to enable Qonversion SDK Kids mode.
-         * With this mode activated, our SDK does not collect any information that violates Google Children’s Privacy Policy.
+         * With this mode activated, our SDK does not collect any information that violates Google Children's Privacy Policy.
          */
         fun enableKidsMode(): Builder = apply {
             this.isKidsMode = true
@@ -167,7 +186,7 @@ class QonversionConfig internal constructor(
                 context.application,
                 primaryConfig,
                 cacheConfig,
-                entitlementsUpdateListener
+                deferredPurchasesListener
             )
         }
     }

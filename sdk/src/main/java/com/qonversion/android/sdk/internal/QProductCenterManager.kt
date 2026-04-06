@@ -45,6 +45,7 @@ import com.qonversion.android.sdk.internal.repository.QRepository
 import com.qonversion.android.sdk.internal.services.QUserInfoService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
@@ -466,7 +467,11 @@ internal class QProductCenterManager internal constructor(
     }
 
     fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener) {
-        internalConfig.entitlementsUpdateListener = entitlementsUpdateListener
+        internalConfig.deferredPurchasesListener = EntitlementsUpdateListenerAdapter(entitlementsUpdateListener)
+    }
+
+    fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener) {
+        internalConfig.deferredPurchasesListener = listener
     }
 
     override fun onPurchasesCompleted(purchases: List<Purchase>) {
@@ -563,7 +568,12 @@ internal class QProductCenterManager internal constructor(
         )
 
         val entitlements = permissions.toEntitlementsMap()
-        callback?.onResult(QPurchaseResult.successFromFallback(entitlements, purchase))
+        val purchaseResult = QPurchaseResult.successFromFallback(entitlements, purchase)
+        if (callback != null) {
+            callback.onResult(purchaseResult)
+        } else {
+            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(purchaseResult)
+        }
     }
 
     private fun failLocallyGrantingPurchasePermissionsWithError(
@@ -1058,8 +1068,8 @@ internal class QProductCenterManager internal constructor(
                         removePurchaseOptions(product?.storeId)
 
                         if (purchaseCallback == null) {
-                            // If no callback, notify entitlements update listener
-                            internalConfig.entitlementsUpdateListener?.onEntitlementsUpdated(entitlements)
+                            val purchaseResult = QPurchaseResult.success(entitlements, purchase)
+                            internalConfig.deferredPurchasesListener?.deferredPurchaseCompleted(purchaseResult)
                         } else {
                             purchaseCallback.onResult(QPurchaseResult.success(entitlements, purchase))
                         }

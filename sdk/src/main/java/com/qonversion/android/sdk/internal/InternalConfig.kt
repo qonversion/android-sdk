@@ -6,22 +6,19 @@ import com.qonversion.android.sdk.dto.QEnvironment
 import com.qonversion.android.sdk.dto.QLaunchMode
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.provider.CacheConfigProvider
-import com.qonversion.android.sdk.internal.provider.EntitlementsUpdateListenerProvider
-
 import com.qonversion.android.sdk.internal.provider.EnvironmentProvider
 import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     override val cacheConfig: CacheConfig,
-    override var entitlementsUpdateListener: QEntitlementsUpdateListener?
+    var deferredPurchasesListener: QDeferredPurchasesListener? = null
 ) : EnvironmentProvider,
     PrimaryConfigProvider,
     CacheConfigProvider,
-    UidProvider,
-    EntitlementsUpdateListenerProvider {
+    UidProvider {
 
     @Volatile
     var fatalError: HttpError? = null
@@ -36,7 +33,7 @@ internal class InternalConfig(
     constructor(qonversionConfig: QonversionConfig) : this(
         qonversionConfig.primaryConfig,
         qonversionConfig.cacheConfig,
-        qonversionConfig.entitlementsUpdateListener
+        qonversionConfig.deferredPurchasesListener
     )
 
     override val apiUrl: String

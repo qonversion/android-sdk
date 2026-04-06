@@ -10,7 +10,7 @@ import com.qonversion.android.sdk.internal.application
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.internal.isDebuggable
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -32,7 +32,7 @@ internal class QonversionConfigTest {
     private val projectKey = "some project key"
     private val mockLaunchMode = mockk<QLaunchMode>()
     private val mockEnvironment = mockk<QEnvironment>()
-    private val mockEntitlementsListener = mockk<QEntitlementsUpdateListener>()
+    private val mockDeferredPurchasesListener = mockk<QDeferredPurchasesListener>()
     private val mockEntitlementsCacheLifetime = mockk<QEntitlementsCacheLifetime>()
     private val mockProxyUrl = "mock url"
     private val mockPrimaryConfig = PrimaryConfig(projectKey, mockLaunchMode, mockEnvironment, mockProxyUrl)
@@ -53,14 +53,14 @@ internal class QonversionConfigTest {
                 mockApplication,
                 mockPrimaryConfig,
                 mockCacheConfig,
-                mockEntitlementsListener
+                mockDeferredPurchasesListener
             )
 
             // then
             assertThat(config.application).isSameAs(mockApplication)
             assertThat(config.primaryConfig).isSameAs(mockPrimaryConfig)
             assertThat(config.cacheConfig).isSameAs(mockCacheConfig)
-            assertThat(config.entitlementsUpdateListener).isSameAs(mockEntitlementsListener)
+            assertThat(config.deferredPurchasesListener).isSameAs(mockDeferredPurchasesListener)
         }
     }
 
@@ -164,14 +164,14 @@ internal class QonversionConfigTest {
                     .apply {
                         environment = mockEnvironment
                         entitlementsCacheLifetime = mockEntitlementsCacheLifetime
-                        entitlementsUpdateListener = mockEntitlementsListener
+                        deferredPurchasesListener = mockDeferredPurchasesListener
                         proxyUrl = mockProxyUrl
                     }
             val expResult = QonversionConfig(
                 mockApplication,
                 mockPrimaryConfig,
                 mockCacheConfig,
-                mockEntitlementsListener
+                mockDeferredPurchasesListener
             )
 
             // when
