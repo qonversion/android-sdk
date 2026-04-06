@@ -10,6 +10,7 @@ import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
@@ -364,5 +365,22 @@ interface Qonversion {
      *
      * @param entitlementsUpdateListener listener to be called when entitlements update.
      */
+    @Deprecated("Use setDeferredPurchasesListener instead", ReplaceWith("setDeferredPurchasesListener(listener)"))
     fun setEntitlementsUpdateListener(entitlementsUpdateListener: QEntitlementsUpdateListener)
+
+    /**
+     * Provide a listener to be notified about deferred purchase completions.
+     *
+     * Deferred purchases happen when transactions require additional steps to complete,
+     * such as pending transactions on Google Play.
+     * This listener provides full transaction details, including for consumable products
+     * without associated entitlements.
+     *
+     * You may set this listener both *after* Qonversion SDK initializing
+     * with [Qonversion.setDeferredPurchasesListener] and *while* Qonversion initializing
+     * with [Qonversion.initialize]
+     *
+     * @param listener listener to be called when a deferred purchase completes.
+     */
+    fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener)
 }
