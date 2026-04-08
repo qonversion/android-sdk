@@ -33,7 +33,7 @@ jobs:
       run: bundle install
 
     - name: Fastlane Action
-      uses: maierj/fastlane-action@v3
+      uses: maierj/fastlane-action@v3.1.0
       with:
         lane: test
     - name: Build and Tests
