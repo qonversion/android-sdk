@@ -416,7 +416,10 @@ internal class QProductCenterManager internal constructor(
                 return@queryPurchases
             }
 
-            billingService.consumePurchases(purchases, getNonConsumableStoreIds())
+            val nonConsumableIds = getNonConsumableStoreIds()
+            if (nonConsumableIds != null) {
+                billingService.consumePurchases(purchases, nonConsumableIds)
+            }
 
             val purchaseRecords = purchases.map { PurchaseRecord(it) }
             repository.restore(
@@ -427,6 +430,14 @@ internal class QProductCenterManager internal constructor(
                     override fun onSuccess(launchResult: QLaunchResult) {
                         handleUserSwitchingOnRestore(launchResult)
                         updateLaunchResult(launchResult)
+
+                        if (nonConsumableIds == null) {
+                            billingService.consumePurchases(
+                                purchases,
+                                getNonConsumableStoreIds() ?: emptySet()
+                            )
+                        }
+
                         executeRestoreBlocksOnSuccess(launchResult.permissions.toEntitlementsMap())
                     }
 
@@ -793,7 +804,7 @@ internal class QProductCenterManager internal constructor(
                 if (processingPurchases.isNotEmpty()) {
                     handledPurchasesCache.saveHandledPurchases(processingPurchases)
 
-                    billingService.consumePurchases(processingPurchases.toList(), getNonConsumableStoreIds())
+                    billingService.consumePurchases(processingPurchases.toList(), getNonConsumableStoreIds() ?: emptySet())
                     processingPurchases = emptyList()
                 }
 
@@ -1029,7 +1040,10 @@ internal class QProductCenterManager internal constructor(
     }
 
     private fun handlePurchases(purchases: List<Purchase>, requestTrigger: RequestTrigger) {
-        billingService.consumePurchases(purchases, getNonConsumableStoreIds())
+        val nonConsumableIds = getNonConsumableStoreIds()
+        if (nonConsumableIds != null) {
+            billingService.consumePurchases(purchases, nonConsumableIds)
+        }
 
         purchases.forEach { purchase ->
             val purchaseCallback = purchasingCallbacks[purchase.productId]
@@ -1062,6 +1076,13 @@ internal class QProductCenterManager internal constructor(
                 object : QonversionLaunchCallback {
                     override fun onSuccess(launchResult: QLaunchResult) {
                         updateLaunchResult(launchResult)
+
+                        if (nonConsumableIds == null) {
+                            billingService.consumePurchases(
+                                listOf(purchase),
+                                getNonConsumableStoreIds() ?: emptySet()
+                            )
+                        }
 
                         val entitlements = launchResult.permissions.toEntitlementsMap()
 
@@ -1126,11 +1147,11 @@ internal class QProductCenterManager internal constructor(
                 )
     }
 
-    private fun getNonConsumableStoreIds(): Set<String> {
+    private fun getNonConsumableStoreIds(): Set<String>? {
         return launchResultCache.getActualProducts()?.values
             ?.filter { it.isNonConsumable }
             ?.mapNotNull { it.storeId }
-            ?.toSet() ?: emptySet()
+            ?.toSet()
     }
 
     private inline fun forEachPurchaseCallback(purchases: List<Purchase>, action: (QonversionPurchaseCallback) -> Unit) {
