@@ -8,9 +8,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qonversion.android.sdk.Qonversion
+import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
-import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
+import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import io.qonversion.sample.databinding.FragmentEntitlementsBinding
 
@@ -47,7 +48,7 @@ class EntitlementsFragment : Fragment() {
         }
 
         binding.buttonSetListener.setOnClickListener {
-            setEntitlementsListener()
+            setDeferredPurchasesListener()
         }
 
         binding.buttonRestore.setOnClickListener {
@@ -83,19 +84,25 @@ class EntitlementsFragment : Fragment() {
         })
     }
 
-    private fun setEntitlementsListener() {
-        Qonversion.shared.setEntitlementsUpdateListener(object : QEntitlementsUpdateListener {
-            override fun onEntitlementsUpdated(entitlements: Map<String, QEntitlement>) {
+    private fun setDeferredPurchasesListener() {
+        Qonversion.shared.setDeferredPurchasesListener(object : QDeferredPurchasesListener {
+            override fun deferredPurchaseCompleted(purchaseResult: QPurchaseResult) {
                 _binding?.let {
-                    displayEntitlements(entitlements)
+                    displayEntitlements(purchaseResult.entitlements)
                 }
-                Toast.makeText(context, getString(R.string.entitlements_updated_via_listener), Toast.LENGTH_SHORT).show()
+                val messageRes = when {
+                    purchaseResult.isSuccessful -> R.string.deferred_purchase_completed
+                    purchaseResult.isPending -> R.string.purchase_pending
+                    purchaseResult.isCanceledByUser -> R.string.purchase_canceled
+                    else -> R.string.purchase_failed
+                }
+                Toast.makeText(context, getString(messageRes), Toast.LENGTH_SHORT).show()
             }
         })
         isListenerSet = true
         binding.buttonSetListener.text = getString(R.string.listener_set)
         binding.buttonSetListener.isEnabled = false
-        Toast.makeText(context, getString(R.string.entitlements_listener_set), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, getString(R.string.deferred_purchases_listener_set), Toast.LENGTH_SHORT).show()
     }
 
     private fun restore() {
