@@ -225,6 +225,121 @@ internal class QProductCenterManagerTest {
         verify { callback.onError(any()) }
     }
 
+    // SUP3-118: Lifetime purchases consumed when restore() races with launch()
+
+    @Test
+    fun `restore should not call consumePurchases before API when products not loaded`() {
+        // When products are not loaded (fresh install, launch not complete),
+        // consumePurchases should NOT be called before the restore API call.
+        // It should only be called in onSuccess after products arrive from the response.
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns null
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(listOf(purchase))
+        }
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.restore(any(), any(), any(), capture(callbackSlot))
+        } just Runs
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        // consumePurchases should NOT have been called yet (before API response)
+        verify(exactly = 0) { mockBillingService.consumePurchases(any(), any()) }
+
+        // Now simulate API success - products become available
+        val launchResult = QLaunchResult("uid", Date(), offerings = null)
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns emptyMap()
+        callbackSlot.captured.onSuccess(launchResult)
+
+        // NOW consumePurchases should be called with the fresh data
+        verify(exactly = 1) { mockBillingService.consumePurchases(any(), any()) }
+    }
+
+    @Test
+    fun `restore should call consumePurchases immediately when products are loaded`() {
+        // When products are already loaded (launch completed), current behavior is preserved:
+        // consumePurchases is called immediately before the API call.
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns emptyMap()
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(listOf(purchase))
+        }
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
+
+        every {
+            mockRepository.restore(any(), any(), any(), any())
+        } just Runs
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        // consumePurchases should be called immediately (before API response)
+        verify(exactly = 1) { mockBillingService.consumePurchases(any(), any()) }
+    }
+
+    @Test
+    fun `restore should not call consumePurchases on API error when products not loaded`() {
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns null
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(listOf(purchase))
+        }
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.restore(any(), any(), any(), capture(callbackSlot))
+        } just Runs
+
+        val callback = mockk<QonversionEntitlementsCallback>(relaxed = true)
+        productCenterManager.restore(RequestTrigger.Restore, callback)
+
+        // Simulate API error
+        callbackSlot.captured.onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // consumePurchases should NEVER be called - purchase stays safe in Google
+        verify(exactly = 0) { mockBillingService.consumePurchases(any(), any()) }
+    }
+
+    @Test
+    fun `handlePurchases should not call consumePurchases before API when products not loaded`() {
+        val spykProductCenterManager = spyk(productCenterManager, recordPrivateCalls = true)
+        spykProductCenterManager.mockPrivateField("processingPurchaseOptions", emptyMap<String, QPurchaseOptions>())
+
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns null
+
+        val purchase = mockPurchase(Purchase.PurchaseState.PURCHASED, false)
+        every { mockBillingService.queryPurchases(any(), captureLambda()) } answers {
+            lambda<(List<Purchase>) -> Unit>().captured.invoke(listOf(purchase))
+        }
+        every { mockBillingService.consumePurchases(any(), any()) } just Runs
+
+        val callbackSlot = slot<QonversionLaunchCallback>()
+        every {
+            mockRepository.purchase(any(), any(), any(), any(), capture(callbackSlot))
+        } just Runs
+
+        spykProductCenterManager.onAppForeground()
+
+        // consumePurchases should NOT be called before API response
+        verify(exactly = 0) { mockBillingService.consumePurchases(any(), any()) }
+
+        // Simulate purchase API success - products become available
+        val launchResult = QLaunchResult("uid", Date(), offerings = null)
+        every { mockLaunchResultCacheWrapper.getActualProducts() } returns emptyMap()
+        callbackSlot.captured.onSuccess(launchResult)
+
+        // NOW consumePurchases should be called
+        verify(exactly = 1) { mockBillingService.consumePurchases(any(), any()) }
+    }
+
     @Test
     fun `restore with empty uid in response should not trigger user switch`() {
         val currentUid = "user_current"
