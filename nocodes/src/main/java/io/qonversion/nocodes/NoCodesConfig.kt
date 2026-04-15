@@ -7,6 +7,7 @@ import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
+import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.dto.config.LoggerConfig
 import io.qonversion.nocodes.internal.dto.config.NetworkConfig
@@ -32,6 +33,7 @@ class NoCodesConfig internal constructor(
     internal val screenCustomizationDelegate: ScreenCustomizationDelegate?,
     internal val purchaseDelegate: PurchaseDelegate?,
     internal val purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks?,
+    internal val customVariablesDelegate: CustomVariablesDelegate?,
     internal val locale: String?,
     internal val theme: NoCodesTheme,
 ) {
@@ -54,6 +56,7 @@ class NoCodesConfig internal constructor(
         private var screenCustomizationDelegate: ScreenCustomizationDelegate? = null
         private var purchaseDelegate: PurchaseDelegate? = null
         private var purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks? = null
+        private var customVariablesDelegate: CustomVariablesDelegate? = null
         private var proxyUrl: String? = null
         private var logLevel = LogLevel.Info
         private var logTag = DEFAULT_LOG_TAG
@@ -107,6 +110,19 @@ class NoCodesConfig internal constructor(
          */
         fun setPurchaseDelegate(purchaseDelegateWithCallbacks: PurchaseDelegateWithCallbacks): Builder = apply {
             this.purchaseDelegateWithCallbacks = purchaseDelegateWithCallbacks
+        }
+
+        /**
+         * Provide a delegate to get custom variables for each No-Codes screen.
+         * Custom variables are injected into the screen's JavaScript context
+         * and can be used to influence content displayed on the screen.
+         * You can also provide it later via [NoCodes.setCustomVariablesDelegate].
+         *
+         * @param customVariablesDelegate delegate responsible for providing custom variables.
+         * @return builder instance for chain calls.
+         */
+        fun setCustomVariablesDelegate(customVariablesDelegate: CustomVariablesDelegate): Builder = apply {
+            this.customVariablesDelegate = customVariablesDelegate
         }
 
         /**
@@ -211,6 +227,7 @@ class NoCodesConfig internal constructor(
                 screenCustomizationDelegate,
                 purchaseDelegate,
                 purchaseDelegateWithCallbacks,
+                customVariablesDelegate,
                 locale,
                 theme,
             )

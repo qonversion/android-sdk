@@ -9,6 +9,7 @@ import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 import com.qonversion.android.sdk.listeners.QEntitlementsUpdateListener
@@ -345,6 +346,15 @@ interface Qonversion {
      * @param callback - callback that will be called when response is received
      */
     fun userProperties(callback: QonversionUserPropertiesCallback)
+
+    /**
+     * Force-flushes any pending user property updates to the server immediately.
+     * Use this when you need to ensure all previously set properties have been sent
+     * before performing an operation that depends on them.
+     *
+     * @param callback callback that will be called when the flush is complete.
+     */
+    fun forceSendProperties(callback: QonversionEmptyCallback)
 
     /**
      * Call this function to check if the fallback file is accessible.

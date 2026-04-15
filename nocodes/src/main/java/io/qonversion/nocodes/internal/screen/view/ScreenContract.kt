@@ -27,6 +27,9 @@ internal class ScreenContract {
         fun handleGetContext(variables: List<String>)
 
         fun finishScreenPreparation()
+
+        fun setVariable(name: String, value: String, completion: () -> Unit = {})
+
     }
 
     internal interface Presenter {

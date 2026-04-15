@@ -325,23 +325,42 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     override fun handleGetContext(variables: List<String>) {
         val productIds = extractProductIds(variables)
 
+        var activeIds: List<String> = emptyList()
+        var fetchedUserProperties: Map<String, String> = emptyMap()
+        var remainingLoads = 2
+        val lock = Any()
+
+        fun onLoadComplete() {
+            synchronized(lock) {
+                remainingLoads--
+                if (remainingLoads > 0) return
+            }
+            loadProductsAndSendContext(activeIds, productIds, fetchedUserProperties)
+        }
+
         Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
             override fun onSuccess(entitlements: Map<String, QEntitlement>) {
-                val activeIds = entitlements.filter { it.value.isActive }.map { it.key }
-                if (productIds.isNotEmpty()) {
-                    loadProductsAndSendContext(activeIds, productIds)
-                } else {
-                    sendContextResponse(activeIds, org.json.JSONObject())
-                }
+                activeIds = entitlements.filter { it.value.isActive }.map { it.key }
+                onLoadComplete()
             }
 
             override fun onError(error: QonversionError) {
                 logger.error("Failed to load entitlements for context: ${error.description}")
-                if (productIds.isNotEmpty()) {
-                    loadProductsAndSendContext(emptyList(), productIds)
-                } else {
-                    sendContextResponse(emptyList(), org.json.JSONObject())
-                }
+                onLoadComplete()
+            }
+        })
+
+        Qonversion.shared.userProperties(object : com.qonversion.android.sdk.listeners.QonversionUserPropertiesCallback {
+            override fun onSuccess(userProperties: com.qonversion.android.sdk.dto.properties.QUserProperties) {
+                val map = mutableMapOf<String, String>()
+                userProperties.properties.forEach { map[it.key] = it.value }
+                fetchedUserProperties = map
+                onLoadComplete()
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load user properties for context: ${error.description}")
+                onLoadComplete()
             }
         })
     }
@@ -355,16 +374,21 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }.distinct()
     }
 
-    private fun loadProductsAndSendContext(activeIds: List<String>, productIds: List<String>) {
+    private fun loadProductsAndSendContext(activeIds: List<String>, productIds: List<String>, userProperties: Map<String, String> = emptyMap()) {
+        if (productIds.isEmpty()) {
+            sendContextResponse(activeIds, org.json.JSONObject(), userProperties)
+            return
+        }
+
         Qonversion.shared.products(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 val productsContext = buildProductsContextJSON(products, productIds)
-                sendContextResponse(activeIds, productsContext)
+                sendContextResponse(activeIds, productsContext, userProperties)
             }
 
             override fun onError(error: QonversionError) {
                 logger.error("Failed to load products for context: ${error.description}")
-                sendContextResponse(activeIds, org.json.JSONObject())
+                sendContextResponse(activeIds, org.json.JSONObject(), userProperties)
             }
         })
     }
@@ -399,7 +423,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         return json
     }
 
-    private fun sendContextResponse(activeEntitlementIds: List<String>, productsContext: org.json.JSONObject) {
+    private fun sendContextResponse(activeEntitlementIds: List<String>, productsContext: org.json.JSONObject, userProperties: Map<String, String> = emptyMap()) {
         val deviceJson = org.json.JSONObject()
         deviceJson.put("platform", "Android")
         deviceJson.put("osVersion", Build.VERSION.RELEASE)
@@ -430,6 +454,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         userJson.put("daysSinceInstall", calculateDaysSinceInstall())
         userJson.put("hasAnyEntitlement", if (activeEntitlementIds.isNotEmpty()) "true" else "false")
         userJson.put("entitlements", org.json.JSONArray(activeEntitlementIds))
+        if (userProperties.isNotEmpty()) {
+            userJson.put("properties", org.json.JSONObject(userProperties as Map<*, *>))
+        }
 
         val dataJson = org.json.JSONObject()
         dataJson.put("device", deviceJson)
@@ -450,10 +477,26 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun finishScreenPreparation() {
-        binding?.progressBarLayout?.progressBar?.visibility = View.GONE
-        binding?.webView?.visibility = View.VISIBLE
-        loadingView?.stopAnimating()
-        binding?.loadingViewContainer?.visibility = View.GONE
+        activity?.runOnUiThread {
+            binding?.progressBarLayout?.progressBar?.visibility = View.GONE
+            binding?.webView?.visibility = View.VISIBLE
+            loadingView?.stopAnimating()
+            binding?.loadingViewContainer?.visibility = View.GONE
+        }
+    }
+
+    override fun setVariable(name: String, value: String, completion: () -> Unit) {
+        val escapedName = name.replace("\\", "\\\\").replace("\"", "\\\"")
+        val escapedValue = value.replace("\\", "\\\\").replace("\"", "\\\"")
+        val js = "window.noCodesSetVariable?.(\"$escapedName\", \"$escapedValue\");"
+        val act = activity
+        if (act == null) {
+            completion()
+            return
+        }
+        act.runOnUiThread {
+            binding?.webView?.evaluateJavascript(js) { completion() }
+        }
     }
 
     @JavascriptInterface

@@ -15,6 +15,7 @@ import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.internal.common.BaseClass
 import io.qonversion.nocodes.internal.common.mappers.Mapper
+import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.internal.common.serializers.Serializer
 import io.qonversion.nocodes.internal.dto.NoCodeScreen
 import io.qonversion.nocodes.internal.dto.ScreenEvent
@@ -38,6 +39,7 @@ internal class ScreenPresenter(
     private val screenEventsService: ScreenEventsService,
     private val customLocaleProvider: () -> String? = { null },
     private val themeProvider: () -> NoCodesTheme = { NoCodesTheme.Auto },
+    private val customVariablesDelegateProvider: () -> CustomVariablesDelegate? = { null },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
 ) : ScreenContract.Presenter, BaseClass(logger) {
 
@@ -165,7 +167,9 @@ internal class ScreenPresenter(
                 view.handleGetContext(variables)
             }
             QAction.Type.ShowScreen -> {
-                view.finishScreenPreparation()
+                injectCustomVariables {
+                    view.finishScreenPreparation()
+                }
             }
             QAction.Type.Navigation -> {
                 action.parameters?.get(QAction.Parameter.ScreenId)?.let { screenId ->
@@ -336,6 +340,36 @@ internal class ScreenPresenter(
         }
 
         return res
+    }
+
+    private fun injectCustomVariables(completion: () -> Unit) {
+        val contextKey = currentScreen?.contextKey
+        if (contextKey == null) {
+            completion()
+            return
+        }
+        val delegate = customVariablesDelegateProvider()
+        if (delegate == null) {
+            completion()
+            return
+        }
+        val variables = delegate.getCustomVariables(contextKey)
+        if (variables.isEmpty()) {
+            completion()
+            return
+        }
+
+        val entries = variables.entries.toList()
+        var remaining = entries.size
+
+        for ((name, value) in entries) {
+            view.setVariable(name, value) {
+                remaining--
+                if (remaining == 0) {
+                    completion()
+                }
+            }
+        }
     }
 
     private fun loadNextScreen(screenId: String) {

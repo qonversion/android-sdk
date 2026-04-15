@@ -10,10 +10,11 @@ import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.sample.databinding.FragmentNocodesBinding
 
-class NoCodesFragment : Fragment(), NoCodesDelegate {
+class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
 
     private var _binding: FragmentNocodesBinding? = null
     private val binding get() = _binding!!
@@ -78,7 +79,15 @@ class NoCodesFragment : Fragment(), NoCodesDelegate {
 
     private fun setupNoCodes() {
         NoCodes.shared.setDelegate(this)
+        NoCodes.shared.setCustomVariablesDelegate(this)
         addEvent(getString(R.string.nocodes_delegate_set))
+    }
+
+    // CustomVariablesDelegate
+    override fun getCustomVariables(contextKey: String): Map<String, String> {
+        val variables = mapOf("custom_var" to "super")
+        android.util.Log.d("NoCodes", "Custom variables requested for $contextKey: $variables")
+        return variables
     }
 
     private fun showScreen(contextKey: String) {

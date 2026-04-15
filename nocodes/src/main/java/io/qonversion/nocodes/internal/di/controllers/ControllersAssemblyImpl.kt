@@ -37,7 +37,8 @@ internal class ControllersAssemblyImpl(
             mappersAssembly.actionMapper(),
             servicesAssembly.screenEventsService(),
             { miscAssembly.customLocale() },
-            { miscAssembly.theme() }
+            { miscAssembly.theme() },
+            { internalConfig.customVariablesDelegate }
         )
     }
 }
