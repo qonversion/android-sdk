@@ -374,7 +374,11 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }.distinct()
     }
 
-    private fun loadProductsAndSendContext(activeIds: List<String>, productIds: List<String>, userProperties: Map<String, String> = emptyMap()) {
+    private fun loadProductsAndSendContext(
+        activeIds: List<String>,
+        productIds: List<String>,
+        userProperties: Map<String, String> = emptyMap()
+    ) {
         if (productIds.isEmpty()) {
             sendContextResponse(activeIds, org.json.JSONObject(), userProperties)
             return
@@ -423,7 +427,11 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         return json
     }
 
-    private fun sendContextResponse(activeEntitlementIds: List<String>, productsContext: org.json.JSONObject, userProperties: Map<String, String> = emptyMap()) {
+    private fun sendContextResponse(
+        activeEntitlementIds: List<String>,
+        productsContext: org.json.JSONObject,
+        userProperties: Map<String, String> = emptyMap()
+    ) {
         val deviceJson = org.json.JSONObject()
         deviceJson.put("platform", "Android")
         deviceJson.put("osVersion", Build.VERSION.RELEASE)

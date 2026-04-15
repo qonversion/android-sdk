@@ -29,7 +29,6 @@ internal class ScreenContract {
         fun finishScreenPreparation()
 
         fun setVariable(name: String, value: String, completion: () -> Unit = {})
-
     }
 
     internal interface Presenter {

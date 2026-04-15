@@ -19,7 +19,6 @@
     <ID>EmptyFunctionBlock:QProductCenterManager.kt$QProductCenterManager.&lt;no name provided&gt;${}</ID>
     <ID>Filename:com.qonversion.android.sdk.internal.storage.util.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt:1</ID>
-    <ID>FinalNewline:com.qonversion.android.sdk.internal.InternalConfigTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.QHandledPurchasesCacheTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.QProductCenterManagerTest.kt:1</ID>
     <ID>FinalNewline:com.qonversion.android.sdk.internal.QUserPropertiesManagerTest.kt:1</ID>
@@ -33,6 +32,7 @@
     <ID>FinalNewline:com.qonversion.android.sdk.utils.kt:1</ID>
     <ID>LargeClass:QProductCenterManager.kt$QProductCenterManager : PurchasesListenerUserStateProvider</ID>
     <ID>LongMethod:NoCodesSkeletonView.kt$NoCodesSkeletonView$private fun createSkeletonElements()</ID>
+    <ID>LongMethod:ScreenPresenter.kt$ScreenPresenter$override fun onWebViewMessageReceived(message: String)</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10002</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10003</ID>
     <ID>MagicNumber:ApiErrorMapper.kt$ApiErrorMapper$10004</ID>
@@ -95,7 +95,6 @@
     <ID>NewLineAtEndOfFile:ApiHelperTest.kt$com.qonversion.android.sdk.internal.api.ApiHelperTest.kt</ID>
     <ID>NewLineAtEndOfFile:AppRequestTest.kt$com.qonversion.android.sdk.internal.requests.AppRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:IncrementalDelayCalculatorTest.kt$com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt</ID>
-    <ID>NewLineAtEndOfFile:InternalConfigTest.kt$com.qonversion.android.sdk.internal.InternalConfigTest.kt</ID>
     <ID>NewLineAtEndOfFile:OsRequestTest.kt$com.qonversion.android.sdk.internal.requests.OsRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:ProviderDataRequestTest.kt$com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt</ID>
     <ID>NewLineAtEndOfFile:PurchasesCacheTest.kt$com.qonversion.android.sdk.internal.storage.PurchasesCacheTest.kt</ID>
@@ -111,6 +110,8 @@
     <ID>NoConsecutiveBlankLines:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:18</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.dto.products.QProduct.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.AdvertisingProvider.kt:7</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.DeferredPurchasesListenerTest.kt:8</ID>
+    <ID>NoWildcardImports:com.qonversion.android.sdk.internal.DeferredPurchasesListenerTest.kt:9</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.EnvironmentProvider.kt:11</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.IncrementalDelayCalculator.kt:3</ID>
     <ID>NoWildcardImports:com.qonversion.android.sdk.internal.IncrementalDelayCalculatorTest.kt:3</ID>
@@ -139,6 +140,7 @@
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$@Synchronized private fun executeProductsBlocks(loadStoreProductsError: QonversionError? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$fun identify(identityId: String, callback: QonversionUserCallback? = null)</ID>
     <ID>ReturnCount:QProductCenterManager.kt$QProductCenterManager$private fun calculatePurchasePermissionsLocally( purchase: Purchase, callback: QonversionPurchaseCallback?, purchaseError: QonversionError )</ID>
+    <ID>ReturnCount:ScreenPresenter.kt$ScreenPresenter$private fun injectCustomVariables(completion: () -&gt; Unit)</ID>
     <ID>SpacingAroundColon:com.qonversion.android.sdk.internal.requests.ProviderDataRequestTest.kt:45</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:39</ID>
     <ID>SpacingAroundCurly:com.qonversion.android.sdk.internal.QAttributionManagerTest.kt:54</ID>
