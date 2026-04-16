@@ -6,11 +6,13 @@ import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
+import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
 import io.qonversion.nocodes.internal.dto.config.NoCodesDelegateWrapper
 import io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAdapter
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,9 +57,31 @@ internal class NoCodesInternal(
         internalConfig.purchaseDelegate = PurchaseDelegateWithCallbacksAdapter(delegate)
     }
 
+    override fun setCustomVariablesDelegate(delegate: CustomVariablesDelegate) {
+        internalConfig.customVariablesDelegate = delegate
+    }
+
     override fun showScreen(contextKey: String) {
         scope.launch {
+            suspendFlushPendingUserProperties()
             screenController.showScreen(contextKey)
+        }
+    }
+
+    private suspend fun suspendFlushPendingUserProperties() {
+        kotlin.coroutines.suspendCoroutine<Unit> { continuation ->
+            try {
+                com.qonversion.android.sdk.Qonversion.shared.forceSendProperties(
+                    object : com.qonversion.android.sdk.listeners.QonversionEmptyCallback {
+                        override fun onComplete() {
+                            continuation.resume(Unit)
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                logger.warn("NoCodesInternal -> Failed to flush pending user properties: ${e.message}")
+                continuation.resume(Unit)
+            }
         }
     }
 

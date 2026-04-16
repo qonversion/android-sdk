@@ -368,6 +368,10 @@ internal class QonversionInternal(
         userPropertiesManager.userProperties(callback)
     }
 
+    override fun forceSendProperties(callback: com.qonversion.android.sdk.listeners.QonversionEmptyCallback) {
+        userPropertiesManager.forceSendProperties(callback)
+    }
+
     override fun isFallbackFileAccessible(): Boolean {
         val fallbackObject = fallbackService.obtainFallbackData()
 
