@@ -60,7 +60,7 @@
     
     <!-- Entitlements -->
     <string name="load_entitlements">Load Entitlements</string>
-    <string name="set_entitlements_listener">Set Entitlements Update Listener</string>
+    <string name="set_entitlements_listener">Set Deferred Purchases Listener</string>
     <string name="listener_set">Listener Set ✓</string>
     <string name="restore">Restore</string>
     <string name="sync_purchases">Sync Purchases</string>
@@ -68,8 +68,8 @@
     <string name="tap_button_to_load_entitlements">Tap the button above to load your entitlements</string>
     <string name="no_entitlements_found">No entitlements found</string>
     <string name="error_loading_entitlements">Error loading entitlements</string>
-    <string name="entitlements_listener_set">Entitlements update listener set</string>
-    <string name="entitlements_updated_via_listener">Entitlements updated via listener</string>
+    <string name="deferred_purchases_listener_set">Deferred purchases listener set</string>
+    <string name="deferred_purchase_completed">Deferred purchase completed</string>
     <string name="purchases_restored">Purchases restored successfully</string>
     <string name="purchases_synced">Purchases synced</string>
     <string name="active">Active</string>

@@ -9,6 +9,7 @@ import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.internal.NoCodesInternal
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
 import io.qonversion.nocodes.internal.dto.config.InternalConfig
+import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.ScreenCustomizationDelegate
 
 interface NoCodes {
@@ -95,6 +96,15 @@ interface NoCodes {
      * @param delegate delegate responsible for handling purchases and restore operations.
      */
     fun setPurchaseDelegate(delegate: PurchaseDelegateWithCallbacks)
+
+    /**
+     * The delegate will be called each time a screen is about to be displayed
+     * to get custom variables that will be injected into the screen's JavaScript context.
+     * You can also provide it during the initialization via [NoCodesConfig.Builder.setCustomVariablesDelegate].
+     *
+     * @param delegate delegate responsible for providing custom variables.
+     */
+    fun setCustomVariablesDelegate(delegate: CustomVariablesDelegate)
 
     /**
      * Show the screen using its context key.
