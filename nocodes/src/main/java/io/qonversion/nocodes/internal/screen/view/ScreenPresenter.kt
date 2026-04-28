@@ -219,6 +219,7 @@ internal class ScreenPresenter(
             "happened_at" to currentUnixTimestamp()
         ))
         screenEventsService.track(event)
+        screenEventsService.flush()
     }
 
     private fun currentUnixTimestamp(): Long =

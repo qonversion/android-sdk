@@ -143,7 +143,17 @@ internal class NetworkClientImpl(
             emptyMap<Any, Any>()
         } else {
             val responsePayload = read(stream)
-            serializer.deserialize(responsePayload)
+            if (responsePayload.isEmpty()) {
+                emptyMap<Any, Any>()
+            } else if (code.isSuccessHttpCode) {
+                try {
+                    serializer.deserialize(responsePayload)
+                } catch (_: Exception) {
+                    emptyMap<Any, Any>()
+                }
+            } else {
+                serializer.deserialize(responsePayload)
+            }
         }
         return RawResponse(code, response)
     }
