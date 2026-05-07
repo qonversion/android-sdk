@@ -39,15 +39,15 @@ import com.qonversion.android.sdk.dto.QonversionErrorCode
 
 class ScreenFragment : Fragment(), ScreenContract.View {
 
-    private val presenter = DependenciesAssembly.instance.screenPresenter(this)
-    private val logger = DependenciesAssembly.instance.logger()
-    private val delegateProvider = DependenciesAssembly.instance.noCodesDelegateProvider()
-    private val purchaseDelegateProvider = DependenciesAssembly.instance.purchaseDelegateProvider()
+    private val presenter by lazy { DependenciesAssembly.instance.screenPresenter(this) }
+    private val logger by lazy { DependenciesAssembly.instance.logger() }
+    private val delegateProvider by lazy { DependenciesAssembly.instance.noCodesDelegateProvider() }
+    private val purchaseDelegateProvider by lazy { DependenciesAssembly.instance.purchaseDelegateProvider() }
     private val themeProvider = { DependenciesAssembly.instance.theme() }
 
-    private val screenCustomizationDelegate = DependenciesAssembly.instance.screenCustomizationDelegate()
+    private val screenCustomizationDelegate by lazy { DependenciesAssembly.instance.screenCustomizationDelegate() }
 
-    private val delegate = delegateProvider.noCodesDelegate
+    private val delegate by lazy { delegateProvider.noCodesDelegate }
 
     private var binding: NcFragmentScreenBinding? = null
     private var loadingView: NoCodesLoadingView? = null
