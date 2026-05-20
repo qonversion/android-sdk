@@ -69,6 +69,17 @@ internal class RepositoryModule {
         )
     }
 
+    /**
+     * Exposes the Retrofit-generated [Api] so additional managers
+     * (e.g. [com.qonversion.android.sdk.internal.redemption.RedemptionManager])
+     * can hit endpoints that aren't routed through [DefaultRepository].
+     */
+    @ApplicationScope
+    @Provides
+    fun provideApi(retrofit: Retrofit): Api {
+        return retrofit.create(Api::class.java)
+    }
+
     @ApplicationScope
     @Provides
     fun provideTokenStorage(preferences: SharedPreferences): TokenStorage {
