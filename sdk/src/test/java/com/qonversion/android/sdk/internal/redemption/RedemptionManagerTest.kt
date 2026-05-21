@@ -82,6 +82,29 @@ internal class RedemptionManagerTest {
     }
 
     @Test
+    fun `handleRedemptionLink rejects qonversion custom-scheme Uri without network call (RT2-W3)`() {
+        // Spec rule RT2-W3: only the verified https App Link is allowed as an
+        // email-link transport on Android. Any installed app can claim a
+        // `qonversion://` intent-filter and hijack the token, so the SDK MUST
+        // reject the custom scheme before any network call. The custom scheme
+        // is reserved for in-process host→SDK forwarding (see Qonversion.kt
+        // docstring on handleRedemptionLink) and is not exercised by this
+        // public entry point.
+        val uri = Uri.parse("qonversion://screens.qonversion.io/r/proj_abc/tok_xyz")
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.InvalidToken, callback.received)
+        // Load-bearing security assertion: the token must NEVER leak over the
+        // wire when the scheme is rejected.
+        verify(exactly = 0) { api.redeem(any()) }
+        assertEquals(emptyList<String>(), identifiedUserIds)
+    }
+
+    @Test
     fun `handleRedemptionLink returns InvalidToken when Uri is malformed`() {
         val uri = Uri.parse("https://screens.qonversion.io/some/other/path")
 

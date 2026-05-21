@@ -37,6 +37,17 @@
               The custom scheme remains valid only for in-process host→SDK
               forwarding by the host itself.
             -->
+            <!--
+              MUST be path-scoped to THIS project's uid. Sharing
+              screens.qonversion.io across all merchants means an
+              unscoped `pathPattern="/r/.*"` triggers an Android
+              chooser dialog when another merchant's app is installed,
+              and worse — could redirect a token to the wrong app's
+              SDK. Production merchants set this to their project's uid
+              issued in Qonversion Connect Apps onboarding.
+
+              Local dev uses project `PcnB70vn` (Openchat).
+            -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -44,7 +55,7 @@
                 <data
                     android:scheme="https"
                     android:host="screens.qonversion.io"
-                    android:pathPattern="/r/.*" />
+                    android:pathPattern="/r/PcnB70vn/.*" />
             </intent-filter>
         </activity>
     </application>

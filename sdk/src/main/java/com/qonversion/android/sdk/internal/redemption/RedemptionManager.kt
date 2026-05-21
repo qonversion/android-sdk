@@ -148,7 +148,14 @@ internal class RedemptionManager(
     }
 
     private fun extractToken(uri: Uri): String? {
-        if (uri.scheme.isNullOrBlank()) return null
+        // Spec rule RT2-W3: only the verified https App Link form
+        // (`android:autoVerify="true"`) is allowed as an email-link
+        // transport. Any installed app can claim a `qonversion://`
+        // intent-filter and hijack the redemption token, so we reject any
+        // non-https scheme up-front — before any token extraction or
+        // network call. The custom scheme is reserved for in-process
+        // host→SDK forwarding and is not exercised by this entry point.
+        if (!uri.scheme.equals(REDEEM_SCHEME_HTTPS, ignoreCase = true)) return null
 
         val segments = uri.pathSegments ?: return null
         // Expected: /r/{project_uid}/{token}
@@ -194,5 +201,7 @@ internal class RedemptionManager(
         // → segments = ["r", "{project}", "{token}"], token is at index 2.
         const val REDEEM_TOKEN_SEGMENT_INDEX = 2
         const val REDEEM_PATH_MIN_SEGMENTS = 3
+        // RT2-W3: only https App Links are accepted as email-link transport.
+        const val REDEEM_SCHEME_HTTPS = "https"
     }
 }
