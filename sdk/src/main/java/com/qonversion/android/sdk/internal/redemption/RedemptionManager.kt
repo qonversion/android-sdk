@@ -41,6 +41,10 @@ internal class RedemptionManager(
      * POSTs `/v4/web/redeem`, and invokes [callback] on the main thread with the
      * terminal [RedemptionResult]. See [RedemptionResult] for case semantics.
      */
+    // The post-redeem identify is best-effort: any failure there must not
+    // fail the already-successful redeem, so we intentionally catch broadly
+    // and only log.
+    @Suppress("TooGenericExceptionCaught")
     fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback) {
         val token = extractToken(uri)
         if (token == null) {
@@ -147,6 +151,10 @@ internal class RedemptionManager(
         }
     }
 
+    // Sequential guard clauses (scheme, segment count, prefix, token) read
+    // clearer as early returns than nested conditionals; exceeds detekt's
+    // default ReturnCount of 2 by design.
+    @Suppress("ReturnCount")
     private fun extractToken(uri: Uri): String? {
         // Spec rule RT2-W3: only the verified https App Link form
         // (`android:autoVerify="true"`) is allowed as an email-link
