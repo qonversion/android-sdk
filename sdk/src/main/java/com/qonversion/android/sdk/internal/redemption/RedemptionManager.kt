@@ -48,7 +48,12 @@ internal class RedemptionManager(
     fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback) {
         val token = extractToken(uri)
         if (token == null) {
-            logger.error("RedemptionManager: malformed Uri '$uri' — no token segment found.")
+            // Never log the full Uri — the redemption token lives in the path and
+            // would leak into LogCat / crash reporters. Log only scheme+host.
+            logger.error(
+                "RedemptionManager: malformed redemption Uri " +
+                    "(scheme=${uri.scheme}, host=${uri.host}) — no token segment found."
+            )
             deliver(callback, RedemptionResult.InvalidToken)
             return
         }

@@ -85,8 +85,9 @@ class MainActivity : AppCompatActivity() {
         if (!ok) {
             return
         }
-        Log.i("Web2App", "handleRedemptionLink: $uri")
-        Toast.makeText(this, "Redemption link tapped: $uri", Toast.LENGTH_SHORT).show()
+        // Do NOT log/show the full Uri — the redemption token is in the path.
+        Log.i("Web2App", "handleRedemptionLink: host=${uri.host}")
+        Toast.makeText(this, "Redemption link tapped", Toast.LENGTH_SHORT).show()
         Qonversion.shared.handleRedemptionLink(uri, object : QonversionRedemptionCallback {
             override fun onResult(result: RedemptionResult) {
                 Log.i("Web2App", "Redemption result: $result")
