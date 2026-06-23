@@ -82,6 +82,97 @@ Send user-level subscription data to your favorite platforms.
      </a>
 </p>
 
+## Web2App
+
+Web2App lets a user pay on your web checkout and unlock entitlements in the Android app. After payment, Qonversion emails the user a redemption link of the form:
+
+```
+https://screens.qonversion.io/r/{project_uid}/{token}
+```
+
+When the user taps it, Android opens your app via a verified [App Link](https://developer.android.com/training/app-links), and you forward the `Uri` to the SDK, which redeems the token and merges the purchase into the current user.
+
+### 1. Register the App Link
+
+Add an `<intent-filter>` to the activity that should receive the link. It **must** use `https` and `android:autoVerify="true"`, and the path **must** be scoped to your own `{project_uid}` (issued in Qonversion Connect Apps onboarding) so other merchants' apps can't intercept the token:
+
+```xml
+<activity
+    android:name=".MainActivity"
+    android:launchMode="singleTask"
+    android:exported="true">
+
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="https"
+            android:host="screens.qonversion.io"
+            android:pathPattern="/r/YOUR_PROJECT_UID/.*" />
+    </intent-filter>
+</activity>
+```
+
+> Only `https` App Links are supported as an email-link transport. The SDK rejects any other scheme or host before any network call, because any installed app can claim a custom (`qonversion://`) scheme and hijack the token. Use `singleTask` (or `singleTop`) so re-taps arrive in `onNewIntent` instead of relaunching the activity.
+
+### 2. Verify domain ownership (`assetlinks.json`)
+
+`autoVerify` requires Qonversion to host a Digital Asset Links file at `https://screens.qonversion.io/.well-known/assetlinks.json` that pins your app's package name and signing-certificate SHA-256 fingerprint. Provide these to Qonversion during onboarding. You can generate the fingerprint with:
+
+```bash
+keytool -list -v -keystore your-release.keystore -alias your-alias
+```
+
+Until the file lists your app, Android shows a chooser dialog instead of opening your app directly.
+
+### 3. Forward the link to the SDK
+
+In the activity that owns the intent-filter, forward the incoming `Uri` from both `onCreate` and `onNewIntent`:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    handleRedemptionIntent(intent)
+}
+
+override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleRedemptionIntent(intent)
+}
+
+private fun handleRedemptionIntent(intent: Intent?) {
+    val uri = intent?.data ?: return
+    if (uri.scheme != "https" || uri.pathSegments.firstOrNull() != "r") return
+
+    Qonversion.shared.handleRedemptionLink(uri, object : QonversionRedemptionCallback {
+        override fun onResult(result: RedemptionResult) {
+            // Delivered once on the main thread.
+            when (result) {
+                RedemptionResult.Success -> { /* entitlements merged into current user */ }
+                RedemptionResult.AlreadyConsumed,
+                RedemptionResult.TokenExpired -> { /* offer the reissue dialog */ }
+                RedemptionResult.InvalidToken,
+                RedemptionResult.NetworkError -> { /* show an error / retry */ }
+            }
+        }
+    })
+}
+```
+
+On `RedemptionResult.Success` the SDK transparently calls `identify` with the user id returned by the backend, merging the current anonymous session with the purchasing account. Do **not** log or display the full redemption `Uri` — it carries a single-use token.
+
+### 4. Let users request a new link (`presentReissueUI`)
+
+If the original link is lost or expired, present the built-in dialog so the user can request a new redemption email. No host theme or layout resources are required:
+
+```kotlin
+Qonversion.shared.presentReissueUI(this) { success ->
+    // success == true once the reissue email is sent.
+}
+```
+
 ## Why Qonversion?
 
 * **No headaches with Apple's StoreKit & Google Billing.** Qonversion provides simple methods to handle Apple StoreKit & Google Billing purchase flow.
