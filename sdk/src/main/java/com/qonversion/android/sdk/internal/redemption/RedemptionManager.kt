@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.enqueue
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Coordinates Web2App redemption: parses the email App Link, calls
@@ -37,6 +38,14 @@ internal class RedemptionManager(
     private val handler = Handler(Looper.getMainLooper())
 
     /**
+     * Token of the redemption currently in flight, or `null` when idle. Guards
+     * against a double/race redemption (e.g. `onCreate` + `onNewIntent`, or a
+     * fast double tap) firing two parallel `POST /v4/web/redeem` calls and two
+     * `identify` calls. Reset to `null` on every terminal [deliver].
+     */
+    private val inFlightToken = AtomicReference<String?>(null)
+
+    /**
      * Parses [uri] (expected: `https://screens.qonversion.io/r/{project_uid}/{token}`),
      * POSTs `/v4/web/redeem`, and invokes [callback] on the main thread with the
      * terminal [RedemptionResult]. See [RedemptionResult] for case semantics.
@@ -51,10 +60,17 @@ internal class RedemptionManager(
             // Never log the full Uri — the redemption token lives in the path and
             // would leak into LogCat / crash reporters. Log only scheme+host.
             logger.error(
-                "RedemptionManager: malformed redemption Uri " +
-                    "(scheme=${uri.scheme}, host=${uri.host}) — no token segment found."
+                "RedemptionManager: malformed or untrusted redemption Uri " +
+                    "(scheme=${uri.scheme}, host=${uri.host}) — no valid token segment found."
             )
             deliver(callback, RedemptionResult.InvalidToken)
+            return
+        }
+
+        // In-flight guard: if a redemption is already running, drop this call so
+        // we don't fire a second POST / second identify. CAS null -> token.
+        if (!inFlightToken.compareAndSet(null, token)) {
+            logger.error("RedemptionManager: redemption already in flight — ignoring duplicate link.")
             return
         }
 
@@ -170,6 +186,13 @@ internal class RedemptionManager(
         // host→SDK forwarding and is not exercised by this entry point.
         if (!uri.scheme.equals(REDEEM_SCHEME_HTTPS, ignoreCase = true)) return null
 
+        // Host pinning: even over https, only the canonical App Link host is a
+        // trusted email-link transport. A link like
+        // `https://attacker.com/r/{proj}/{token}` would otherwise leak the
+        // redemption token to a third-party backend. Reject any other host
+        // up-front — before any token extraction or network call.
+        if (!uri.host.equals(REDEEM_HOST, ignoreCase = true)) return null
+
         val segments = uri.pathSegments ?: return null
         // Expected: /r/{project_uid}/{token}
         if (segments.size < REDEEM_PATH_MIN_SEGMENTS) return null
@@ -180,6 +203,10 @@ internal class RedemptionManager(
     }
 
     private fun deliver(callback: QonversionRedemptionCallback, result: RedemptionResult) {
+        // Terminal point of a redemption — release the in-flight guard so a
+        // later, legitimate redemption can proceed. Safe no-op when the guard
+        // was never taken (e.g. malformed/untrusted Uri short-circuit).
+        inFlightToken.set(null)
         postToMainThread { callback.onResult(result) }
     }
 
@@ -216,5 +243,8 @@ internal class RedemptionManager(
         const val REDEEM_PATH_MIN_SEGMENTS = 3
         // RT2-W3: only https App Links are accepted as email-link transport.
         const val REDEEM_SCHEME_HTTPS = "https"
+        // Canonical App Link host. Token transport is pinned to this host so a
+        // foreign https host can't exfiltrate the redemption token.
+        const val REDEEM_HOST = "screens.qonversion.io"
     }
 }

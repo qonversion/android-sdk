@@ -105,6 +105,73 @@ internal class RedemptionManagerTest {
     }
 
     @Test
+    fun `handleRedemptionLink rejects foreign https host without network call (RT2-W3 host)`() {
+        // Security: scheme==https alone is not enough. An attacker-controlled
+        // host (`https://attacker.com/r/proj/tok`) would otherwise leak the
+        // redemption token to a third-party backend. The SDK MUST reject any
+        // host other than the canonical App Link host before any network call.
+        val uri = Uri.parse("https://attacker.com/r/proj_abc/tok_xyz")
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.InvalidToken, callback.received)
+        // Load-bearing security assertion: the token must NEVER leak over the
+        // wire when the host is not the canonical App Link host.
+        verify(exactly = 0) { api.redeem(any()) }
+        assertEquals(emptyList<String>(), identifiedUserIds)
+    }
+
+    @Test
+    fun `handleRedemptionLink accepts canonical host case-insensitively`() {
+        val uri = Uri.parse("https://SCREENS.QONVERSION.IO/r/proj/tok_case")
+        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_case"))
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.Success, callback.received)
+        verify(exactly = 1) { api.redeem(any()) }
+    }
+
+    @Test
+    fun `handleRedemptionLink guards against in-flight double redemption (no second request)`() {
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_race")
+        // A call that never invokes its callback — keeps the redemption
+        // in-flight so the second tap collides with the first.
+        val pending = pendingCall<RedeemResponse>()
+        every { api.redeem(any()) } returns pending
+
+        manager.handleRedemptionLink(uri, RecordingCallback())
+        // Second tap (e.g. onCreate + onNewIntent, or a fast double tap) for the
+        // same token while the first POST is still in flight.
+        manager.handleRedemptionLink(uri, RecordingCallback())
+
+        flushMainLooper()
+
+        // Only ONE network request must have been issued for the same token.
+        verify(exactly = 1) { api.redeem(any()) }
+    }
+
+    @Test
+    fun `handleRedemptionLink allows a fresh redemption after the previous one terminates`() {
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_again")
+        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_again"))
+
+        manager.handleRedemptionLink(uri, RecordingCallback())
+        flushMainLooper()
+        // First redemption terminated (Success delivered) — guard must be reset.
+        manager.handleRedemptionLink(uri, RecordingCallback())
+        flushMainLooper()
+
+        verify(exactly = 2) { api.redeem(any()) }
+    }
+
+    @Test
     fun `handleRedemptionLink returns InvalidToken when Uri is malformed`() {
         val uri = Uri.parse("https://screens.qonversion.io/some/other/path")
 
@@ -259,6 +326,13 @@ internal class RedemptionManagerTest {
             val resp: Response<T> = Response.error(code, errBody)
             cb.onResponse(call, resp)
         }
+        return call
+    }
+
+    /** A call whose [Call.enqueue] never invokes the callback — stays in-flight. */
+    private fun <T> pendingCall(): Call<T> {
+        val call = mockk<Call<T>>(relaxed = true)
+        every { call.enqueue(any()) } answers { /* never completes */ }
         return call
     }
 
