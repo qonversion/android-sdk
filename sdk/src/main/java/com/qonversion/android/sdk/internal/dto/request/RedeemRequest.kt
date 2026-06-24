@@ -14,7 +14,10 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 internal data class RedeemRequest(
     @Json(name = "token") val token: String,
-    @Json(name = "anon_user_id") val anonUserId: String?,
+    // Web2App M1.5 canonical contract: api-gateway and purchaseman read
+    // "app_uid". The value is unchanged (the SDK user id / internalConfig.uid);
+    // only the wire key was renamed from the legacy "anon_user_id".
+    @Json(name = "app_uid") val appUid: String?,
     @Json(name = "restore_behavior") val restoreBehavior: String = "transfer",
 )
 
