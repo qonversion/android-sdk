@@ -16,23 +16,30 @@ import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Coordinates Web2App redemption: parses the email App Link, calls
- * `POST /v4/web/redeem`, disambiguates 409 via `/v4/web/redeem/status`, and
- * triggers the SDK identify-flow for the merge (RT4-W2).
+ * `POST /v4/web/redeem`, disambiguates 409 via `/v4/web/redeem/status`, and on
+ * success triggers an entitlements refresh so the server-side grant is
+ * reflected on the device.
+ *
+ * Web2App M1.5 is grant-first: the backend attaches the entitlement to the
+ * `app_uid` the SDK sends, and the redeem response is `{redeemed, app_uid}`
+ * with no user id. The SDK therefore does NOT identify/merge any client user
+ * id after redeem — it only refreshes entitlements.
  *
  * The reissue endpoint is also exposed here so the reissue dialog UI doesn't
  * need its own networking — it forwards through this manager.
  *
  * All public callbacks are dispatched on the main thread.
  *
- * Note: the SDK identify call is invoked through the supplied [identifyUser]
- * lambda rather than a direct reference to the product center manager so this
- * class stays unit-testable without spinning up the full DI graph.
+ * Note: the entitlements refresh is invoked through the supplied
+ * [refreshEntitlements] lambda rather than a direct reference to the product
+ * center manager so this class stays unit-testable without spinning up the
+ * full DI graph.
  */
 internal class RedemptionManager(
     private val api: Api,
     private val internalConfig: InternalConfig,
     private val logger: Logger,
-    private val identifyUser: (userId: String) -> Unit,
+    private val refreshEntitlements: () -> Unit,
 ) {
 
     private val handler = Handler(Looper.getMainLooper())
@@ -41,7 +48,7 @@ internal class RedemptionManager(
      * Token of the redemption currently in flight, or `null` when idle. Guards
      * against a double/race redemption (e.g. `onCreate` + `onNewIntent`, or a
      * fast double tap) firing two parallel `POST /v4/web/redeem` calls and two
-     * `identify` calls. Reset to `null` on every terminal [deliver].
+     * entitlement refreshes. Reset to `null` on every terminal [deliver].
      */
     private val inFlightToken = AtomicReference<String?>(null)
 
@@ -50,9 +57,9 @@ internal class RedemptionManager(
      * POSTs `/v4/web/redeem`, and invokes [callback] on the main thread with the
      * terminal [RedemptionResult]. See [RedemptionResult] for case semantics.
      */
-    // The post-redeem identify is best-effort: any failure there must not
-    // fail the already-successful redeem, so we intentionally catch broadly
-    // and only log.
+    // The post-redeem entitlements refresh is best-effort: any failure there
+    // must not fail the already-successful redeem, so we intentionally catch
+    // broadly and only log.
     @Suppress("TooGenericExceptionCaught")
     fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback) {
         val token = extractToken(uri)
@@ -68,7 +75,7 @@ internal class RedemptionManager(
         }
 
         // In-flight guard: if a redemption is already running, drop this call so
-        // we don't fire a second POST / second identify. CAS null -> token.
+        // we don't fire a second POST / second refresh. CAS null -> token.
         if (!inFlightToken.compareAndSet(null, token)) {
             logger.error("RedemptionManager: redemption already in flight — ignoring duplicate link.")
             return
@@ -76,28 +83,23 @@ internal class RedemptionManager(
 
         val request = RedeemRequest(
             token = token,
-            anonUserId = internalConfig.uid.takeIf { it.isNotBlank() },
+            appUid = internalConfig.uid.takeIf { it.isNotBlank() },
         )
 
         api.redeem(request).enqueue {
             onResponse = { response ->
                 when {
                     response.isSuccessful -> {
-                        val userId = response.body()?.userId
-                        if (!userId.isNullOrBlank()) {
-                            // Trigger merge: identify the (now anon) device user
-                            // with the Qonversion user id returned by redeem.
-                            try {
-                                identifyUser(userId)
-                            } catch (t: Throwable) {
-                                logger.error(
-                                    "RedemptionManager: identify after redeem threw: $t"
-                                )
-                            }
-                        } else {
+                        // Grant-first: the server already attached the entitlement
+                        // to app_uid. We do NOT identify/merge a client user id;
+                        // we only refresh entitlements so the grant shows up on
+                        // this device. Best-effort — refresh failure must not fail
+                        // the already-successful redeem.
+                        try {
+                            refreshEntitlements()
+                        } catch (t: Throwable) {
                             logger.error(
-                                "RedemptionManager: redeem 200 with empty user_id — " +
-                                    "skipping identify, host should call checkEntitlements."
+                                "RedemptionManager: entitlements refresh after redeem threw: $t"
                             )
                         }
                         deliver(callback, RedemptionResult.Success)

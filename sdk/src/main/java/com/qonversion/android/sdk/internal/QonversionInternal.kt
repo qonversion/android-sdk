@@ -127,7 +127,11 @@ internal class QonversionInternal(
             api = QDependencyInjector.appComponent.api(),
             internalConfig = internalConfig,
             logger = logger,
-            identifyUser = { userId -> productCenterManager.identify(userId) },
+            // Grant-first redeem: no identify/merge. After a successful redeem
+            // the server has already granted the entitlement to app_uid, so we
+            // re-launch with ActualizePermissions to pull the fresh entitlement
+            // state onto this device.
+            refreshEntitlements = { productCenterManager.launch(RequestTrigger.ActualizePermissions) },
         )
 
         productCenterManager.launch(RequestTrigger.Init)

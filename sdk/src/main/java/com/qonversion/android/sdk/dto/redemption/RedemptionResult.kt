@@ -7,9 +7,9 @@ package com.qonversion.android.sdk.dto.redemption
  */
 enum class RedemptionResult {
     /**
-     * Token was consumed and the entitlement was granted to the current user.
-     * The SDK has already called `identify(userId)` for the merge flow, so a
-     * subsequent `checkEntitlements` will reflect the new state.
+     * Token was consumed and the entitlement was granted to the current user
+     * (server-side, grant-first). The SDK has already triggered an entitlements
+     * refresh, so a subsequent `checkEntitlements` will reflect the new state.
      */
     Success,
 
@@ -23,8 +23,7 @@ enum class RedemptionResult {
     /**
      * The token has already been consumed on a previous device or session.
      * Hosts should typically show a "this link was already used" message and
-     * suggest re-issue / contact support. The SDK still attempts identify-flow
-     * recovery server-side before returning this case (RT4-W2).
+     * suggest re-issue / contact support.
      */
     AlreadyConsumed,
 

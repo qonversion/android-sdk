@@ -411,9 +411,10 @@ interface Qonversion {
      * §RT-F11). Use https App Links only for email-borne links. Custom schemes
      * remain allowed for in-process host→SDK forwarding via [identify].
      *
-     * On [RedemptionResult.Success] the SDK transparently calls [identify] with
-     * the user id returned by the backend, merging the current anon session
-     * with the redeemed account.
+     * On [RedemptionResult.Success] the entitlement has already been granted
+     * server-side (grant-first) to the current SDK user; the SDK transparently
+     * refreshes its entitlement state so the grant is reflected on this device.
+     * No [identify]/merge is performed.
      *
      * @param uri      App Link Uri opened by the host activity.
      * @param callback delivered once on the main thread with the terminal

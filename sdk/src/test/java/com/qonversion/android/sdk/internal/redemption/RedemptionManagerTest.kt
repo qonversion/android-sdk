@@ -11,6 +11,7 @@ import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.squareup.moshi.Moshi
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +20,9 @@ import io.mockk.verify
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,7 +46,14 @@ internal class RedemptionManagerTest {
     private lateinit var api: Api
     private lateinit var internalConfig: InternalConfig
     private lateinit var logger: Logger
-    private lateinit var identifiedUserIds: MutableList<String>
+
+    /**
+     * Counts how many times the SDK triggered an entitlements refresh after a
+     * redeem. Under the grant-first contract the server has already granted the
+     * entitlement, so the SDK must NOT identify/merge — it only refreshes the
+     * device's entitlement state so the grant is reflected locally.
+     */
+    private var refreshCount: Int = 0
 
     private lateinit var manager: RedemptionManager
 
@@ -53,13 +63,13 @@ internal class RedemptionManagerTest {
         api = mockk(relaxed = true)
         internalConfig = mockk(relaxed = true)
         logger = mockk(relaxed = true)
-        identifiedUserIds = mutableListOf()
+        refreshCount = 0
         every { internalConfig.uid } returns "QON_anon_123"
         manager = RedemptionManager(
             api = api,
             internalConfig = internalConfig,
             logger = logger,
-            identifyUser = { identifiedUserIds.add(it) },
+            refreshEntitlements = { refreshCount++ },
         )
     }
 
@@ -67,7 +77,8 @@ internal class RedemptionManagerTest {
     fun `handleRedemptionLink parses token from valid Uri and posts request`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj_abc/tok_xyz")
         val captured = slot<RedeemRequest>()
-        every { api.redeem(capture(captured)) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_42"))
+        every { api.redeem(capture(captured)) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -75,10 +86,42 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         assertEquals("tok_xyz", captured.captured.token)
-        assertEquals("QON_anon_123", captured.captured.anonUserId)
+        assertEquals("QON_anon_123", captured.captured.appUid)
         assertEquals("transfer", captured.captured.restoreBehavior)
         assertEquals(RedemptionResult.Success, callback.received)
-        assertEquals(listOf("QON_user_42"), identifiedUserIds)
+        assertEquals(1, refreshCount)
+    }
+
+    @Test
+    fun `redeem request body serializes to canonical contract (token, app_uid, restore_behavior)`() {
+        // Golden contract test: pins the OUTGOING JSON keys so a regression to
+        // the old "anon_user_id" name (api-gateway/purchaseman read "app_uid")
+        // turns this red. Uses the real Moshi adapter the SDK ships with.
+        val moshi = Moshi.Builder().build()
+        val json = moshi.adapter(RedeemRequest::class.java).toJson(
+            RedeemRequest(token = "tok_xyz", appUid = "QON_anon_123"),
+        )
+
+        assertTrue("must send token", json.contains("\"token\":\"tok_xyz\""))
+        assertTrue("must send app_uid", json.contains("\"app_uid\":\"QON_anon_123\""))
+        assertTrue(
+            "must send restore_behavior",
+            json.contains("\"restore_behavior\":\"transfer\""),
+        )
+        // Regression guard: the old field name must be gone.
+        assertFalse("anon_user_id must NOT be sent", json.contains("anon_user_id"))
+    }
+
+    @Test
+    fun `redeem response parses canonical contract (redeemed, app_uid) and has no user_id`() {
+        // Golden contract test: pins the INCOMING JSON shape {redeemed, app_uid}.
+        // A regression that re-adds user_id parsing would not satisfy this.
+        val moshi = Moshi.Builder().build()
+        val parsed = moshi.adapter(RedeemResponse::class.java)
+            .fromJson("{\"redeemed\":true,\"app_uid\":\"QON_anon_123\"}")
+
+        assertEquals(true, parsed?.redeemed)
+        assertEquals("QON_anon_123", parsed?.appUid)
     }
 
     @Test
@@ -101,7 +144,7 @@ internal class RedemptionManagerTest {
         // Load-bearing security assertion: the token must NEVER leak over the
         // wire when the scheme is rejected.
         verify(exactly = 0) { api.redeem(any()) }
-        assertEquals(emptyList<String>(), identifiedUserIds)
+        assertEquals(0, refreshCount)
     }
 
     @Test
@@ -121,13 +164,13 @@ internal class RedemptionManagerTest {
         // Load-bearing security assertion: the token must NEVER leak over the
         // wire when the host is not the canonical App Link host.
         verify(exactly = 0) { api.redeem(any()) }
-        assertEquals(emptyList<String>(), identifiedUserIds)
+        assertEquals(0, refreshCount)
     }
 
     @Test
     fun `handleRedemptionLink accepts canonical host case-insensitively`() {
         val uri = Uri.parse("https://SCREENS.QONVERSION.IO/r/proj/tok_case")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_case"))
+        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -160,7 +203,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink allows a fresh redemption after the previous one terminates`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_again")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_again"))
+        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         manager.handleRedemptionLink(uri, RecordingCallback())
         flushMainLooper()
@@ -184,7 +227,7 @@ internal class RedemptionManagerTest {
         // Should never have hit the network for a malformed Uri.
         verify(exactly = 0) { api.redeem(any()) }
         // No identify should have been triggered either.
-        assertEquals(emptyList<String>(), identifiedUserIds)
+        assertEquals(0, refreshCount)
     }
 
     @Test
@@ -201,9 +244,9 @@ internal class RedemptionManagerTest {
     }
 
     @Test
-    fun `handleRedemptionLink maps 200 to Success and triggers identify`() {
+    fun `handleRedemptionLink maps 200 to Success and triggers entitlements refresh`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_ok")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_99"))
+        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -211,7 +254,7 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         assertEquals(RedemptionResult.Success, callback.received)
-        assertEquals(listOf("QON_user_99"), identifiedUserIds)
+        assertEquals(1, refreshCount)
     }
 
     @Test
@@ -229,9 +272,9 @@ internal class RedemptionManagerTest {
 
         assertEquals("tok_used", statusCaptured.captured.token)
         assertEquals(RedemptionResult.AlreadyConsumed, callback.received)
-        // identify must NOT be called on AlreadyConsumed — the host is in
-        // recovery flow, not merge flow.
-        assertEquals(emptyList<String>(), identifiedUserIds)
+        // No entitlements refresh on AlreadyConsumed — nothing was granted on
+        // this device, the host is in recovery flow.
+        assertEquals(0, refreshCount)
     }
 
     @Test
@@ -274,29 +317,30 @@ internal class RedemptionManagerTest {
     }
 
     /**
-     * RT5-N2 contract test: a successful redemption MUST cause `identify` to
-     * be invoked on the product center manager so the SDK runs a new launch
-     * and pulls the freshly-granted entitlements.
+     * RT5-N2 contract test (grant-first): a successful redemption MUST NOT
+     * identify/merge a client-supplied user id — under grant-first the server
+     * has already attached the entitlement to `app_uid`. Instead the SDK must
+     * trigger exactly one entitlements refresh so the server grant is reflected
+     * on the device.
      *
      * We assert the contract at the [RedemptionManager] boundary (its
-     * `identifyUser` lambda is the seam where it hands off to
-     * `QProductCenterManager.identify`). A full end-to-end contract test that
-     * asserts `identify(newUserId)` triggers a network launch / permissions
-     * fetch should live next to the product center manager and exercise the
-     * real `QProductCenterManager`. See [com.qonversion.android.sdk.internal
-     * .QProductCenterManager.identify] — adding that integration-style test
-     * requires staging the full launch state machine and is tracked
-     * separately (DEV-847 follow-up).
+     * `refreshEntitlements` lambda is the seam where it hands off to
+     * `QProductCenterManager.launch(ActualizePermissions)`). A full end-to-end
+     * test asserting that the refresh triggers a real network launch / permissions
+     * fetch should live next to the product center manager and exercise the real
+     * `QProductCenterManager`; adding that integration-style test requires staging
+     * the full launch state machine and is tracked separately (DEV-847 follow-up).
      */
     @Test
-    fun `RT5-N2 contract — success path forwards Qonversion user id to identify exactly once`() {
+    fun `RT5-N2 contract — success path triggers entitlements refresh exactly once and never identifies`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_contract")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(userId = "QON_user_contract"))
+        every { api.redeem(any()) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         manager.handleRedemptionLink(uri, RecordingCallback())
         flushMainLooper()
 
-        assertEquals(listOf("QON_user_contract"), identifiedUserIds)
+        assertEquals(1, refreshCount)
     }
 
     // --- Helpers ---------------------------------------------------------

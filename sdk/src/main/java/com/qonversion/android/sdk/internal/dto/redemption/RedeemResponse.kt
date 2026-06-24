@@ -6,13 +6,16 @@ import com.squareup.moshi.JsonClass
 /**
  * Response body for `POST /v4/web/redeem` on success (HTTP 200).
  *
- * `user_id` is the Qonversion user id the entitlement was granted to. The SDK
- * calls `identify(user_id)` after a successful redemption to merge the current
- * anon session with that account (RT4-W2 / plan §"DEV-847").
+ * Web2App M1.5 canonical contract: `{ "redeemed": bool, "app_uid": string }`.
+ * Under grant-first entitlement the server has already attached the grant to
+ * `app_uid`, so the SDK does NOT identify/merge a client user id here — there
+ * is intentionally no `user_id` field. On success the SDK only refreshes the
+ * device's entitlement state so the server grant is reflected locally.
  */
 @JsonClass(generateAdapter = true)
 internal data class RedeemResponse(
-    @Json(name = "user_id") val userId: String?,
+    @Json(name = "redeemed") val redeemed: Boolean = false,
+    @Json(name = "app_uid") val appUid: String? = null,
 )
 
 /**
