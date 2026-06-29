@@ -121,12 +121,16 @@ internal class QonversionInternal(
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
 
         // RedemptionManager has no DI dependencies of its own beyond Api +
-        // InternalConfig + Logger + the identify entrypoint, so we instantiate
-        // it here rather than adding another DI module just for one class.
+        // InternalConfig + Logger + a persistent cache + the refresh entrypoint,
+        // so we instantiate it here rather than adding another DI module just
+        // for one class.
         redemptionManager = RedemptionManager(
             api = QDependencyInjector.appComponent.api(),
             internalConfig = internalConfig,
             logger = logger,
+            // Persists per-token Idempotency-Keys so redeem dedup survives a
+            // cold-start (not just an in-process retry).
+            cache = sharedPreferencesCache,
             // Grant-first redeem: no identify/merge. After a successful redeem
             // the server has already granted the entitlement to app_uid, so we
             // re-launch with ActualizePermissions to pull the fresh entitlement

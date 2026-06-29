@@ -11,7 +11,10 @@ import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.enqueue
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.storage.Cache
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import java.security.MessageDigest
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -39,6 +42,9 @@ internal class RedemptionManager(
     private val api: Api,
     private val internalConfig: InternalConfig,
     private val logger: Logger,
+    // Persistent store for per-token Idempotency-Keys so dedup survives a
+    // cold-start, not just an in-process retry (see [idempotencyKeyForToken]).
+    private val cache: Cache,
     private val refreshEntitlements: () -> Unit,
 ) {
 
@@ -103,7 +109,14 @@ internal class RedemptionManager(
             appUid = appUid,
         )
 
-        api.redeem(request).enqueue {
+        // One Idempotency-Key (UUIDv4) per *logical* redeem — not per HTTP
+        // attempt (parity with iOS). The same key is sent on the redeem POST and
+        // any 409→/status recovery call. Persisted per token so a redeem retried
+        // after the app was killed/relaunched reuses the same key and the backend
+        // can still dedup — i.e. dedup survives cold-start, not just in-process.
+        val idempotencyKey = idempotencyKeyForToken(token)
+
+        api.redeem(request, idempotencyKey).enqueue {
             onResponse = { response ->
                 when {
                     response.isSuccessful -> {
@@ -123,7 +136,8 @@ internal class RedemptionManager(
                     }
                     response.code() == HTTP_CONFLICT -> {
                         // Disambiguate consumed vs other 409 via /redeem/status.
-                        resolveConflict(token, callback)
+                        // Same logical redeem → reuse the same Idempotency-Key.
+                        resolveConflict(token, idempotencyKey, callback)
                     }
                     response.code() == HTTP_NOT_FOUND -> {
                         deliver(callback, RedemptionResult.InvalidToken)
@@ -157,7 +171,8 @@ internal class RedemptionManager(
      * the [ReissueResult] cases used by the dialog UI to render the right hint.
      */
     fun requestReissue(email: String, callback: (ReissueResult) -> Unit) {
-        api.redeemReissue(RedeemReissueRequest(email)).enqueue {
+        // Reissue is its own logical operation → its own fresh Idempotency-Key.
+        api.redeemReissue(RedeemReissueRequest(email), UUID.randomUUID().toString()).enqueue {
             onResponse = { response ->
                 val mapped = when {
                     response.isSuccessful -> ReissueResult.Sent
@@ -174,8 +189,12 @@ internal class RedemptionManager(
         }
     }
 
-    private fun resolveConflict(token: String, callback: QonversionRedemptionCallback) {
-        api.redeemStatus(RedeemStatusRequest(token)).enqueue {
+    private fun resolveConflict(
+        token: String,
+        idempotencyKey: String,
+        callback: QonversionRedemptionCallback,
+    ) {
+        api.redeemStatus(RedeemStatusRequest(token), idempotencyKey).enqueue {
             onResponse = { response ->
                 val body = response.body()
                 val result = when {
@@ -226,6 +245,29 @@ internal class RedemptionManager(
         return token?.takeIf { it.isNotBlank() }
     }
 
+    /**
+     * Returns a stable Idempotency-Key for the logical redeem of [token],
+     * generating and persisting a fresh UUID the first time and reusing it on
+     * any later attempt for the same token — so dedup survives a cold-start, not
+     * just an in-process retry.
+     *
+     * The token itself is a secret carried in the email link; we never persist
+     * it in clear. The cache entry is keyed by a SHA-256 of the token so the
+     * raw token never lands on disk while still keying by token identity.
+     */
+    private fun idempotencyKeyForToken(token: String): String {
+        val cacheKey = IDEMPOTENCY_KEY_PREFIX + sha256(token)
+        cache.getString(cacheKey, null)?.takeIf { it.isNotBlank() }?.let { return it }
+        val key = UUID.randomUUID().toString()
+        cache.putString(cacheKey, key)
+        return key
+    }
+
+    private fun sha256(value: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(value.toByteArray(Charsets.UTF_8))
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
     private fun deliver(callback: QonversionRedemptionCallback, result: RedemptionResult) {
         // Terminal point of a redemption — release the in-flight guard so a
         // later, legitimate redemption can proceed. Safe no-op when the guard
@@ -270,5 +312,7 @@ internal class RedemptionManager(
         // Canonical App Link host. Token transport is pinned to this host so a
         // foreign https host can't exfiltrate the redemption token.
         const val REDEEM_HOST = "screens.qonversion.io"
+        // Prefix for the persisted per-token Idempotency-Key entries.
+        const val IDEMPOTENCY_KEY_PREFIX = "com.qonversion.web2app.redeem.idempotency."
     }
 }

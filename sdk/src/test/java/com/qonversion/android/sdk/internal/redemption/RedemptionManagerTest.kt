@@ -10,7 +10,9 @@ import com.qonversion.android.sdk.internal.dto.redemption.RedeemStatusResponse
 import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.logger.Logger
+import com.qonversion.android.sdk.internal.storage.Cache
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -57,18 +59,28 @@ internal class RedemptionManagerTest {
 
     private lateinit var manager: RedemptionManager
 
+    /**
+     * In-memory [Cache] standing in for the SDK's SharedPreferences-backed
+     * cache. Persists across [RedemptionManager] instances within a test so we
+     * can simulate a cold-start (new manager, same backing store) for the
+     * Idempotency-Key dedup contract.
+     */
+    private lateinit var fakeCache: FakeCache
+
     @Before
     fun setUp() {
         clearAllMocks()
         api = mockk(relaxed = true)
         internalConfig = mockk(relaxed = true)
         logger = mockk(relaxed = true)
+        fakeCache = FakeCache()
         refreshCount = 0
         every { internalConfig.uid } returns "QON_anon_123"
         manager = RedemptionManager(
             api = api,
             internalConfig = internalConfig,
             logger = logger,
+            cache = fakeCache,
             refreshEntitlements = { refreshCount++ },
         )
     }
@@ -77,7 +89,7 @@ internal class RedemptionManagerTest {
     fun `handleRedemptionLink parses token from valid Uri and posts request`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj_abc/tok_xyz")
         val captured = slot<RedeemRequest>()
-        every { api.redeem(capture(captured)) } returns
+        every { api.redeem(capture(captured), any()) } returns
             alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
@@ -143,7 +155,7 @@ internal class RedemptionManagerTest {
         assertEquals(RedemptionResult.InvalidToken, callback.received)
         // Load-bearing security assertion: the token must NEVER leak over the
         // wire when the scheme is rejected.
-        verify(exactly = 0) { api.redeem(any()) }
+        verify(exactly = 0) { api.redeem(any(), any()) }
         assertEquals(0, refreshCount)
     }
 
@@ -163,14 +175,14 @@ internal class RedemptionManagerTest {
         assertEquals(RedemptionResult.InvalidToken, callback.received)
         // Load-bearing security assertion: the token must NEVER leak over the
         // wire when the host is not the canonical App Link host.
-        verify(exactly = 0) { api.redeem(any()) }
+        verify(exactly = 0) { api.redeem(any(), any()) }
         assertEquals(0, refreshCount)
     }
 
     @Test
     fun `handleRedemptionLink accepts canonical host case-insensitively`() {
         val uri = Uri.parse("https://SCREENS.QONVERSION.IO/r/proj/tok_case")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+        every { api.redeem(any(), any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -178,7 +190,7 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         assertEquals(RedemptionResult.Success, callback.received)
-        verify(exactly = 1) { api.redeem(any()) }
+        verify(exactly = 1) { api.redeem(any(), any()) }
     }
 
     @Test
@@ -187,7 +199,7 @@ internal class RedemptionManagerTest {
         // A call that never invokes its callback — keeps the redemption
         // in-flight so the second tap collides with the first.
         val pending = pendingCall<RedeemResponse>()
-        every { api.redeem(any()) } returns pending
+        every { api.redeem(any(), any()) } returns pending
 
         manager.handleRedemptionLink(uri, RecordingCallback())
         // Second tap (e.g. onCreate + onNewIntent, or a fast double tap) for the
@@ -197,13 +209,13 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         // Only ONE network request must have been issued for the same token.
-        verify(exactly = 1) { api.redeem(any()) }
+        verify(exactly = 1) { api.redeem(any(), any()) }
     }
 
     @Test
     fun `handleRedemptionLink allows a fresh redemption after the previous one terminates`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_again")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+        every { api.redeem(any(), any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         manager.handleRedemptionLink(uri, RecordingCallback())
         flushMainLooper()
@@ -211,7 +223,7 @@ internal class RedemptionManagerTest {
         manager.handleRedemptionLink(uri, RecordingCallback())
         flushMainLooper()
 
-        verify(exactly = 2) { api.redeem(any()) }
+        verify(exactly = 2) { api.redeem(any(), any()) }
     }
 
     @Test
@@ -225,7 +237,7 @@ internal class RedemptionManagerTest {
 
         assertEquals(RedemptionResult.InvalidToken, callback.received)
         // Should never have hit the network for a malformed Uri.
-        verify(exactly = 0) { api.redeem(any()) }
+        verify(exactly = 0) { api.redeem(any(), any()) }
         // No identify should have been triggered either.
         assertEquals(0, refreshCount)
     }
@@ -240,13 +252,13 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         assertEquals(RedemptionResult.InvalidToken, callback.received)
-        verify(exactly = 0) { api.redeem(any()) }
+        verify(exactly = 0) { api.redeem(any(), any()) }
     }
 
     @Test
     fun `handleRedemptionLink maps 200 to Success and triggers entitlements refresh`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_ok")
-        every { api.redeem(any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+        every { api.redeem(any(), any()) } returns alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -260,9 +272,9 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink maps 409 with consumed=true to AlreadyConsumed`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_used")
-        every { api.redeem(any()) } returns alwaysErrorCall(409)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(409)
         val statusCaptured = slot<RedeemStatusRequest>()
-        every { api.redeemStatus(capture(statusCaptured)) } returns
+        every { api.redeemStatus(capture(statusCaptured), any()) } returns
             alwaysSuccessCall(RedeemStatusResponse(consumed = true, expired = false))
 
         val callback = RecordingCallback()
@@ -280,7 +292,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink maps 404 to InvalidToken`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_404")
-        every { api.redeem(any()) } returns alwaysErrorCall(404)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(404)
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -293,7 +305,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink maps 410 to TokenExpired`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_expired")
-        every { api.redeem(any()) } returns alwaysErrorCall(410)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(410)
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -309,7 +321,7 @@ internal class RedemptionManagerTest {
         // the client to back off — surfacing NetworkError would show a wrong
         // "no internet" UX. Must be Retryable.
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_429")
-        every { api.redeem(any()) } returns alwaysErrorCall(429)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(429)
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -322,7 +334,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink maps 503 server error to Retryable (not NetworkError)`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_503")
-        every { api.redeem(any()) } returns alwaysErrorCall(503)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(503)
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -335,7 +347,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `handleRedemptionLink maps 401 auth error to Retryable (not NetworkError)`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_401")
-        every { api.redeem(any()) } returns alwaysErrorCall(401)
+        every { api.redeem(any(), any()) } returns alwaysErrorCall(401)
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -360,7 +372,7 @@ internal class RedemptionManagerTest {
         flushMainLooper()
 
         assertEquals(RedemptionResult.Retryable, callback.received)
-        verify(exactly = 0) { api.redeem(any()) }
+        verify(exactly = 0) { api.redeem(any(), any()) }
         assertEquals(0, refreshCount)
     }
 
@@ -371,7 +383,7 @@ internal class RedemptionManagerTest {
         // being invoked, while the first redemption keeps running unaffected.
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_busy")
         val pending = pendingCall<RedeemResponse>()
-        every { api.redeem(any()) } returns pending
+        every { api.redeem(any(), any()) } returns pending
 
         val first = RecordingCallback()
         val second = RecordingCallback()
@@ -384,13 +396,13 @@ internal class RedemptionManagerTest {
         assertNull(first.received)
         assertEquals(RedemptionResult.Retryable, second.received)
         // Still only one network request — the guard held.
-        verify(exactly = 1) { api.redeem(any()) }
+        verify(exactly = 1) { api.redeem(any(), any()) }
     }
 
     @Test
     fun `handleRedemptionLink maps network failure to NetworkError`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_neterr")
-        every { api.redeem(any()) } returns alwaysNetworkFailureCall()
+        every { api.redeem(any(), any()) } returns alwaysNetworkFailureCall()
 
         val callback = RecordingCallback()
         manager.handleRedemptionLink(uri, callback)
@@ -418,7 +430,7 @@ internal class RedemptionManagerTest {
     @Test
     fun `RT5-N2 contract — success path triggers entitlements refresh exactly once and never identifies`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_contract")
-        every { api.redeem(any()) } returns
+        every { api.redeem(any(), any()) } returns
             alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
 
         manager.handleRedemptionLink(uri, RecordingCallback())
@@ -427,7 +439,97 @@ internal class RedemptionManagerTest {
         assertEquals(1, refreshCount)
     }
 
+    @Test
+    fun `redeem sends an Idempotency-Key header and reuses the same key across cold-start (per token)`() {
+        // #7 parity with iOS + cold-start hardening: each logical redeem carries
+        // an Idempotency-Key. On Android the key is PERSISTED per token so a
+        // redeem retried after the app was killed/relaunched reuses the same key
+        // and the backend can still dedup — i.e. dedup survives cold-start.
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_idem")
+        val firstKey = slot<String>()
+        every { api.redeem(any(), capture(firstKey)) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+
+        manager.handleRedemptionLink(uri, RecordingCallback())
+        flushMainLooper()
+
+        assertTrue("Idempotency-Key must be sent", firstKey.isCaptured && firstKey.captured.isNotBlank())
+        val keyFromFirstRun = firstKey.captured
+
+        // Simulate a cold-start: brand new manager, SAME backing cache.
+        val coldStartManager = RedemptionManager(
+            api = api,
+            internalConfig = internalConfig,
+            logger = logger,
+            cache = fakeCache,
+            refreshEntitlements = { refreshCount++ },
+        )
+        val secondKey = slot<String>()
+        every { api.redeem(any(), capture(secondKey)) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+
+        coldStartManager.handleRedemptionLink(uri, RecordingCallback())
+        flushMainLooper()
+
+        assertEquals(
+            "same token must reuse the persisted Idempotency-Key across cold-start",
+            keyFromFirstRun,
+            secondKey.captured,
+        )
+    }
+
+    @Test
+    fun `redeem uses a distinct Idempotency-Key per distinct token`() {
+        val keyA = slot<String>()
+        every { api.redeem(any(), capture(keyA)) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+        manager.handleRedemptionLink(Uri.parse("https://screens.qonversion.io/r/proj/tok_A"), RecordingCallback())
+        flushMainLooper()
+
+        val keyB = slot<String>()
+        every { api.redeem(any(), capture(keyB)) } returns
+            alwaysSuccessCall(RedeemResponse(redeemed = true, appUid = "QON_anon_123"))
+        manager.handleRedemptionLink(Uri.parse("https://screens.qonversion.io/r/proj/tok_B"), RecordingCallback())
+        flushMainLooper()
+
+        assertTrue("distinct tokens must get distinct keys", keyA.captured != keyB.captured)
+    }
+
+    @Test
+    fun `409 recovery reuses the same Idempotency-Key as the redeem POST`() {
+        // Same logical redeem → the /status recovery call must carry the same key.
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_409idem")
+        val redeemKey = slot<String>()
+        every { api.redeem(any(), capture(redeemKey)) } returns alwaysErrorCall(409)
+        val statusKey = slot<String>()
+        every { api.redeemStatus(any(), capture(statusKey)) } returns
+            alwaysSuccessCall(RedeemStatusResponse(consumed = true, expired = false))
+
+        manager.handleRedemptionLink(uri, RecordingCallback())
+        flushMainLooper()
+
+        assertEquals(redeemKey.captured, statusKey.captured)
+    }
+
     // --- Helpers ---------------------------------------------------------
+
+    /** In-memory [Cache]; only the string ops are exercised by the manager. */
+    private class FakeCache : Cache {
+        private val strings = mutableMapOf<String, String?>()
+        override fun putString(key: String, value: String?) { strings[key] = value }
+        override fun getString(key: String, defValue: String?): String? = strings.getOrDefault(key, defValue)
+        override fun remove(key: String) { strings.remove(key) }
+        override fun putInt(key: String, value: Int) = error("unused")
+        override fun getInt(key: String, defValue: Int): Int = error("unused")
+        override fun getBool(key: String, defValue: Boolean): Boolean = error("unused")
+        override fun putBool(key: String, value: Boolean) = error("unused")
+        override fun putFloat(key: String, value: Float) = error("unused")
+        override fun getFloat(key: String, defValue: Float): Float = error("unused")
+        override fun putLong(key: String, value: Long) = error("unused")
+        override fun getLong(key: String, defValue: Long): Long = error("unused")
+        override fun <T> putObject(key: String, value: T, adapter: JsonAdapter<T>) = error("unused")
+        override fun <T> getObject(key: String, adapter: JsonAdapter<T>): T? = error("unused")
+    }
 
     private class RecordingCallback : QonversionRedemptionCallback {
         var received: RedemptionResult? = null
