@@ -150,18 +150,19 @@ private fun handleRedemptionIntent(intent: Intent?) {
         override fun onResult(result: RedemptionResult) {
             // Delivered once on the main thread.
             when (result) {
-                RedemptionResult.Success -> { /* entitlements merged into current user */ }
+                RedemptionResult.Success -> { /* entitlement granted — refresh the UI */ }
                 RedemptionResult.AlreadyConsumed,
                 RedemptionResult.TokenExpired -> { /* offer the reissue dialog */ }
-                RedemptionResult.InvalidToken,
-                RedemptionResult.NetworkError -> { /* show an error / retry */ }
+                RedemptionResult.InvalidToken -> { /* show an error */ }
+                RedemptionResult.NetworkError,
+                RedemptionResult.Retryable -> { /* offline / server asked to back off — retry later */ }
             }
         }
     })
 }
 ```
 
-On `RedemptionResult.Success` the SDK transparently calls `identify` with the user id returned by the backend, merging the current anonymous session with the purchasing account. Do **not** log or display the full redemption `Uri` — it carries a single-use token.
+On `RedemptionResult.Success` the entitlement has **already** been granted server-side (grant-first) and attached to the SDK user. The SDK does **not** call `identify`/merge — it only refreshes entitlements, so your next `checkEntitlements` reflects the new state. (You therefore do not need to add an `identify` call yourself.) Do **not** log or display the full redemption `Uri` — it carries a single-use token.
 
 ### 4. Let users request a new link (`presentReissueUI`)
 

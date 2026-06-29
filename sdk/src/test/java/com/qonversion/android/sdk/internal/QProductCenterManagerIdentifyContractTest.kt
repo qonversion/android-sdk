@@ -23,21 +23,23 @@ import org.robolectric.annotation.Config
 import java.util.Date
 
 /**
- * Web 2 App M1 [RT5-N2] — contract tests for [QProductCenterManager.identify].
+ * Contract tests for [QProductCenterManager.identify].
  *
- * The /v4/web/redeem/status recovery UX (DEV-845, plan §"POST
- * /v4/web/redeem/status") relies on `Qonversion.identify(userID:)`
- * triggering a fresh entitlement fetch via the merged identity. The
- * SDK currently honours this implicitly: when the new identity differs
- * from the current user id, [QProductCenterManager.processIdentity]
- * calls `launchResultCache.clearPermissionsCache()` followed by
- * `launch(RequestTrigger.Identify)`.
+ * NOTE — these are NOT Web2App redemption tests. Web2App redemption is
+ * grant-first: the entitlement is granted server-side to `app_uid` and the SDK
+ * only refreshes entitlements (`launch(ActualizePermissions)`); it does NOT
+ * call `identify`/merge. That path is covered by `RedemptionManagerTest`
+ * (`RT5-N2 contract — success path triggers entitlements refresh ... and never
+ * identifies`). These tests instead pin the behaviour of the general public
+ * `identify(userID:)` API, which is unrelated to redemption.
  *
- * If a future SDK change defers or skips the launch step (e.g.,
- * lazy-fetch on next checkEntitlements call), the web→app recovery
- * flow silently breaks — the user signs in but the server-side
- * entitlement never reaches the host app. These tests pin the
- * contract so any regression fails CI.
+ * The contract: when the new identity differs from the current user id,
+ * [QProductCenterManager.processIdentity] calls
+ * `launchResultCache.clearPermissionsCache()` followed by
+ * `launch(RequestTrigger.Identify)`. If a future SDK change defers or skips the
+ * launch step (e.g. lazy-fetch on next checkEntitlements call), a user who
+ * identifies signs in but the server-side entitlement never reaches the host
+ * app. These tests pin the contract so any regression fails CI.
  *
  * Source of truth — Android: QProductCenterManager.kt:221-257.
  * Symmetric iOS contract test lives in:
@@ -104,16 +106,15 @@ internal class QProductCenterManagerIdentifyContractTest {
     }
 
     /**
-     * RT5-N2 happy path — different identity successfully linked: the
-     * SDK MUST clear the cached permissions AND issue a fresh launch
-     * with `RequestTrigger.Identify`. This is the wire that the web→app
-     * recovery UX depends on.
+     * Happy path — different identity successfully linked: the SDK MUST clear
+     * the cached permissions AND issue a fresh launch with
+     * `RequestTrigger.Identify`, so the newly identified user's entitlements are
+     * fetched rather than served stale from the previous user's cache.
      *
-     * If this test starts failing because someone moved the
-     * clear+launch to a lazy code path, see the [RT5-N2] note in
-     * plan §"SDK contract dependency" — the host app integration
-     * docs MUST then add an explicit `Qonversion.checkEntitlements()`
-     * call after `identify()` returns success.
+     * If this test starts failing because someone moved the clear+launch to a
+     * lazy code path, host apps that rely on `identify()` refreshing
+     * entitlements would need to add an explicit `Qonversion.checkEntitlements()`
+     * after `identify()` returns success.
      */
     @Test
     fun `identify with different uid clears cache and re-launches with Identify trigger`() {

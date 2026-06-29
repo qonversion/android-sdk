@@ -6,6 +6,7 @@ import android.os.Looper
 import com.qonversion.android.sdk.dto.redemption.RedemptionResult
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
+import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
 import com.qonversion.android.sdk.internal.dto.request.RedeemReissueRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
@@ -16,6 +17,7 @@ import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
 import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
+import retrofit2.Response
 
 /**
  * Coordinates Web2App redemption: parses the email App Link, calls
@@ -63,10 +65,10 @@ internal class RedemptionManager(
      * POSTs `/v4/web/redeem`, and invokes [callback] on the main thread with the
      * terminal [RedemptionResult]. See [RedemptionResult] for case semantics.
      */
-    // The post-redeem entitlements refresh is best-effort: any failure there
-    // must not fail the already-successful redeem, so we intentionally catch
-    // broadly and only log.
-    @Suppress("TooGenericExceptionCaught")
+    // Sequential precondition guard clauses (token, app_uid, in-flight) read
+    // clearer as early returns than nested conditionals; exceeds detekt's
+    // default ReturnCount of 2 by design.
+    @Suppress("ReturnCount")
     fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback) {
         val token = extractToken(uri)
         if (token == null) {
@@ -118,50 +120,61 @@ internal class RedemptionManager(
 
         api.redeem(request, idempotencyKey).enqueue {
             onResponse = { response ->
-                when {
-                    response.isSuccessful -> {
-                        // Grant-first: the server already attached the entitlement
-                        // to app_uid. We do NOT identify/merge a client user id;
-                        // we only refresh entitlements so the grant shows up on
-                        // this device. Best-effort — refresh failure must not fail
-                        // the already-successful redeem.
-                        try {
-                            refreshEntitlements()
-                        } catch (t: Throwable) {
-                            logger.error(
-                                "RedemptionManager: entitlements refresh after redeem threw: $t"
-                            )
-                        }
-                        deliver(callback, RedemptionResult.Success)
-                    }
-                    response.code() == HTTP_CONFLICT -> {
-                        // Disambiguate consumed vs other 409 via /redeem/status.
-                        // Same logical redeem → reuse the same Idempotency-Key.
-                        resolveConflict(token, idempotencyKey, callback)
-                    }
-                    response.code() == HTTP_NOT_FOUND -> {
-                        deliver(callback, RedemptionResult.InvalidToken)
-                    }
-                    response.code() == HTTP_GONE -> {
-                        deliver(callback, RedemptionResult.TokenExpired)
-                    }
-                    else -> {
-                        // 429 (rate limit), 5xx (server error) and any other
-                        // non-mapped 4xx (401/403/etc.): the server was reachable
-                        // and responded, so this is NOT a "no network" condition.
-                        // Surface Retryable (parity with iOS) so the host shows a
-                        // back-off/retry affordance, not a misleading offline error.
-                        logger.error(
-                            "RedemptionManager: redeem reachable but non-success ${response.code()} — " +
-                                "treating as Retryable."
-                        )
-                        deliver(callback, RedemptionResult.Retryable)
-                    }
-                }
+                onRedeemResponse(response, token, idempotencyKey, callback)
             }
             onFailure = { t ->
                 logger.error("RedemptionManager: redeem network failure: $t")
                 deliver(callback, RedemptionResult.NetworkError)
+            }
+        }
+    }
+
+    // The post-redeem entitlements refresh is best-effort: any failure there
+    // must not fail the already-successful redeem, so we intentionally catch
+    // broadly and only log.
+    @Suppress("TooGenericExceptionCaught")
+    private fun onRedeemResponse(
+        response: Response<RedeemResponse>,
+        token: String,
+        idempotencyKey: String,
+        callback: QonversionRedemptionCallback,
+    ) {
+        when {
+            response.isSuccessful -> {
+                // Grant-first: the server already attached the entitlement to
+                // app_uid. We do NOT identify/merge a client user id; we only
+                // refresh entitlements so the grant shows up on this device.
+                // Best-effort — refresh failure must not fail the already-
+                // successful redeem.
+                try {
+                    refreshEntitlements()
+                } catch (t: Throwable) {
+                    logger.error("RedemptionManager: entitlements refresh after redeem threw: $t")
+                }
+                deliver(callback, RedemptionResult.Success)
+            }
+            response.code() == HTTP_CONFLICT -> {
+                // Disambiguate consumed vs other 409 via /redeem/status. Same
+                // logical redeem → reuse the same Idempotency-Key.
+                resolveConflict(token, idempotencyKey, callback)
+            }
+            response.code() == HTTP_NOT_FOUND -> {
+                deliver(callback, RedemptionResult.InvalidToken)
+            }
+            response.code() == HTTP_GONE -> {
+                deliver(callback, RedemptionResult.TokenExpired)
+            }
+            else -> {
+                // 429 (rate limit), 5xx (server error) and any other non-mapped
+                // 4xx (401/403/etc.): the server was reachable and responded, so
+                // this is NOT a "no network" condition. Surface Retryable
+                // (parity with iOS) so the host shows a back-off/retry
+                // affordance, not a misleading offline error.
+                logger.error(
+                    "RedemptionManager: redeem reachable but non-success ${response.code()} — " +
+                        "treating as Retryable."
+                )
+                deliver(callback, RedemptionResult.Retryable)
             }
         }
     }

@@ -78,9 +78,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleRedemptionIntent(intent: Intent?) {
         val uri: Uri = intent?.data ?: return
-        // Accept the App Link host AND a few common local-testing aliases so
-        // adb-fired intents work the same as production email links.
-        val ok = uri.scheme in setOf("https", "http", "qonversion") &&
+        // Accept ONLY the verified https App Link on the canonical host. Any
+        // installed app can claim a custom (`qonversion://`) scheme — or a plain
+        // `http`/foreign-host link — and hijack the single-use redemption token,
+        // so reference code must not whitelist those. (The SDK also re-checks
+        // scheme + host before any network call; this is defense-in-depth.)
+        val ok = uri.scheme.equals("https", ignoreCase = true) &&
+                uri.host.equals("screens.qonversion.io", ignoreCase = true) &&
                 uri.pathSegments.firstOrNull() == "r"
         if (!ok) {
             return
