@@ -3,6 +3,8 @@ package com.qonversion.android.sdk.internal
 import android.os.Build
 import android.os.Looper
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
@@ -64,6 +66,25 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `loadRemoteConfig from a background thread defers the loadingStates mutation to the main thread`() {
+        // given - the user is not stable, so loadRemoteConfig registers a new loading state
+        every { mockUserStateProvider.isUserStable } returns false
+
+        // when - invoked from a non-main thread with a not-yet-cached context key
+        val backgroundThread = Thread { manager.loadRemoteConfig("ctx", null) }
+        backgroundThread.start()
+        backgroundThread.join()
+
+        // then - the map mutation was posted to the main looper, not applied on the
+        // background thread
+        assertEquals(0, loadingStates().size)
+
+        // and once the main looper runs, the loading state is registered on the main thread
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, loadingStates().size)
+    }
+
+    @Test
     fun `handlePendingRequests does not throw when a handled request re-enqueues itself`() {
         // given - three pending list requests queued while the user was not stable
         every { mockUserStateProvider.isUserStable } returns false
@@ -117,6 +138,41 @@ internal class QRemoteConfigManagerTest {
         try {
             repeat(iterations) {
                 manager.handlePendingRequests()
+                mainLooper.idle()
+            }
+        } catch (t: Throwable) {
+            errors.add(t)
+        }
+        adder.join()
+        mainLooper.idle()
+
+        assertTrue("Concurrent access threw: $errors", errors.isEmpty())
+    }
+
+    @Test
+    fun `concurrent loadRemoteConfig and userChangingRequestFailedWithError do not throw`() {
+        // Guards the loadingStates MAP race: userChangingRequestFailedWithError iterates
+        // loadingStates.keys on the main thread while loadRemoteConfig registers brand-new
+        // keys. Confinement serialises both onto the main thread, so the structural
+        // modification can no longer collide with the iteration.
+        every { mockUserStateProvider.isUserStable } returns false
+        val error = QonversionError(QonversionErrorCode.Unknown)
+        val errors = Collections.synchronizedList(mutableListOf<Throwable>())
+        val iterations = 1_000
+
+        val adder = Thread {
+            try {
+                repeat(iterations) { i -> manager.loadRemoteConfig("ctx_$i", null) }
+            } catch (t: Throwable) {
+                errors.add(t)
+            }
+        }
+
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        adder.start()
+        try {
+            repeat(iterations) {
+                manager.userChangingRequestFailedWithError(error)
                 mainLooper.idle()
             }
         } catch (t: Throwable) {
