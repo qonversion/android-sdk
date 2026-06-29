@@ -3,6 +3,7 @@ package com.qonversion.android.sdk.internal
 import android.os.Build
 import android.os.Looper
 import com.qonversion.android.sdk.dto.QRemoteConfig
+import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.getPrivateField
@@ -13,7 +14,6 @@ import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import io.mockk.Called
 import io.mockk.clearAllMocks
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
@@ -31,7 +31,7 @@ import java.util.Collections
 internal class QRemoteConfigManagerTest {
     private val mockRemoteConfigService = mockk<QRemoteConfigService>(relaxed = true)
     private val mockFallbacksService = mockk<QFallbacksService>(relaxed = true)
-    private val mockUserStateProvider = mockk<UserStateProvider>(relaxed = true)
+    private val userStateProvider = FakeUserStateProvider()
     private val mockUserPropertiesManager = mockk<QUserPropertiesManager>(relaxed = true)
 
     private lateinit var manager: QRemoteConfigManager
@@ -41,14 +41,14 @@ internal class QRemoteConfigManagerTest {
         clearAllMocks()
 
         manager = QRemoteConfigManager(mockRemoteConfigService, mockFallbacksService)
-        manager.userStateProvider = mockUserStateProvider
+        manager.userStateProvider = userStateProvider
         manager.userPropertiesManager = mockUserPropertiesManager
     }
 
     @Test
     fun `loadRemoteConfigList from a background thread defers the listRequests mutation to the main thread`() {
         // given - the user is not stable, so loadRemoteConfigList enqueues the request
-        every { mockUserStateProvider.isUserStable } returns false
+        userStateProvider.stable = false
         val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
 
         // when - invoked from a non-main thread
@@ -68,7 +68,7 @@ internal class QRemoteConfigManagerTest {
     @Test
     fun `loadRemoteConfig from a background thread defers the loadingStates mutation to the main thread`() {
         // given - the user is not stable, so loadRemoteConfig registers a new loading state
-        every { mockUserStateProvider.isUserStable } returns false
+        userStateProvider.stable = false
 
         // when - invoked from a non-main thread with a not-yet-cached context key
         val backgroundThread = Thread { manager.loadRemoteConfig("ctx", null) }
@@ -87,7 +87,7 @@ internal class QRemoteConfigManagerTest {
     @Test
     fun `handlePendingRequests does not throw when a handled request re-enqueues itself`() {
         // given - three pending list requests queued while the user was not stable
-        every { mockUserStateProvider.isUserStable } returns false
+        userStateProvider.stable = false
         repeat(3) { manager.loadRemoteConfigList(mockk(relaxed = true)) }
         assertEquals(3, listRequests().size)
 
@@ -102,13 +102,13 @@ internal class QRemoteConfigManagerTest {
     @Test
     fun `handlePendingRequests clears the pending list requests after handling them`() {
         // given - two pending list requests queued while the user was not stable
-        every { mockUserStateProvider.isUserStable } returns false
+        userStateProvider.stable = false
         manager.loadRemoteConfigList(mockk(relaxed = true))
         manager.loadRemoteConfigList(listOf("ctx"), false, mockk(relaxed = true))
         assertEquals(2, listRequests().size)
 
         // when - the user becomes stable and the pending requests are handled
-        every { mockUserStateProvider.isUserStable } returns true
+        userStateProvider.stable = true
         manager.handlePendingRequests()
 
         // then - nothing stale lingers to be re-issued on the next launch
@@ -120,8 +120,12 @@ internal class QRemoteConfigManagerTest {
         // Reproduces SUP3-188: a caller thread adds to listRequests while the main thread
         // iterates it in handlePendingRequests. Main-thread confinement serialises both
         // onto the main thread, so the ConcurrentModificationException can no longer occur.
-        every { mockUserStateProvider.isUserStable } returns false
-        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        userStateProvider.stable = false
+        // Hand-written no-op callback keeps the concurrent hot loop free of mockk proxies.
+        val callback = object : QonversionRemoteConfigListCallback {
+            override fun onSuccess(remoteConfigList: QRemoteConfigList) {}
+            override fun onError(error: QonversionError) {}
+        }
         val errors = Collections.synchronizedList(mutableListOf<Throwable>())
         val iterations = 1_000
 
@@ -155,7 +159,7 @@ internal class QRemoteConfigManagerTest {
         // loadingStates.keys on the main thread while loadRemoteConfig registers brand-new
         // keys. Confinement serialises both onto the main thread, so the structural
         // modification can no longer collide with the iteration.
-        every { mockUserStateProvider.isUserStable } returns false
+        userStateProvider.stable = false
         val error = QonversionError(QonversionErrorCode.Unknown)
         val errors = Collections.synchronizedList(mutableListOf<Throwable>())
         val iterations = 1_000
@@ -187,7 +191,7 @@ internal class QRemoteConfigManagerTest {
     @Test
     fun `loadRemoteConfig returns a cached config synchronously on the main thread`() {
         // given - a previously loaded config for the empty context key, user is stable
-        every { mockUserStateProvider.isUserStable } returns true
+        userStateProvider.stable = true
         val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
         loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = cachedConfig)
         val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
@@ -203,7 +207,7 @@ internal class QRemoteConfigManagerTest {
     @Test
     fun `loadRemoteConfigList returns cached configs synchronously on the main thread`() {
         // given - a cached config for the requested context key, user is stable
-        every { mockUserStateProvider.isUserStable } returns true
+        userStateProvider.stable = true
         val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
         loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = cachedConfig)
         val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
@@ -221,4 +225,14 @@ internal class QRemoteConfigManagerTest {
 
     private fun loadingStates() =
         manager.getPrivateField<MutableMap<String?, QRemoteConfigManager.LoadingState>>("loadingStates")
+
+    // Hand-written fake instead of a mockk: isUserStable is read thousands of times inside
+    // the concurrent stress loops, and driving a mockk proxy at that volume trips a
+    // byte-buddy instrumentation assertion under the CI JDK. A plain object keeps the hot
+    // path mock-free.
+    private class FakeUserStateProvider : UserStateProvider {
+        @Volatile
+        var stable: Boolean = false
+        override val isUserStable: Boolean get() = stable
+    }
 }
