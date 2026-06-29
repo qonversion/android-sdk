@@ -400,6 +400,37 @@ internal class RedemptionManagerTest {
     }
 
     @Test
+    fun `a rejected link arriving mid-flight must not release the in-flight redemption's guard`() {
+        // Regression (#2/#6 interaction): a call rejected BEFORE acquiring the
+        // guard (here: a malformed/untrusted Uri) must reject without touching
+        // inFlightToken. If it incorrectly routed through deliver() it would
+        // reset the guard of the redemption already running, letting a later
+        // valid link fire a SECOND POST / second refresh on the same device.
+        val valid = Uri.parse("https://screens.qonversion.io/r/proj/tok_busy")
+        every { api.redeem(any(), any()) } returns pendingCall<RedeemResponse>()
+
+        val first = RecordingCallback()
+        manager.handleRedemptionLink(valid, first) // acquires the guard, stays in flight
+
+        // A junk deep link arrives while the redeem is pending → rejected.
+        val malformed = Uri.parse("https://evil.example.com/not/a/redeem")
+        val intruder = RecordingCallback()
+        manager.handleRedemptionLink(malformed, intruder)
+        flushMainLooper()
+        assertEquals(RedemptionResult.InvalidToken, intruder.received)
+
+        // The guard must still be held: a subsequent VALID link is rejected
+        // Retryable and fires NO new network call.
+        val second = RecordingCallback()
+        manager.handleRedemptionLink(valid, second)
+        flushMainLooper()
+
+        assertNull(first.received)
+        assertEquals(RedemptionResult.Retryable, second.received)
+        verify(exactly = 1) { api.redeem(any(), any()) }
+    }
+
+    @Test
     fun `handleRedemptionLink maps network failure to NetworkError`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_neterr")
         every { api.redeem(any(), any()) } returns alwaysNetworkFailureCall()

@@ -78,7 +78,7 @@ internal class RedemptionManager(
                 "RedemptionManager: malformed or untrusted redemption Uri " +
                     "(scheme=${uri.scheme}, host=${uri.host}) — no valid token segment found."
             )
-            deliver(callback, RedemptionResult.InvalidToken)
+            rejectWithoutGuard(callback, RedemptionResult.InvalidToken)
             return
         }
 
@@ -90,19 +90,19 @@ internal class RedemptionManager(
         val appUid = internalConfig.uid.takeIf { it.isNotBlank() }
         if (appUid == null) {
             logger.error("RedemptionManager: no app_uid available yet — skipping redeem (retryable).")
-            deliver(callback, RedemptionResult.Retryable)
+            rejectWithoutGuard(callback, RedemptionResult.Retryable)
             return
         }
 
         // In-flight guard: if a redemption is already running, reject this call
         // so we don't fire a second POST / second refresh. CAS null -> token.
         // The callback MUST still fire (Retryable) — a silent drop here strands
-        // the host UI on an eternal spinner. Note we do NOT route this through
+        // the host UI on an eternal spinner — but via [rejectWithoutGuard], NOT
         // [deliver]: the guard belongs to the redemption already in flight and
         // must not be released by this rejected call.
         if (!inFlightToken.compareAndSet(null, token)) {
             logger.error("RedemptionManager: redemption already in flight — rejecting duplicate link as retryable.")
-            postToMainThread { callback.onResult(RedemptionResult.Retryable) }
+            rejectWithoutGuard(callback, RedemptionResult.Retryable)
             return
         }
 
@@ -282,10 +282,21 @@ internal class RedemptionManager(
     }
 
     private fun deliver(callback: QonversionRedemptionCallback, result: RedemptionResult) {
-        // Terminal point of a redemption — release the in-flight guard so a
-        // later, legitimate redemption can proceed. Safe no-op when the guard
-        // was never taken (e.g. malformed/untrusted Uri short-circuit).
+        // Terminal point of a redemption that HELD the in-flight guard — release
+        // it so a later, legitimate redemption can proceed. Only call this once
+        // the CAS in [handleRedemptionLink] succeeded; for calls that were
+        // rejected before acquiring the guard use [rejectWithoutGuard], otherwise
+        // this unconditional reset would free a *concurrent* redemption's guard.
         inFlightToken.set(null)
+        postToMainThread { callback.onResult(result) }
+    }
+
+    private fun rejectWithoutGuard(callback: QonversionRedemptionCallback, result: RedemptionResult) {
+        // Reject a call that never acquired the in-flight guard (malformed Uri,
+        // missing app_uid, or a duplicate link while another redeem is running).
+        // The callback MUST still fire so the host UI never strands on a spinner,
+        // but we must NOT touch [inFlightToken]: it belongs to whichever
+        // redemption currently holds it.
         postToMainThread { callback.onResult(result) }
     }
 
