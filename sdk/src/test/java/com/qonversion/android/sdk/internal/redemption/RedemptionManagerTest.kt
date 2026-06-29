@@ -304,6 +304,90 @@ internal class RedemptionManagerTest {
     }
 
     @Test
+    fun `handleRedemptionLink maps 429 rate limit to Retryable (not NetworkError)`() {
+        // #1 parity with iOS: a live 429 means the server is reachable and asked
+        // the client to back off — surfacing NetworkError would show a wrong
+        // "no internet" UX. Must be Retryable.
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_429")
+        every { api.redeem(any()) } returns alwaysErrorCall(429)
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.Retryable, callback.received)
+    }
+
+    @Test
+    fun `handleRedemptionLink maps 503 server error to Retryable (not NetworkError)`() {
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_503")
+        every { api.redeem(any()) } returns alwaysErrorCall(503)
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.Retryable, callback.received)
+    }
+
+    @Test
+    fun `handleRedemptionLink maps 401 auth error to Retryable (not NetworkError)`() {
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_401")
+        every { api.redeem(any()) } returns alwaysErrorCall(401)
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.Retryable, callback.received)
+    }
+
+    @Test
+    fun `handleRedemptionLink with blank app_uid returns Retryable WITHOUT any network call`() {
+        // #2 fail-fast (parity with iOS): redeem tokens are single-use. Firing a
+        // redeem with no app_uid would burn the token server-side with no user
+        // to attach the grant to. When the SDK has no usable app_uid yet, surface
+        // Retryable and issue NO network request.
+        every { internalConfig.uid } returns ""
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_nouid")
+
+        val callback = RecordingCallback()
+        manager.handleRedemptionLink(uri, callback)
+
+        flushMainLooper()
+
+        assertEquals(RedemptionResult.Retryable, callback.received)
+        verify(exactly = 0) { api.redeem(any()) }
+        assertEquals(0, refreshCount)
+    }
+
+    @Test
+    fun `handleRedemptionLink delivers Retryable to a second link while one is in flight`() {
+        // #6 no eternal spinner: the in-flight guard must not swallow the second
+        // legitimate link — its callback MUST fire (Retryable) instead of never
+        // being invoked, while the first redemption keeps running unaffected.
+        val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_busy")
+        val pending = pendingCall<RedeemResponse>()
+        every { api.redeem(any()) } returns pending
+
+        val first = RecordingCallback()
+        val second = RecordingCallback()
+        manager.handleRedemptionLink(uri, first)
+        manager.handleRedemptionLink(uri, second)
+
+        flushMainLooper()
+
+        // First is still in flight (never completed); second must NOT hang.
+        assertNull(first.received)
+        assertEquals(RedemptionResult.Retryable, second.received)
+        // Still only one network request — the guard held.
+        verify(exactly = 1) { api.redeem(any()) }
+    }
+
+    @Test
     fun `handleRedemptionLink maps network failure to NetworkError`() {
         val uri = Uri.parse("https://screens.qonversion.io/r/proj/tok_neterr")
         every { api.redeem(any()) } returns alwaysNetworkFailureCall()

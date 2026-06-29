@@ -3,7 +3,11 @@ package com.qonversion.android.sdk.dto.redemption
 /**
  * Result of attempting to redeem a Web2App token via [com.qonversion.android.sdk.Qonversion.handleRedemptionLink].
  *
- * The set of cases mirrors the iOS SDK to keep cross-platform parity.
+ * The set of cases (6) mirrors the iOS SDK `QONRedemptionResult` to keep
+ * cross-platform parity: Success, TokenExpired, AlreadyConsumed, InvalidToken,
+ * NetworkError, Retryable. Under the grant-first contract a [Success] means the
+ * server already attached the entitlement to `app_uid`; the SDK only refreshes
+ * entitlements (it does NOT identify/merge any client user id).
  */
 enum class RedemptionResult {
     /**
@@ -33,7 +37,21 @@ enum class RedemptionResult {
     InvalidToken,
 
     /**
-     * Could not reach the Qonversion backend. The host should retry later.
+     * Could not reach the Qonversion backend (DNS / TCP / TLS / timeout) — the
+     * device genuinely failed to talk to the server. This is NOT used for live
+     * server responses such as 429/5xx (see [Retryable]).
      */
     NetworkError,
+
+    /**
+     * The backend was reachable but returned a transient/server-side outcome
+     * that the host may safely retry later: rate limiting (429), server errors
+     * (5xx), or auth/config errors (other non-mapped 4xx such as 401/403). Also
+     * surfaced for SDK-side preconditions that can be retried (e.g. the SDK does
+     * not yet have a usable `app_uid`, or a redemption is already in flight).
+     * Distinguishing this from [NetworkError] avoids a misleading "no internet"
+     * UX when the network is live and the server simply asked the client to
+     * back off.
+     */
+    Retryable,
 }

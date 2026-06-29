@@ -74,16 +74,33 @@ internal class RedemptionManager(
             return
         }
 
-        // In-flight guard: if a redemption is already running, drop this call so
-        // we don't fire a second POST / second refresh. CAS null -> token.
+        // Fail-fast on a missing app_uid (parity with iOS). Redeem tokens are
+        // single-use: firing a redeem without app_uid would burn the token
+        // server-side with no user to attach the grant to. If the SDK has no
+        // usable app_uid yet (e.g. user-info bootstrap not finished), surface a
+        // retryable outcome and issue NO network request.
+        val appUid = internalConfig.uid.takeIf { it.isNotBlank() }
+        if (appUid == null) {
+            logger.error("RedemptionManager: no app_uid available yet — skipping redeem (retryable).")
+            deliver(callback, RedemptionResult.Retryable)
+            return
+        }
+
+        // In-flight guard: if a redemption is already running, reject this call
+        // so we don't fire a second POST / second refresh. CAS null -> token.
+        // The callback MUST still fire (Retryable) — a silent drop here strands
+        // the host UI on an eternal spinner. Note we do NOT route this through
+        // [deliver]: the guard belongs to the redemption already in flight and
+        // must not be released by this rejected call.
         if (!inFlightToken.compareAndSet(null, token)) {
-            logger.error("RedemptionManager: redemption already in flight — ignoring duplicate link.")
+            logger.error("RedemptionManager: redemption already in flight — rejecting duplicate link as retryable.")
+            postToMainThread { callback.onResult(RedemptionResult.Retryable) }
             return
         }
 
         val request = RedeemRequest(
             token = token,
-            appUid = internalConfig.uid.takeIf { it.isNotBlank() },
+            appUid = appUid,
         )
 
         api.redeem(request).enqueue {
@@ -115,11 +132,16 @@ internal class RedemptionManager(
                         deliver(callback, RedemptionResult.TokenExpired)
                     }
                     else -> {
+                        // 429 (rate limit), 5xx (server error) and any other
+                        // non-mapped 4xx (401/403/etc.): the server was reachable
+                        // and responded, so this is NOT a "no network" condition.
+                        // Surface Retryable (parity with iOS) so the host shows a
+                        // back-off/retry affordance, not a misleading offline error.
                         logger.error(
-                            "RedemptionManager: redeem unexpected ${response.code()} — " +
-                                "treating as NetworkError."
+                            "RedemptionManager: redeem reachable but non-success ${response.code()} — " +
+                                "treating as Retryable."
                         )
-                        deliver(callback, RedemptionResult.NetworkError)
+                        deliver(callback, RedemptionResult.Retryable)
                     }
                 }
             }
