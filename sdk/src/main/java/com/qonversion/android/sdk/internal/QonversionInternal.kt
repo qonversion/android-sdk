@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.app.Activity
 import android.app.Application
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -23,12 +24,15 @@ import com.qonversion.android.sdk.internal.dto.purchase.PurchaseOptionsInternal
 import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
+import com.qonversion.android.sdk.internal.redemption.RedemptionManager
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.qonversion.android.sdk.listeners.QonversionReissueCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
@@ -56,6 +60,7 @@ internal class QonversionInternal(
     private var exceptionManager: ExceptionManager
     private var remoteConfigManager: QRemoteConfigManager
     private var fallbackService: QFallbacksService
+    private val redemptionManager: RedemptionManager
 
     override var appState = AppState.Background
 
@@ -113,6 +118,24 @@ internal class QonversionInternal(
 
         val lifecycleHandler = AppLifecycleHandler(this)
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
+
+        // RedemptionManager has no DI dependencies of its own beyond Api +
+        // InternalConfig + Logger + a persistent cache + the refresh entrypoint,
+        // so we instantiate it here rather than adding another DI module just
+        // for one class.
+        redemptionManager = RedemptionManager(
+            api = QDependencyInjector.appComponent.api(),
+            internalConfig = internalConfig,
+            logger = logger,
+            // Persists per-token Idempotency-Keys so redeem dedup survives a
+            // cold-start (not just an in-process retry).
+            cache = sharedPreferencesCache,
+            // Grant-first redeem: no identify/merge. After a successful redeem
+            // the server has already granted the entitlement to app_uid, so we
+            // re-launch with ActualizePermissions to pull the fresh entitlement
+            // state onto this device.
+            refreshEntitlements = { productCenterManager.launch(RequestTrigger.ActualizePermissions) },
+        )
 
         productCenterManager.launch(RequestTrigger.Init)
     }
@@ -384,6 +407,16 @@ internal class QonversionInternal(
 
     override fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener) {
         productCenterManager.setDeferredPurchasesListener(listener)
+    }
+
+    override fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback) {
+        redemptionManager.handleRedemptionLink(uri, callback)
+    }
+
+    override fun reissueRedemption(email: String, callback: QonversionReissueCallback) {
+        // The host app owns the email-input UI (parity with iOS) — we just run
+        // the network leg. requestReissue already dispatches on the main thread.
+        redemptionManager.requestReissue(email) { result -> callback.onResult(result) }
     }
 
     // Private functions

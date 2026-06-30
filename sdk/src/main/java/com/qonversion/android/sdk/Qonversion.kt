@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk
 
 import android.app.Activity
+import android.net.Uri
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
@@ -17,6 +18,8 @@ import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
+import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.qonversion.android.sdk.listeners.QonversionReissueCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
@@ -393,4 +396,45 @@ interface Qonversion {
      * @param listener listener to be called when a deferred purchase completes.
      */
     fun setDeferredPurchasesListener(listener: QDeferredPurchasesListener)
+
+    /**
+     * Web2App (M1): redeem a token delivered to the user via an email App Link.
+     *
+     * The expected Uri shape is `https://screens.qonversion.io/r/{project_uid}/{token}`,
+     * registered in the host AndroidManifest as an `<intent-filter>` with
+     * `android:autoVerify="true"` so Android can route directly to the host
+     * activity without an app chooser. See plan §"What host app must do → Android".
+     *
+     * **Security note:** the custom `qonversion://` scheme is intentionally NOT
+     * supported as an email-link transport here — any installed app can claim
+     * a custom scheme intent-filter and hijack the redemption flow (plan §RT2-W3,
+     * §RT-F11). Use https App Links only for email-borne links. Custom schemes
+     * remain allowed for in-process host→SDK forwarding via [identify].
+     *
+     * On [RedemptionResult.Success] the entitlement has already been granted
+     * server-side (grant-first) to the current SDK user; the SDK transparently
+     * refreshes its entitlement state so the grant is reflected on this device.
+     * No [identify]/merge is performed.
+     *
+     * @param uri      App Link Uri opened by the host activity.
+     * @param callback delivered once on the main thread with the terminal
+     *                 [com.qonversion.android.sdk.dto.redemption.RedemptionResult].
+     */
+    fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback)
+
+    /**
+     * Web2App (M1): request a new redemption email when the user's original
+     * link is lost or expired (`POST /v4/web/redeem/reissue`).
+     *
+     * The host app owns the email-input UI and passes the collected [email]
+     * here — the SDK does not present any UI of its own (parity with the iOS
+     * `reissueRedemption(email:completion:)` API). A blank email is rejected
+     * client-side as [com.qonversion.android.sdk.dto.redemption.ReissueResult.InvalidEmail]
+     * with no network call.
+     *
+     * @param email    the email the user entered at web checkout.
+     * @param callback delivered once on the main thread with the terminal
+     *                 [com.qonversion.android.sdk.dto.redemption.ReissueResult].
+     */
+    fun reissueRedemption(email: String, callback: QonversionReissueCallback)
 }
