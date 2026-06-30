@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemStatusResponse
+import com.qonversion.android.sdk.internal.dto.request.RedeemReissueRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -555,6 +556,19 @@ internal class RedemptionManagerTest {
 
         assertEquals(ReissueResult.Sent, received)
         verify(exactly = 1) { api.redeemReissue(any(), any()) }
+    }
+
+    @Test
+    fun `requestReissue trims surrounding whitespace before POSTing the email (parity with iOS)`() {
+        val captured = slot<RedeemReissueRequest>()
+        every { api.redeemReissue(capture(captured), any()) } returns successVoidCall()
+
+        var received: ReissueResult? = null
+        manager.requestReissue("  user@example.com  ") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.Sent, received)
+        assertEquals("user@example.com", captured.captured.email)
     }
 
     @Test

@@ -189,13 +189,16 @@ internal class RedemptionManager(
      * invalid input never burns a request.
      */
     fun requestReissue(email: String, callback: (ReissueResult) -> Unit) {
-        if (email.isBlank()) {
+        // Trim once and use the cleaned value for both the guard and the POST
+        // body — parity with iOS, which sends the whitespace-trimmed email.
+        val trimmedEmail = email.trim()
+        if (trimmedEmail.isEmpty()) {
             logger.error("RedemptionManager: reissue called with a blank email — rejecting without network call.")
             deliverReissue(callback, ReissueResult.InvalidEmail)
             return
         }
         // Reissue is its own logical operation → its own fresh Idempotency-Key.
-        api.redeemReissue(RedeemReissueRequest(email), UUID.randomUUID().toString()).enqueue {
+        api.redeemReissue(RedeemReissueRequest(trimmedEmail), UUID.randomUUID().toString()).enqueue {
             onResponse = { response ->
                 val mapped = when {
                     response.isSuccessful -> ReissueResult.Sent
