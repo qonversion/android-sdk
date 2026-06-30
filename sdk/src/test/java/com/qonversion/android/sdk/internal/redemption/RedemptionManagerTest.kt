@@ -594,6 +594,20 @@ internal class RedemptionManagerTest {
     }
 
     @Test
+    fun `requestReissue maps 400 invalid_email to InvalidEmail (not ServerError)`() {
+        // The gateway returns 400 invalid_email for a malformed (non-blank) email
+        // that the client-side blank guard can't catch. Surface it as a user-fixable
+        // InvalidEmail, not a ServerError "retry" — retrying the same junk won't help.
+        every { api.redeemReissue(any(), any()) } returns alwaysErrorCall(400)
+
+        var received: ReissueResult? = null
+        manager.requestReissue("not-an-email") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.InvalidEmail, received)
+    }
+
+    @Test
     fun `requestReissue with blank email returns InvalidEmail WITHOUT any network call`() {
         // Parity with iOS empty-email guard: a blank email is rejected
         // client-side and must NOT burn a reissue request server-side.

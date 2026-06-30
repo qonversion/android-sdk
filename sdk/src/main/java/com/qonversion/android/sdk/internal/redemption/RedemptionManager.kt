@@ -203,7 +203,10 @@ internal class RedemptionManager(
                 val mapped = when {
                     response.isSuccessful -> ReissueResult.Sent
                     response.code() == HTTP_TOO_MANY_REQUESTS -> ReissueResult.RateLimited
-                    response.code() in HTTP_SERVER_ERROR_RANGE -> ReissueResult.ServerError
+                    // 400 invalid_email: the gateway rejects a malformed (non-blank)
+                    // email the client-side guard can't catch. User-fixable, not retry.
+                    response.code() == HTTP_BAD_REQUEST -> ReissueResult.InvalidEmail
+                    // Everything else (5xx, plus non-user-fixable 401/403/404) → retry.
                     else -> ReissueResult.ServerError
                 }
                 deliverReissue(callback, mapped)
@@ -326,11 +329,11 @@ internal class RedemptionManager(
     }
 
     private companion object {
+        const val HTTP_BAD_REQUEST = 400
         const val HTTP_CONFLICT = 409
         const val HTTP_NOT_FOUND = 404
         const val HTTP_GONE = 410
         const val HTTP_TOO_MANY_REQUESTS = 429
-        val HTTP_SERVER_ERROR_RANGE = 500..599
 
         const val REDEEM_PATH_PREFIX = "r"
         // Path segments are 0-indexed after the leading "/", so /r/{project}/{token}
