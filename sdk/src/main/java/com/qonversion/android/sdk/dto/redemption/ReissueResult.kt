@@ -1,0 +1,43 @@
+package com.qonversion.android.sdk.dto.redemption
+
+/**
+ * Result of requesting a new redemption email via
+ * [com.qonversion.android.sdk.Qonversion.reissueRedemption].
+ *
+ * Web2App reissue lets a user ask for a fresh redemption link when the original
+ * one is lost or expired (`POST /v4/web/redeem/reissue`). The SDK does NOT
+ * collect the email itself — the host app owns that UI and passes the email in,
+ * matching the iOS `reissueRedemption(email:completion:)` contract.
+ *
+ * The cases map to the same outcomes iOS surfaces via `(success, statusCode)`:
+ * a well-formed email always yields [Sent] (the backend returns 200 with no
+ * existence oracle); 429 → [RateLimited]; 5xx / transport failure → [ServerError];
+ * a blank email is rejected client-side as [InvalidEmail] with NO network call.
+ */
+enum class ReissueResult {
+    /**
+     * The reissue request was accepted (HTTP 200). Note this does NOT confirm a
+     * matching purchase exists — the backend intentionally returns 200 for any
+     * well-formed email so it can't be used as an account-existence oracle.
+     */
+    Sent,
+
+    /**
+     * The email was empty/blank. Rejected client-side without any network
+     * request (parity with iOS's empty-email guard), so a one-shot send isn't
+     * wasted on an obviously invalid input. Hosts should prompt for a valid email.
+     */
+    InvalidEmail,
+
+    /**
+     * The backend rate-limited the request (HTTP 429). Hosts should ask the user
+     * to try again later.
+     */
+    RateLimited,
+
+    /**
+     * The backend returned a server error (5xx) or the device could not reach it
+     * (DNS / TCP / TLS / timeout). Hosts should offer a generic retry.
+     */
+    ServerError,
+}

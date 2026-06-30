@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.qonversion.android.sdk.dto.redemption.RedemptionResult
+import com.qonversion.android.sdk.dto.redemption.ReissueResult
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
@@ -30,8 +31,8 @@ import retrofit2.Response
  * with no user id. The SDK therefore does NOT identify/merge any client user
  * id after redeem — it only refreshes entitlements.
  *
- * The reissue endpoint is also exposed here so the reissue dialog UI doesn't
- * need its own networking — it forwards through this manager.
+ * The reissue endpoint is also exposed here; the host app collects the email
+ * and forwards it through this manager (parity with iOS — no in-SDK email UI).
  *
  * All public callbacks are dispatched on the main thread.
  *
@@ -181,9 +182,18 @@ internal class RedemptionManager(
 
     /**
      * POSTs `/v4/web/redeem/reissue` for [email]. Maps HTTP status to one of
-     * the [ReissueResult] cases used by the dialog UI to render the right hint.
+     * the [ReissueResult] cases the host app uses to render the right hint.
+     *
+     * Fails fast on a blank email ([ReissueResult.InvalidEmail]) without any
+     * network call — parity with iOS's empty-email guard, so an obviously
+     * invalid input never burns a request.
      */
     fun requestReissue(email: String, callback: (ReissueResult) -> Unit) {
+        if (email.isBlank()) {
+            logger.error("RedemptionManager: reissue called with a blank email — rejecting without network call.")
+            deliverReissue(callback, ReissueResult.InvalidEmail)
+            return
+        }
         // Reissue is its own logical operation → its own fresh Idempotency-Key.
         api.redeemReissue(RedeemReissueRequest(email), UUID.randomUUID().toString()).enqueue {
             onResponse = { response ->
@@ -310,13 +320,6 @@ internal class RedemptionManager(
         } else {
             handler.post(runnable)
         }
-    }
-
-    /** Internal-only reissue outcome surfaced to the dialog. */
-    internal enum class ReissueResult {
-        Sent,
-        RateLimited,
-        ServerError,
     }
 
     private companion object {

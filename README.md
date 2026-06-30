@@ -164,14 +164,21 @@ private fun handleRedemptionIntent(intent: Intent?) {
 
 On `RedemptionResult.Success` the entitlement has **already** been granted server-side (grant-first) and attached to the SDK user. The SDK does **not** call `identify`/merge — it only refreshes entitlements, so your next `checkEntitlements` reflects the new state. (You therefore do not need to add an `identify` call yourself.) Do **not** log or display the full redemption `Uri` — it carries a single-use token.
 
-### 4. Let users request a new link (`presentReissueUI`)
+### 4. Let users request a new link (`reissueRedemption`)
 
-If the original link is lost or expired, present the built-in dialog so the user can request a new redemption email. No host theme or layout resources are required:
+If the original link is lost or expired, collect the email the user entered at web checkout with your own UI and pass it to `reissueRedemption` to trigger a new redemption email (parity with the iOS `reissueRedemption(email:completion:)` API — the SDK does not present any UI of its own). A blank email is rejected client-side as `ReissueResult.InvalidEmail` without a network call:
 
 ```kotlin
-Qonversion.shared.presentReissueUI(this) { success ->
-    // success == true once the reissue email is sent.
-}
+Qonversion.shared.reissueRedemption(email, object : QonversionReissueCallback {
+    override fun onResult(result: ReissueResult) {
+        when (result) {
+            ReissueResult.Sent -> { /* email sent if a matching purchase was found */ }
+            ReissueResult.InvalidEmail -> { /* ask the user for a valid email */ }
+            ReissueResult.RateLimited -> { /* too many attempts, try again later */ }
+            ReissueResult.ServerError -> { /* something went wrong, retry */ }
+        }
+    }
+})
 ```
 
 ## Why Qonversion?
