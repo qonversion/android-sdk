@@ -24,13 +24,10 @@ android {
             if (propertiesFile.exists()) {
                 Properties properties = new Properties()
                 properties.load(propertiesFile.newDataInputStream())
-                def storeFilePath = properties.getProperty('storeFile')
-                if (storeFilePath != null && !storeFilePath.isEmpty()) {
-                    storeFile file(storeFilePath)
-                    keyAlias properties.getProperty('keyAlias')
-                    storePassword properties.getProperty('storePassword')
-                    keyPassword properties.getProperty('keyPassword')
-                }
+                storeFile file(properties.getProperty('storeFile'))
+                keyAlias properties.getProperty('keyAlias')
+                storePassword properties.getProperty('storePassword')
+                keyPassword properties.getProperty('keyPassword')
             }
         }
     }
@@ -43,9 +40,7 @@ android {
             signingConfig signingConfigs.release
         }
         debug {
-            // Use the default debug signing config (auto-generated debug
-            // keystore) when no release keystore is configured locally.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             debuggable true
         }
     }

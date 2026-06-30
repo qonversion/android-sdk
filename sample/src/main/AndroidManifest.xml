@@ -22,41 +22,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!--
-              Web2App (DEV-847) — redemption email App Link.
-
-              MUST use https + android:autoVerify="true". Pair this with a
-              hosted /.well-known/assetlinks.json that pins the host package
-              and signing fingerprint so other apps cannot intercept the
-              redemption Uri (plan §"RT2-W3" / §"RT-F11").
-
-              The companion custom-scheme intent-filter (qonversion://redeem)
-              is intentionally NOT registered as an email-link transport —
-              any installed app could claim that scheme and hijack the token.
-              The custom scheme remains valid only for in-process host→SDK
-              forwarding by the host itself.
-            -->
-            <!--
-              MUST be path-scoped to THIS project's uid. Sharing
-              screens.qonversion.io across all merchants means an
-              unscoped `pathPattern="/r/.*"` triggers an Android
-              chooser dialog when another merchant's app is installed,
-              and worse — could redirect a token to the wrong app's
-              SDK. Production merchants set this to their project's uid
-              issued in Qonversion Connect Apps onboarding.
-
-              Local dev uses project `PcnB70vn` (Openchat).
-            -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="screens.qonversion.io"
-                    android:pathPattern="/r/PcnB70vn/.*" />
-            </intent-filter>
         </activity>
     </application>
 

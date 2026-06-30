@@ -17,11 +17,6 @@ import com.qonversion.android.sdk.internal.dto.request.EligibilityRequest
 import com.qonversion.android.sdk.internal.dto.request.IdentityRequest
 import com.qonversion.android.sdk.internal.dto.request.InitRequest
 import com.qonversion.android.sdk.internal.dto.request.PurchaseRequest
-import com.qonversion.android.sdk.internal.dto.request.RedeemReissueRequest
-import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
-import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
-import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
-import com.qonversion.android.sdk.internal.dto.redemption.RedeemStatusResponse
 import com.qonversion.android.sdk.internal.dto.request.RestoreRequest
 import com.qonversion.android.sdk.internal.dto.request.data.UserPropertyRequestData
 import retrofit2.Call
@@ -121,48 +116,4 @@ internal interface Api {
 
     @GET("v3/users/{user_id}/properties")
     fun getProperties(@Path("user_id") userId: String): Call<List<QUserProperty>>
-
-    // --- Web2App redemption (DEV-847) ---
-
-    /**
-     * Exchanges a redemption token (delivered to the user via App Link email)
-     * for an entitlement on the current SDK user. See plan §"Mobile SDK API
-     * surface → Android" and `RedemptionResult` for the response semantics.
-     *
-     * [idempotencyKey] is a UUID scoped to one *logical* redeem (parity with
-     * iOS): the same value is sent on the redeem POST and any 409→/status
-     * recovery call so the backend can dedup double-taps / retries — including
-     * across a cold-start (the key is persisted per token).
-     */
-    @POST("v4/web/redeem")
-    fun redeem(
-        @Body request: RedeemRequest,
-        @Header("Idempotency-Key") idempotencyKey: String,
-    ): Call<RedeemResponse>
-
-    /**
-     * Disambiguates a 409 from [redeem]: tells the SDK whether the token was
-     * already consumed (→ `AlreadyConsumed`) versus some other transient
-     * server condition. Used to surface the identify-flow recovery hint to
-     * the host app (RT4-W2). Carries the same [idempotencyKey] as the redeem
-     * POST it recovers from (same logical redeem).
-     */
-    @POST("v4/web/redeem/status")
-    fun redeemStatus(
-        @Body request: RedeemStatusRequest,
-        @Header("Idempotency-Key") idempotencyKey: String,
-    ): Call<RedeemStatusResponse>
-
-    /**
-     * Requests a new redemption email when the original token is lost or
-     * expired. Backend always responds 200 on a well-formed email (no oracle
-     * leak); 429 / 503 are surfaced to the UI for retry messaging.
-     *
-     * [idempotencyKey] is a fresh UUID per reissue (its own logical operation).
-     */
-    @POST("v4/web/redeem/reissue")
-    fun redeemReissue(
-        @Body request: RedeemReissueRequest,
-        @Header("Idempotency-Key") idempotencyKey: String,
-    ): Call<Void>
 }

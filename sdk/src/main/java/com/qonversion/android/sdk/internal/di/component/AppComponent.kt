@@ -6,7 +6,6 @@ import com.qonversion.android.sdk.internal.QHandledPurchasesCache
 import com.qonversion.android.sdk.internal.QIdentityManager
 import com.qonversion.android.sdk.internal.QRemoteConfigManager
 import com.qonversion.android.sdk.internal.QUserPropertiesManager
-import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.di.module.AppModule
 import com.qonversion.android.sdk.internal.di.module.RepositoryModule
 import com.qonversion.android.sdk.internal.di.module.NetworkModule
@@ -46,5 +45,4 @@ internal interface AppComponent {
     fun sharedPreferencesCache(): SharedPreferencesCache
     fun exceptionManager(): QExceptionManager
     fun fallbacksService(): QFallbacksService
-    fun api(): Api
 }
