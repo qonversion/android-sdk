@@ -63,7 +63,12 @@ internal class QRemoteConfigManager @Inject constructor(
     }
 
     fun userChangingRequestFailedWithError(error: QonversionError) = postToMainThread {
-        loadingStates.keys.forEach {
+        // Snapshot the keys: fireToCallbacks runs user callbacks, and a callback that
+        // re-enters loadRemoteConfig with a new key runs inline (already on the main thread)
+        // and registers that key in loadingStates. Iterating a copy keeps that re-entrant
+        // structural add from mutating the map mid-iteration. Main-thread confinement does
+        // not help here - the reentrancy is within a single thread.
+        loadingStates.keys.toList().forEach {
             fireToCallbacks(it) { onError(error) }
         }
     }

@@ -189,6 +189,42 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `userChangingRequestFailedWithError does not throw when a callback re-enters loadRemoteConfig`() {
+        // Reentrant variant of SUP3-188. userChangingRequestFailedWithError iterates
+        // loadingStates.keys on the main thread and fires user callbacks. If a callback
+        // synchronously calls loadRemoteConfig for a brand-new key, that load runs inline
+        // (already on the main thread) and registers the key in loadingStates - a structural
+        // modification mid-iteration. Main-thread confinement cannot prevent this; only
+        // iterating a snapshot (keys.toList()) does.
+        userStateProvider.stable = false
+        val error = QonversionError(QonversionErrorCode.Unknown)
+
+        val reentrantCallback = object : QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) = Unit
+            override fun onError(error: QonversionError) {
+                // re-enter with a not-yet-seen key, adding to loadingStates mid-iteration
+                manager.loadRemoteConfig("reentrant_key", null)
+            }
+        }
+        val noopCallback = object : QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) = Unit
+            override fun onError(error: QonversionError) = Unit
+        }
+        // Two pre-existing keys: the structural add happens while processing the first, and
+        // the iterator must still advance to the second - which is where a live-keySet
+        // iteration would trip ConcurrentModificationException.
+        loadingStates()["ctx0"] = QRemoteConfigManager.LoadingState(callbacks = mutableListOf(reentrantCallback))
+        loadingStates()["ctx1"] = QRemoteConfigManager.LoadingState(callbacks = mutableListOf(noopCallback))
+
+        // when - failing all in-flight requests on the main thread
+        manager.userChangingRequestFailedWithError(error)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // then - no ConcurrentModificationException, and the reentrant load registered its key
+        assertTrue(loadingStates().containsKey("reentrant_key"))
+    }
+
+    @Test
     fun `loadRemoteConfig returns a cached config synchronously on the main thread`() {
         // given - a previously loaded config for the empty context key, user is stable
         userStateProvider.stable = true
