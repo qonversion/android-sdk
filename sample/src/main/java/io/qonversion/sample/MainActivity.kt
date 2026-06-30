@@ -15,7 +15,9 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.redemption.RedemptionResult
+import com.qonversion.android.sdk.dto.redemption.ReissueResult
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.qonversion.android.sdk.listeners.QonversionReissueCallback
 import io.qonversion.sample.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -67,13 +69,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleReissueIntent(intent: Intent?) {
-        // Triggered via `adb shell am start -a qontest.REISSUE` to exercise
-        // the reissue dialog without needing a UI button.
+        // Triggered via:
+        //   adb shell am start -a qontest.REISSUE --es email "you@example.com"
+        // The host app owns the email-input UI; here we just read it from the
+        // intent extra and forward to the SDK (parity with iOS — no in-SDK UI).
         if (intent?.action != "qontest.REISSUE") return
-        Log.i("Web2App", "presentReissueUI triggered via intent")
-        Qonversion.shared.presentReissueUI(this) { success ->
-            Log.i("Web2App", "Reissue completed: success=$success")
-        }
+        val email = intent.getStringExtra("email").orEmpty()
+        Log.i("Web2App", "reissueRedemption triggered via intent")
+        Qonversion.shared.reissueRedemption(email, object : QonversionReissueCallback {
+            override fun onResult(result: ReissueResult) {
+                Log.i("Web2App", "Reissue completed: $result")
+            }
+        })
     }
 
     private fun handleRedemptionIntent(intent: Intent?) {

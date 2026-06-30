@@ -3,7 +3,6 @@ package com.qonversion.android.sdk
 import android.app.Activity
 import android.net.Uri
 import android.util.Log
-import androidx.fragment.app.FragmentActivity
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QPurchaseResult
@@ -20,6 +19,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.qonversion.android.sdk.listeners.QonversionReissueCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
@@ -423,20 +423,18 @@ interface Qonversion {
     fun handleRedemptionLink(uri: Uri, callback: QonversionRedemptionCallback)
 
     /**
-     * Web2App (M1): present a modal email-input dialog the user can use to
-     * request a new redemption email when their original link is lost or
-     * expired (`/v4/web/redeem/reissue`).
+     * Web2App (M1): request a new redemption email when the user's original
+     * link is lost or expired (`POST /v4/web/redeem/reissue`).
      *
-     * The dialog is built programmatically — no host-app theme or layout
-     * resources are required. The dialog dismisses itself on a successful
-     * send and invokes [onCompletion] with `true`. If the user cancels (or
-     * the dialog is dismissed without sending), [onCompletion] is invoked
-     * with `false`.
+     * The host app owns the email-input UI and passes the collected [email]
+     * here — the SDK does not present any UI of its own (parity with the iOS
+     * `reissueRedemption(email:completion:)` API). A blank email is rejected
+     * client-side as [com.qonversion.android.sdk.dto.redemption.ReissueResult.InvalidEmail]
+     * with no network call.
      *
-     * @param activity     a [FragmentActivity] used to host the dialog
-     *                     fragment. Pass an Activity that has a non-finished
-     *                     [androidx.fragment.app.FragmentManager].
-     * @param onCompletion main-thread callback invoked exactly once.
+     * @param email    the email the user entered at web checkout.
+     * @param callback delivered once on the main thread with the terminal
+     *                 [com.qonversion.android.sdk.dto.redemption.ReissueResult].
      */
-    fun presentReissueUI(activity: FragmentActivity, onCompletion: (Boolean) -> Unit)
+    fun reissueRedemption(email: String, callback: QonversionReissueCallback)
 }

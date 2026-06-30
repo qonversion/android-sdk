@@ -20,7 +20,7 @@ enum class RedemptionResult {
     /**
      * The redemption token has expired (its TTL elapsed before the user opened
      * the email link). Hosts should prompt the user to request a new email via
-     * [com.qonversion.android.sdk.Qonversion.presentReissueUI].
+     * [com.qonversion.android.sdk.Qonversion.reissueRedemption].
      */
     TokenExpired,
 

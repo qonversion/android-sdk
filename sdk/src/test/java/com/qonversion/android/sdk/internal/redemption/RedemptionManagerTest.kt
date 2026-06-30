@@ -3,10 +3,12 @@ package com.qonversion.android.sdk.internal.redemption
 import android.net.Uri
 import android.os.Looper
 import com.qonversion.android.sdk.dto.redemption.RedemptionResult
+import com.qonversion.android.sdk.dto.redemption.ReissueResult
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemStatusResponse
+import com.qonversion.android.sdk.internal.dto.request.RedeemReissueRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemRequest
 import com.qonversion.android.sdk.internal.dto.request.RedeemStatusRequest
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -542,6 +544,81 @@ internal class RedemptionManagerTest {
         assertEquals(redeemKey.captured, statusKey.captured)
     }
 
+    // --- Reissue (email-direct, parity with iOS) -------------------------
+
+    @Test
+    fun `requestReissue sends the email and maps 200 to Sent`() {
+        every { api.redeemReissue(any(), any()) } returns successVoidCall()
+
+        var received: ReissueResult? = null
+        manager.requestReissue("user@example.com") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.Sent, received)
+        verify(exactly = 1) { api.redeemReissue(any(), any()) }
+    }
+
+    @Test
+    fun `requestReissue trims surrounding whitespace before POSTing the email (parity with iOS)`() {
+        val captured = slot<RedeemReissueRequest>()
+        every { api.redeemReissue(capture(captured), any()) } returns successVoidCall()
+
+        var received: ReissueResult? = null
+        manager.requestReissue("  user@example.com  ") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.Sent, received)
+        assertEquals("user@example.com", captured.captured.email)
+    }
+
+    @Test
+    fun `requestReissue maps 429 to RateLimited`() {
+        every { api.redeemReissue(any(), any()) } returns alwaysErrorCall(429)
+
+        var received: ReissueResult? = null
+        manager.requestReissue("user@example.com") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.RateLimited, received)
+    }
+
+    @Test
+    fun `requestReissue maps 5xx to ServerError`() {
+        every { api.redeemReissue(any(), any()) } returns alwaysErrorCall(503)
+
+        var received: ReissueResult? = null
+        manager.requestReissue("user@example.com") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.ServerError, received)
+    }
+
+    @Test
+    fun `requestReissue maps 400 invalid_email to InvalidEmail (not ServerError)`() {
+        // The gateway returns 400 invalid_email for a malformed (non-blank) email
+        // that the client-side blank guard can't catch. Surface it as a user-fixable
+        // InvalidEmail, not a ServerError "retry" — retrying the same junk won't help.
+        every { api.redeemReissue(any(), any()) } returns alwaysErrorCall(400)
+
+        var received: ReissueResult? = null
+        manager.requestReissue("not-an-email") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.InvalidEmail, received)
+    }
+
+    @Test
+    fun `requestReissue with blank email returns InvalidEmail WITHOUT any network call`() {
+        // Parity with iOS empty-email guard: a blank email is rejected
+        // client-side and must NOT burn a reissue request server-side.
+        var received: ReissueResult? = null
+        manager.requestReissue("   ") { received = it }
+        flushMainLooper()
+
+        assertEquals(ReissueResult.InvalidEmail, received)
+        verify(exactly = 0) { api.redeemReissue(any(), any()) }
+    }
+
     // --- Helpers ---------------------------------------------------------
 
     /** In-memory [Cache]; only the string ops are exercised by the manager. */
@@ -575,6 +652,16 @@ internal class RedemptionManagerTest {
         every { call.enqueue(any()) } answers {
             val cb = arg<Callback<T>>(0)
             cb.onResponse(call, Response.success(body))
+        }
+        return call
+    }
+
+    /** A successful (HTTP 200) [Call] of [Void] — used for the reissue endpoint. */
+    private fun successVoidCall(): Call<Void> {
+        val call = mockk<Call<Void>>(relaxed = true)
+        every { call.enqueue(any()) } answers {
+            val cb = arg<Callback<Void>>(0)
+            cb.onResponse(call, Response.success<Void>(null))
         }
         return call
     }

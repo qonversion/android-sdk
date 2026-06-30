@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.qonversion.android.sdk.dto.redemption.RedemptionResult
+import com.qonversion.android.sdk.dto.redemption.ReissueResult
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.api.Api
 import com.qonversion.android.sdk.internal.dto.redemption.RedeemResponse
@@ -30,8 +31,8 @@ import retrofit2.Response
  * with no user id. The SDK therefore does NOT identify/merge any client user
  * id after redeem — it only refreshes entitlements.
  *
- * The reissue endpoint is also exposed here so the reissue dialog UI doesn't
- * need its own networking — it forwards through this manager.
+ * The reissue endpoint is also exposed here; the host app collects the email
+ * and forwards it through this manager (parity with iOS — no in-SDK email UI).
  *
  * All public callbacks are dispatched on the main thread.
  *
@@ -181,16 +182,31 @@ internal class RedemptionManager(
 
     /**
      * POSTs `/v4/web/redeem/reissue` for [email]. Maps HTTP status to one of
-     * the [ReissueResult] cases used by the dialog UI to render the right hint.
+     * the [ReissueResult] cases the host app uses to render the right hint.
+     *
+     * Fails fast on a blank email ([ReissueResult.InvalidEmail]) without any
+     * network call — parity with iOS's empty-email guard, so an obviously
+     * invalid input never burns a request.
      */
     fun requestReissue(email: String, callback: (ReissueResult) -> Unit) {
+        // Trim once and use the cleaned value for both the guard and the POST
+        // body — parity with iOS, which sends the whitespace-trimmed email.
+        val trimmedEmail = email.trim()
+        if (trimmedEmail.isEmpty()) {
+            logger.error("RedemptionManager: reissue called with a blank email — rejecting without network call.")
+            deliverReissue(callback, ReissueResult.InvalidEmail)
+            return
+        }
         // Reissue is its own logical operation → its own fresh Idempotency-Key.
-        api.redeemReissue(RedeemReissueRequest(email), UUID.randomUUID().toString()).enqueue {
+        api.redeemReissue(RedeemReissueRequest(trimmedEmail), UUID.randomUUID().toString()).enqueue {
             onResponse = { response ->
                 val mapped = when {
                     response.isSuccessful -> ReissueResult.Sent
                     response.code() == HTTP_TOO_MANY_REQUESTS -> ReissueResult.RateLimited
-                    response.code() in HTTP_SERVER_ERROR_RANGE -> ReissueResult.ServerError
+                    // 400 invalid_email: the gateway rejects a malformed (non-blank)
+                    // email the client-side guard can't catch. User-fixable, not retry.
+                    response.code() == HTTP_BAD_REQUEST -> ReissueResult.InvalidEmail
+                    // Everything else (5xx, plus non-user-fixable 401/403/404) → retry.
                     else -> ReissueResult.ServerError
                 }
                 deliverReissue(callback, mapped)
@@ -312,19 +328,12 @@ internal class RedemptionManager(
         }
     }
 
-    /** Internal-only reissue outcome surfaced to the dialog. */
-    internal enum class ReissueResult {
-        Sent,
-        RateLimited,
-        ServerError,
-    }
-
     private companion object {
+        const val HTTP_BAD_REQUEST = 400
         const val HTTP_CONFLICT = 409
         const val HTTP_NOT_FOUND = 404
         const val HTTP_GONE = 410
         const val HTTP_TOO_MANY_REQUESTS = 429
-        val HTTP_SERVER_ERROR_RANGE = 500..599
 
         const val REDEEM_PATH_PREFIX = "r"
         // Path segments are 0-indexed after the leading "/", so /r/{project}/{token}

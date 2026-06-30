@@ -5,7 +5,6 @@ import android.app.Application
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QAttributionProvider
@@ -26,7 +25,6 @@ import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.redemption.RedemptionManager
-import com.qonversion.android.sdk.internal.redemption.ReissueDialogFragment
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
@@ -34,6 +32,7 @@ import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionOfferingsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionRedemptionCallback
+import com.qonversion.android.sdk.listeners.QonversionReissueCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionUserCallback
@@ -414,21 +413,10 @@ internal class QonversionInternal(
         redemptionManager.handleRedemptionLink(uri, callback)
     }
 
-    override fun presentReissueUI(activity: FragmentActivity, onCompletion: (Boolean) -> Unit) {
-        // Re-use existing tagged instance if present so back-to-back calls
-        // don't stack multiple dialogs.
-        val manager = activity.supportFragmentManager
-        val existing = manager.findFragmentByTag(REISSUE_DIALOG_TAG)
-        if (existing is ReissueDialogFragment) {
-            existing.redemptionManager = redemptionManager
-            existing.onCompletion = onCompletion
-            return
-        }
-        val dialog = ReissueDialogFragment().also {
-            it.redemptionManager = redemptionManager
-            it.onCompletion = onCompletion
-        }
-        dialog.show(manager, REISSUE_DIALOG_TAG)
+    override fun reissueRedemption(email: String, callback: QonversionReissueCallback) {
+        // The host app owns the email-input UI (parity with iOS) — we just run
+        // the network leg. requestReissue already dispatches on the main thread.
+        redemptionManager.requestReissue(email) { result -> callback.onResult(result) }
     }
 
     // Private functions
@@ -480,9 +468,5 @@ internal class QonversionInternal(
         } else {
             handler.post(runnable)
         }
-    }
-
-    private companion object {
-        const val REISSUE_DIALOG_TAG = "qonversion.reissue_dialog"
     }
 }
