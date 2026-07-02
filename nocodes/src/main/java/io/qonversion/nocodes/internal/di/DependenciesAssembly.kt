@@ -30,8 +30,17 @@ internal class DependenciesAssembly(
     ControllersAssembly by controllersAssembly {
 
     companion object {
-        // For fragment dependencies
+        // ScreenFragment reaches its dependencies through this companion because the
+        // FragmentManager reflectively recreates fragments via their no-arg constructor
+        // and we cannot inject the assembly through a constructor argument.
         internal lateinit var instance: DependenciesAssembly
+
+        // Lets ScreenActivity check whether NoCodes.initialize has run in this process
+        // before relying on `instance`. After Android kills the host process while a
+        // ScreenActivity is on the back stack and later restores it, the OS recreates
+        // the activity (and its fragments) before the host app has a chance to call
+        // NoCodes.initialize again, so `instance` may not yet be set.
+        internal fun isInstanceInitialized(): Boolean = ::instance.isInitialized
     }
 
     class Builder(

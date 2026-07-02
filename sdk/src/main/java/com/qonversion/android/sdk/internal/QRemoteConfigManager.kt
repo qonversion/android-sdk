@@ -1,5 +1,7 @@
 package com.qonversion.android.sdk.internal
 
+import android.os.Handler
+import android.os.Looper
 import com.qonversion.android.sdk.dto.QFallbackObject
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
@@ -40,12 +42,18 @@ internal class QRemoteConfigManager @Inject constructor(
     private var loadingStates = mutableMapOf<String?, LoadingState>()
     private val listRequests = mutableListOf<ListRequestData>()
     lateinit var userPropertiesManager: QUserPropertiesManager
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    fun handlePendingRequests() {
+    fun handlePendingRequests() = postToMainThread {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
             .keys.forEach { contextKey -> loadRemoteConfig(contextKey, null) }
 
-        listRequests.forEach { requestData ->
+        // Snapshot then clear before handling: clearing stops stale requests being
+        // re-issued on every launch, and iterating the copy keeps a re-entrant add
+        // (when the user is still not stable) from mutating the list mid-iteration.
+        val pendingListRequests = listRequests.toList()
+        listRequests.clear()
+        pendingListRequests.forEach { requestData ->
             requestData.contextKeys?.let {
                 loadRemoteConfigList(it, requestData.includeEmptyContextKey, requestData.callback)
             } ?: run {
@@ -54,23 +62,28 @@ internal class QRemoteConfigManager @Inject constructor(
         }
     }
 
-    fun userChangingRequestFailedWithError(error: QonversionError) {
-        loadingStates.keys.forEach {
+    fun userChangingRequestFailedWithError(error: QonversionError) = postToMainThread {
+        // Snapshot the keys: fireToCallbacks runs user callbacks, and a callback that
+        // re-enters loadRemoteConfig with a new key runs inline (already on the main thread)
+        // and registers that key in loadingStates. Iterating a copy keeps that re-entrant
+        // structural add from mutating the map mid-iteration. Main-thread confinement does
+        // not help here - the reentrancy is within a single thread.
+        loadingStates.keys.toList().forEach {
             fireToCallbacks(it) { onError(error) }
         }
     }
 
-    fun onUserUpdate() {
+    fun onUserUpdate() = postToMainThread {
         loadingStates = mutableMapOf()
     }
 
-    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?) {
+    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?) = postToMainThread {
         loadingStates[contextKey]
             ?.loadedConfig
             ?.takeIf { userStateProvider.isUserStable }
             ?.let {
                 callback?.onSuccess(it)
-                return
+                return@postToMainThread
             }
 
         val loadingState = loadingStates[contextKey] ?: LoadingState()
@@ -81,7 +94,7 @@ internal class QRemoteConfigManager @Inject constructor(
         }
 
         if (!userStateProvider.isUserStable || loadingState.isInProgress) {
-            return
+            return@postToMainThread
         }
 
         loadingState.isInProgress = true
@@ -125,17 +138,17 @@ internal class QRemoteConfigManager @Inject constructor(
         contextKeys: List<String>,
         includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
-    ) {
+    ) = postToMainThread {
         val allKeys = if (includeEmptyContextKey) contextKeys + EmptyContextKey else contextKeys
         if (allKeys.all { loadingStates[it]?.loadedConfig != null }) {
             val configs = allKeys.mapNotNull { loadingStates[it]?.loadedConfig }
             callback.onSuccess(QRemoteConfigList(configs))
-            return
+            return@postToMainThread
         }
 
         if (!userStateProvider.isUserStable) {
             listRequests.add(ListRequestData(callback, contextKeys, includeEmptyContextKey))
-            return
+            return@postToMainThread
         }
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
@@ -149,10 +162,10 @@ internal class QRemoteConfigManager @Inject constructor(
         })
     }
 
-    fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) {
+    fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) = postToMainThread {
         if (!userStateProvider.isUserStable) {
             listRequests.add(ListRequestData(callback))
-            return
+            return@postToMainThread
         }
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
@@ -162,12 +175,12 @@ internal class QRemoteConfigManager @Inject constructor(
         })
     }
 
-    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) {
+    fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) = postToMainThread {
         loadingStates[EmptyContextKey]?.loadedConfig = null
         remoteConfigService.attachUserToExperiment(experimentId, groupId, callback)
     }
 
-    fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) {
+    fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) = postToMainThread {
         loadingStates[EmptyContextKey]?.loadedConfig = null
         remoteConfigService.detachUserFromExperiment(experimentId, callback)
     }
@@ -175,7 +188,7 @@ internal class QRemoteConfigManager @Inject constructor(
     fun attachUserToRemoteConfiguration(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
-    ) {
+    ) = postToMainThread {
         loadingStates[EmptyContextKey]?.loadedConfig = null
         remoteConfigService.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
     }
@@ -183,7 +196,7 @@ internal class QRemoteConfigManager @Inject constructor(
     fun detachUserFromRemoteConfiguration(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
-    ) {
+    ) = postToMainThread {
         loadingStates[EmptyContextKey]?.loadedConfig = null
         remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
     }
@@ -242,6 +255,18 @@ internal class QRemoteConfigManager @Inject constructor(
             val callbacks = loadingState.callbacks.toList()
             loadingState.callbacks.clear()
             callbacks.forEach { it.action() }
+        }
+    }
+
+    // Confines every access to the mutable loading/list state to the main thread, which
+    // removes the ConcurrentModificationException at its source without locks. Runs the
+    // action inline when already on the main thread, preserving the synchronous
+    // cached-config fast paths in loadRemoteConfig/loadRemoteConfigList.
+    private fun postToMainThread(action: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            action()
+        } else {
+            mainHandler.post(action)
         }
     }
 }
