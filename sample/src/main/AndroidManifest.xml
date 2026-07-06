@@ -46,7 +46,9 @@
               SDK. Production merchants set this to their project's uid
               issued in Qonversion Connect Apps onboarding.
 
-              Local dev uses project `PcnB70vn` (Openchat).
+              Scoped to the Qonversion sample project uid `kZfGkwHa`
+              (matches DEFAULT_PROJECT_KEY in App.java). Must stay in sync
+              with whatever project this sample initializes the SDK with.
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -55,7 +57,7 @@
                 <data
                     android:scheme="https"
                     android:host="screens.qonversion.io"
-                    android:pathPattern="/r/PcnB70vn/.*" />
+                    android:pathPattern="/r/kZfGkwHa/.*" />
             </intent-filter>
         </activity>
     </application>
