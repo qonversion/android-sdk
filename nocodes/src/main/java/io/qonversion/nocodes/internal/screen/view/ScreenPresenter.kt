@@ -187,6 +187,9 @@ internal class ScreenPresenter(
             QAction.Type.ScreenAnalytics -> {
                 handleScreenAnalyticsAction(action)
             }
+            QAction.Type.PurchaseLoaderPresent -> {
+                view.setHasWebPurchaseLoader(true)
+            }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
             }
