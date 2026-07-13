@@ -13,10 +13,14 @@ internal class ScreenMapper : Mapper<NoCodeScreen?> {
             return null
         }
 
+        // Missing/absent `products` (older payloads, bundled fallbacks) → empty list.
+        val products = data.getList("products")?.filterIsInstance<String>() ?: emptyList()
+
         return NoCodeScreen(
             id,
             body,
             contextKey,
+            products,
         )
     }
 }

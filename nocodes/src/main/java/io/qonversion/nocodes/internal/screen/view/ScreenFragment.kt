@@ -113,7 +113,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding = null
     }
 
-    override fun displayScreen(screenId: String, html: String) {
+    override fun displayScreen(screenId: String, html: String, products: List<String>) {
         activity?.runOnUiThread {
             binding?.webView?.loadDataWithBaseURL(
                 null,
@@ -122,7 +122,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 ENCODING,
                 null
             )
-            delegate?.onScreenShown(screenId)
+            delegate?.onScreenShown(screenId, products)
         }
     }
 

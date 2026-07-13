@@ -12,9 +12,9 @@ class NoCodesDelegateWrapper(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    override fun onScreenShown(screenId: String) {
+    override fun onScreenShown(screenId: String, products: List<String>) {
         mainHandler.post {
-            delegate.onScreenShown(screenId)
+            delegate.onScreenShown(screenId, products)
         }
     }
 

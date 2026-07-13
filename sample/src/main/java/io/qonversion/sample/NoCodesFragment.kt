@@ -109,8 +109,8 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
     }
 
     // NoCodesDelegate implementation
-    override fun onScreenShown(screenId: String) {
-        addEvent(getString(R.string.screen_shown, screenId))
+    override fun onScreenShown(screenId: String, products: List<String>) {
+        addEvent(getString(R.string.screen_shown, "$screenId, products: $products"))
     }
 
     override fun onScreenFailedToLoad(error: NoCodesError) {

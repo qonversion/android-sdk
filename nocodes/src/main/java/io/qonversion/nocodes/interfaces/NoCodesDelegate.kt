@@ -15,6 +15,21 @@ interface NoCodesDelegate {
     fun onScreenShown(screenId: String) { }
 
     /**
+     * Called when No-Code screen is shown, providing the product ids configured on that screen.
+     * Use this to keep analytics consistent with the full set of products the screen was built
+     * with, not only the ones the rendered screen requested.
+     *
+     * The default implementation delegates to [onScreenShown], so existing implementations keep
+     * working and this callback fires exactly once.
+     *
+     * @param screenId shown screen Id.
+     * @param products Qonversion product ids configured on the screen (may be empty).
+     */
+    fun onScreenShown(screenId: String, products: List<String>) {
+        onScreenShown(screenId)
+    }
+
+    /**
      * Called when No-Code screen starts executing an action.
      *
      * @param action action that is being executed.

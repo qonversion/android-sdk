@@ -4,7 +4,7 @@ import io.qonversion.nocodes.dto.QAction
 
 internal class ScreenContract {
     interface View {
-        fun displayScreen(screenId: String, html: String)
+        fun displayScreen(screenId: String, html: String, products: List<String>)
 
         fun navigateToScreen(screenId: String)
 
