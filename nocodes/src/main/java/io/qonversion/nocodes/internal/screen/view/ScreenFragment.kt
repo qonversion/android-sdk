@@ -52,6 +52,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     private var binding: NcFragmentScreenBinding? = null
     private var loadingView: NoCodesLoadingView? = null
+    private var hasWebPurchaseLoader = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -168,7 +169,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun purchase(productId: String, screenId: String?) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        if (!hasWebPurchaseLoader) {
+            binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        }
 
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
@@ -235,7 +238,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun restore() {
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        if (!hasWebPurchaseLoader) {
+            binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        }
 
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
@@ -506,6 +511,10 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         act.runOnUiThread {
             binding?.webView?.evaluateJavascript(js) { completion() }
         }
+    }
+
+    override fun setHasWebPurchaseLoader(value: Boolean) {
+        hasWebPurchaseLoader = value
     }
 
     @JavascriptInterface

@@ -23,7 +23,13 @@ data class QAction(
         LoadProducts("getProducts"),
         GetContext("getContext"),
         ShowScreen("showScreen"),
-        ScreenAnalytics("screenAnalytics");
+        ScreenAnalytics("screenAnalytics"),
+
+        /**
+         * Internal action: the web page announces it renders its own purchase
+         * loader, so the native purchase spinner is suppressed (no double loader).
+         */
+        PurchaseLoaderPresent("purchaseLoaderPresent");
 
         companion object {
             fun from(type: String?): Type {
