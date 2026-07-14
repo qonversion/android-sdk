@@ -82,7 +82,7 @@ internal class ScreenPresenter(
 
             var processedHtml = injectCustomLocale(screen.body)
             processedHtml = injectTheme(processedHtml)
-            view.displayScreen(screen.id, processedHtml, screen.products)
+            view.displayScreen(screen.id, processedHtml, screen.products, screen.variables)
 
             val shownEvent = ScreenEvent(data = mapOf(
                 "type" to ScreenEventType.ScreenShown.value,
