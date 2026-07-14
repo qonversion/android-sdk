@@ -1,6 +1,7 @@
 package io.qonversion.nocodes.interfaces
 
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.error.NoCodesError
 import com.qonversion.android.sdk.Qonversion
@@ -27,6 +28,22 @@ interface NoCodesDelegate {
      */
     fun onScreenShown(screenId: String, products: List<String>) {
         onScreenShown(screenId)
+    }
+
+    /**
+     * Called when No-Code screen is shown, providing the screen variables authored on it.
+     * Read them by [QScreenVariable.key] to react to the screen's configured values after it
+     * loads; each value keeps its authored type (bool / string / number).
+     *
+     * The default implementation delegates to [onScreenShown], so existing implementations keep
+     * working and this callback fires exactly once.
+     *
+     * @param screenId shown screen Id.
+     * @param products Qonversion product ids configured on the screen (may be empty).
+     * @param variables screen variables authored on the screen (may be empty).
+     */
+    fun onScreenShown(screenId: String, products: List<String>, variables: List<QScreenVariable>) {
+        onScreenShown(screenId, products)
     }
 
     /**
