@@ -5,8 +5,10 @@ import com.qonversion.android.sdk.dto.QonversionError
 class NoCodesError(
     val code: ErrorCode,
     val details: String? = null,
-    val qonversionError: QonversionError? = null, /** is present, if the [code] is [ErrorCode.QonversionError] */
-    val cause: Throwable? = null, /** is present, if the [code] is [ErrorCode.ClientError] - the original error thrown by the client's purchase delegate */
+    /** is present, if the [code] is [ErrorCode.QonversionError] */
+    val qonversionError: QonversionError? = null,
+    /** is present, if the [code] is [ErrorCode.ClientError] - the original error thrown by the client's purchase delegate */
+    val cause: Throwable? = null,
 ) {
     constructor(qonversionError: QonversionError) : this(ErrorCode.QonversionError, null, qonversionError)
 
