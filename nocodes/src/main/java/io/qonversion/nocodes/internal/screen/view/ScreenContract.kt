@@ -1,10 +1,11 @@
 package io.qonversion.nocodes.internal.screen.view
 
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QScreenVariable
 
 internal class ScreenContract {
     interface View {
-        fun displayScreen(screenId: String, html: String)
+        fun displayScreen(screenId: String, html: String, products: List<String>, variables: List<QScreenVariable>)
 
         fun navigateToScreen(screenId: String)
 
@@ -29,6 +30,8 @@ internal class ScreenContract {
         fun finishScreenPreparation()
 
         fun setVariable(name: String, value: String, completion: () -> Unit = {})
+
+        fun setHasWebPurchaseLoader(value: Boolean)
     }
 
     internal interface Presenter {

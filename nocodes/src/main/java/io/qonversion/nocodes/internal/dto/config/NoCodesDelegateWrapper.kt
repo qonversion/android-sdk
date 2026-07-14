@@ -3,6 +3,7 @@ package io.qonversion.nocodes.internal.dto.config
 import android.os.Handler
 import android.os.Looper
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
 import io.qonversion.nocodes.error.NoCodesError
 
@@ -12,9 +13,15 @@ class NoCodesDelegateWrapper(
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    override fun onScreenShown(screenId: String) {
+    override fun onScreenShown(screenId: String, products: List<String>) {
         mainHandler.post {
-            delegate.onScreenShown(screenId)
+            delegate.onScreenShown(screenId, products)
+        }
+    }
+
+    override fun onScreenShown(screenId: String, products: List<String>, variables: List<QScreenVariable>) {
+        mainHandler.post {
+            delegate.onScreenShown(screenId, products, variables)
         }
     }
 

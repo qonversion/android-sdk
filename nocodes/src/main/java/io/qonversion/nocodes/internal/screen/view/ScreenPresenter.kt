@@ -82,7 +82,7 @@ internal class ScreenPresenter(
 
             var processedHtml = injectCustomLocale(screen.body)
             processedHtml = injectTheme(processedHtml)
-            view.displayScreen(screen.id, processedHtml)
+            view.displayScreen(screen.id, processedHtml, screen.products, screen.variables)
 
             val shownEvent = ScreenEvent(data = mapOf(
                 "type" to ScreenEventType.ScreenShown.value,
@@ -186,6 +186,9 @@ internal class ScreenPresenter(
             }
             QAction.Type.ScreenAnalytics -> {
                 handleScreenAnalyticsAction(action)
+            }
+            QAction.Type.PurchaseLoaderPresent -> {
+                view.setHasWebPurchaseLoader(true)
             }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")

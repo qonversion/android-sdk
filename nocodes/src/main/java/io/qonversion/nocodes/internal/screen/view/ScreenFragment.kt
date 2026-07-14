@@ -31,6 +31,7 @@ import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesLoadingView
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
@@ -51,6 +52,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
 
     private var binding: NcFragmentScreenBinding? = null
     private var loadingView: NoCodesLoadingView? = null
+    private var hasWebPurchaseLoader = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -113,7 +115,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding = null
     }
 
-    override fun displayScreen(screenId: String, html: String) {
+    override fun displayScreen(screenId: String, html: String, products: List<String>, variables: List<QScreenVariable>) {
         activity?.runOnUiThread {
             binding?.webView?.loadDataWithBaseURL(
                 null,
@@ -122,7 +124,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 ENCODING,
                 null
             )
-            delegate?.onScreenShown(screenId)
+            delegate?.onScreenShown(screenId, products, variables)
         }
     }
 
@@ -167,7 +169,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun purchase(productId: String, screenId: String?) {
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        if (!hasWebPurchaseLoader) {
+            binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        }
 
         val action = QAction(QAction.Type.Purchase, QAction.Parameter.ProductId, productId)
         delegate?.onActionStartedExecuting(action)
@@ -234,7 +238,9 @@ class ScreenFragment : Fragment(), ScreenContract.View {
     }
 
     override fun restore() {
-        binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        if (!hasWebPurchaseLoader) {
+            binding?.progressBarLayout?.progressBar?.visibility = View.VISIBLE
+        }
 
         val action = QAction(QAction.Type.Restore)
         delegate?.onActionStartedExecuting(action)
@@ -505,6 +511,10 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         act.runOnUiThread {
             binding?.webView?.evaluateJavascript(js) { completion() }
         }
+    }
+
+    override fun setHasWebPurchaseLoader(value: Boolean) {
+        hasWebPurchaseLoader = value
     }
 
     @JavascriptInterface

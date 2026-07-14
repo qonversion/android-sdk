@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -109,8 +110,9 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
     }
 
     // NoCodesDelegate implementation
-    override fun onScreenShown(screenId: String) {
-        addEvent(getString(R.string.screen_shown, screenId))
+    override fun onScreenShown(screenId: String, products: List<String>, variables: List<QScreenVariable>) {
+        val vars = variables.joinToString(", ") { "${it.key}=${it.value}" }
+        addEvent(getString(R.string.screen_shown, "$screenId, products: $products, variables: [$vars]"))
     }
 
     override fun onScreenFailedToLoad(error: NoCodesError) {
