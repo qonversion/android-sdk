@@ -3,7 +3,10 @@ package io.qonversion.nocodes
 import android.util.Log
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.dto.NoCodesTheme
+import io.qonversion.nocodes.dto.QNoCodeScreen
+import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.NoCodesScreenLoadCallback
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.internal.NoCodesInternal
@@ -111,6 +114,44 @@ interface NoCodes {
      * @param contextKey the context key of the screen which must be shown.
      */
     fun showScreen(contextKey: String)
+
+    /**
+     * Load a No-Code screen (from cache or network) without presenting it, so you can decide
+     * whether to present it or show your own fallback UI before any SDK screen appears.
+     *
+     * This is an optional entry point, not the primary loader: screens with the "Preload" option
+     * enabled in the No-Codes builder are preloaded automatically at SDK initialization,
+     * and [showScreen] works on its own.
+     *
+     * A successful load warms the shared screens cache, so a following [showScreen] call
+     * with the same context key renders from cache.
+     *
+     * Unlike [showScreen], this call does not flush pending user properties, so the targeting
+     * basis may differ slightly from a direct [showScreen] call.
+     *
+     * For Java or callback-based usage, see the [loadScreen] overload accepting
+     * a [NoCodesScreenLoadCallback].
+     *
+     * @param contextKey the context key of the screen.
+     * @return the loaded [QNoCodeScreen].
+     * @throws NoCodesException with the code [io.qonversion.nocodes.error.ErrorCode.ScreenNotFound]
+     * when no screen exists for the provided context key, or another code on a network
+     * or other load failure.
+     */
+    @Throws(NoCodesException::class)
+    suspend fun loadScreen(contextKey: String): QNoCodeScreen
+
+    /**
+     * Load a No-Code screen (from cache or network) without presenting it, so you can decide
+     * whether to present it or show your own fallback UI before any SDK screen appears.
+     *
+     * This is a callback-based variant of the suspend [loadScreen] — see its documentation
+     * for details. The [callback] is invoked on the main thread.
+     *
+     * @param contextKey the context key of the screen.
+     * @param callback callback to be notified with the loaded screen or an error.
+     */
+    fun loadScreen(contextKey: String, callback: NoCodesScreenLoadCallback)
 
     /**
      * Use this function to close all No-Code Screens.
