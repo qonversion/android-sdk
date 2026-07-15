@@ -18,6 +18,7 @@ import io.qonversion.nocodes.internal.dto.config.InternalConfig
 import io.qonversion.nocodes.internal.dto.config.NoCodesDelegateWrapper
 import io.qonversion.nocodes.internal.dto.config.PurchaseDelegateWithCallbacksAdapter
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,6 +82,9 @@ internal class NoCodesInternal(
         val screen = try {
             screenService.getScreen(contextKey)
         } catch (e: Exception) {
+            // Coroutine cancellation must propagate as-is to keep structured concurrency
+            // cooperative — wrapping it would turn a caller's cancel into a "network error".
+            if (e is CancellationException) throw e
             // The public contract promises NoCodesException, while raw network exceptions
             // may escape the service layer.
             throw e as? NoCodesException
