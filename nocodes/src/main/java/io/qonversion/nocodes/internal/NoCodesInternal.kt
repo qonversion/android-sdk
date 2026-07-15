@@ -3,7 +3,12 @@ package io.qonversion.nocodes.internal
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.LogLevel
 import io.qonversion.nocodes.dto.NoCodesTheme
+import io.qonversion.nocodes.dto.QNoCodeScreen
+import io.qonversion.nocodes.error.ErrorCode
+import io.qonversion.nocodes.error.NoCodesError
+import io.qonversion.nocodes.error.NoCodesException
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.NoCodesScreenLoadCallback
 import io.qonversion.nocodes.interfaces.PurchaseDelegate
 import io.qonversion.nocodes.interfaces.PurchaseDelegateWithCallbacks
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
@@ -17,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 internal class NoCodesInternal(
     private val internalConfig: InternalConfig,
@@ -65,6 +71,36 @@ internal class NoCodesInternal(
         scope.launch {
             suspendFlushPendingUserProperties()
             screenController.showScreen(contextKey)
+        }
+    }
+
+    override suspend fun loadScreen(contextKey: String): QNoCodeScreen {
+        logger.verbose("loadScreen() -> Loading the screen with the context key $contextKey without presenting")
+        // Pure data load, no presentation. Deliberately skips the pending user properties flush
+        // (unlike showScreen) since nothing is displayed yet.
+        val screen = try {
+            screenService.getScreen(contextKey)
+        } catch (e: Exception) {
+            // The public contract promises NoCodesException, while raw network exceptions
+            // may escape the service layer.
+            throw e as? NoCodesException
+                ?: NoCodesException(ErrorCode.NetworkRequestExecution, e.message, e)
+        }
+        return QNoCodeScreen(screen.id, screen.contextKey)
+    }
+
+    override fun loadScreen(contextKey: String, callback: NoCodesScreenLoadCallback) {
+        scope.launch {
+            try {
+                val screen = loadScreen(contextKey)
+                withContext(Dispatchers.Main) {
+                    callback.onSuccess(screen)
+                }
+            } catch (e: NoCodesException) {
+                withContext(Dispatchers.Main) {
+                    callback.onError(NoCodesError(e))
+                }
+            }
         }
     }
 
