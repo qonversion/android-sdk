@@ -32,6 +32,8 @@ internal class ScreenContract {
         fun setVariable(name: String, value: String, completion: () -> Unit = {})
 
         fun setHasWebPurchaseLoader(value: Boolean)
+
+        fun handleCustomAction(value: String)
     }
 
     internal interface Presenter {
