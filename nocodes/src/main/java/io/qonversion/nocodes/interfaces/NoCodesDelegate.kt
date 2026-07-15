@@ -74,7 +74,8 @@ interface NoCodesDelegate {
      * The No-Codes SDK does not execute anything itself — handle the value in your app code.
      * The screen stays open; close it using [NoCodes.close] if needed.
      *
-     * @param value the string value configured for the custom action in the builder.
+     * @param value the string value configured for the custom action in the builder,
+     * or an empty string if no value was configured.
      */
     fun onCustomAction(value: String) { }
 

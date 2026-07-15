@@ -191,12 +191,8 @@ internal class ScreenPresenter(
                 view.setHasWebPurchaseLoader(true)
             }
             QAction.Type.Custom -> {
-                val value = action.parameters?.get(QAction.Parameter.Value) as? String
-                if (value != null) {
-                    view.handleCustomAction(value)
-                } else {
-                    logger.warn("ScreenPresenter -> custom action is missing the 'value' parameter")
-                }
+                val value = action.parameters?.get(QAction.Parameter.Value) as? String ?: ""
+                view.handleCustomAction(value)
             }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
