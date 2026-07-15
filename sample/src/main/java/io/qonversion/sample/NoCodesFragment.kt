@@ -10,7 +10,7 @@ import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.dto.QNoCodeScreen
-import io.qonversion.nocodes.dto.QScreenVariable
+import io.qonversion.nocodes.dto.QScreenVariableValue
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -114,6 +114,15 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
         NoCodes.shared.loadScreen(contextKey, object : NoCodesScreenLoadCallback {
             override fun onSuccess(screen: QNoCodeScreen) {
                 addEvent(getString(R.string.screen_loaded_presenting, screen.id))
+
+                // The loaded entity carries the typed default variables configured in the
+                // builder — authored custom variables and product slots — readable by key
+                // (e.g. screen.defaultVariable("show_trial")) before anything is presented.
+                val variables = screen.defaultVariables.joinToString(", ") { variable ->
+                    "${variable.kind} ${variable.key} = ${formatVariableValue(variable.value)}"
+                }
+                addEvent(getString(R.string.screen_default_variables, variables))
+
                 NoCodes.shared.showScreen(contextKey)
             }
 
@@ -137,10 +146,16 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
         }
     }
 
+    private fun formatVariableValue(value: QScreenVariableValue): String = when (value) {
+        is QScreenVariableValue.Bool -> value.value.toString()
+        is QScreenVariableValue.Str -> "\"${value.value}\""
+        is QScreenVariableValue.Num -> value.value.toString()
+        QScreenVariableValue.None -> "null"
+    }
+
     // NoCodesDelegate implementation
-    override fun onScreenShown(screenId: String, products: List<String>, variables: List<QScreenVariable>) {
-        val vars = variables.joinToString(", ") { "${it.key}=${it.value}" }
-        addEvent(getString(R.string.screen_shown, "$screenId, products: $products, variables: [$vars]"))
+    override fun onScreenShown(screenId: String) {
+        addEvent(getString(R.string.screen_shown, screenId))
     }
 
     override fun onScreenFailedToLoad(error: NoCodesError) {
