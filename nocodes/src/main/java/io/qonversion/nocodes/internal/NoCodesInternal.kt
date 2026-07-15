@@ -90,7 +90,7 @@ internal class NoCodesInternal(
             throw e as? NoCodesException
                 ?: NoCodesException(ErrorCode.NetworkRequestExecution, e.message, e)
         }
-        return QNoCodeScreen(screen.id, screen.contextKey)
+        return QNoCodeScreen(screen.id, screen.contextKey, screen.variables)
     }
 
     override fun loadScreen(contextKey: String, callback: NoCodesScreenLoadCallback) {

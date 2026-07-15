@@ -31,7 +31,6 @@ import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
 import io.qonversion.nocodes.databinding.NcFragmentScreenBinding
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
-import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.NoCodesLoadingView
 import io.qonversion.nocodes.internal.di.DependenciesAssembly
@@ -115,7 +114,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding = null
     }
 
-    override fun displayScreen(screenId: String, html: String, products: List<String>, variables: List<QScreenVariable>) {
+    override fun displayScreen(screenId: String, html: String) {
         activity?.runOnUiThread {
             binding?.webView?.loadDataWithBaseURL(
                 null,
@@ -124,7 +123,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 ENCODING,
                 null
             )
-            delegate?.onScreenShown(screenId, products, variables)
+            delegate?.onScreenShown(screenId)
         }
     }
 
