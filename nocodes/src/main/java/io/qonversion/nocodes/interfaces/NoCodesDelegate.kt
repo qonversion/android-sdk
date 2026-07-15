@@ -70,6 +70,16 @@ interface NoCodesDelegate {
     fun onActionFinishedExecuting(action: QAction) { }
 
     /**
+     * Called when a custom action configured in the builder is triggered on the screen.
+     * The No-Codes SDK does not execute anything itself — handle the value in your app code.
+     * The screen stays open; close it using [NoCodes.close] if needed.
+     *
+     * @param value the string value configured for the custom action in the builder,
+     * or an empty string if no value was configured.
+     */
+    fun onCustomAction(value: String) { }
+
+    /**
      * Called when No-Code flow is finished and the screen is closed.
      */
     fun onFinished() { }

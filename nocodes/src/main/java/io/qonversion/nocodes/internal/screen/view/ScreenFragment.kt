@@ -140,6 +140,13 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
+    override fun handleCustomAction(value: String) {
+        val action = QAction(QAction.Type.Custom, QAction.Parameter.Value, value)
+        delegate?.onActionStartedExecuting(action)
+        delegate?.onCustomAction(value)
+        delegate?.onActionFinishedExecuting(action)
+    }
+
     override fun openLink(url: String) {
         val action = QAction(QAction.Type.Url, QAction.Parameter.Url, url)
         delegate?.onActionStartedExecuting(action)
