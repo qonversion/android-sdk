@@ -9,11 +9,11 @@ jobs:
     name: Upload archives
     runs-on: ubuntu-latest
     steps:
+      # No explicit ref: on the release event the default ref is the release
+      # tag, so the published artifacts always match the released commit even
+      # if main has moved forward since the release was published.
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          ref:
-            main
 
       - name: Prepare Sonatype Gradle properties
         run: |
