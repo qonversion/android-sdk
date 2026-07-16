@@ -19,12 +19,24 @@ data class QNoCodeScreen(
 ) {
 
     /**
+     * The Qonversion product id selected by default when the screen opens (the builder's
+     * Default Product), or `null` when none is configured. Convenience over the
+     * [QScreenVariable.Kind.SelectedProduct] entry of [defaultVariables].
+     */
+    val defaultSelectedProductId: String?
+        get() = defaultVariables
+            .firstOrNull { it.kind == QScreenVariable.Kind.SelectedProduct }
+            ?.let { (it.value as? QScreenVariableValue.Str)?.value }
+
+    /**
      * Returns the default variable configured under the given [key], or `null` when the
      * screen has no variable with that exact (case-sensitive) key.
      *
      * Keys are only unique within a kind — a custom variable and a product slot may share
      * a name — so pass [kind] to disambiguate; without it the first match in payload order
      * (custom variables, then product slots, then the selected product) is returned.
+     *
+     * For the default selected product prefer [defaultSelectedProductId] — it needs no key.
      */
     @JvmOverloads
     fun defaultVariable(key: String, kind: QScreenVariable.Kind? = null): QScreenVariable? =

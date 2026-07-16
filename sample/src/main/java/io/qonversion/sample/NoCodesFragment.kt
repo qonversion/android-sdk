@@ -122,6 +122,7 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
                     "${variable.kind} ${variable.key} = ${variable.value.asString()}"
                 }
                 addEvent(getString(R.string.screen_default_variables, variables))
+                addEvent(getString(R.string.screen_default_selected_product, screen.defaultSelectedProductId ?: "none"))
 
                 NoCodes.shared.showScreen(contextKey)
             }
