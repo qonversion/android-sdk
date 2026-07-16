@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      lib:
+        description: 'Package to release'
+        required: true
+        type: choice
+        options:
+          - sdk
+          - nocodes
+        default: sdk
+      bump:
+        description: 'Version part to bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      version:
+        description: 'Explicit release version like 9.5.1 (overrides bump)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Release notes markdown (empty — auto-generated from pull requests)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    uses: qonversion/shared-sdk-workflows/.github/workflows/release.yml@main
+    with:
+      lib: ${{ inputs.lib }}
+      bump: ${{ inputs.bump }}
+      version: ${{ inputs.version }}
+      release_notes: ${{ inputs.release_notes }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
