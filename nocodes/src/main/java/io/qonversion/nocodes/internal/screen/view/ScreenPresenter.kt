@@ -187,6 +187,13 @@ internal class ScreenPresenter(
             QAction.Type.ScreenAnalytics -> {
                 handleScreenAnalyticsAction(action)
             }
+            QAction.Type.PurchaseLoaderPresent -> {
+                view.setHasWebPurchaseLoader(true)
+            }
+            QAction.Type.Custom -> {
+                val value = action.parameters?.get(QAction.Parameter.Value) as? String ?: ""
+                view.handleCustomAction(value)
+            }
             else -> {
                 logger.warn("ScreenPresenter -> action type ${action.type} is not supported")
             }

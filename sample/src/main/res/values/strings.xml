@@ -144,6 +144,13 @@
     <string name="show_screen">Show Screen</string>
     <string name="context_key">Context Key</string>
     <string name="show_nocodes_screen">Show No-Code Screen</string>
+    <string name="load_before_present">Load Before Present</string>
+    <string name="load_before_present_description">Ask-first: load the screen, then present it or show your own fallback.</string>
+    <string name="load_then_show_nocodes_screen">Load, Then Present or Fallback</string>
+    <string name="screen_loaded_presenting">Screen loaded (id: %1$s), presenting from warm cache</string>
+    <string name="screen_default_variables">Default variables: [%1$s]</string>
+    <string name="screen_default_selected_product">Default selected product: %1$s</string>
+    <string name="screen_load_failed_fallback">Load failed (%1$s), showing app fallback instead of the No-Code screen</string>
     <string name="presentation_config">Presentation Config</string>
     <string name="presentation_style">Presentation Style:</string>
     <string name="set_presentation_config">Set Presentation Config</string>

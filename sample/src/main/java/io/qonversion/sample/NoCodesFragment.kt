@@ -9,9 +9,11 @@ import androidx.fragment.app.Fragment
 import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
+import io.qonversion.nocodes.dto.QNoCodeScreen
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
+import io.qonversion.nocodes.interfaces.NoCodesScreenLoadCallback
 import io.qonversion.sample.databinding.FragmentNocodesBinding
 
 class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
@@ -48,6 +50,16 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
             if (contextKey.isNotEmpty()) {
                 saveLastContextKey(requireContext(), contextKey)
                 showScreen(contextKey)
+            } else {
+                Toast.makeText(context, getString(R.string.please_enter_context_key), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.buttonLoadThenShowScreen.setOnClickListener {
+            val contextKey = binding.editContextKey.text.toString()
+            if (contextKey.isNotEmpty()) {
+                saveLastContextKey(requireContext(), contextKey)
+                loadThenShowScreen(contextKey)
             } else {
                 Toast.makeText(context, getString(R.string.please_enter_context_key), Toast.LENGTH_SHORT).show()
             }
@@ -93,6 +105,33 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
     private fun showScreen(contextKey: String) {
         addEvent(getString(R.string.showing_screen, contextKey))
         NoCodes.shared.showScreen(contextKey)
+    }
+
+    private fun loadThenShowScreen(contextKey: String) {
+        // Ask-first gate: check the screen's availability before anything is presented,
+        // so on failure we can show our own fallback UI instead of the SDK skeleton.
+        NoCodes.shared.loadScreen(contextKey, object : NoCodesScreenLoadCallback {
+            override fun onSuccess(screen: QNoCodeScreen) {
+                addEvent(getString(R.string.screen_loaded_presenting, screen.id))
+
+                // The loaded entity carries the typed default variables configured in the
+                // builder — custom variables, product slots and the default selected
+                // product — readable by key (e.g. screen.defaultVariable("primary",
+                // QScreenVariable.Kind.Product)) before anything is presented.
+                val variables = screen.defaultVariables.joinToString(", ") { variable ->
+                    "${variable.kind} ${variable.key} = ${variable.value.asString()}"
+                }
+                addEvent(getString(R.string.screen_default_variables, variables))
+                addEvent(getString(R.string.screen_default_selected_product, screen.defaultSelectedProductId ?: "none"))
+
+                NoCodes.shared.showScreen(contextKey)
+            }
+
+            override fun onError(error: NoCodesError) {
+                // The SDK skeleton never appeared, so the app can show its own fallback UI here.
+                addEvent(getString(R.string.screen_load_failed_fallback, error.code.toString()))
+            }
+        })
     }
 
     private fun addEvent(event: String) {

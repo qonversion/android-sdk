@@ -36,6 +36,12 @@ class NoCodesDelegateWrapper(
         }
     }
 
+    override fun onCustomAction(value: String) {
+        mainHandler.post {
+            delegate.onCustomAction(value)
+        }
+    }
+
     override fun onFinished() {
         mainHandler.post {
             delegate.onFinished()

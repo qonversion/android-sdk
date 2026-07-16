@@ -23,7 +23,20 @@ data class QAction(
         LoadProducts("getProducts"),
         GetContext("getContext"),
         ShowScreen("showScreen"),
-        ScreenAnalytics("screenAnalytics");
+        ScreenAnalytics("screenAnalytics"),
+
+        /**
+         * Internal action: the web page announces it renders its own purchase
+         * loader, so the native purchase spinner is suppressed (no double loader).
+         */
+        PurchaseLoaderPresent("purchaseLoaderPresent"),
+
+        /**
+         * Custom action configured in the builder. The SDK does not execute anything
+         * itself — the configured string value is delivered to the app code via
+         * [io.qonversion.nocodes.interfaces.NoCodesDelegate.onCustomAction].
+         */
+        Custom("custom");
 
         companion object {
             fun from(type: String?): Type {
@@ -42,7 +55,8 @@ data class QAction(
         ProductIds("productIds"),
         ScreenId("screenId"),
         AnalyticsType("type"),
-        PageIndex("page_index");
+        PageIndex("page_index"),
+        Value("value");
 
         companion object {
             fun from(key: String?) = entries.find { it.key == key }

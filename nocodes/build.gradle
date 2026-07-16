@@ -34,6 +34,13 @@ android {
         jvmToolchain(17)
     }
 
+    kotlinOptions {
+        // Compile interface default methods (NoCodesDelegate & co.) to real JVM default
+        // methods so adding a new one stays source- and binary-compatible for Java
+        // clients; -compatibility keeps DefaultImpls for previously compiled Kotlin code.
+        freeCompilerArgs += ['-Xjvm-default=all-compatibility']
+    }
+
     buildFeatures {
         viewBinding true
         buildConfig true
