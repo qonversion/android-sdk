@@ -10,7 +10,6 @@ import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.dto.QNoCodeScreen
-import io.qonversion.nocodes.dto.QScreenVariableValue
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -116,10 +115,11 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
                 addEvent(getString(R.string.screen_loaded_presenting, screen.id))
 
                 // The loaded entity carries the typed default variables configured in the
-                // builder — authored custom variables and product slots — readable by key
-                // (e.g. screen.defaultVariable("show_trial")) before anything is presented.
+                // builder — custom variables, product slots and the default selected
+                // product — readable by key (e.g. screen.defaultVariable("primary",
+                // QScreenVariable.Kind.Product)) before anything is presented.
                 val variables = screen.defaultVariables.joinToString(", ") { variable ->
-                    "${variable.kind} ${variable.key} = ${formatVariableValue(variable.value)}"
+                    "${variable.kind} ${variable.key} = ${variable.value.asString()}"
                 }
                 addEvent(getString(R.string.screen_default_variables, variables))
 
@@ -144,13 +144,6 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
         } else {
             binding.eventsText.text = events.joinToString("\n\n")
         }
-    }
-
-    private fun formatVariableValue(value: QScreenVariableValue): String = when (value) {
-        is QScreenVariableValue.Bool -> value.value.toString()
-        is QScreenVariableValue.Str -> "\"${value.value}\""
-        is QScreenVariableValue.Num -> value.value.toString()
-        QScreenVariableValue.None -> "null"
     }
 
     // NoCodesDelegate implementation

@@ -39,6 +39,13 @@ data class QScreenVariable(
         Product,
 
         /**
+         * The screen's Default Product configured in the builder: [key] is always
+         * `"default_selected_product"` and [value] is the Qonversion product id selected
+         * by default.
+         */
+        SelectedProduct,
+
+        /**
          * A kind introduced on the backend after this SDK version was released.
          */
         Unknown,
@@ -50,6 +57,22 @@ data class QScreenVariable(
  * collapsing everything to a String.
  */
 sealed class QScreenVariableValue {
+
+    /**
+     * The value rendered as a plain string regardless of its native type: `"true"`/`"false"`
+     * for booleans, the string itself, a number without a trailing `.0` when integral
+     * (`34`, `3.5`), or an empty string for [None].
+     */
+    fun asString(): String = when (this) {
+        is Bool -> value.toString()
+        is Str -> value
+        is Num -> if (value % 1.0 == 0.0 && kotlin.math.abs(value) < MAX_INTEGRAL_AS_LONG) {
+            value.toLong().toString()
+        } else {
+            value.toString()
+        }
+        None -> ""
+    }
     /**
      * A boolean default value.
      * @property value the configured boolean.
@@ -72,4 +95,9 @@ sealed class QScreenVariableValue {
      * A `null`/absent configured default.
      */
     object None : QScreenVariableValue()
+
+    private companion object {
+        // Doubles lose integer precision beyond 2^53; render such values as-is.
+        const val MAX_INTEGRAL_AS_LONG = 1e15
+    }
 }

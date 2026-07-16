@@ -41,6 +41,7 @@ internal class ScreenMapper : Mapper<NoCodeScreen?> {
     private fun mapVariableKind(rawKind: String?): QScreenVariable.Kind = when (rawKind) {
         null, KIND_CUSTOM -> QScreenVariable.Kind.Custom
         KIND_PRODUCT -> QScreenVariable.Kind.Product
+        KIND_SELECTED_PRODUCT -> QScreenVariable.Kind.SelectedProduct
         else -> QScreenVariable.Kind.Unknown
     }
 
@@ -54,5 +55,6 @@ internal class ScreenMapper : Mapper<NoCodeScreen?> {
     companion object {
         private const val KIND_CUSTOM = "custom"
         private const val KIND_PRODUCT = "product"
+        private const val KIND_SELECTED_PRODUCT = "selected_product"
     }
 }
