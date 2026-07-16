@@ -3,13 +3,42 @@ package io.qonversion.nocodes.dto
 /**
  * A loaded No-Code screen returned from [io.qonversion.nocodes.NoCodes.loadScreen].
  *
- * Exposes only the screen identifiers — the screen content stays internal, as rendering
- * remains the SDK's job via [io.qonversion.nocodes.NoCodes.showScreen].
+ * Exposes the screen identifiers and the typed default variables configured in the builder —
+ * the screen content stays internal, as rendering remains the SDK's job via
+ * [io.qonversion.nocodes.NoCodes.showScreen].
  *
  * @property id identifier of the screen.
  * @property contextKey the context key of the screen set in the No-Codes builder.
+ * @property defaultVariables typed default variables configured in the builder — authored
+ * custom variables and product slots. Read them by [QScreenVariable.key] (may be empty).
  */
 data class QNoCodeScreen(
     val id: String,
     val contextKey: String,
-)
+    val defaultVariables: List<QScreenVariable> = emptyList(),
+) {
+
+    /**
+     * The Qonversion product id selected by default when the screen opens (the builder's
+     * Default Product), or `null` when none is configured. Convenience over the
+     * [QScreenVariable.Kind.SelectedProduct] entry of [defaultVariables].
+     */
+    val defaultSelectedProductId: String?
+        get() = defaultVariables
+            .firstOrNull { it.kind == QScreenVariable.Kind.SelectedProduct }
+            ?.let { (it.value as? QScreenVariableValue.Str)?.value }
+
+    /**
+     * Returns the default variable configured under the given [key], or `null` when the
+     * screen has no variable with that exact (case-sensitive) key.
+     *
+     * Keys are only unique within a kind — a custom variable and a product slot may share
+     * a name — so pass [kind] to disambiguate; without it the first match in payload order
+     * (custom variables, then product slots, then the selected product) is returned.
+     *
+     * For the default selected product prefer [defaultSelectedProductId] — it needs no key.
+     */
+    @JvmOverloads
+    fun defaultVariable(key: String, kind: QScreenVariable.Kind? = null): QScreenVariable? =
+        defaultVariables.firstOrNull { it.key == key && (kind == null || it.kind == kind) }
+}

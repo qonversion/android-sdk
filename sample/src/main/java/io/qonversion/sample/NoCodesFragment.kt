@@ -10,7 +10,6 @@ import io.qonversion.nocodes.NoCodes
 import io.qonversion.nocodes.dto.NoCodesTheme
 import io.qonversion.nocodes.dto.QAction
 import io.qonversion.nocodes.dto.QNoCodeScreen
-import io.qonversion.nocodes.dto.QScreenVariable
 import io.qonversion.nocodes.error.NoCodesError
 import io.qonversion.nocodes.interfaces.CustomVariablesDelegate
 import io.qonversion.nocodes.interfaces.NoCodesDelegate
@@ -114,6 +113,17 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
         NoCodes.shared.loadScreen(contextKey, object : NoCodesScreenLoadCallback {
             override fun onSuccess(screen: QNoCodeScreen) {
                 addEvent(getString(R.string.screen_loaded_presenting, screen.id))
+
+                // The loaded entity carries the typed default variables configured in the
+                // builder — custom variables, product slots and the default selected
+                // product — readable by key (e.g. screen.defaultVariable("primary",
+                // QScreenVariable.Kind.Product)) before anything is presented.
+                val variables = screen.defaultVariables.joinToString(", ") { variable ->
+                    "${variable.kind} ${variable.key} = ${variable.value.asString()}"
+                }
+                addEvent(getString(R.string.screen_default_variables, variables))
+                addEvent(getString(R.string.screen_default_selected_product, screen.defaultSelectedProductId ?: "none"))
+
                 NoCodes.shared.showScreen(contextKey)
             }
 
@@ -138,9 +148,8 @@ class NoCodesFragment : Fragment(), NoCodesDelegate, CustomVariablesDelegate {
     }
 
     // NoCodesDelegate implementation
-    override fun onScreenShown(screenId: String, products: List<String>, variables: List<QScreenVariable>) {
-        val vars = variables.joinToString(", ") { "${it.key}=${it.value}" }
-        addEvent(getString(R.string.screen_shown, "$screenId, products: $products, variables: [$vars]"))
+    override fun onScreenShown(screenId: String) {
+        addEvent(getString(R.string.screen_shown, screenId))
     }
 
     override fun onScreenFailedToLoad(error: NoCodesError) {

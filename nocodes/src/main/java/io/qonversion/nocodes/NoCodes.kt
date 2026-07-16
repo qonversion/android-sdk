@@ -126,6 +126,10 @@ interface NoCodes {
      * A successful load warms the shared screens cache, so a following [showScreen] call
      * with the same context key renders from cache.
      *
+     * The returned screen carries the typed default variables configured in the builder
+     * ([QNoCodeScreen.defaultVariables]) — authored custom variables and product slots —
+     * so you can read them by key before presenting.
+     *
      * Unlike [showScreen], this call does not flush pending user properties, so the targeting
      * basis may differ slightly from a direct [showScreen] call.
      *
