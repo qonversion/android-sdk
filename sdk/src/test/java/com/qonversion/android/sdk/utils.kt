@@ -26,16 +26,6 @@ fun <T> Any.getPrivateField(name: String): T {
     return field.get(this) as T
 }
 
-@Suppress("DEPRECATION")
-fun mockSubsSkuDetails(
-    sku: String = DEFAULT_SUBS_SKU,
-    subsPeriod: String = DEFAULT_SUBS_PERIOD,
-    freeTrialPeriod: String? = null
-): SkuDetails {
-    val skuDetailsJson = mockSubsSkuDetailsJson(sku, subsPeriod, freeTrialPeriod)
-    return SkuDetails(skuDetailsJson)
-}
-
 fun mockSubsSkuDetailsJson(
     sku: String = DEFAULT_SUBS_SKU,
     subsPeriod: String = DEFAULT_SUBS_PERIOD,
@@ -56,11 +46,6 @@ fun mockSubsPurchase(sku: String = DEFAULT_SUBS_SKU): Purchase {
 
 fun mockIncorrectSubsPurchase(): Purchase {
     return Purchase("{$SUBS_PURCHASE_INCOMPLETE}", PURCHASE_SIGNATURE)
-}
-
-@Suppress("DEPRECATION")
-fun mockInAppSkuDetails(): SkuDetails {
-    return SkuDetails(mockInAppSkuDetailsJson())
 }
 
 fun mockInAppSkuDetailsJson(
