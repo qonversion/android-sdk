@@ -245,7 +245,7 @@ internal class QonversionInternal(
         })
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun offerings(callback: QonversionOfferingsCallback) {
         productCenterManager.offerings(object : QonversionOfferingsCallback {
             override fun onSuccess(offerings: QOfferings) =
