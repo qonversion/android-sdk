@@ -6,7 +6,6 @@
     <string name="home">Home</string>
     <string name="products">Products</string>
     <string name="entitlements">Entitlements</string>
-    <string name="offerings">Offerings</string>
     <string name="remote_configs">Remote Configs</string>
     <string name="user">User</string>
     <string name="nocodes">No-Codes</string>
@@ -40,7 +39,6 @@
     <string name="store_id">Store ID:</string>
     <string name="base_plan_id">Base Plan ID:</string>
     <string name="offer_id">Offer ID:</string>
-    <string name="offering_id">Offering ID:</string>
     <string name="product_type">Type:</string>
     <string name="subscription_period">Period:</string>
     <string name="trial_period">Trial Period:</string>
@@ -78,16 +76,6 @@
     <string name="source">Source:</string>
     <string name="started">Started:</string>
     <string name="expires">Expires:</string>
-    
-    <!-- Offerings -->
-    <string name="load_offerings">Load Offerings</string>
-    <string name="no_offerings_loaded">No Offerings Loaded</string>
-    <string name="tap_button_to_load_offerings">Tap the button above to load available offerings</string>
-    <string name="no_offerings_found">No offerings found</string>
-    <string name="error_loading_offerings">Error loading offerings</string>
-    <string name="main_offering_id">Main Offering ID: %1$s</string>
-    <string name="tag_format">Tag: %1$s</string>
-    <string name="products_count">Products: %1$d</string>
     
     <!-- Remote Configs -->
     <string name="remote_config_list">Remote Config List</string>
