@@ -206,30 +206,6 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/offering_id"
-                            android:textColor="@color/colorGrayText"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/offeringId"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp"
-                            tools:text="main" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:text="@string/product_type"
                             android:textColor="@color/colorGrayText"
                             android:textSize="14sp" />
