@@ -80,7 +80,6 @@ class ProductDetailFragment : Fragment() {
         binding.storeId.text = product.storeId ?: getString(R.string.not_available)
         binding.basePlanId.text = product.basePlanId ?: getString(R.string.not_available)
         binding.offerId.text = product.storeDetails?.defaultSubscriptionOfferDetails?.offerId ?: getString(R.string.not_available)
-        binding.offeringId.text = product.offeringId ?: getString(R.string.not_available)
         binding.productType.text = product.type.name
 
         val storeDetails = product.storeDetails

@@ -22,9 +22,7 @@ internal class ScreenContract {
 
         fun sendProductsToWebView(jsonData: String)
 
-        fun injectProductsContext(jsScript: String)
-
-        fun handleGetContext(variables: List<String>)
+        fun handleGetContext(variables: List<String>, screenProductIds: List<String>)
 
         fun finishScreenPreparation()
 

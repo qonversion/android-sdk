@@ -44,10 +44,6 @@ class OtherFragment : Fragment() {
 
     private fun setupButtons() {
         // Navigation buttons
-        binding.buttonOfferings.setOnClickListener {
-            findNavController().navigate(R.id.offeringsFragment)
-        }
-
         binding.buttonRemoteConfigs.setOnClickListener {
             findNavController().navigate(R.id.remoteConfigsFragment)
         }

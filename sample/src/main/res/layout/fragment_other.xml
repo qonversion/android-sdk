@@ -48,25 +48,11 @@
                     android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonOfferings"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/offerings"
-                    android:textColor="@color/colorWhite"
-                    app:backgroundTint="@color/colorDark"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_offering"
-                    app:iconTint="@color/colorWhite"
-                    app:iconGravity="textStart" />
-
-                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonRemoteConfigs"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/remote_configs"
                     android:textColor="@color/colorWhite"
                     app:backgroundTint="@color/colorDark"

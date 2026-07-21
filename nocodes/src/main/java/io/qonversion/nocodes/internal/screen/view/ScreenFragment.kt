@@ -22,9 +22,13 @@ import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.eligibility.QEligibility
+import com.qonversion.android.sdk.dto.eligibility.QIntroEligibilityStatus
 import com.qonversion.android.sdk.dto.entitlements.QEntitlement
 import com.qonversion.android.sdk.dto.products.QProduct
+import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
+import com.qonversion.android.sdk.listeners.QonversionEligibilityCallback
 import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
 import com.qonversion.android.sdk.listeners.QonversionProductsCallback
 import com.qonversion.android.sdk.listeners.QonversionPurchaseCallback
@@ -334,8 +338,24 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         binding?.webView?.evaluateJavascript("window.dispatchEvent(new CustomEvent(\"setProducts\",  {detail: $jsonData} ))", null)
     }
 
-    override fun handleGetContext(variables: List<String>) {
-        val productIds = extractProductIds(variables)
+    override fun handleGetContext(variables: List<String>, screenProductIds: List<String>) {
+        val requestedProductIds = extractProductIds(variables)
+        val checkEligibility = requiresIntroEligibility(variables)
+        // Intro conditions need entries for every screen product, not only the ones
+        // referenced by three-part variables: hasAnyIntro aggregates over all of
+        // them, and slot variables (vars.products.{slot}) are resolved by the
+        // runtime against ctx.products by the bound product id.
+        val productIds = if (checkEligibility) {
+            (requestedProductIds + screenProductIds).distinct()
+        } else {
+            requestedProductIds
+        }
+        if (variables.contains(HAS_ANY_INTRO_VARIABLE) && productIds.isEmpty()) {
+            logger.warn(
+                "products.hasAnyIntro is used in conditions, but the screen has " +
+                    "no known products — the condition will evaluate to false"
+            )
+        }
 
         var activeIds: List<String> = emptyList()
         var fetchedUserProperties: Map<String, String> = emptyMap()
@@ -347,7 +367,7 @@ class ScreenFragment : Fragment(), ScreenContract.View {
                 remainingLoads--
                 if (remainingLoads > 0) return
             }
-            loadProductsAndSendContext(activeIds, productIds, fetchedUserProperties)
+            loadProductsAndSendContext(activeIds, productIds, fetchedUserProperties, checkEligibility)
         }
 
         Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
@@ -386,20 +406,45 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }.distinct()
     }
 
+    private fun requiresIntroEligibility(variables: List<String>): Boolean {
+        return variables.any { variable ->
+            if (!variable.startsWith(PRODUCTS_VARIABLE_PREFIX) &&
+                !variable.startsWith(SLOT_PRODUCTS_VARIABLE_PREFIX)
+            ) {
+                return@any false
+            }
+            variable == HAS_ANY_INTRO_VARIABLE ||
+                variable.endsWith(HAS_INTRO_VARIABLE_SUFFIX) ||
+                variable.endsWith(INTRO_TYPE_VARIABLE_SUFFIX)
+        }
+    }
+
     private fun loadProductsAndSendContext(
         activeIds: List<String>,
         productIds: List<String>,
-        userProperties: Map<String, String> = emptyMap()
+        userProperties: Map<String, String> = emptyMap(),
+        checkEligibility: Boolean = false
     ) {
         if (productIds.isEmpty()) {
-            sendContextResponse(activeIds, org.json.JSONObject(), userProperties)
+            // An explicit false keeps products.hasAnyIntro defined even when the
+            // screen has no known products, matching the evaluator's
+            // missing-variable → false.
+            val emptyContext = org.json.JSONObject().put("hasAnyIntro", "false")
+            sendContextResponse(activeIds, emptyContext, userProperties)
             return
         }
 
         Qonversion.shared.products(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
-                val productsContext = buildProductsContextJSON(products, productIds)
-                sendContextResponse(activeIds, productsContext, userProperties)
+                if (!checkEligibility) {
+                    sendContextResponse(activeIds, buildProductsContextJSON(products, productIds, emptyMap()), userProperties)
+                    return
+                }
+
+                val availableIds = productIds.filter { products.containsKey(it) }
+                loadIntroEligibility(availableIds) { eligibilities ->
+                    sendContextResponse(activeIds, buildProductsContextJSON(products, productIds, eligibilities), userProperties)
+                }
             }
 
             override fun onError(error: QonversionError) {
@@ -409,34 +454,68 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         })
     }
 
-    private fun buildProductsContextJSON(products: Map<String, QProduct>, productIds: List<String>): org.json.JSONObject {
+    private fun loadIntroEligibility(
+        productIds: List<String>,
+        completion: (Map<String, QEligibility>) -> Unit
+    ) {
+        if (productIds.isEmpty()) {
+            completion(emptyMap())
+            return
+        }
+
+        Qonversion.shared.checkTrialIntroEligibility(productIds, object : QonversionEligibilityCallback {
+            override fun onSuccess(eligibilities: Map<String, QEligibility>) {
+                completion(eligibilities)
+            }
+
+            override fun onError(error: QonversionError) {
+                logger.error("Failed to load intro eligibility: ${error.description}")
+                completion(emptyMap())
+            }
+        })
+    }
+
+    // Only an explicit ineligible status hides the intro: unknown and
+    // nonIntroOrTrialProduct statuses, missing entries, and eligibility loading
+    // failures all fall back to eligible to keep the pre-eligibility behavior
+    // of the intro conditions. Store offer presence still gates hasIntro.
+    private fun isIntroEligible(eligibility: QEligibility?): Boolean {
+        return eligibility?.status != QIntroEligibilityStatus.Ineligible
+    }
+
+    private fun buildProductsContextJSON(
+        products: Map<String, QProduct>,
+        productIds: List<String>,
+        eligibilities: Map<String, QEligibility>
+    ): org.json.JSONObject {
         val json = org.json.JSONObject()
         var hasAnyIntro = false
 
         for (id in productIds) {
             val product = products[id] ?: continue
             val offerDetails = product.storeDetails?.defaultSubscriptionOfferDetails
-            val hasIntro = offerDetails?.let { it.trialPhase != null || it.introPhase != null } ?: false
+            val hasOffer = offerDetails?.let { it.trialPhase != null || it.introPhase != null } ?: false
+            val hasIntro = hasOffer && isIntroEligible(eligibilities[id])
             if (hasIntro) hasAnyIntro = true
-
-            val introType = offerDetails?.let { offer ->
-                val phase = offer.trialPhase ?: offer.introPhase
-                when (phase?.type) {
-                    QProductPricingPhase.Type.FreeTrial -> "free_trial"
-                    QProductPricingPhase.Type.DiscountedSinglePayment -> "pay_up_front"
-                    QProductPricingPhase.Type.DiscountedRecurringPayment -> "pay_as_you_go"
-                    else -> ""
-                }
-            } ?: ""
 
             val productJson = org.json.JSONObject()
             productJson.put("hasIntro", if (hasIntro) "true" else "false")
-            productJson.put("introType", introType)
+            productJson.put("introType", if (hasIntro) mapIntroType(offerDetails) else "")
             json.put(id, productJson)
         }
 
         json.put("hasAnyIntro", if (hasAnyIntro) "true" else "false")
         return json
+    }
+
+    private fun mapIntroType(offerDetails: QProductOfferDetails?): String {
+        val phase = offerDetails?.trialPhase ?: offerDetails?.introPhase
+        return when (phase?.type) {
+            QProductPricingPhase.Type.FreeTrial -> "free_trial"
+            QProductPricingPhase.Type.DiscountedSinglePayment -> "pay_up_front"
+            QProductPricingPhase.Type.DiscountedRecurringPayment -> "pay_as_you_go"
+            else -> ""
+        }
     }
 
     private fun sendContextResponse(
@@ -578,12 +657,6 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         }
     }
 
-    override fun injectProductsContext(jsScript: String) {
-        activity?.runOnUiThread {
-            binding?.webView?.evaluateJavascript(jsScript, null)
-        }
-    }
-
     companion object {
         private const val EX_CONTEXT_KEY = "contextKey"
         private const val EX_SCREEN_ID = "screenId"
@@ -591,6 +664,15 @@ class ScreenFragment : Fragment(), ScreenContract.View {
         private const val ENCODING = "UTF-8"
         private const val PREFS_NAME = "io.qonversion.nocodes"
         private const val PREF_ALREADY_LAUNCHED = "alreadyLaunchedBefore"
+
+        // Names of the builder's intro condition variables (conditionalLogicVariables.ts
+        // in dash-mono). Must stay in sync with the builder: a variable missing here
+        // silently skips the eligibility request for screens that use it.
+        private const val PRODUCTS_VARIABLE_PREFIX = "products."
+        private const val SLOT_PRODUCTS_VARIABLE_PREFIX = "vars.products."
+        private const val HAS_ANY_INTRO_VARIABLE = "products.hasAnyIntro"
+        private const val HAS_INTRO_VARIABLE_SUFFIX = ".hasIntro"
+        private const val INTRO_TYPE_VARIABLE_SUFFIX = ".introType"
 
         fun getArguments(contextKey: String?, screenId: String?) = Bundle().also {
             it.putString(EX_CONTEXT_KEY, contextKey)

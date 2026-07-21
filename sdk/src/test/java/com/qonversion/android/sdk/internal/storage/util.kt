@@ -37,17 +37,17 @@ internal class Util {
                 "main" to QProduct(
                     qonversionId = "main",
                     storeId = "qonversion_subs_weekly",
-                    basePlanId = null,
+                    storeBasePlanId = null,
                 ),
                 "in_app" to QProduct(
                     qonversionId = "in_app",
                     storeId = "qonversion_inapp_consumable",
-                    basePlanId = null,
+                    storeBasePlanId = null,
                 ),
                 "annual" to QProduct(
                     qonversionId = "annual",
                     storeId = "qonversion_subs_annual",
-                    basePlanId = null,
+                    storeBasePlanId = null,
                 )
             ),
             permissions = mapOf(
@@ -88,7 +88,7 @@ internal class Util {
                 "in_app" to QProduct(
                     qonversionId = "in_app",
                     storeId = "qonversion_inapp_consumable",
-                    basePlanId = null,
+                    storeBasePlanId = null,
                 )
             ),
             offerings = QOfferings(
@@ -99,12 +99,12 @@ internal class Util {
                         QProduct(
                             qonversionId = "in_app",
                             storeId = "qonversion_inapp_consumable",
-                            basePlanId = null,
+                            storeBasePlanId = null,
                         ),
                         QProduct(
                             qonversionId = "main",
                             storeId = "qonversion_subs_weekly",
-                            basePlanId = null,
+                            storeBasePlanId = null,
                         )
                     )
                 ),
@@ -116,12 +116,12 @@ internal class Util {
                             QProduct(
                                 qonversionId = "in_app",
                                 storeId = "qonversion_inapp_consumable",
-                                basePlanId = null,
+                                storeBasePlanId = null,
                             ),
                             QProduct(
                                 qonversionId = "main",
                                 storeId = "qonversion_subs_weekly",
-                                basePlanId = null,
+                                storeBasePlanId = null,
                             )
                         )
                     )

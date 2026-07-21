@@ -38,12 +38,6 @@
         tools:layout="@layout/fragment_entitlements" />
 
     <fragment
-        android:id="@+id/offeringsFragment"
-        android:name="io.qonversion.sample.OfferingsFragment"
-        android:label="@string/offerings"
-        tools:layout="@layout/fragment_offerings" />
-
-    <fragment
         android:id="@+id/remoteConfigsFragment"
         android:name="io.qonversion.sample.RemoteConfigsFragment"
         android:label="@string/remote_configs"
