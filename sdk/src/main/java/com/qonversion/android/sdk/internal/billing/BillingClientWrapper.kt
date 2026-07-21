@@ -373,19 +373,35 @@ internal class BillingClientWrapper(
     }
 
     /**
-     * Resolves the offer token for a one-time (in-app) product. A plain product without
-     * a configured purchase option keeps the legacy behavior (no offer token); when a
-     * purchase option is configured via [QProductStoreDetails.basePlanId], its token is
-     * used, mirroring subscription base-plan selection.
+     * Resolves the offer token for a one-time (in-app) product.
+     *
+     * - A plain product without a configured purchase option keeps the legacy behavior
+     *   (no offer token).
+     * - When a purchase option is configured via [QProductStoreDetails.basePlanId] and it
+     *   matches an available one-time offer, that offer's token is used, mirroring
+     *   subscription base-plan selection.
+     * - When a purchase option is configured but no offer matches it (e.g. a stale or
+     *   mistyped id), we log a warning and fall back to the default one-time offer rather
+     *   than failing the purchase — otherwise existing integrations with a stale
+     *   base_plan_id would start failing where they used to succeed.
      */
     private fun resolveInAppOfferToken(
         product: QProduct,
         storeDetails: QProductStoreDetails
-    ): OfferTokenResolution {
-        if (storeDetails.basePlanId == null) {
-            return OfferTokenResolution.Success(null)
+    ): OfferTokenResolution = when {
+        storeDetails.basePlanId == null -> OfferTokenResolution.Success(null)
+
+        !storeDetails.isInAppPurchaseOptionResolved -> {
+            logger.warn(
+                "makePurchase() -> Purchase option ${storeDetails.basePlanId} not found for " +
+                    "Qonversion product ${product.qonversionId}; falling back to the default one-time offer"
+            )
+            OfferTokenResolution.Success(storeDetails.inAppOfferDetails?.offerToken)
         }
-        return storeDetails.inAppOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
-            ?: OfferTokenResolution.Failure("Failed to find purchase option ${storeDetails.basePlanId} for Qonversion product ${product.qonversionId}")
+
+        else -> storeDetails.inAppOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
+            ?: OfferTokenResolution.Failure(
+                "Purchase option ${storeDetails.basePlanId} for Qonversion product ${product.qonversionId} has no offer token"
+            )
     }
 }
