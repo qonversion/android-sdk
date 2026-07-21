@@ -377,23 +377,23 @@ internal class BillingClientWrapper(
      *
      * - A plain product without a configured purchase option keeps the legacy behavior
      *   (no offer token).
-     * - When a purchase option is configured via [QProductStoreDetails.basePlanId] and it
-     *   matches an available one-time offer, that offer's token is used, mirroring
+     * - When a purchase option is configured via [QProductStoreDetails.purchaseOptionId]
+     *   and it matches an available one-time offer, that offer's token is used, mirroring
      *   subscription base-plan selection.
      * - When a purchase option is configured but no offer matches it (e.g. a stale or
      *   mistyped id), we log a warning and fall back to the default one-time offer rather
      *   than failing the purchase — otherwise existing integrations with a stale
-     *   base_plan_id would start failing where they used to succeed.
+     *   purchase option would start failing where they used to succeed.
      */
     private fun resolveInAppOfferToken(
         product: QProduct,
         storeDetails: QProductStoreDetails
     ): OfferTokenResolution = when {
-        storeDetails.basePlanId == null -> OfferTokenResolution.Success(null)
+        storeDetails.purchaseOptionId == null -> OfferTokenResolution.Success(null)
 
         !storeDetails.isInAppPurchaseOptionResolved -> {
             logger.warn(
-                "makePurchase() -> Purchase option ${storeDetails.basePlanId} not found for " +
+                "makePurchase() -> Purchase option ${storeDetails.purchaseOptionId} not found for " +
                     "Qonversion product ${product.qonversionId}; falling back to the default one-time offer"
             )
             OfferTokenResolution.Success(storeDetails.inAppOfferDetails?.offerToken)
@@ -401,7 +401,7 @@ internal class BillingClientWrapper(
 
         else -> storeDetails.inAppOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
             ?: OfferTokenResolution.Failure(
-                "Purchase option ${storeDetails.basePlanId} for Qonversion product ${product.qonversionId} has no offer token"
+                "Purchase option ${storeDetails.purchaseOptionId} for Qonversion product ${product.qonversionId} has no offer token"
             )
     }
 }
