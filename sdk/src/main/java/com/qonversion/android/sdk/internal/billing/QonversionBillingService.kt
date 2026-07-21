@@ -47,7 +47,7 @@ internal class QonversionBillingService internal constructor(
             val actualStoreIds = products.filter { it.storeId != null }
                 .map { ProductStoreId(
                     it.storeId!!,
-                    it.basePlanId
+                    it.storeBasePlanId
                 ) }
             billingClientWrapper.withStoreDataLoaded(
                 actualStoreIds,
@@ -74,7 +74,7 @@ internal class QonversionBillingService internal constructor(
             product.storeId?.let { storeId ->
                 val productStoreId = ProductStoreId(
                     storeId,
-                    product.basePlanId
+                    product.storeBasePlanId
                 )
                 billingClientWrapper.getStoreData(productStoreId)?.let { storeData ->
                     product.setStoreProductDetails(storeData)
