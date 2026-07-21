@@ -70,11 +70,23 @@ data class QProductStoreDetails(
     /**
      * Offer details for the in-app product.
      * Null for subscriptions.
+     *
+     * When a purchase option is specified via [basePlanId] (Google Play one-time
+     * products use the same "product : purchase option" model as subscriptions), the
+     * matching one-time purchase option is selected, mirroring the subscription
+     * base-plan filtering above. Falls back to the default one-time offer when no
+     * purchase option is specified or none matches.
      */
-    val inAppOfferDetails: QProductInAppDetails? =
-        originalProductDetails.oneTimePurchaseOfferDetails?.let {
-            QProductInAppDetails(it)
+    val inAppOfferDetails: QProductInAppDetails? = run {
+        val offerDetails = if (basePlanId != null) {
+            originalProductDetails.oneTimePurchaseOfferDetailsList
+                ?.firstOrNull { it.purchaseOptionId == basePlanId }
+                ?: originalProductDetails.oneTimePurchaseOfferDetails
+        } else {
+            originalProductDetails.oneTimePurchaseOfferDetails
         }
+        offerDetails?.let { QProductInAppDetails(it) }
+    }
 
     /**
      * True, if there is any eligible offer with a trial
