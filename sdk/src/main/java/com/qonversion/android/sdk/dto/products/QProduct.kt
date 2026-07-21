@@ -8,10 +8,27 @@ import com.squareup.moshi.JsonClass
 data class QProduct(
     @Json(name = "id") val qonversionId: String,
     @Json(name = "store_id") val storeId: String?,
-    @Json(name = "base_plan_id") val basePlanId: String?,
+    @Json(name = "base_plan_id") internal val storeBasePlanId: String?,
     @Json(name = "type") internal val apiType: Int = TYPE_CONSUMABLE,
 ) {
     internal val isNonConsumable: Boolean get() = apiType == TYPE_NON_CONSUMABLE
+
+    internal val isOneTimeProduct: Boolean get() =
+        apiType == TYPE_CONSUMABLE || apiType == TYPE_NON_CONSUMABLE
+
+    /**
+     * Identifier of the base plan this product relates to, for a Google Play
+     * subscription product. `Null` for one-time (in-app) products — use
+     * [purchaseOptionId] for those.
+     */
+    val basePlanId: String? get() = if (isOneTimeProduct) null else storeBasePlanId
+
+    /**
+     * Identifier of the Google Play [purchase option](https://developer.android.com/google/play/billing/one-time-products)
+     * this product relates to, for a one-time (in-app) product. `Null` for
+     * subscription products — use [basePlanId] for those.
+     */
+    val purchaseOptionId: String? get() = if (isOneTimeProduct) storeBasePlanId else null
 
     companion object {
         internal const val TYPE_CONSUMABLE = 2
@@ -69,6 +86,8 @@ data class QProduct(
     }
 
     internal fun setStoreProductDetails(productDetails: ProductDetails) {
-        storeDetails = QProductStoreDetails(productDetails, basePlanId)
+        // The raw store-config value feeds both subscription base-plan filtering and
+        // one-time purchase-option selection, so pass it regardless of product type.
+        storeDetails = QProductStoreDetails(productDetails, storeBasePlanId)
     }
 }
