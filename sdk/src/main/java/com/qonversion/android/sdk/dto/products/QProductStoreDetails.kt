@@ -15,8 +15,9 @@ data class QProductStoreDetails(
     val originalProductDetails: ProductDetails,
 
     /**
-     * Identifier of the base plan to which these details relate.
-     * Null for in-app products.
+     * Identifier of the base plan (for subscriptions) or the purchase option (for
+     * one-time products) to which these details relate.
+     * Null when no base plan / purchase option is configured for the product.
      */
     val basePlanId: String?,
 ) {
@@ -70,11 +71,31 @@ data class QProductStoreDetails(
     /**
      * Offer details for the in-app product.
      * Null for subscriptions.
+     *
+     * When a purchase option is specified via [basePlanId] (Google Play one-time
+     * products use the same "product : purchase option" model as subscriptions), the
+     * matching one-time purchase option is selected, mirroring the subscription
+     * base-plan filtering above. Falls back to the default one-time offer when no
+     * purchase option is specified or none matches.
      */
-    val inAppOfferDetails: QProductInAppDetails? =
-        originalProductDetails.oneTimePurchaseOfferDetails?.let {
-            QProductInAppDetails(it)
+    val inAppOfferDetails: QProductInAppDetails? = run {
+        val requestedOffer = basePlanId?.let { purchaseOptionId ->
+            originalProductDetails.oneTimePurchaseOfferDetailsList
+                ?.firstOrNull { it.purchaseOptionId == purchaseOptionId }
         }
+        (requestedOffer ?: originalProductDetails.oneTimePurchaseOfferDetails)
+            ?.let { QProductInAppDetails(it) }
+    }
+
+    /**
+     * True when a purchase option was requested via [basePlanId] for this in-app product
+     * and a matching one-time purchase option was actually found. False for plain in-app
+     * products, subscriptions, or a stale/mistyped purchase option that fell back to the
+     * default one-time offer.
+     */
+    val isInAppPurchaseOptionResolved: Boolean = basePlanId != null &&
+            originalProductDetails.oneTimePurchaseOfferDetailsList
+                ?.any { it.purchaseOptionId == basePlanId } == true
 
     /**
      * True, if there is any eligible offer with a trial

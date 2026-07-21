@@ -14,7 +14,7 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.UnfetchedProduct
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductOfferDetails
+import com.qonversion.android.sdk.dto.products.QProductStoreDetails
 import com.qonversion.android.sdk.internal.dto.QStoreProductType
 import com.qonversion.android.sdk.internal.dto.ProductStoreId
 import com.qonversion.android.sdk.internal.logger.Logger
@@ -75,31 +75,17 @@ internal class BillingClientWrapper(
 
         logger.debug("makePurchase() -> Purchasing the product: ${storeDetails.productId}")
 
-        val offerDetails: QProductOfferDetails? = when {
-            storeDetails.isInApp -> null
-            applyOffer == false -> {
-                storeDetails.basePlanSubscriptionOfferDetails ?: run {
-                    fireError("Failed to find base plan offer for Qonversion product ${product.qonversionId}")
-                    return
-                }
-            }
-            offerId?.isNotEmpty() == true -> {
-                storeDetails.findOffer(offerId) ?: run {
-                    fireError("Failed to find offer $offerId for Qonversion product ${product.qonversionId}")
-                    return
-                }
-            }
-            else -> {
-                storeDetails.defaultSubscriptionOfferDetails ?: run {
-                    fireError("No offer found for purchasing Qonversion subscription product ${product.qonversionId}")
-                    return
-                }
+        val offerToken: String? = when (val resolution = resolveOfferToken(product, storeDetails, offerId, applyOffer)) {
+            is OfferTokenResolution.Success -> resolution.offerToken
+            is OfferTokenResolution.Failure -> {
+                fireError(resolution.message)
+                return
             }
         }
 
         val productDetailsParamList = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(storeDetails.originalProductDetails)
-            .applyOffer(offerDetails)
+            .applyOffer(offerToken)
             .build()
 
         val params = BillingFlowParams.newBuilder()
@@ -355,11 +341,67 @@ internal class BillingClientWrapper(
     }
 
     private fun BillingFlowParams.ProductDetailsParams.Builder.applyOffer(
-        offer: QProductOfferDetails?
+        offerToken: String?
     ): BillingFlowParams.ProductDetailsParams.Builder {
-        offer?.let {
-            setOfferToken(offer.offerToken)
+        offerToken?.let {
+            setOfferToken(it)
         }
         return this
+    }
+
+    private sealed class OfferTokenResolution {
+        data class Success(val offerToken: String?) : OfferTokenResolution()
+        data class Failure(val message: String) : OfferTokenResolution()
+    }
+
+    private fun resolveOfferToken(
+        product: QProduct,
+        storeDetails: QProductStoreDetails,
+        offerId: String?,
+        applyOffer: Boolean?
+    ): OfferTokenResolution = when {
+        storeDetails.isInApp -> resolveInAppOfferToken(product, storeDetails)
+        applyOffer == false ->
+            storeDetails.basePlanSubscriptionOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
+                ?: OfferTokenResolution.Failure("Failed to find base plan offer for Qonversion product ${product.qonversionId}")
+        offerId?.isNotEmpty() == true ->
+            storeDetails.findOffer(offerId)?.offerToken?.let { OfferTokenResolution.Success(it) }
+                ?: OfferTokenResolution.Failure("Failed to find offer $offerId for Qonversion product ${product.qonversionId}")
+        else ->
+            storeDetails.defaultSubscriptionOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
+                ?: OfferTokenResolution.Failure("No offer found for purchasing Qonversion subscription product ${product.qonversionId}")
+    }
+
+    /**
+     * Resolves the offer token for a one-time (in-app) product.
+     *
+     * - A plain product without a configured purchase option keeps the legacy behavior
+     *   (no offer token).
+     * - When a purchase option is configured via [QProductStoreDetails.basePlanId] and it
+     *   matches an available one-time offer, that offer's token is used, mirroring
+     *   subscription base-plan selection.
+     * - When a purchase option is configured but no offer matches it (e.g. a stale or
+     *   mistyped id), we log a warning and fall back to the default one-time offer rather
+     *   than failing the purchase — otherwise existing integrations with a stale
+     *   base_plan_id would start failing where they used to succeed.
+     */
+    private fun resolveInAppOfferToken(
+        product: QProduct,
+        storeDetails: QProductStoreDetails
+    ): OfferTokenResolution = when {
+        storeDetails.basePlanId == null -> OfferTokenResolution.Success(null)
+
+        !storeDetails.isInAppPurchaseOptionResolved -> {
+            logger.warn(
+                "makePurchase() -> Purchase option ${storeDetails.basePlanId} not found for " +
+                    "Qonversion product ${product.qonversionId}; falling back to the default one-time offer"
+            )
+            OfferTokenResolution.Success(storeDetails.inAppOfferDetails?.offerToken)
+        }
+
+        else -> storeDetails.inAppOfferDetails?.offerToken?.let { OfferTokenResolution.Success(it) }
+            ?: OfferTokenResolution.Failure(
+                "Purchase option ${storeDetails.basePlanId} for Qonversion product ${product.qonversionId} has no offer token"
+            )
     }
 }
