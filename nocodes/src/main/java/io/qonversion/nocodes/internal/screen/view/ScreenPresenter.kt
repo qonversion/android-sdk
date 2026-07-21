@@ -3,7 +3,6 @@ package io.qonversion.nocodes.internal.screen.view
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.products.QProduct
-import com.qonversion.android.sdk.dto.products.QProductOfferDetails
 import com.qonversion.android.sdk.dto.products.QProductPrice
 import com.qonversion.android.sdk.dto.products.QProductPricingPhase
 import com.qonversion.android.sdk.dto.products.QSubscriptionPeriod
@@ -44,6 +43,7 @@ internal class ScreenPresenter(
 ) : ScreenContract.Presenter, BaseClass(logger) {
 
     private var currentScreen: NoCodeScreen? = null
+    private var screenProductIds: List<String> = emptyList()
 
     override fun onStart(contextKey: String?, screenId: String?) {
         scope.launch {
@@ -164,7 +164,7 @@ internal class ScreenPresenter(
             QAction.Type.GetContext -> {
                 val variables = (action.rawParameters?.get("variables") as? List<*>)
                     ?.filterIsInstance<String>() ?: emptyList()
-                view.handleGetContext(variables)
+                view.handleGetContext(variables, screenProductIds)
             }
             QAction.Type.ShowScreen -> {
                 injectCustomVariables {
@@ -238,6 +238,13 @@ internal class ScreenPresenter(
             return
         }
 
+        // Captured synchronously: when the screen has products, the runtime sends
+        // loadProducts before getContext, and products.hasAnyIntro must cover all
+        // screen products, not only the ones referenced by three-part condition
+        // variables. Screens without product bindings never send loadProducts,
+        // leaving this empty.
+        screenProductIds = productIds.filterIsInstance<String>()
+
         Qonversion.shared.products(object : QonversionProductsCallback {
             override fun onSuccess(products: Map<String, QProduct>) {
                 val filteredProducts = products.filterKeys { productIds.contains(it) }
@@ -248,45 +255,12 @@ internal class ScreenPresenter(
                 val jsonData = serializer.serialize(data)
 
                 view.sendProductsToWebView(jsonData)
-                view.injectProductsContext(buildProductsContextScript(filteredProducts))
             }
 
             override fun onError(error: QonversionError) {
                 logger.error("Failed to load products for the screen:\n$error")
             }
         })
-    }
-
-    private fun buildProductsContextScript(products: Map<String, QProduct>): String {
-        var hasAnyIntro = false
-
-        val productEntries = products.map { (id, product) ->
-            val offerDetails: QProductOfferDetails? = product.storeDetails?.defaultSubscriptionOfferDetails
-            val hasIntro = offerDetails?.let {
-                it.trialPhase != null || it.introPhase != null
-            } ?: false
-            if (hasIntro) hasAnyIntro = true
-
-            val introType = offerDetails?.let { offer ->
-                val phase = offer.trialPhase ?: offer.introPhase
-                when (phase?.type) {
-                    QProductPricingPhase.Type.FreeTrial -> "\"trial\""
-                    QProductPricingPhase.Type.DiscountedSinglePayment -> "\"pay_up_front\""
-                    QProductPricingPhase.Type.DiscountedRecurringPayment -> "\"pay_as_you_go\""
-                    else -> "null"
-                }
-            } ?: "null"
-
-            "\"$id\": { hasIntro: $hasIntro, introType: $introType }"
-        }
-
-        val productsJS = "{ " + productEntries.joinToString(", ") + " }"
-        return """
-            window.noCodesContext = window.noCodesContext || {};
-            window.noCodesContext.products = $productsJS;
-            window.noCodesContext.products.hasAnyIntro = $hasAnyIntro;
-            window.dispatchEvent(new Event("noCodesContextUpdate"));
-        """.trimIndent()
     }
 
     private fun mapProductInfo(product: QProduct): Map<String, Any?> {
