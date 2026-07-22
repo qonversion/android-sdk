@@ -44,7 +44,7 @@ internal class EnvironmentProvider(
                 context.packageManager.getPackageInfo(context.packageName, 0)
             }
 
-            packageInfo.versionName
+            packageInfo.versionName ?: UNKNOWN
         } catch (throwable: Throwable) {
             UNKNOWN
         }
