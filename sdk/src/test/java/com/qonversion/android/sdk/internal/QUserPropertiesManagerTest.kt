@@ -267,8 +267,10 @@ internal class QUserPropertiesManagerTest {
 
     @Test
     fun `should force send properties and get response in onSuccess callback`() {
-        // given
-        mockPropertiesStorage(properties)
+        // given - the storage is drained by the send, so the post-clear check sees no leftovers
+        every {
+            mockPropertiesStorage.getProperties()
+        } returnsMany listOf(properties, emptyMap())
 
         val propertiesResult = SendPropertiesResult(
             emptyList(),
@@ -289,6 +291,7 @@ internal class QUserPropertiesManagerTest {
             mockPropertiesStorage.getProperties()
             mockRepository.sendProperties(properties, any(), any())
             mockPropertiesStorage.clear(properties)
+            mockPropertiesStorage.getProperties()
         }
 
         val isRequestInProgress =
@@ -304,6 +307,57 @@ internal class QUserPropertiesManagerTest {
             { assertEquals("The field retriesCounter is not equal 0", 0, retriesCounter) },
             { assertEquals("The field isSendingScheduled is not equal false", false, isSendingScheduled) }
         )
+    }
+
+    @Test
+    fun `should reset isSendingScheduled when request is in progress`() {
+        // given - a scheduled job fires while a request is still in flight
+        propertiesManager.mockPrivateField(fieldIsRequestInProgress, true)
+        propertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
+
+        // when
+        propertiesManager.forceSendProperties()
+
+        // then - the flag is dropped so later setters can schedule a new send
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(false, isSendingScheduled)
+    }
+
+    @Test
+    fun `should reset isSendingScheduled when properties storage is empty`() {
+        // given - the scheduled send finds nothing to deliver
+        propertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
+        mockPropertiesStorage(mapOf())
+
+        // when
+        propertiesManager.forceSendProperties()
+
+        // then
+        val isSendingScheduled = propertiesManager.getPrivateField<Boolean>(fieldIsSendingScheduled)
+        assertEquals(false, isSendingScheduled)
+    }
+
+    @Test
+    fun `should schedule follow-up send for properties set during the request`() {
+        // given - the storage still holds properties after the sent snapshot is cleared
+        every {
+            mockPropertiesStorage.getProperties()
+        } returnsMany listOf(properties, mapOf("newKey" to "newValue"))
+
+        every {
+            mockRepository.sendProperties(properties, captureLambda(), any())
+        } answers {
+            lambda<(SendPropertiesResult) -> Unit>().captured.invoke(SendPropertiesResult(emptyList(), emptyList()))
+        }
+        every { propertiesManager.sendPropertiesWithDelay(any()) } just runs
+
+        // when
+        propertiesManager.forceSendProperties()
+
+        // then
+        verify(exactly = 1) {
+            propertiesManager.sendPropertiesWithDelay(minDelay)
+        }
     }
 
     @Test

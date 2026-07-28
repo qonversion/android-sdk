@@ -256,6 +256,40 @@ internal class QRemoteConfigManagerTest {
         verify { mockRemoteConfigService wasNot Called }
     }
 
+    @Test
+    fun `attach and detach invalidate cached configs for named context keys too`() {
+        // given - cached configs under the empty AND a named context key
+        userStateProvider.stable = true
+        val emptyKeyConfig = mockk<QRemoteConfig>(relaxed = true)
+        val namedKeyConfig = mockk<QRemoteConfig>(relaxed = true)
+        loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = emptyKeyConfig)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = namedKeyConfig)
+
+        // when - the user is attached to a remote configuration (addressed by id only —
+        // the SDK cannot know which context key it serves)
+        manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // then - every cached config is dropped, not just the empty-key one
+        assertEquals(null, loadingStates()[null]?.loadedConfig)
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
+    @Test
+    fun `experiment attach and detach invalidate named-key cached configs`() {
+        // given
+        userStateProvider.stable = true
+        val namedKeyConfig = mockk<QRemoteConfig>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = namedKeyConfig)
+
+        // when
+        manager.detachUserFromExperiment("experiment_id", mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // then
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
     private fun listRequests() =
         manager.getPrivateField<List<*>>("listRequests")
 

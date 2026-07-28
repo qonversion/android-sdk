@@ -176,12 +176,12 @@ internal class QRemoteConfigManager @Inject constructor(
     }
 
     fun attachUserToExperiment(experimentId: String, groupId: String, callback: QonversionExperimentAttachCallback) = postToMainThread {
-        loadingStates[EmptyContextKey]?.loadedConfig = null
+        invalidateLoadedConfigs()
         remoteConfigService.attachUserToExperiment(experimentId, groupId, callback)
     }
 
     fun detachUserFromExperiment(experimentId: String, callback: QonversionExperimentAttachCallback) = postToMainThread {
-        loadingStates[EmptyContextKey]?.loadedConfig = null
+        invalidateLoadedConfigs()
         remoteConfigService.detachUserFromExperiment(experimentId, callback)
     }
 
@@ -189,7 +189,7 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) = postToMainThread {
-        loadingStates[EmptyContextKey]?.loadedConfig = null
+        invalidateLoadedConfigs()
         remoteConfigService.attachUserToRemoteConfiguration(remoteConfigurationId, callback)
     }
 
@@ -197,8 +197,15 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigurationId: String,
         callback: QonversionRemoteConfigurationAttachCallback
     ) = postToMainThread {
-        loadingStates[EmptyContextKey]?.loadedConfig = null
+        invalidateLoadedConfigs()
         remoteConfigService.detachUserFromRemoteConfiguration(remoteConfigurationId, callback)
+    }
+
+    // An attach/detach is addressed by experiment/configuration id, and the SDK does not
+    // know which context key that entity serves — drop every cached config, not just the
+    // empty-key one, or configs under named context keys stay stale until process restart.
+    private fun invalidateLoadedConfigs() {
+        loadingStates.values.forEach { it.loadedConfig = null }
     }
 
     private fun getRemoteConfigListCallbackWrapper(
