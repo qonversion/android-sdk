@@ -38,4 +38,17 @@ internal class UserPropertiesStorageTest {
         "any_string_key_2" to "any_string_value_2"))
         Assert.assertTrue(userPropertiesStorage.getProperties().isEmpty())
     }
+
+    @Test
+    fun clearIsValueConditional() {
+        // A key overwritten while its previous value was in flight must survive
+        // clearing by the sent (old) snapshot — otherwise the new value is lost.
+        userPropertiesStorage.save("email", "old@x.com")
+        userPropertiesStorage.save("name", "unchanged")
+
+        userPropertiesStorage.save("email", "new@x.com")
+        userPropertiesStorage.clear(mapOf("email" to "old@x.com", "name" to "unchanged"))
+
+        Assert.assertEquals(mapOf("email" to "new@x.com"), userPropertiesStorage.getProperties())
+    }
 }

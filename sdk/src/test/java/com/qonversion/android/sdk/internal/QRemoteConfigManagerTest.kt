@@ -12,9 +12,14 @@ import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
+import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import io.mockk.Called
 import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -257,36 +262,58 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
-    fun `attach and detach invalidate cached configs for named context keys too`() {
-        // given - cached configs under the empty AND a named context key
+    fun `every attach and detach entry point invalidates named-key cached configs`() {
+        // given - all four entry points are addressed by entity id only, so the
+        // SDK cannot know which context key is served and must drop every cache
         userStateProvider.stable = true
-        val emptyKeyConfig = mockk<QRemoteConfig>(relaxed = true)
-        val namedKeyConfig = mockk<QRemoteConfig>(relaxed = true)
-        loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = emptyKeyConfig)
-        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = namedKeyConfig)
+        val entryPoints = listOf<(QRemoteConfigManager) -> Unit>(
+            { it.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true)) },
+            { it.detachUserFromRemoteConfiguration("config_id", mockk(relaxed = true)) },
+            { it.attachUserToExperiment("experiment_id", "group_id", mockk(relaxed = true)) },
+            { it.detachUserFromExperiment("experiment_id", mockk(relaxed = true)) },
+        )
 
-        // when - the user is attached to a remote configuration (addressed by id only —
-        // the SDK cannot know which context key it serves)
-        manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
-        shadowOf(Looper.getMainLooper()).idle()
+        entryPoints.forEach { entryPoint ->
+            // given - cached configs under the empty AND a named context key,
+            // plus a pending callback that must survive the invalidation
+            val pendingCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+            loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = mockk<QRemoteConfig>(relaxed = true))
+            loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(
+                loadedConfig = mockk<QRemoteConfig>(relaxed = true),
+                callbacks = mutableListOf(pendingCallback),
+            )
 
-        // then - every cached config is dropped, not just the empty-key one
-        assertEquals(null, loadingStates()[null]?.loadedConfig)
-        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+            // when
+            entryPoint(manager)
+            shadowOf(Looper.getMainLooper()).idle()
+
+            // then - every cached config is dropped, but loading states and
+            // their pending callbacks are preserved (non-destructive invalidation)
+            assertEquals(null, loadingStates()[null]?.loadedConfig)
+            assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+            assertEquals(1, loadingStates()["ctx"]?.callbacks?.size)
+        }
     }
 
     @Test
-    fun `experiment attach and detach invalidate named-key cached configs`() {
-        // given
+    fun `attach invalidation prevents an in-flight load from re-caching a stale config`() {
+        // given - a load is in flight when the attach lands
         userStateProvider.stable = true
-        val namedKeyConfig = mockk<QRemoteConfig>(relaxed = true)
-        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = namedKeyConfig)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
 
-        // when
-        manager.detachUserFromExperiment("experiment_id", mockk(relaxed = true))
+        manager.loadRemoteConfig("ctx", null)
         shadowOf(Looper.getMainLooper()).idle()
 
-        // then
+        // when - the attach invalidates mid-flight, then the pre-attach response lands
+        manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // then - the stale (pre-attach) evaluation must not be re-cached
         assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
     }
 

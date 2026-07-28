@@ -338,6 +338,30 @@ internal class QUserPropertiesManagerTest {
     }
 
     @Test
+    fun `should not schedule follow-up send when sending is already scheduled`() {
+        // given - a setter scheduled a send while the request was in flight
+        every {
+            mockPropertiesStorage.getProperties()
+        } returnsMany listOf(properties, mapOf("newKey" to "newValue"))
+
+        val successLambda = slot<(SendPropertiesResult) -> Unit>()
+        every {
+            mockRepository.sendProperties(properties, capture(successLambda), any())
+        } just runs
+        every { propertiesManager.sendPropertiesWithDelay(any()) } just runs
+
+        // when - the flag is set mid-flight (as a setter would), then the request completes
+        propertiesManager.forceSendProperties()
+        propertiesManager.mockPrivateField(fieldIsSendingScheduled, true)
+        successLambda.captured.invoke(SendPropertiesResult(emptyList(), emptyList()))
+
+        // then - no double scheduling on top of the setter's job
+        verify(exactly = 0) {
+            propertiesManager.sendPropertiesWithDelay(any())
+        }
+    }
+
+    @Test
     fun `should schedule follow-up send for properties set during the request`() {
         // given - the storage still holds properties after the sent snapshot is cleared
         every {

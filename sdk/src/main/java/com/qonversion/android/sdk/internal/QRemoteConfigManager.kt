@@ -44,6 +44,12 @@ internal class QRemoteConfigManager @Inject constructor(
     lateinit var userPropertiesManager: QUserPropertiesManager
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    // Bumped on every cache invalidation (attach/detach, user change). Loads
+    // capture it when they start and skip the cache write if it moved — an
+    // in-flight response evaluated before the invalidating event must not be
+    // re-cached as fresh. Main-thread confined like the rest of the state.
+    private var invalidationGeneration = 0
+
     fun handlePendingRequests() = postToMainThread {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
             .keys.forEach { contextKey -> loadRemoteConfig(contextKey, null) }
@@ -74,6 +80,7 @@ internal class QRemoteConfigManager @Inject constructor(
     }
 
     fun onUserUpdate() = postToMainThread {
+        invalidationGeneration++
         loadingStates = mutableMapOf()
     }
 
@@ -99,12 +106,15 @@ internal class QRemoteConfigManager @Inject constructor(
 
         loadingState.isInProgress = true
         loadingState.loadedConfig = null
+        val generationAtStart = invalidationGeneration
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
                 remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
                     override fun onSuccess(remoteConfig: QRemoteConfig) {
-                        loadingState.loadedConfig = remoteConfig
+                        if (invalidationGeneration == generationAtStart) {
+                            loadingState.loadedConfig = remoteConfig
+                        }
                         fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
                     }
 
@@ -204,7 +214,9 @@ internal class QRemoteConfigManager @Inject constructor(
     // An attach/detach is addressed by experiment/configuration id, and the SDK does not
     // know which context key that entity serves — drop every cached config, not just the
     // empty-key one, or configs under named context keys stay stale until process restart.
+    // The generation bump also stops in-flight loads from re-caching a pre-attach response.
     private fun invalidateLoadedConfigs() {
+        invalidationGeneration++
         loadingStates.values.forEach { it.loadedConfig = null }
     }
 
@@ -216,13 +228,16 @@ internal class QRemoteConfigManager @Inject constructor(
         // Remembering loading states for the case of user change -
         // if it happens, we won't store remote configs for different user.
         val localLoadingStates = loadingStates
+        val generationAtStart = invalidationGeneration
         return object : QonversionRemoteConfigListCallback {
             override fun onSuccess(remoteConfigList: QRemoteConfigList) {
-                remoteConfigList.remoteConfigs.forEach { remoteConfig ->
-                    val contextKey = remoteConfig.source.contextKey
-                    val loadingState = localLoadingStates[contextKey] ?: LoadingState()
-                    loadingState.loadedConfig = remoteConfig
-                    localLoadingStates[contextKey] = loadingState
+                if (invalidationGeneration == generationAtStart) {
+                    remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+                        val contextKey = remoteConfig.source.contextKey
+                        val loadingState = localLoadingStates[contextKey] ?: LoadingState()
+                        loadingState.loadedConfig = remoteConfig
+                        localLoadingStates[contextKey] = loadingState
+                    }
                 }
 
                 callback.onSuccess(remoteConfigList)
