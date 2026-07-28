@@ -30,6 +30,11 @@ internal class QUserPropertiesManager @Inject internal constructor(
     internal var productCenterManager: QProductCenterManager? = null
     private var handler: Handler? = null
     private var isRequestInProgress = false
+
+    // Semantics: "a send is known to be scheduled or will be re-scheduled".
+    // false while a delayed job is still pending is a tolerated state (it only
+    // causes an extra no-op wakeup, never a missed send) — do not "fix" it by
+    // resetting the flag exclusively from the scheduled job.
     private var isSendingScheduled = false
     private var retryDelay = PROPERTY_UPLOAD_MIN_DELAY
     private var retriesCounter = 0
@@ -72,6 +77,11 @@ internal class QUserPropertiesManager @Inject internal constructor(
 
     public fun forceSendProperties(callback: QonversionEmptyCallback? = null) {
         if (isRequestInProgress) {
+            // The scheduled job that lands here is consumed without sending.
+            // Drop the flag so subsequent setters can schedule a new send —
+            // otherwise properties set during an in-flight request hang until
+            // the next background/RC trigger.
+            isSendingScheduled = false
             if (callback != null) {
                 completions.add(callback)
             }
@@ -101,6 +111,15 @@ internal class QUserPropertiesManager @Inject internal constructor(
 
                     // Cleaning all the properties (not only succeeded) as we don't want to resend invalid ones again
                     propertiesStorage.clear(properties)
+
+                    // Properties stored or overwritten while the request was in
+                    // flight are not part of the sent snapshot — schedule a
+                    // follow-up send for them (the clear above is
+                    // value-conditional, so overwrites survive it). In background
+                    // the schedule is skipped and onAppForeground picks them up.
+                    if (propertiesStorage.getProperties().isNotEmpty() && !isSendingScheduled) {
+                        sendPropertiesWithDelay(retryDelay)
+                    }
                 },
                 onError = {
                     fireCallbacks()
@@ -124,6 +143,8 @@ internal class QUserPropertiesManager @Inject internal constructor(
                     }
                 })
         } else {
+            // Nothing to send — the pending schedule (if any) is satisfied.
+            isSendingScheduled = false
             callback?.onComplete()
         }
     }

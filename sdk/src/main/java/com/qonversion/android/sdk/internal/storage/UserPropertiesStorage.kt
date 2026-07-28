@@ -3,7 +3,7 @@ package com.qonversion.android.sdk.internal.storage
 import java.util.concurrent.ConcurrentHashMap
 
 internal class UserPropertiesStorage : PropertiesStorage {
-    private val userProperties: MutableMap<String, String> =
+    private val userProperties: ConcurrentHashMap<String, String> =
         ConcurrentHashMap()
 
     override fun save(key: String, value: String) {
@@ -11,8 +11,12 @@ internal class UserPropertiesStorage : PropertiesStorage {
     }
 
     override fun clear(properties: Map<String, String>) {
-        properties.keys.map {
-            userProperties.remove(it)
+        // Value-conditional removal: a key overwritten while its previous value
+        // was in flight must survive the post-send cleanup, or the new value
+        // would be silently lost. Unchanged values are still removed so invalid
+        // ones are not resent.
+        properties.forEach { (key, value) ->
+            userProperties.remove(key, value)
         }
     }
 
