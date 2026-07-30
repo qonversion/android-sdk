@@ -307,8 +307,8 @@ internal class QonversionInternal(
         })
     }
 
-    override fun refreshRemoteConfigs() {
-        remoteConfigManager.refreshRemoteConfigs()
+    override fun invalidateRemoteConfigsCache() {
+        remoteConfigManager.invalidateRemoteConfigsCache()
     }
 
     override fun attachUserToExperiment(

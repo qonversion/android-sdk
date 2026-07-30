@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import android.os.Build
 import android.os.Looper
+import com.qonversion.android.sdk.dto.QFallbackObject
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
@@ -22,6 +23,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -262,15 +264,17 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
-    fun `every attach and detach entry point invalidates named-key cached configs`() {
-        // given - all four entry points are addressed by entity id only, so the
-        // SDK cannot know which context key is served and must drop every cache
+    fun `every invalidation entry point drops named-key cached configs non-destructively`() {
+        // given - attach/detach are addressed by entity id only, so the SDK
+        // cannot know which context key is served and must drop every cache;
+        // the public invalidateRemoteConfigsCache shares the same semantics
         userStateProvider.stable = true
         val entryPoints = listOf<Pair<String, (QRemoteConfigManager) -> Unit>>(
             "attachUserToRemoteConfiguration" to { it.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true)) },
             "detachUserFromRemoteConfiguration" to { it.detachUserFromRemoteConfiguration("config_id", mockk(relaxed = true)) },
             "attachUserToExperiment" to { it.attachUserToExperiment("experiment_id", "group_id", mockk(relaxed = true)) },
             "detachUserFromExperiment" to { it.detachUserFromExperiment("experiment_id", mockk(relaxed = true)) },
+            "invalidateRemoteConfigsCache" to { it.invalidateRemoteConfigsCache() },
         )
 
         entryPoints.forEach { (name, entryPoint) ->
@@ -288,20 +292,27 @@ internal class QRemoteConfigManagerTest {
             shadowOf(Looper.getMainLooper()).idle()
 
             // then - every cached config is dropped, but loading states and
-            // their pending callbacks are preserved (non-destructive invalidation)
-            assertEquals("$name must drop the empty-key config", null, loadingStates()[null]?.loadedConfig)
-            assertEquals("$name must drop the named-key config", null, loadingStates()["ctx"]?.loadedConfig)
-            assertEquals("$name must preserve pending callbacks", 1, loadingStates()["ctx"]?.callbacks?.size)
+            // their pending callbacks are preserved (non-destructive invalidation).
+            // Assert on the states themselves first: a `?.` chain against a
+            // missing key would make the null comparisons pass vacuously.
+            val emptyKeyState = loadingStates()[null]
+            val namedKeyState = loadingStates()["ctx"]
+            assertNotNull("$name must preserve the empty-key loading state", emptyKeyState)
+            assertNotNull("$name must preserve the named-key loading state", namedKeyState)
+            assertEquals("$name must drop the empty-key config", null, emptyKeyState?.loadedConfig)
+            assertEquals("$name must drop the named-key config", null, namedKeyState?.loadedConfig)
+            assertEquals("$name must preserve pending callbacks", 1, namedKeyState?.callbacks?.size)
         }
     }
 
     @Test
-    fun `attach invalidation prevents an in-flight load from re-caching a stale config`() {
-        // given - a load is in flight when the attach lands
+    fun `invalidation mid-flight re-issues the load instead of delivering the stale response`() {
+        // given - a load with a waiting callback is in flight when the
+        // invalidation lands
         userStateProvider.stable = true
         val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
-        val serviceCallback = slot<QonversionRemoteConfigCallback>()
-        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
         every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
             firstArg<QonversionEmptyCallback?>()?.onComplete()
         }
@@ -309,18 +320,79 @@ internal class QRemoteConfigManagerTest {
         manager.loadRemoteConfig("ctx", loadCallback)
         shadowOf(Looper.getMainLooper()).idle()
 
-        // when - the attach invalidates mid-flight, then the pre-attach response lands
+        // when - the cache is invalidated mid-flight, then the superseded
+        // response lands
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val staleConfig = mockk<QRemoteConfig>(relaxed = true)
+        serviceCallbacks.first().onSuccess(staleConfig)
+
+        // then - the stale evaluation is neither cached nor delivered; the
+        // load is re-issued exactly once for the waiting callback
+        verify(exactly = 0) { loadCallback.onSuccess(any()) }
+        verify(exactly = 2) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+
+        // and the fresh response is delivered, cached, and the state settled
+        val freshConfig = mockk<QRemoteConfig>(relaxed = true)
+        serviceCallbacks.last().onSuccess(freshConfig)
+        verify(exactly = 1) { loadCallback.onSuccess(freshConfig) }
+        verify(exactly = 0) { loadCallback.onSuccess(staleConfig) }
+        val state = loadingStates()["ctx"]
+        assertNotNull(state)
+        assertEquals(freshConfig, state?.loadedConfig)
+        assertEquals(false, state?.isInProgress)
+    }
+
+    @Test
+    fun `attach invalidation mid-flight also re-issues an awaited load`() {
+        // given - a load with a waiting callback is in flight when the attach
+        // lands (attach shares the invalidation seam with the public API)
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
         manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
         shadowOf(Looper.getMainLooper()).idle()
         val staleConfig = mockk<QRemoteConfig>(relaxed = true)
-        serviceCallback.captured.onSuccess(staleConfig)
+        serviceCallbacks.first().onSuccess(staleConfig)
 
-        // then - the stale (pre-attach) evaluation must not be re-cached, but
-        // the response is still DELIVERED to the waiting caller and the state
-        // is left refetchable (the guard skips only the cache write)
-        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
-        verify(exactly = 1) { loadCallback.onSuccess(staleConfig) }
-        assertEquals(false, loadingStates()["ctx"]?.isInProgress)
+        // then - the pre-attach evaluation is dropped and the load re-issued
+        verify(exactly = 0) { loadCallback.onSuccess(any()) }
+        verify(exactly = 2) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+    }
+
+    @Test
+    fun `invalidation mid-flight does not re-issue a load nobody awaits`() {
+        // given - a load with NO waiting callback is in flight
+        userStateProvider.stable = true
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", null)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - the cache is invalidated mid-flight, then the response lands
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // then - no waiter means no retry; the superseded response is simply
+        // not cached and the state is left refetchable
+        verify(exactly = 1) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+        val state = loadingStates()["ctx"]
+        assertNotNull(state)
+        assertEquals(null, state?.loadedConfig)
+        assertEquals(false, state?.isInProgress)
     }
 
     @Test
@@ -346,39 +418,135 @@ internal class QRemoteConfigManagerTest {
         every { staleConfig.source.contextKey } returns "ctx"
         listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(staleConfig)))
 
-        // then - nothing from the stale list is cached
-        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+        // then - nothing from the stale list is cached: the wrapper would have
+        // created a loading state for the key had it cached the config
+        assertEquals(false, loadingStates().containsKey("ctx"))
     }
 
     @Test
-    fun `refreshRemoteConfigs drops caches non-destructively and guards in-flight loads`() {
-        // given - cached configs with a pending callback, plus a load in flight
+    fun `invalidateRemoteConfigsCache from a background thread defers the map mutation but makes the cache immediately stale`() {
+        // given - cached configs for a stable user
         userStateProvider.stable = true
-        val pendingCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
-        loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = mockk<QRemoteConfig>(relaxed = true))
-        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(
-            loadedConfig = mockk<QRemoteConfig>(relaxed = true),
-            callbacks = mutableListOf(pendingCallback),
+        val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
+        val otherConfig = mockk<QRemoteConfig>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = cachedConfig)
+        loadingStates()["other"] = QRemoteConfigManager.LoadingState(loadedConfig = otherConfig)
+
+        // when - invalidated from a non-main thread
+        val backgroundThread = Thread { manager.invalidateRemoteConfigsCache() }
+        backgroundThread.start()
+        backgroundThread.join()
+
+        // then - the map mutation was posted to the main looper, not applied on
+        // the background thread (main-thread confinement, SUP3-188 class)...
+        assertEquals(cachedConfig, loadingStates()["ctx"]?.loadedConfig)
+
+        // ...but the generation bump is synchronous, so the cached fast path
+        // is already stale: a load issued before the posted cleanup drains
+        // must not be served the pre-invalidation config
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", callback)
+        verify(exactly = 0) { callback.onSuccess(any()) }
+
+        // and the posted cleanup still lands on the main thread
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(null, loadingStates()["other"]?.loadedConfig)
+    }
+
+    @Test
+    fun `concurrent invalidateRemoteConfigsCache and loadRemoteConfig do not throw`() {
+        // Same SUP3-188 class as the tests above: the public invalidation can be
+        // called from any thread while the main thread mutates loadingStates.
+        userStateProvider.stable = false
+        val errors = Collections.synchronizedList(mutableListOf<Throwable>())
+        val iterations = 1_000
+
+        val invalidator = Thread {
+            try {
+                repeat(iterations) { manager.invalidateRemoteConfigsCache() }
+            } catch (t: Throwable) {
+                errors.add(t)
+            }
+        }
+
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        invalidator.start()
+        try {
+            repeat(iterations) { i ->
+                manager.loadRemoteConfig("ctx_$i", null)
+                mainLooper.idle()
+            }
+        } catch (t: Throwable) {
+            errors.add(t)
+        }
+        invalidator.join()
+        mainLooper.idle()
+
+        assertTrue("Concurrent access threw: $errors", errors.isEmpty())
+    }
+
+    @Test
+    fun `fallback config is delivered without being cached`() {
+        // given - a bundled fallback exists and a load is in flight
+        userStateProvider.stable = true
+        val fallbackConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { fallbackConfig.source.contextKey } returns "ctx"
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(fallbackConfig)),
         )
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
         val serviceCallback = slot<QonversionRemoteConfigCallback>()
-        every { mockRemoteConfigService.loadRemoteConfig("in-flight", capture(serviceCallback)) } just runs
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
         every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
             firstArg<QonversionEmptyCallback?>()?.onComplete()
         }
-        manager.loadRemoteConfig("in-flight", null)
+        manager.loadRemoteConfig("ctx", loadCallback)
         shadowOf(Looper.getMainLooper()).idle()
 
-        // when
-        manager.refreshRemoteConfigs()
-        shadowOf(Looper.getMainLooper()).idle()
-        serviceCallback.captured.onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        // when - the network fails in a fallback-eligible way
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
 
-        // then - every cached config dropped, callbacks preserved, and the
-        // pre-refresh in-flight response is not re-cached (generation guard)
-        assertEquals(null, loadingStates()[null]?.loadedConfig)
-        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
-        assertEquals(1, loadingStates()["ctx"]?.callbacks?.size)
-        assertEquals(null, loadingStates()["in-flight"]?.loadedConfig)
+        // then - the fallback is delivered but NOT pinned into the cache, so
+        // the next call retries the network instead of serving the fallback
+        // until the next invalidation
+        verify(exactly = 1) { loadCallback.onSuccess(fallbackConfig) }
+        val state = loadingStates()["ctx"]
+        assertNotNull(state)
+        assertEquals(null, state?.loadedConfig)
+        assertEquals(false, state?.isInProgress)
+    }
+
+    @Test
+    fun `fallback list configs are delivered without being cached`() {
+        // given - a bundled fallback exists and a list load is in flight
+        userStateProvider.stable = true
+        val fallbackConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { fallbackConfig.source.contextKey } returns "ctx"
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(fallbackConfig)),
+        )
+        val listCallback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val listServiceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(listServiceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfigList(listOf("ctx"), false, listCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - the network fails in a fallback-eligible way
+        listServiceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        // then - the fallback list is delivered but nothing is cached (the
+        // wrapper would have created a loading state had it cached anything)
+        verify(exactly = 1) { listCallback.onSuccess(match { it.remoteConfigs == listOf(fallbackConfig) }) }
+        assertEquals(false, loadingStates().containsKey("ctx"))
     }
 
     private fun listRequests() =

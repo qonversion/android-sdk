@@ -14,6 +14,7 @@ import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigurationAttachCallback
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 private val EmptyContextKey: String? = null
@@ -29,7 +30,15 @@ internal class QRemoteConfigManager @Inject constructor(
     internal class LoadingState(
         var loadedConfig: QRemoteConfig? = null,
         val callbacks: MutableList<QonversionRemoteConfigCallback> = mutableListOf(),
-        var isInProgress: Boolean = false
+        var isInProgress: Boolean = false,
+        // Generation the loadedConfig was cached at — the cached fast paths
+        // serve it only while it matches the current invalidation generation,
+        // so an invalidation makes the cache stale before the posted
+        // main-thread cleanup has run.
+        var generation: Int = 0,
+        // Last generation a superseded in-flight load was re-issued for —
+        // caps the retry at one per invalidation.
+        var reissuedForGeneration: Int? = null
     )
 
     internal class ListRequestData(
@@ -44,11 +53,14 @@ internal class QRemoteConfigManager @Inject constructor(
     lateinit var userPropertiesManager: QUserPropertiesManager
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    // Bumped on every cache invalidation (attach/detach, user change). Loads
-    // capture it when they start and skip the cache write if it moved — an
-    // in-flight response evaluated before the invalidating event must not be
-    // re-cached as fresh. Main-thread confined like the rest of the state.
-    private var invalidationGeneration = 0
+    // Bumped on every cache invalidation (attach/detach, user change, explicit
+    // invalidateRemoteConfigsCache). Loads capture it when they start and skip
+    // the cache write if it moved — an in-flight response evaluated before the
+    // invalidating event must not be re-cached as fresh. Atomic rather than
+    // main-confined: the explicit invalidation bumps it synchronously on the
+    // caller thread, so the cached fast paths reject stale values immediately
+    // instead of waiting for the posted main-thread hop to drain.
+    private val invalidationGeneration = AtomicInteger(0)
 
     fun handlePendingRequests() = postToMainThread {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
@@ -79,21 +91,30 @@ internal class QRemoteConfigManager @Inject constructor(
         }
     }
 
-    // Public refresh seam (DEV-1236 B4): drops every cached config so the next
-    // load fetches a fresh evaluation. Non-destructive — loading states and
-    // pending callbacks survive, and the generation bump stops in-flight loads
-    // from re-caching a pre-refresh response.
-    fun refreshRemoteConfigs() = postToMainThread {
-        invalidateLoadedConfigs()
+    // Public cache invalidation seam (DEV-1236 B4): marks every cached config
+    // stale so the next load fetches a fresh evaluation. Non-destructive —
+    // loading states and pending callbacks survive, and the generation bump
+    // stops in-flight loads from re-caching a superseded response. The bump
+    // happens synchronously on the caller thread: a load issued right after
+    // this call — from any thread — must already see the cache as stale
+    // (the atomic gives the happens-before the main-thread hop cannot).
+    fun invalidateRemoteConfigsCache() {
+        invalidationGeneration.incrementAndGet()
+        postToMainThread {
+            clearLoadedConfigs()
+        }
     }
 
     fun onUserUpdate() = postToMainThread {
-        invalidationGeneration++
+        invalidationGeneration.incrementAndGet()
         loadingStates = mutableMapOf()
     }
 
-    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?) = postToMainThread {
+    // The explicit Unit is required: the re-issue path recurses into this
+    // function, and an inferred expression-body type would depend on itself.
+    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?): Unit = postToMainThread {
         loadingStates[contextKey]
+            ?.takeIf { it.generation == invalidationGeneration.get() }
             ?.loadedConfig
             ?.takeIf { userStateProvider.isUserStable }
             ?.let {
@@ -114,14 +135,34 @@ internal class QRemoteConfigManager @Inject constructor(
 
         loadingState.isInProgress = true
         loadingState.loadedConfig = null
-        val generationAtStart = invalidationGeneration
+        val generationAtStart = invalidationGeneration.get()
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
                 remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
                     override fun onSuccess(remoteConfig: QRemoteConfig) {
-                        if (invalidationGeneration == generationAtStart) {
+                        val currentGeneration = invalidationGeneration.get()
+                        if (currentGeneration == generationAtStart) {
                             loadingState.loadedConfig = remoteConfig
+                            loadingState.generation = generationAtStart
+                            fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
+                            return
+                        }
+
+                        // The cache was invalidated while this load was in
+                        // flight, so this evaluation is already superseded.
+                        // Re-issue the load once per generation so the waiting
+                        // callbacks receive a fresh evaluation instead of the
+                        // stale one; if this generation already got its retry,
+                        // deliver as-is — an invalidation storm must not turn
+                        // into a request loop.
+                        if (loadingState.callbacks.isNotEmpty() &&
+                            loadingState.reissuedForGeneration != currentGeneration
+                        ) {
+                            loadingState.reissuedForGeneration = currentGeneration
+                            loadingState.isInProgress = false
+                            loadRemoteConfig(contextKey, null)
+                            return
                         }
                         fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
                     }
@@ -143,8 +184,12 @@ internal class QRemoteConfigManager @Inject constructor(
                             baseRemoteConfigList.remoteConfigForContextKey(contextKey)
                         }
 
-                        remoteConfig?.let {
-                            onSuccess(it)
+                        // The fallback is a bundled last-resort payload, not a
+                        // fresh targeting evaluation — deliver it without
+                        // caching so the next call retries the network instead
+                        // of pinning the fallback until the next invalidation.
+                        remoteConfig?.let { fallbackConfig ->
+                            fireToCallbacks(contextKey) { onSuccess(fallbackConfig) }
                         } ?: fireToCallbacks(contextKey) { onError(error) }
                     }
                 })
@@ -158,9 +203,12 @@ internal class QRemoteConfigManager @Inject constructor(
         callback: QonversionRemoteConfigListCallback
     ) = postToMainThread {
         val allKeys = if (includeEmptyContextKey) contextKeys + EmptyContextKey else contextKeys
-        if (allKeys.all { loadingStates[it]?.loadedConfig != null }) {
-            val configs = allKeys.mapNotNull { loadingStates[it]?.loadedConfig }
-            callback.onSuccess(QRemoteConfigList(configs))
+        val currentGeneration = invalidationGeneration.get()
+        val cachedConfigs = allKeys.map { key ->
+            loadingStates[key]?.takeIf { it.generation == currentGeneration }?.loadedConfig
+        }
+        if (cachedConfigs.all { it != null }) {
+            callback.onSuccess(QRemoteConfigList(cachedConfigs.filterNotNull()))
             return@postToMainThread
         }
 
@@ -224,7 +272,11 @@ internal class QRemoteConfigManager @Inject constructor(
     // empty-key one, or configs under named context keys stay stale until process restart.
     // The generation bump also stops in-flight loads from re-caching a pre-attach response.
     private fun invalidateLoadedConfigs() {
-        invalidationGeneration++
+        invalidationGeneration.incrementAndGet()
+        clearLoadedConfigs()
+    }
+
+    private fun clearLoadedConfigs() {
         loadingStates.values.forEach { it.loadedConfig = null }
     }
 
@@ -236,14 +288,15 @@ internal class QRemoteConfigManager @Inject constructor(
         // Remembering loading states for the case of user change -
         // if it happens, we won't store remote configs for different user.
         val localLoadingStates = loadingStates
-        val generationAtStart = invalidationGeneration
+        val generationAtStart = invalidationGeneration.get()
         return object : QonversionRemoteConfigListCallback {
             override fun onSuccess(remoteConfigList: QRemoteConfigList) {
-                if (invalidationGeneration == generationAtStart) {
+                if (invalidationGeneration.get() == generationAtStart) {
                     remoteConfigList.remoteConfigs.forEach { remoteConfig ->
                         val contextKey = remoteConfig.source.contextKey
                         val loadingState = localLoadingStates[contextKey] ?: LoadingState()
                         loadingState.loadedConfig = remoteConfig
+                        loadingState.generation = generationAtStart
                         localLoadingStates[contextKey] = loadingState
                     }
                 }
@@ -274,7 +327,10 @@ internal class QRemoteConfigManager @Inject constructor(
                     QRemoteConfigList(remoteConfigs.toList())
                 }
 
-                onSuccess(remoteConfigList)
+                // Bundled fallback, not a fresh targeting evaluation — deliver
+                // without caching (see the single-key path), so the next call
+                // retries the network.
+                callback.onSuccess(remoteConfigList)
             }
         }
     }

@@ -223,13 +223,36 @@ interface Qonversion {
     fun remoteConfigList(callback: QonversionRemoteConfigListCallback)
 
     /**
-     * Drops the cached remote configs so the next [remoteConfig] or
-     * [remoteConfigList] call fetches a fresh targeting evaluation from the
-     * server instead of returning the in-memory copy.
-     * Call it after changing user properties that participate in remote config
-     * targeting when you need the updated evaluation immediately.
+     * Invalidates the in-memory cache of remote configs so the next
+     * [remoteConfig] or [remoteConfigList] call fetches a fresh targeting
+     * evaluation from the server instead of returning the cached copy.
+     *
+     * This method performs no network request itself and has no callback —
+     * it only marks the cached values as stale. A [remoteConfig] load that is
+     * already in flight when this method is called is re-issued once, so its
+     * waiting callbacks receive a fresh evaluation rather than the superseded
+     * one; an in-flight [remoteConfigList] load completes with the evaluation
+     * it started with, and any subsequent call fetches fresh values.
+     *
+     * Call it when the targeting inputs changed and you need the change
+     * reflected immediately, for example:
+     * - after setting a batch of user properties via [setUserProperty] or
+     *   [setCustomUserProperty] that your remote config targeting depends on;
+     * - after network connectivity is restored, if a previous call could have
+     *   returned a locally bundled fallback config;
+     * - on returning to the foreground in long-living sessions, if the
+     *   targeting could have changed server-side.
+     *
+     * You do NOT need to call it after [identify] — the SDK invalidates the
+     * cache on identity changes automatically. The screens shown by No-Code
+     * products are not affected by this method.
+     *
+     * The method is thread-safe and can be called from any thread.
+     *
+     * @see remoteConfig
+     * @see remoteConfigList
      */
-    fun refreshRemoteConfigs()
+    fun invalidateRemoteConfigsCache()
 
     /**
      * This function should be used for the test purposes only. Do not forget to delete the usage of this function before the release.
@@ -340,6 +363,8 @@ interface Qonversion {
      * To set custom user property, use [setCustomUserProperty] method instead.
      * @param key defined enum key that will be transformed to string
      * @param value property value
+     * @see invalidateRemoteConfigsCache if your remote config targeting depends
+     *      on this property and you need the updated evaluation immediately
      */
     fun setUserProperty(key: QUserPropertyKey, value: String)
 
@@ -347,6 +372,8 @@ interface Qonversion {
      * Sets custom user property
      * @param key custom user property key
      * @param value property value
+     * @see invalidateRemoteConfigsCache if your remote config targeting depends
+     *      on this property and you need the updated evaluation immediately
      */
     fun setCustomUserProperty(key: String, value: String)
 

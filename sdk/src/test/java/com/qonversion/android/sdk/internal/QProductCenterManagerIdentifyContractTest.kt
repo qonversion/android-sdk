@@ -152,7 +152,7 @@ internal class QProductCenterManagerIdentifyContractTest {
      * always-launch.
      */
     @Test
-    fun `identify with same uid does NOT clear cache or re-launch, but refreshes remote configs`() {
+    fun `identify with same uid does NOT clear cache or re-launch, but invalidates remote configs cache`() {
         val newIdentity = "user@example.com"
         val sameUid = "uid_initial"
 
@@ -171,8 +171,37 @@ internal class QProductCenterManagerIdentifyContractTest {
         }
         // DEV-1236 B4: the identity attached without a uid change — cached
         // configs may no longer reflect server-side targeting, so they are
-        // dropped (non-destructively) for a refetch on the next call.
-        verify(exactly = 1) { mockRemoteConfigManager.refreshRemoteConfigs() }
+        // dropped (non-destructively) for a refetch on the next call. The
+        // ORDER is load-bearing: the pending-request replay must run after
+        // the invalidation, or queued RC completions would be served the
+        // pre-identify evaluation straight from the cache.
+        verifyOrder {
+            mockRemoteConfigManager.invalidateRemoteConfigsCache()
+            mockRemoteConfigManager.handlePendingRequests()
+        }
+        verify(exactly = 1) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
+        // ...and the destructive user-switch path must NOT fire on same-uid
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+    }
+
+    /**
+     * Repeat identify with an identity that is ALREADY current returns early:
+     * nothing changed server-side, so no cache invalidation and no identity
+     * request. Pins the early-return so re-identifying in a hot loop stays
+     * free; the explicit escape hatch for "same identity, changed targeting"
+     * is the public invalidateRemoteConfigsCache().
+     */
+    @Test
+    fun `repeat identify with the current identity returns early without touching remote configs`() {
+        val identity = "user@example.com"
+
+        every { mockIdentityManager.currentPartnersIdentityId } returns identity
+
+        pcm.identify(identity)
+
+        verify(exactly = 0) { mockIdentityManager.identify(any(), any()) }
+        verify(exactly = 0) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
     }
 
     /**
