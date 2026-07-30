@@ -135,6 +135,10 @@ internal class QRemoteConfigManager @Inject constructor(
                 // before this call must still reach the server (parity with
                 // iOS) - a cache hit must not swallow the flush.
                 userPropertiesManager.forceSendProperties()
+                // A retry resolved by a warm cache consumes its stashed
+                // baseline - a leftover stash must not resurface on a later,
+                // unrelated failure.
+                loadingStates[contextKey]?.retryBaseline = null
                 // Queued waiters can be stranded on a warm state: a list load
                 // may cache into a state whose own load never fires them (it
                 // completed elsewhere or was superseded). Serving only the
