@@ -231,23 +231,26 @@ interface Qonversion {
      * it only marks the cached values as stale. A [remoteConfig] load that is
      * already in flight when this method is called is re-issued once, so its
      * waiting callbacks receive a fresh evaluation rather than the superseded
-     * one; an in-flight [remoteConfigList] load completes with the evaluation
-     * it started with, and any subsequent call fetches fresh values.
+     * one (if the re-issued request fails, the superseded evaluation is
+     * delivered instead); an in-flight [remoteConfigList] load completes with
+     * the evaluation it started with, and any subsequent call fetches fresh
+     * values.
      *
      * Call it when the targeting inputs changed and you need the change
      * reflected immediately, for example:
      * - after setting a batch of user properties via [setUserProperty] or
      *   [setCustomUserProperty] that your remote config targeting depends on;
-     * - after network connectivity is restored, if a previous call could have
-     *   returned a locally bundled fallback config;
      * - on returning to the foreground in long-living sessions, if the
      *   targeting could have changed server-side.
      *
      * You do NOT need to call it after [identify] — the SDK invalidates the
-     * cache on identity changes automatically. The screens shown by No-Code
-     * products are not affected by this method.
+     * cache on identity changes automatically. You also do not need it to
+     * recover from a locally bundled fallback config — fallbacks are never
+     * cached, so the next call retries the network automatically. The screens
+     * shown by No-Code products are not affected by this method.
      *
-     * The method is thread-safe and can be called from any thread.
+     * Call it from the same thread you use for the other Qonversion calls
+     * (typically the main thread).
      *
      * @see remoteConfig
      * @see remoteConfigList
@@ -361,19 +364,23 @@ interface Qonversion {
      * Sets Qonversion reserved user properties, like email or user id.
      * Note that using [QUserPropertyKey.Custom] here will do nothing.
      * To set custom user property, use [setCustomUserProperty] method instead.
+     * If your remote config targeting depends on this property and you need
+     * the updated evaluation immediately, call [invalidateRemoteConfigsCache]
+     * after setting the properties.
      * @param key defined enum key that will be transformed to string
      * @param value property value
-     * @see invalidateRemoteConfigsCache if your remote config targeting depends
-     *      on this property and you need the updated evaluation immediately
+     * @see invalidateRemoteConfigsCache
      */
     fun setUserProperty(key: QUserPropertyKey, value: String)
 
     /**
-     * Sets custom user property
+     * Sets custom user property.
+     * If your remote config targeting depends on this property and you need
+     * the updated evaluation immediately, call [invalidateRemoteConfigsCache]
+     * after setting the properties.
      * @param key custom user property key
      * @param value property value
-     * @see invalidateRemoteConfigsCache if your remote config targeting depends
-     *      on this property and you need the updated evaluation immediately
+     * @see invalidateRemoteConfigsCache
      */
     fun setCustomUserProperty(key: String, value: String)
 

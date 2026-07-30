@@ -242,9 +242,34 @@ internal class QRemoteConfigManagerTest {
         // when - called on the test (main) thread, with no looper draining in between
         manager.loadRemoteConfig(null, callback)
 
-        // then - the cached config is delivered synchronously, without hitting the service
+        // then - the cached config is delivered synchronously, without hitting
+        // the service, and pending properties are still flushed (a cache hit
+        // must not swallow the flush - parity with iOS)
         verify(exactly = 1) { callback.onSuccess(cachedConfig) }
         verify { mockRemoteConfigService wasNot Called }
+        verify(exactly = 1) { mockUserPropertiesManager.forceSendProperties(any()) }
+    }
+
+    @Test
+    fun `a cache hit drains queued waiters instead of serving only the direct callback`() {
+        // given - a warm state that still carries queued callbacks (e.g. a
+        // list load cached into a state whose own load never fired them)
+        userStateProvider.stable = true
+        val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
+        val queuedCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(
+            loadedConfig = cachedConfig,
+            callbacks = mutableListOf(queuedCallback),
+        )
+        val directCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+
+        // when
+        manager.loadRemoteConfig("ctx", directCallback)
+
+        // then - both the direct caller and the stranded waiter are served
+        verify(exactly = 1) { directCallback.onSuccess(cachedConfig) }
+        verify(exactly = 1) { queuedCallback.onSuccess(cachedConfig) }
+        assertEquals(0, loadingStates()["ctx"]?.callbacks?.size)
     }
 
     @Test
@@ -369,6 +394,150 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `a list load warming a superseded single-key state does not strand its waiters`() {
+        // given - a single-key load with a waiter is in flight
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        val listServiceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(listServiceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - an invalidation lands, then a list load started AFTER it
+        // caches the same key, and only then the superseded single-key
+        // response arrives, so its re-issue hits the warm cache
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.loadRemoteConfigList(listOf("ctx"), false, mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+        val warmConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { warmConfig.source.contextKey } returns "ctx"
+        listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(warmConfig)))
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // then - the waiter is served exactly once with the warm (current
+        // generation) config instead of hanging forever, and no second
+        // single-key request was needed
+        verify(exactly = 1) { loadCallback.onSuccess(warmConfig) }
+        verify(exactly = 0) { loadCallback.onError(any()) }
+        verify(exactly = 1) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+        assertEquals(0, loadingStates()["ctx"]?.callbacks?.size)
+    }
+
+    @Test
+    fun `a failed re-issue delivers the superseded evaluation instead of an error`() {
+        // given - a load with a waiter is in flight
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - invalidation mid-flight, the superseded (valid) response
+        // triggers a re-issue, and the retry fails without a fallback
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        serviceCallbacks.first().onSuccess(supersededConfig)
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // then - never worse than before: the superseded evaluation is
+        // delivered as a success instead of surfacing the retry error, and
+        // nothing is cached
+        verify(exactly = 1) { loadCallback.onSuccess(supersededConfig) }
+        verify(exactly = 0) { loadCallback.onError(any()) }
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
+    @Test
+    fun `a user switch mid-flight does not trigger an unrequested re-issue`() {
+        // given - a load with a waiter is in flight
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - the user switches (map replaced), then the response lands on
+        // the now-orphaned state
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // then - the orphaned state must not fire a request nobody awaits
+        verify(exactly = 1) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+    }
+
+    @Test
+    fun `attach from a background thread makes the cache immediately stale`() {
+        // given - a cached config for a stable user
+        userStateProvider.stable = true
+        val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = cachedConfig)
+
+        // when - an attach lands from a non-main thread
+        val backgroundThread = Thread {
+            manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
+        }
+        backgroundThread.start()
+        backgroundThread.join()
+
+        // then - before the posted cleanup drains, the fast path must already
+        // reject the pre-attach config (the bump is synchronous on the caller
+        // thread for every invalidation seam, not only the public API)
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", callback)
+        verify(exactly = 0) { callback.onSuccess(any()) }
+    }
+
+    @Test
+    fun `rate-limited load delivers the bundled fallback`() {
+        // given - a bundled fallback exists and a load is in flight
+        userStateProvider.stable = true
+        val fallbackConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { fallbackConfig.source.contextKey } returns "ctx"
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(fallbackConfig)),
+        )
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - the request is short-circuited by the local rate limiter
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.ApiRateLimitExceeded))
+
+        // then - the bundled payload is served instead of a hard error; since
+        // fallbacks are no longer cached, offline repeat calls hit the limiter
+        // instead of the old cached-fallback fast path, and must still get
+        // the config
+        verify(exactly = 1) { loadCallback.onSuccess(fallbackConfig) }
+        verify(exactly = 0) { loadCallback.onError(any()) }
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
+    @Test
     fun `invalidation mid-flight does not re-issue a load nobody awaits`() {
         // given - a load with NO waiting callback is in flight
         userStateProvider.stable = true
@@ -408,7 +577,8 @@ internal class QRemoteConfigManagerTest {
             firstArg<QonversionEmptyCallback?>()?.onComplete()
         }
 
-        manager.loadRemoteConfigList(listOf("ctx"), false, mockk(relaxed = true))
+        val listCallback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        manager.loadRemoteConfigList(listOf("ctx"), false, listCallback)
         shadowOf(Looper.getMainLooper()).idle()
 
         // when - the attach invalidates mid-flight, then the pre-attach list lands
@@ -418,9 +588,13 @@ internal class QRemoteConfigManagerTest {
         every { staleConfig.source.contextKey } returns "ctx"
         listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(staleConfig)))
 
-        // then - nothing from the stale list is cached: the wrapper would have
-        // created a loading state for the key had it cached the config
+        // then - nothing from the stale list is cached (the wrapper would have
+        // created a loading state for the key had it cached the config), but
+        // the caller still receives the evaluation the load started with —
+        // this pins the documented list contract, whose failure mode is a
+        // callback that never fires
         assertEquals(false, loadingStates().containsKey("ctx"))
+        verify(exactly = 1) { listCallback.onSuccess(any()) }
     }
 
     @Test
@@ -483,6 +657,67 @@ internal class QRemoteConfigManagerTest {
         mainLooper.idle()
 
         assertTrue("Concurrent access threw: $errors", errors.isEmpty())
+    }
+
+    @Test
+    fun `concurrent invalidation with live loads keeps only current-generation configs cached`() {
+        // Unlike the CME stress test above, the user is STABLE here, so every
+        // load runs the full generation-capture / cache-write path while a
+        // background thread keeps bumping the generation.
+        userStateProvider.stable = true
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        val pendingResponses = ArrayDeque<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig(any(), any()) } answers {
+            pendingResponses.add(secondArg())
+        }
+        val config = mockk<QRemoteConfig>(relaxed = true)
+        val errors = Collections.synchronizedList(mutableListOf<Throwable>())
+        val iterations = 300
+
+        val invalidator = Thread {
+            try {
+                repeat(iterations) { manager.invalidateRemoteConfigsCache() }
+            } catch (t: Throwable) {
+                errors.add(t)
+            }
+        }
+
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        invalidator.start()
+        try {
+            repeat(iterations) { i ->
+                manager.loadRemoteConfig("ctx_${i % 8}", null)
+                mainLooper.idle()
+                while (pendingResponses.isNotEmpty()) {
+                    pendingResponses.removeFirst().onSuccess(config)
+                    mainLooper.idle()
+                }
+            }
+        } catch (t: Throwable) {
+            errors.add(t)
+        }
+        invalidator.join()
+        mainLooper.idle()
+        while (pendingResponses.isNotEmpty()) {
+            pendingResponses.removeFirst().onSuccess(config)
+            mainLooper.idle()
+        }
+
+        assertTrue("Concurrent access threw: $errors", errors.isEmpty())
+        // The stamp-guard invariant: once everything settles, any config still
+        // cached must carry the final generation - the write guard must never
+        // have let a superseded response in, and every older write must have
+        // been swept by a later posted cleanup.
+        val finalGeneration = manager
+            .getPrivateField<java.util.concurrent.atomic.AtomicInteger>("invalidationGeneration")
+            .get()
+        loadingStates().values.forEach { state ->
+            if (state.loadedConfig != null) {
+                assertEquals(finalGeneration, state.generation)
+            }
+        }
     }
 
     @Test
