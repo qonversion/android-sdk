@@ -250,7 +250,9 @@ interface Qonversion {
      * shown by No-Code products are not affected by this method.
      *
      * Call it from the same thread you use for the other Qonversion calls
-     * (typically the main thread).
+     * (typically the main thread). On Android, calling from any thread is
+     * also safe — the conservative wording is the shared cross-platform
+     * contract.
      *
      * @see remoteConfig
      * @see remoteConfigList

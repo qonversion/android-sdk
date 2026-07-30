@@ -283,9 +283,29 @@ internal class QRemoteConfigManagerTest {
         // when - called on the test (main) thread, with no looper draining in between
         manager.loadRemoteConfigList(listOf("ctx"), false, callback)
 
-        // then - the cached list is delivered synchronously, without hitting the service
+        // then - the cached list is delivered synchronously, without hitting
+        // the service, and pending properties are still flushed (a cache hit
+        // must not swallow the flush - parity with iOS)
         verify(exactly = 1) { callback.onSuccess(any()) }
         verify { mockRemoteConfigService wasNot Called }
+        verify(exactly = 1) { mockUserPropertiesManager.forceSendProperties(any()) }
+    }
+
+    @Test
+    fun `loadRemoteConfigList cache hit does not flush properties while the user is unstable`() {
+        // given - cached configs, but the user is mid-identify. The stability
+        // gate exists so the flush cannot POST to a switching uid.
+        userStateProvider.stable = false
+        val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(loadedConfig = cachedConfig)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+
+        // when
+        manager.loadRemoteConfigList(listOf("ctx"), false, callback)
+
+        // then - the cached list is still served, but nothing is flushed
+        verify(exactly = 1) { callback.onSuccess(any()) }
+        verify(exactly = 0) { mockUserPropertiesManager.forceSendProperties(any()) }
     }
 
     @Test
@@ -458,6 +478,93 @@ internal class QRemoteConfigManagerTest {
         verify(exactly = 1) { loadCallback.onSuccess(supersededConfig) }
         verify(exactly = 0) { loadCallback.onError(any()) }
         assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
+    @Test
+    fun `a failed re-issue prefers the baseline over the bundled fallback`() {
+        // given - a bundled fallback EXISTS for the key, and a load with a
+        // waiter is in flight
+        userStateProvider.stable = true
+        val bundledConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { bundledConfig.source.contextKey } returns "ctx"
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(bundledConfig)),
+        )
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - invalidation mid-flight, the superseded (valid) response
+        // triggers a re-issue, and the retry fails in a FALLBACK-ELIGIBLE way
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        serviceCallbacks.first().onSuccess(supersededConfig)
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        // then - the real user-specific evaluation seconds old outranks the
+        // static bundled payload: the waiter gets the baseline, not the bundle
+        verify(exactly = 1) { loadCallback.onSuccess(supersededConfig) }
+        verify(exactly = 0) { loadCallback.onSuccess(bundledConfig) }
+        verify(exactly = 0) { loadCallback.onError(any()) }
+    }
+
+    @Test
+    fun `a late joiner during the retry window also receives the baseline`() {
+        // given - a load with a waiter is in flight
+        userStateProvider.stable = true
+        val callbackA = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", callbackA)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - invalidation mid-flight, the superseded response triggers a
+        // re-issue, a SECOND caller joins while the retry is flying, and the
+        // retry fails without a fallback
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        serviceCallbacks.first().onSuccess(supersededConfig)
+        val callbackB = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", callbackB)
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // then - the never-worse guarantee is uniform: the late joiner gets
+        // the baseline too, not the retry error
+        verify(exactly = 1) { callbackA.onSuccess(supersededConfig) }
+        verify(exactly = 1) { callbackB.onSuccess(supersededConfig) }
+        verify(exactly = 0) { callbackA.onError(any()) }
+        verify(exactly = 0) { callbackB.onError(any()) }
+    }
+
+    @Test
+    fun `a reused callback instance is delivered exactly once on a cache hit`() {
+        // given - a warm state whose queue already holds the same listener
+        // instance the caller passes again (singleton-callback integrations)
+        userStateProvider.stable = true
+        val cachedConfig = mockk<QRemoteConfig>(relaxed = true)
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(
+            loadedConfig = cachedConfig,
+            callbacks = mutableListOf(callback),
+        )
+
+        // when
+        manager.loadRemoteConfig("ctx", callback)
+
+        // then - one delivery, not two
+        verify(exactly = 1) { callback.onSuccess(cachedConfig) }
     }
 
     @Test

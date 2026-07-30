@@ -6,6 +6,7 @@ import com.qonversion.android.sdk.dto.QFallbackObject
 import com.qonversion.android.sdk.dto.QRemoteConfig
 import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
@@ -18,6 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 private val EmptyContextKey: String? = null
+
+// Rate-limit tolerance is scoped to remote configs deliberately: the other
+// shouldFireFallback consumer (the entitlements path) keeps surfacing
+// ApiRateLimitExceeded unchanged. A locally short-circuited RC request is
+// exactly the case the bundled payload exists for — and since fallbacks are
+// no longer cached, offline repeat calls hit the limiter instead of the old
+// cached-fallback fast path.
+private val QonversionError.shouldFireRemoteConfigFallback
+    get(): Boolean = shouldFireFallback || code == QonversionErrorCode.ApiRateLimitExceeded
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
@@ -37,8 +47,15 @@ internal class QRemoteConfigManager @Inject constructor(
         // main-thread cleanup has run.
         var generation: Int = 0,
         // Last generation a superseded in-flight load was re-issued for —
-        // caps the retry at one per invalidation.
-        var reissuedForGeneration: Int? = null
+        // defense-in-depth against a concurrent re-entry; the retry count is
+        // bounded structurally by the per-key isInProgress serialisation.
+        var reissuedForGeneration: Int? = null,
+        // The superseded (but valid) evaluation held while its re-issued
+        // retry is in flight. A failed retry degrades to it — for everyone,
+        // including callers who join during the retry window — and it
+        // outranks the static bundled fallback: a real user-specific
+        // evaluation seconds old beats shipped-in-binary defaults.
+        var retryBaseline: QRemoteConfig? = null
     )
 
     internal class ListRequestData(
@@ -118,13 +135,23 @@ internal class QRemoteConfigManager @Inject constructor(
                 // before this call must still reach the server (parity with
                 // iOS) - a cache hit must not swallow the flush.
                 userPropertiesManager.forceSendProperties()
-                callback?.onSuccess(cached)
                 // Queued waiters can be stranded on a warm state: a list load
                 // may cache into a state whose own load never fires them (it
                 // completed elsewhere or was superseded). Serving only the
-                // direct callback would leave them queued forever.
-                if (loadingStates[contextKey]?.callbacks?.isNotEmpty() == true) {
-                    fireToCallbacks(contextKey) { onSuccess(cached) }
+                // direct callback would leave them queued forever. Drained
+                // inline, NOT via fireToCallbacks: resolving waiters must not
+                // mark a still-outstanding load as finished (isInProgress
+                // belongs to that load). Dedup: a listener instance queued
+                // earlier and passed again as the direct callback must
+                // receive exactly one onSuccess per delivery.
+                val queued = loadingStates[contextKey]?.callbacks?.let { callbacks ->
+                    val snapshot = callbacks.toList()
+                    callbacks.clear()
+                    snapshot
+                }.orEmpty()
+                queued.forEach { it.onSuccess(cached) }
+                if (callback != null && callback !in queued) {
+                    callback.onSuccess(cached)
                 }
                 return@postToMainThread
             }
@@ -148,6 +175,9 @@ internal class QRemoteConfigManager @Inject constructor(
             override fun onComplete() {
                 remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
                     override fun onSuccess(remoteConfig: QRemoteConfig) {
+                        // A successful (or delivered-as-is) response always
+                        // supersedes any baseline stashed by an earlier retry.
+                        loadingState.retryBaseline = null
                         val currentGeneration = invalidationGeneration.get()
                         if (currentGeneration == generationAtStart) {
                             loadingState.loadedConfig = remoteConfig
@@ -177,6 +207,11 @@ internal class QRemoteConfigManager @Inject constructor(
                         ) {
                             loadingState.reissuedForGeneration = currentGeneration
                             loadingState.isInProgress = false
+                            // The stash makes the never-worse guarantee
+                            // uniform: the retry's failure handlers prefer it
+                            // over both the error and the bundled fallback,
+                            // reaching late joiners queued during the retry.
+                            loadingState.retryBaseline = remoteConfig
                             val waiters = loadingState.callbacks.toList()
                             loadingState.callbacks.clear()
                             val baseline = remoteConfig
@@ -186,6 +221,9 @@ internal class QRemoteConfigManager @Inject constructor(
                                 }
 
                                 override fun onError(error: QonversionError) {
+                                    // Safety net only: with the stash in place
+                                    // the retry resolves via onSuccess; this
+                                    // branch survives for exotic interleavings.
                                     waiters.forEach { it.onSuccess(baseline) }
                                 }
                             })
@@ -195,28 +233,32 @@ internal class QRemoteConfigManager @Inject constructor(
                     }
 
                     override fun onError(error: QonversionError) {
-                        if (!error.shouldFireFallback) {
-                            fireToCallbacks(contextKey) { onError(error) }
-                            return
-                        }
-
-                        val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
-                            fireToCallbacks(contextKey) { onError(error) }
-                            return@onError
-                        }
-
-                        val remoteConfig = if (contextKey == null) {
-                            baseRemoteConfigList.remoteConfigForEmptyContextKey
-                        } else {
-                            baseRemoteConfigList.remoteConfigForContextKey(contextKey)
-                        }
-
+                        val baseline = loadingState.retryBaseline
+                        loadingState.retryBaseline = null
                         // The fallback is a bundled last-resort payload, not a
                         // fresh targeting evaluation — deliver it without
                         // caching so the next call retries the network instead
                         // of pinning the fallback until the next invalidation.
-                        remoteConfig?.let { fallbackConfig ->
-                            fireToCallbacks(contextKey) { onSuccess(fallbackConfig) }
+                        val bundledConfig = if (error.shouldFireRemoteConfigFallback) {
+                            fallbackData?.remoteConfigList?.let { list ->
+                                if (contextKey == null) {
+                                    list.remoteConfigForEmptyContextKey
+                                } else {
+                                    list.remoteConfigForContextKey(contextKey)
+                                }
+                            }
+                        } else {
+                            null
+                        }
+
+                        // A failed retry of a superseded load degrades to the
+                        // baseline — a real user-specific evaluation seconds
+                        // old — for everyone, including callers who joined
+                        // during the retry window. It outranks both the error
+                        // and the static bundled payload.
+                        val result = baseline ?: bundledConfig
+                        result?.let { config ->
+                            fireToCallbacks(contextKey) { onSuccess(config) }
                         } ?: fireToCallbacks(contextKey) { onError(error) }
                     }
                 })
@@ -340,7 +382,7 @@ internal class QRemoteConfigManager @Inject constructor(
             }
 
             override fun onError(error: QonversionError) {
-                if (!error.shouldFireFallback) {
+                if (!error.shouldFireRemoteConfigFallback) {
                     callback.onError(error)
                     return
                 }
