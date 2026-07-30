@@ -79,6 +79,14 @@ internal class QRemoteConfigManager @Inject constructor(
         }
     }
 
+    // Public refresh seam (DEV-1236 B4): drops every cached config so the next
+    // load fetches a fresh evaluation. Non-destructive — loading states and
+    // pending callbacks survive, and the generation bump stops in-flight loads
+    // from re-caching a pre-refresh response.
+    fun refreshRemoteConfigs() = postToMainThread {
+        invalidateLoadedConfigs()
+    }
+
     fun onUserUpdate() = postToMainThread {
         invalidationGeneration++
         loadingStates = mutableMapOf()

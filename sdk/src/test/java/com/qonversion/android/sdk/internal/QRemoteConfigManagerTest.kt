@@ -350,6 +350,37 @@ internal class QRemoteConfigManagerTest {
         assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
     }
 
+    @Test
+    fun `refreshRemoteConfigs drops caches non-destructively and guards in-flight loads`() {
+        // given - cached configs with a pending callback, plus a load in flight
+        userStateProvider.stable = true
+        val pendingCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        loadingStates()[null] = QRemoteConfigManager.LoadingState(loadedConfig = mockk<QRemoteConfig>(relaxed = true))
+        loadingStates()["ctx"] = QRemoteConfigManager.LoadingState(
+            loadedConfig = mockk<QRemoteConfig>(relaxed = true),
+            callbacks = mutableListOf(pendingCallback),
+        )
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("in-flight", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("in-flight", null)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when
+        manager.refreshRemoteConfigs()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // then - every cached config dropped, callbacks preserved, and the
+        // pre-refresh in-flight response is not re-cached (generation guard)
+        assertEquals(null, loadingStates()[null]?.loadedConfig)
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+        assertEquals(1, loadingStates()["ctx"]?.callbacks?.size)
+        assertEquals(null, loadingStates()["in-flight"]?.loadedConfig)
+    }
+
     private fun listRequests() =
         manager.getPrivateField<List<*>>("listRequests")
 

@@ -152,7 +152,7 @@ internal class QProductCenterManagerIdentifyContractTest {
      * always-launch.
      */
     @Test
-    fun `identify with same uid does NOT clear cache or re-launch`() {
+    fun `identify with same uid does NOT clear cache or re-launch, but refreshes remote configs`() {
         val newIdentity = "user@example.com"
         val sameUid = "uid_initial"
 
@@ -169,6 +169,10 @@ internal class QProductCenterManagerIdentifyContractTest {
         verify(exactly = 0) {
             mockRepository.init(match { it.requestTrigger == RequestTrigger.Identify })
         }
+        // DEV-1236 B4: the identity attached without a uid change — cached
+        // configs may no longer reflect server-side targeting, so they are
+        // dropped (non-destructively) for a refetch on the next call.
+        verify(exactly = 1) { mockRemoteConfigManager.refreshRemoteConfigs() }
     }
 
     /**

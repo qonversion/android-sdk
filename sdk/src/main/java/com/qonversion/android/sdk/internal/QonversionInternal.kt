@@ -307,6 +307,10 @@ internal class QonversionInternal(
         })
     }
 
+    override fun refreshRemoteConfigs() {
+        remoteConfigManager.refreshRemoteConfigs()
+    }
+
     override fun attachUserToExperiment(
         experimentId: String,
         groupId: String,
