@@ -103,8 +103,12 @@ internal class QRemoteConfigManager @Inject constructor(
         // and registers that key in loadingStates. Iterating a copy keeps that re-entrant
         // structural add from mutating the map mid-iteration. Main-thread confinement does
         // not help here - the reentrancy is within a single thread.
-        loadingStates.keys.toList().forEach {
-            fireToCallbacks(it) { onError(error) }
+        loadingStates.keys.toList().forEach { key ->
+            // The only drain that bypasses the response handlers — consume
+            // the retry stash here too, or a leftover masks a later
+            // unrelated failure as a stale success.
+            loadingStates[key]?.retryBaseline = null
+            fireToCallbacks(key) { onError(error) }
         }
     }
 
@@ -154,7 +158,9 @@ internal class QRemoteConfigManager @Inject constructor(
                     snapshot
                 }.orEmpty()
                 queued.forEach { it.onSuccess(cached) }
-                if (callback != null && callback !in queued) {
+                // Identity, not equals: a host listener with value semantics
+                // (data class) must not suppress a distinct caller.
+                if (callback != null && queued.none { it === callback }) {
                     callback.onSuccess(cached)
                 }
                 return@postToMainThread

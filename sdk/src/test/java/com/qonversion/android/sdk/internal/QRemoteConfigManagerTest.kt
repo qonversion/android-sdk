@@ -549,6 +549,110 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `a stash consumed by a successful retry cannot resurface on a later failure`() {
+        // given - a full re-issue cycle that ends with a SUCCESSFUL retry
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.last().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+
+        // when - a later, unrelated load for the same key fails
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val lateCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", lateCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // then - the error surfaces; a leftover stash must not deliver a
+        // long-superseded evaluation as a success
+        verify(exactly = 1) { lateCallback.onError(any()) }
+        verify(exactly = 0) { lateCallback.onSuccess(any()) }
+    }
+
+    @Test
+    fun `a stash consumed by a warm-cache resolution cannot resurface on a later failure`() {
+        // given - the re-issue resolves through a warm cache (a list load
+        // cached the key at the new generation)
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        val listServiceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(listServiceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.loadRemoteConfigList(listOf("ctx"), false, mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+        val warmConfig = mockk<QRemoteConfig>(relaxed = true)
+        every { warmConfig.source.contextKey } returns "ctx"
+        listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(warmConfig)))
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        verify(exactly = 1) { loadCallback.onSuccess(warmConfig) }
+
+        // when - a later, unrelated load for the same key fails
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val lateCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", lateCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // then - the error surfaces, not the stashed baseline
+        verify(exactly = 1) { lateCallback.onError(any()) }
+        verify(exactly = 0) { lateCallback.onSuccess(any()) }
+    }
+
+    @Test
+    fun `a stash left by a user-change failure cannot resurface on a later failure`() {
+        // given - the superseded response arrives while the user is unstable,
+        // so the re-issue can only queue, and the identity change then fails -
+        // the one drain path that bypasses the response handlers
+        userStateProvider.stable = true
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        userStateProvider.stable = false
+        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        manager.userChangingRequestFailedWithError(QonversionError(QonversionErrorCode.BackendError))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // when - the user stabilises and a later load for the same key fails
+        userStateProvider.stable = true
+        val lateCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", lateCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+
+        // then - the error surfaces, not the stashed baseline
+        verify(exactly = 1) { lateCallback.onError(any()) }
+        verify(exactly = 0) { lateCallback.onSuccess(any()) }
+    }
+
+    @Test
     fun `a reused callback instance is delivered exactly once on a cache hit`() {
         // given - a warm state whose queue already holds the same listener
         // instance the caller passes again (singleton-callback integrations)
