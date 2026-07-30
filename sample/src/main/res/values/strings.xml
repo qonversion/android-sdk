@@ -84,6 +84,8 @@
     <string name="single_remote_config">Single Remote Config</string>
     <string name="context_key_optional">Context Key (optional)</string>
     <string name="get_remote_config">Get Remote Config</string>
+    <string name="invalidate_remote_configs_cache">Invalidate Remote Configs Cache</string>
+    <string name="remote_configs_cache_invalidated">Cache invalidated — the next request fetches a fresh evaluation</string>
     <string name="experiments">Experiments</string>
     <string name="experiment_id">Experiment ID</string>
     <string name="group_id">Group ID</string>

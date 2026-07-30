@@ -115,6 +115,15 @@
                     app:backgroundTint="@color/colorDark"
                     app:cornerRadius="8dp" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonInvalidateRemoteConfigsCache"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/invalidate_remote_configs_cache"
+                    app:cornerRadius="8dp" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

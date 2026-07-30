@@ -307,6 +307,10 @@ internal class QonversionInternal(
         })
     }
 
+    override fun invalidateRemoteConfigsCache() {
+        remoteConfigManager.invalidateRemoteConfigsCache()
+    }
+
     override fun attachUserToExperiment(
         experimentId: String,
         groupId: String,

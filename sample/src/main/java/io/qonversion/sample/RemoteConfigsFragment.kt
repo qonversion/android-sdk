@@ -57,6 +57,11 @@ class RemoteConfigsFragment : Fragment() {
             getRemoteConfig(contextKey.ifEmpty { null })
         }
 
+        binding.buttonInvalidateRemoteConfigsCache.setOnClickListener {
+            Qonversion.shared.invalidateRemoteConfigsCache()
+            Toast.makeText(context, getString(R.string.remote_configs_cache_invalidated), Toast.LENGTH_SHORT).show()
+        }
+
         binding.buttonAttachExperiment.setOnClickListener {
             val experimentId = binding.editExperimentId.text.toString()
             val groupId = binding.editGroupId.text.toString()

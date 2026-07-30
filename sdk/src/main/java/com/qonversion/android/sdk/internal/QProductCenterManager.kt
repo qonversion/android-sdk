@@ -228,6 +228,16 @@ internal class QProductCenterManager internal constructor(
                 processingPartnersIdentityId = null
 
                 if (currentUserId == qonversionUid) {
+                    // The uid did not change, but the identity did — user
+                    // properties and the external identity are now attached, so
+                    // cached configs may no longer reflect the server-side
+                    // targeting evaluation. Drop them (non-destructively) so the
+                    // next remoteConfig() call refetches; pending requests
+                    // re-issued below fetch fresh as well (DEV-1236 B4).
+                    // Invalidate BEFORE handlePendingRequests: the replay must
+                    // miss the cache, or queued completions would be served the
+                    // pre-identify evaluation.
+                    remoteConfigManager.invalidateRemoteConfigsCache()
                     handlePendingRequests()
                     fireIdentitySuccess(identityId)
                 } else {
