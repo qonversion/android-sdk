@@ -20,6 +20,6 @@ internal class NetworkModuleTest {
 
         val client = NetworkModule().provideOkHttpClient(application, interceptor)
 
-        assertFalse(client.hostnameVerifier.verify("attacker.invalid", sslSession))
+        assertFalse(client.hostnameVerifier().verify("attacker.invalid", sslSession))
     }
 }
