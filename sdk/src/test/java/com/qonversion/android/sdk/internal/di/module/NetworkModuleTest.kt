@@ -8,6 +8,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.lang.reflect.Proxy
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSession
 
 @RunWith(RobolectricTestRunner::class)
@@ -16,7 +18,15 @@ internal class NetworkModuleTest {
     fun `api client rejects a hostname that does not match the certificate`() {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val interceptor = mockk<NetworkInterceptor>(relaxed = true)
-        val sslSession = mockk<SSLSession>(relaxed = true)
+        val sslSession = Proxy.newProxyInstance(
+            NetworkModuleTest::class.java.classLoader,
+            arrayOf(SSLSession::class.java),
+        ) { _, method, _ ->
+            if (method.name == "getPeerCertificates") {
+                throw SSLPeerUnverifiedException("no certificate for mismatched host")
+            }
+            null
+        } as SSLSession
 
         val client = NetworkModule().provideOkHttpClient(application, interceptor)
 
