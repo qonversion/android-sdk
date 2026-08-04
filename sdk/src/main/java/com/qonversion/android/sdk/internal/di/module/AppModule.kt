@@ -11,6 +11,8 @@ import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.LaunchResultCacheWrapper
 import com.qonversion.android.sdk.internal.storage.PurchasesCache
+import com.qonversion.android.sdk.internal.storage.PersistentRemoteConfigCache
+import com.qonversion.android.sdk.internal.storage.RemoteConfigCache
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -74,6 +76,15 @@ internal class AppModule(
         fallbacksService: QFallbacksService
     ): LaunchResultCacheWrapper {
         return LaunchResultCacheWrapper(moshi, sharedPreferencesCache, internalConfig, fallbacksService)
+    }
+
+    @ApplicationScope
+    @Provides
+    fun provideRemoteConfigCache(
+        moshi: Moshi,
+        sharedPreferencesCache: SharedPreferencesCache,
+    ): RemoteConfigCache {
+        return PersistentRemoteConfigCache(sharedPreferencesCache, internalConfig, moshi)
     }
 
     @ApplicationScope

@@ -10,6 +10,8 @@ import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
+import com.qonversion.android.sdk.internal.storage.RemoteConfigCache
+import com.qonversion.android.sdk.internal.storage.RemoteConfigCacheScope
 import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
@@ -20,18 +22,54 @@ import javax.inject.Inject
 
 private val EmptyContextKey: String? = null
 
+private fun String?.normalizedRemoteConfigContextKey(): String? = takeUnless { it.isNullOrEmpty() }
+
+internal enum class QRemoteConfigDeliveryOrigin {
+    Network,
+    MemoryCache,
+    RetryBaseline,
+    PersistentLastKnownGood,
+    BundledFallback,
+}
+
+private data class RemoteConfigRequestIdentity(
+    val userGeneration: Int,
+    val cacheScope: RemoteConfigCacheScope?,
+)
+
 // Rate-limit tolerance is scoped to remote configs deliberately: the other
 // shouldFireFallback consumer (the entitlements path) keeps surfacing
-// ApiRateLimitExceeded unchanged. A locally short-circuited RC request is
-// exactly the case the bundled payload exists for — and since fallbacks are
-// no longer cached, offline repeat calls hit the limiter instead of the old
-// cached-fallback fast path.
+// ApiRateLimitExceeded unchanged. RC requests that are locally short-circuited
+// or receive transient HTTP 408/429 responses are exactly the cases the local
+// fallback chain exists for. Since fallbacks are no longer memory-cached,
+// repeat calls still retry the service whenever the rate limiter permits.
 private val QonversionError.shouldFireRemoteConfigFallback
-    get(): Boolean = shouldFireFallback || code == QonversionErrorCode.ApiRateLimitExceeded
+    get(): Boolean {
+        if (code in NON_RECOVERABLE_REMOTE_CONFIG_ERRORS) return false
+
+        return shouldFireFallback ||
+            code == QonversionErrorCode.ApiRateLimitExceeded ||
+            code == QonversionErrorCode.ResponseParsingFailed ||
+            httpCode == HTTP_REQUEST_TIMEOUT ||
+            httpCode == HTTP_TOO_MANY_REQUESTS
+    }
+
+private val NON_RECOVERABLE_REMOTE_CONFIG_ERRORS = setOf(
+    QonversionErrorCode.Unknown,
+    QonversionErrorCode.InvalidCredentials,
+    QonversionErrorCode.InvalidClientUid,
+    QonversionErrorCode.UnknownClientPlatform,
+    QonversionErrorCode.ProjectConfigError,
+    QonversionErrorCode.InvalidStoreCredentials,
+)
+
+private const val HTTP_REQUEST_TIMEOUT = 408
+private const val HTTP_TOO_MANY_REQUESTS = 429
 
 internal class QRemoteConfigManager @Inject constructor(
     private val remoteConfigService: QRemoteConfigService,
-    private val fallbacksService: QFallbacksService
+    private val fallbacksService: QFallbacksService,
+    private val persistentCache: RemoteConfigCache,
 ) {
     private val fallbackData: QFallbackObject? by lazy {
         fallbacksService.obtainFallbackData()
@@ -66,9 +104,11 @@ internal class QRemoteConfigManager @Inject constructor(
 
     lateinit var userStateProvider: UserStateProvider
     private var loadingStates = mutableMapOf<String?, LoadingState>()
+    private val deliveryOrigins = mutableMapOf<String?, QRemoteConfigDeliveryOrigin>()
     private val listRequests = mutableListOf<ListRequestData>()
     lateinit var userPropertiesManager: QUserPropertiesManager
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val identityTransitionLock = Any()
 
     // Bumped on every cache invalidation (attach/detach, user change, explicit
     // invalidateRemoteConfigsCache). Loads capture it when they start and skip
@@ -78,8 +118,10 @@ internal class QRemoteConfigManager @Inject constructor(
     // caller thread, so the cached fast paths reject stale values immediately
     // instead of waiting for the posted main-thread hop to drain.
     private val invalidationGeneration = AtomicInteger(0)
+    private val userGeneration = AtomicInteger(0)
+    private var appliedUserGeneration = 0
 
-    fun handlePendingRequests() = postToMainThread {
+    fun handlePendingRequests() = postIdentityAction {
         loadingStates.filter { it.value.callbacks.isNotEmpty() }
             .keys.forEach { contextKey -> loadRemoteConfig(contextKey, null) }
 
@@ -97,7 +139,7 @@ internal class QRemoteConfigManager @Inject constructor(
         }
     }
 
-    fun userChangingRequestFailedWithError(error: QonversionError) = postToMainThread {
+    fun userChangingRequestFailedWithError(error: QonversionError) = postIdentityAction {
         // Snapshot the keys: fireToCallbacks runs user callbacks, and a callback that
         // re-enters loadRemoteConfig with a new key runs inline (already on the main thread)
         // and registers that key in loadingStates. Iterating a copy keeps that re-entrant
@@ -118,23 +160,72 @@ internal class QRemoteConfigManager @Inject constructor(
     // stops in-flight loads from re-caching a superseded response.
     fun invalidateRemoteConfigsCache() = invalidateOnAnyThread {}
 
-    fun onUserUpdate() {
-        // Bump synchronously (see invalidateOnAnyThread) — the destructive
-        // map replacement still happens on main.
-        invalidationGeneration.incrementAndGet()
-        postToMainThread {
-            loadingStates = mutableMapOf()
+    fun onUserUpdate(updateIdentity: () -> Unit = {}) {
+        // The generation and the UID mutation share one linearization point.
+        // Loads and response delivery take the same lock, so a background
+        // logout/identify cannot expose a half-transitioned cache scope.
+        synchronized(identityTransitionLock) {
+            invalidationGeneration.incrementAndGet()
+            userGeneration.incrementAndGet()
+            updateIdentity()
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                resetIdentityStateIfNeeded()
+            } else {
+                mainHandler.post {
+                    synchronized(identityTransitionLock) {
+                        resetIdentityStateIfNeeded()
+                    }
+                }
+            }
         }
     }
 
+    private fun resetIdentityStateIfNeeded() {
+        val currentUserGeneration = userGeneration.get()
+        if (appliedUserGeneration == currentUserGeneration) return
+
+        // Move every waiter across the identity boundary before orphaning the
+        // old states. Clearing the old callback lists is essential: a late old
+        // response still owns those LoadingState instances and must not replay
+        // the same waiter a second time.
+        val pendingSingleRequests = loadingStates.mapValues { (_, state) ->
+            state.callbacks.toList().also { state.callbacks.clear() }
+        }.filterValues { it.isNotEmpty() }
+        loadingStates = mutableMapOf()
+        deliveryOrigins.clear()
+        appliedUserGeneration = currentUserGeneration
+        pendingSingleRequests.forEach { (contextKey, callbacks) ->
+            loadingStates[contextKey] = LoadingState(callbacks = callbacks.toMutableList())
+            if (userStateProvider.isUserStable) {
+                loadRemoteConfig(contextKey, null)
+            }
+        }
+    }
+
+    internal fun lastDeliveryOrigin(contextKey: String?): QRemoteConfigDeliveryOrigin? =
+        synchronized(identityTransitionLock) {
+            if (appliedUserGeneration == userGeneration.get()) {
+                deliveryOrigins[contextKey.normalizedRemoteConfigContextKey()]
+            } else {
+                null
+            }
+        }
+
     // The explicit Unit is required: the re-issue path recurses into this
     // function, and an inferred expression-body type would depend on itself.
-    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?): Unit = postToMainThread {
+    fun loadRemoteConfig(contextKey: String?, callback: QonversionRemoteConfigCallback?): Unit =
+        loadRemoteConfigNormalized(contextKey.normalizedRemoteConfigContextKey(), callback)
+
+    private fun loadRemoteConfigNormalized(
+        contextKey: String?,
+        callback: QonversionRemoteConfigCallback?,
+    ): Unit = postIdentityAction {
         loadingStates[contextKey]
             ?.takeIf { it.generation == invalidationGeneration.get() }
             ?.loadedConfig
             ?.takeIf { userStateProvider.isUserStable }
             ?.let { cached ->
+                deliveryOrigins[contextKey] = QRemoteConfigDeliveryOrigin.MemoryCache
                 // The cached config is served as is, but properties set right
                 // before this call must still reach the server (parity with
                 // iOS) - a cache hit must not swallow the flush.
@@ -163,7 +254,7 @@ internal class QRemoteConfigManager @Inject constructor(
                 if (callback != null && queued.none { it === callback }) {
                     callback.onSuccess(cached)
                 }
-                return@postToMainThread
+                return@postIdentityAction
             }
 
         val loadingState = loadingStates[contextKey] ?: LoadingState()
@@ -174,119 +265,219 @@ internal class QRemoteConfigManager @Inject constructor(
         }
 
         if (!userStateProvider.isUserStable || loadingState.isInProgress) {
-            return@postToMainThread
+            return@postIdentityAction
         }
 
         loadingState.isInProgress = true
         loadingState.loadedConfig = null
         val generationAtStart = invalidationGeneration.get()
+        val requestIdentity = captureRequestIdentity()
 
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
-                remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
-                    override fun onSuccess(remoteConfig: QRemoteConfig) {
-                        // A successful (or delivered-as-is) response always
-                        // supersedes any baseline stashed by an earlier retry.
-                        loadingState.retryBaseline = null
-                        val currentGeneration = invalidationGeneration.get()
-                        if (currentGeneration == generationAtStart) {
-                            loadingState.loadedConfig = remoteConfig
-                            loadingState.generation = generationAtStart
-                            fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
-                            return
-                        }
-
-                        // The cache was invalidated while this load was in
-                        // flight, so this evaluation is already superseded.
-                        // Re-issue the load once per generation so the waiting
-                        // callbacks receive a fresh evaluation instead of the
-                        // stale one. The state must still be live: a user
-                        // switch replaces the map, and an orphaned state must
-                        // not fire a request nobody awaits. The waiters are
-                        // snapshotted and carried through the retry with the
-                        // superseded (but valid) evaluation as a baseline — a
-                        // failed retry degrades to the baseline instead of
-                        // surfacing an error where the caller previously got
-                        // a success. The generation cap is defense-in-depth:
-                        // the retry is bounded primarily by the per-key
-                        // isInProgress serialisation (one load, hence one
-                        // superseded response, per generation).
-                        if (loadingStates[contextKey] === loadingState &&
-                            loadingState.callbacks.isNotEmpty() &&
-                            loadingState.reissuedForGeneration != currentGeneration
-                        ) {
-                            loadingState.reissuedForGeneration = currentGeneration
-                            loadingState.isInProgress = false
-                            // The stash makes the never-worse guarantee
-                            // uniform: the retry's failure handlers prefer it
-                            // over both the error and the bundled fallback,
-                            // reaching late joiners queued during the retry.
-                            loadingState.retryBaseline = remoteConfig
-                            val waiters = loadingState.callbacks.toList()
-                            loadingState.callbacks.clear()
-                            val baseline = remoteConfig
-                            loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
-                                override fun onSuccess(remoteConfig: QRemoteConfig) {
-                                    waiters.forEach { it.onSuccess(remoteConfig) }
-                                }
-
-                                override fun onError(error: QonversionError) {
-                                    // Safety net only: with the stash in place
-                                    // the retry resolves via onSuccess; this
-                                    // branch survives for exotic interleavings.
-                                    waiters.forEach { it.onSuccess(baseline) }
-                                }
-                            })
-                            return
-                        }
-                        fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
+                postIdentityAction {
+                    if (requestIdentity.isCurrentAndStable()) {
+                        loadRemoteConfigFromService(
+                            contextKey,
+                            loadingState,
+                            generationAtStart,
+                            requestIdentity,
+                        )
+                    } else {
+                        reissueSingleAfterUserChange(contextKey, loadingState)
                     }
-
-                    override fun onError(error: QonversionError) {
-                        val baseline = loadingState.retryBaseline
-                        loadingState.retryBaseline = null
-                        // The fallback is a bundled last-resort payload, not a
-                        // fresh targeting evaluation — deliver it without
-                        // caching so the next call retries the network instead
-                        // of pinning the fallback until the next invalidation.
-                        val bundledConfig = if (error.shouldFireRemoteConfigFallback) {
-                            fallbackData?.remoteConfigList?.let { list ->
-                                if (contextKey == null) {
-                                    list.remoteConfigForEmptyContextKey
-                                } else {
-                                    list.remoteConfigForContextKey(contextKey)
-                                }
-                            }
-                        } else {
-                            null
-                        }
-
-                        // A failed retry of a superseded load degrades to the
-                        // baseline — a real user-specific evaluation seconds
-                        // old — for everyone, including callers who joined
-                        // during the retry window. It outranks both the error
-                        // and the static bundled payload.
-                        val result = baseline ?: bundledConfig
-                        result?.let { config ->
-                            fireToCallbacks(contextKey) { onSuccess(config) }
-                        } ?: fireToCallbacks(contextKey) { onError(error) }
-                    }
-                })
+                }
             }
         })
     }
+
+    private fun loadRemoteConfigFromService(
+        contextKey: String?,
+        loadingState: LoadingState,
+        generationAtStart: Int,
+        requestIdentity: RemoteConfigRequestIdentity,
+    ) {
+        remoteConfigService.loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) {
+                postIdentityAction {
+                    if (requestIdentity.isCurrentAndStable()) {
+                        if (remoteConfig.source.contextKey == contextKey) {
+                            handleRemoteConfigSuccess(
+                                contextKey,
+                                loadingState,
+                                generationAtStart,
+                                requestIdentity.cacheScope,
+                                remoteConfig,
+                            )
+                        } else {
+                            handleRemoteConfigError(
+                                contextKey,
+                                loadingState,
+                                requestIdentity.cacheScope,
+                                malformedRemoteConfigResponseError(),
+                            )
+                        }
+                    } else {
+                        reissueSingleAfterUserChange(contextKey, loadingState)
+                    }
+                }
+            }
+
+            override fun onError(error: QonversionError) {
+                postIdentityAction {
+                    if (requestIdentity.isCurrentAndStable()) {
+                        handleRemoteConfigError(contextKey, loadingState, requestIdentity.cacheScope, error)
+                    } else {
+                        reissueSingleAfterUserChange(contextKey, loadingState)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun reissueSingleAfterUserChange(
+        contextKey: String?,
+        supersededState: LoadingState,
+    ) {
+        val waiters = supersededState.callbacks.toList()
+        supersededState.callbacks.clear()
+        supersededState.isInProgress = false
+        enqueueIdentityAction {
+            waiters.forEach { loadRemoteConfig(contextKey, it) }
+        }
+    }
+
+    private fun handleRemoteConfigSuccess(
+        contextKey: String?,
+        loadingState: LoadingState,
+        generationAtStart: Int,
+        cacheScope: RemoteConfigCacheScope?,
+        remoteConfig: QRemoteConfig,
+    ) {
+        loadingState.retryBaseline = null
+        val currentGeneration = invalidationGeneration.get()
+        if (currentGeneration == generationAtStart) {
+            cacheScope?.let { persistentCache.save(it, remoteConfig) }
+            deliveryOrigins[contextKey] = QRemoteConfigDeliveryOrigin.Network
+            loadingState.loadedConfig = remoteConfig
+            loadingState.generation = generationAtStart
+            fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
+            return
+        }
+
+        // An invalidation superseded this evaluation. Re-issue only while the
+        // loading state is still live; a user switch replaces the map and an
+        // orphaned response must not start a request nobody awaits.
+        val shouldReissue = loadingStates[contextKey] === loadingState &&
+            loadingState.callbacks.isNotEmpty() &&
+            loadingState.reissuedForGeneration != currentGeneration
+        if (shouldReissue) {
+            reissueRemoteConfig(contextKey, loadingState, currentGeneration, remoteConfig)
+            return
+        }
+
+        deliveryOrigins[contextKey] = QRemoteConfigDeliveryOrigin.Network
+        fireToCallbacks(contextKey) { onSuccess(remoteConfig) }
+    }
+
+    private fun reissueRemoteConfig(
+        contextKey: String?,
+        loadingState: LoadingState,
+        currentGeneration: Int,
+        baseline: QRemoteConfig,
+    ) {
+        loadingState.reissuedForGeneration = currentGeneration
+        loadingState.isInProgress = false
+        loadingState.retryBaseline = baseline
+        val waiters = loadingState.callbacks.toList()
+        loadingState.callbacks.clear()
+        loadRemoteConfig(contextKey, object : QonversionRemoteConfigCallback {
+            override fun onSuccess(remoteConfig: QRemoteConfig) {
+                waiters.forEach { it.onSuccess(remoteConfig) }
+            }
+
+            override fun onError(error: QonversionError) {
+                // Safety net only: the retry stash normally resolves via
+                // onSuccess when a transient request failure is eligible for
+                // fallback. Authentication, other client errors and an
+                // authoritative no-config response must remain errors.
+                if (error.shouldFireRemoteConfigFallback) {
+                    waiters.forEach { it.onSuccess(baseline) }
+                } else {
+                    waiters.forEach { it.onError(error) }
+                }
+            }
+        })
+    }
+
+    private fun handleRemoteConfigError(
+        contextKey: String?,
+        loadingState: LoadingState,
+        cacheScope: RemoteConfigCacheScope?,
+        error: QonversionError,
+    ) {
+        val baseline = loadingState.retryBaseline
+        loadingState.retryBaseline = null
+        if (error.code == QonversionErrorCode.RemoteConfigurationNotAvailable) {
+            // The server authoritatively evaluated this context and found no
+            // config. Keeping the old disk value would resurrect a removed
+            // assignment on the next transient outage.
+            cacheScope?.let { persistentCache.remove(it, contextKey) }
+        }
+        val canRecover = error.shouldFireRemoteConfigFallback
+        val lastKnownGood = if (canRecover && cacheScope != null) {
+            persistentCache.get(cacheScope, contextKey)
+        } else {
+            null
+        }
+        val bundledConfig = if (canRecover) bundledRemoteConfig(contextKey) else null
+
+        // A real user-specific evaluation (even a superseded retry baseline)
+        // outranks persisted LKG, which in turn outranks the static bundle.
+        val result = baseline.takeIf { canRecover } ?: lastKnownGood ?: bundledConfig
+        result?.let { config ->
+            deliveryOrigins[contextKey] = when {
+                baseline != null && canRecover -> QRemoteConfigDeliveryOrigin.RetryBaseline
+                lastKnownGood != null -> QRemoteConfigDeliveryOrigin.PersistentLastKnownGood
+                else -> QRemoteConfigDeliveryOrigin.BundledFallback
+            }
+            fireToCallbacks(contextKey) { onSuccess(config) }
+        } ?: fireToCallbacks(contextKey) { onError(error) }
+    }
+
+    private fun bundledRemoteConfig(contextKey: String?): QRemoteConfig? =
+        fallbackData?.remoteConfigList?.let { list ->
+            if (contextKey == null) {
+                list.remoteConfigForEmptyContextKey
+            } else {
+                list.remoteConfigForContextKey(contextKey)
+            }
+        }
 
     fun loadRemoteConfigList(
         contextKeys: List<String>,
         includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback
-    ) = postToMainThread {
+    ) = loadRemoteConfigListNormalized(
+        contextKeys.filter(String::isNotEmpty).distinct(),
+        includeEmptyContextKey,
+        callback,
+    )
+
+    private fun loadRemoteConfigListNormalized(
+        contextKeys: List<String>,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback,
+    ) = postIdentityAction {
         val allKeys = if (includeEmptyContextKey) contextKeys + EmptyContextKey else contextKeys
         val currentGeneration = invalidationGeneration.get()
         val cachedConfigs = allKeys.map { key ->
             loadingStates[key]?.takeIf { it.generation == currentGeneration }?.loadedConfig
         }
-        if (cachedConfigs.all { it != null }) {
+        if (userStateProvider.isUserStable && cachedConfigs.all { it != null }) {
+            allKeys.forEach { key ->
+                deliveryOrigins[key] = QRemoteConfigDeliveryOrigin.MemoryCache
+            }
             // Same as the single-key cache hit: flush pending properties so a
             // hit does not swallow them. Gated on stability (parity with iOS)
             // so the flush cannot POST mid-identify to a switching uid.
@@ -294,34 +485,64 @@ internal class QRemoteConfigManager @Inject constructor(
                 userPropertiesManager.forceSendProperties()
             }
             callback.onSuccess(QRemoteConfigList(cachedConfigs.filterNotNull()))
-            return@postToMainThread
+            return@postIdentityAction
         }
 
         if (!userStateProvider.isUserStable) {
             listRequests.add(ListRequestData(callback, contextKeys, includeEmptyContextKey))
-            return@postToMainThread
+            return@postIdentityAction
         }
 
+        val requestIdentity = captureRequestIdentity()
+        val generationAtStart = invalidationGeneration.get()
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
-                remoteConfigService.loadRemoteConfigs(
-                    contextKeys,
-                    includeEmptyContextKey,
-                    getRemoteConfigListCallbackWrapper(contextKeys, includeEmptyContextKey, callback),
-                )
+                postIdentityAction {
+                    if (requestIdentity.isCurrentAndStable()) {
+                        remoteConfigService.loadRemoteConfigs(
+                            contextKeys,
+                            includeEmptyContextKey,
+                            getRemoteConfigListCallbackWrapper(
+                                contextKeys,
+                                includeEmptyContextKey,
+                                callback,
+                                requestIdentity,
+                                generationAtStart,
+                            ),
+                        )
+                    } else {
+                        reissueRemoteConfigListAfterUserChange(contextKeys, includeEmptyContextKey, callback)
+                    }
+                }
             }
         })
     }
 
-    fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) = postToMainThread {
+    fun loadRemoteConfigList(callback: QonversionRemoteConfigListCallback) = postIdentityAction {
         if (!userStateProvider.isUserStable) {
             listRequests.add(ListRequestData(callback))
-            return@postToMainThread
+            return@postIdentityAction
         }
 
+        val requestIdentity = captureRequestIdentity()
+        val generationAtStart = invalidationGeneration.get()
         userPropertiesManager.forceSendProperties(object : QonversionEmptyCallback {
             override fun onComplete() {
-                remoteConfigService.loadRemoteConfigs(getRemoteConfigListCallbackWrapper(null, true, callback))
+                postIdentityAction {
+                    if (requestIdentity.isCurrentAndStable()) {
+                        remoteConfigService.loadRemoteConfigs(
+                            getRemoteConfigListCallbackWrapper(
+                                null,
+                                true,
+                                callback,
+                                requestIdentity,
+                                generationAtStart,
+                            ),
+                        )
+                    } else {
+                        reissueRemoteConfigListAfterUserChange(null, true, callback)
+                    }
+                }
             }
         })
     }
@@ -361,8 +582,9 @@ internal class QRemoteConfigManager @Inject constructor(
     // then the cached values are cleared and the action runs on main.
     private fun invalidateOnAnyThread(action: () -> Unit) {
         invalidationGeneration.incrementAndGet()
-        postToMainThread {
+        postIdentityAction {
             loadingStates.values.forEach { it.loadedConfig = null }
+            deliveryOrigins.clear()
             action()
         }
     }
@@ -370,56 +592,202 @@ internal class QRemoteConfigManager @Inject constructor(
     private fun getRemoteConfigListCallbackWrapper(
         contextKeys: List<String>?,
         includeEmptyContextKey: Boolean,
-        callback: QonversionRemoteConfigListCallback
+        callback: QonversionRemoteConfigListCallback,
+        requestIdentity: RemoteConfigRequestIdentity,
+        generationAtStart: Int,
     ): QonversionRemoteConfigListCallback {
         // Remembering loading states for the case of user change -
         // if it happens, we won't store remote configs for different user.
         val localLoadingStates = loadingStates
-        val generationAtStart = invalidationGeneration.get()
         return object : QonversionRemoteConfigListCallback {
             override fun onSuccess(remoteConfigList: QRemoteConfigList) {
-                if (invalidationGeneration.get() == generationAtStart) {
-                    remoteConfigList.remoteConfigs.forEach { remoteConfig ->
-                        val contextKey = remoteConfig.source.contextKey
-                        val loadingState = localLoadingStates[contextKey] ?: LoadingState()
-                        loadingState.loadedConfig = remoteConfig
-                        loadingState.generation = generationAtStart
-                        localLoadingStates[contextKey] = loadingState
+                postIdentityAction {
+                    if (!requestIdentity.isCurrentAndStable()) {
+                        reissueRemoteConfigListAfterUserChange(contextKeys, includeEmptyContextKey, callback)
+                        return@postIdentityAction
                     }
+                    if (!remoteConfigListMatchesRequest(contextKeys, includeEmptyContextKey, remoteConfigList)) {
+                        val error = malformedRemoteConfigResponseError()
+                        remoteConfigListFallback(
+                            contextKeys,
+                            includeEmptyContextKey,
+                            requestIdentity.cacheScope,
+                        )?.let(callback::onSuccess) ?: callback.onError(error)
+                        return@postIdentityAction
+                    }
+                    handleRemoteConfigListSuccess(
+                        contextKeys,
+                        includeEmptyContextKey,
+                        callback,
+                        requestIdentity.cacheScope,
+                        generationAtStart,
+                        localLoadingStates,
+                        remoteConfigList,
+                    )
                 }
-
-                callback.onSuccess(remoteConfigList)
             }
 
             override fun onError(error: QonversionError) {
-                if (!error.shouldFireRemoteConfigFallback) {
-                    callback.onError(error)
-                    return
-                }
-
-                val baseRemoteConfigList = fallbackData?.remoteConfigList ?: run {
-                    callback.onError(error)
-                    return@onError
-                }
-
-                val remoteConfigList = if (contextKeys == null) {
-                    baseRemoteConfigList.copy()
-                } else {
-                    val remoteConfigs = baseRemoteConfigList.remoteConfigs.filter { contextKeys.contains(it.source.contextKey) }.toMutableList()
-                    if (includeEmptyContextKey) {
-                        baseRemoteConfigList.remoteConfigs.find { it.source.contextKey?.isEmpty() == true }?.let {
-                            remoteConfigs.add(it)
-                        }
+                postIdentityAction {
+                    when {
+                        !requestIdentity.isCurrentAndStable() ->
+                            reissueRemoteConfigListAfterUserChange(contextKeys, includeEmptyContextKey, callback)
+                        !error.shouldFireRemoteConfigFallback -> callback.onError(error)
+                        else -> remoteConfigListFallback(
+                            contextKeys,
+                            includeEmptyContextKey,
+                            requestIdentity.cacheScope,
+                        )?.let(callback::onSuccess) ?: callback.onError(error)
                     }
-                    QRemoteConfigList(remoteConfigs.toList())
                 }
-
-                // Bundled fallback, not a fresh targeting evaluation — deliver
-                // without caching (see the single-key path), so the next call
-                // retries the network.
-                callback.onSuccess(remoteConfigList)
             }
         }
+    }
+
+    private fun remoteConfigListMatchesRequest(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        remoteConfigList: QRemoteConfigList,
+    ): Boolean {
+        val returnedContextKeys = remoteConfigList.remoteConfigs.map { it.source.contextKey }
+        val requestedContextKeys = contextKeys?.let { keys ->
+            buildSet<String?> {
+                addAll(keys)
+                if (includeEmptyContextKey) add(null)
+            }
+        }
+        return returnedContextKeys.size == returnedContextKeys.distinct().size &&
+            (requestedContextKeys == null || returnedContextKeys.all(requestedContextKeys::contains))
+    }
+
+    private fun malformedRemoteConfigResponseError() = QonversionError(
+        QonversionErrorCode.ResponseParsingFailed,
+        "Remote Config response does not match the request",
+    )
+
+    private fun handleRemoteConfigListSuccess(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback,
+        cacheScope: RemoteConfigCacheScope?,
+        generationAtStart: Int,
+        localLoadingStates: MutableMap<String?, LoadingState>,
+        remoteConfigList: QRemoteConfigList,
+    ) {
+        remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+            deliveryOrigins[remoteConfig.source.contextKey] = QRemoteConfigDeliveryOrigin.Network
+        }
+        if (invalidationGeneration.get() == generationAtStart) {
+            cacheScope?.let {
+                reconcilePersistentCache(
+                    contextKeys,
+                    includeEmptyContextKey,
+                    it,
+                    remoteConfigList.remoteConfigs,
+                )
+            }
+            remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+                val contextKey = remoteConfig.source.contextKey
+                val loadingState = localLoadingStates[contextKey] ?: LoadingState()
+                loadingState.loadedConfig = remoteConfig
+                loadingState.generation = generationAtStart
+                localLoadingStates[contextKey] = loadingState
+            }
+        }
+
+        callback.onSuccess(remoteConfigList)
+    }
+
+    private fun reconcilePersistentCache(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        cacheScope: RemoteConfigCacheScope,
+        remoteConfigs: List<QRemoteConfig>,
+    ) {
+        if (contextKeys == null) {
+            persistentCache.replaceAll(cacheScope, remoteConfigs)
+            return
+        }
+
+        val requestedContextKeys = buildList<String?> {
+            addAll(contextKeys)
+            if (includeEmptyContextKey) add(null)
+        }.toSet()
+        persistentCache.replaceRequested(cacheScope, requestedContextKeys, remoteConfigs)
+    }
+
+    private fun remoteConfigListFallback(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        cacheScope: RemoteConfigCacheScope?,
+    ): QRemoteConfigList? {
+        val persistedConfigs = cacheScope?.let { persistentCache.getAll(it).remoteConfigs }.orEmpty()
+        val bundledConfigList = fallbackData?.remoteConfigList
+        return if (persistedConfigs.isEmpty() && bundledConfigList == null) {
+            null
+        } else {
+            val result = mergeFallbackConfigs(
+                contextKeys,
+                includeEmptyContextKey,
+                persistedConfigs,
+                bundledConfigList,
+            )
+            markFallbackOrigins(result, persistedConfigs)
+            result
+        }
+    }
+
+    private fun mergeFallbackConfigs(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        persistedConfigs: List<QRemoteConfig>,
+        bundledConfigList: QRemoteConfigList?,
+    ): QRemoteConfigList {
+        val persistedByContext = persistedConfigs.associateBy { it.source.contextKey }
+        val bundledByContext = bundledConfigList?.remoteConfigs.orEmpty().associateBy { it.source.contextKey }
+        val desiredContextKeys = contextKeys?.let { keys ->
+            buildList<String?> {
+                addAll(keys)
+                if (includeEmptyContextKey) add(null)
+            }.distinct()
+        } ?: (persistedByContext.keys + bundledByContext.keys)
+
+        return QRemoteConfigList(desiredContextKeys.mapNotNull { key ->
+            persistedByContext[key] ?: bundledByContext[key]
+        })
+    }
+
+    private fun markFallbackOrigins(
+        remoteConfigList: QRemoteConfigList,
+        persistedConfigs: List<QRemoteConfig>,
+    ) {
+        val persistedContextKeys = persistedConfigs.map { it.source.contextKey }.toSet()
+        remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+            deliveryOrigins[remoteConfig.source.contextKey] =
+                if (remoteConfig.source.contextKey in persistedContextKeys) {
+                    QRemoteConfigDeliveryOrigin.PersistentLastKnownGood
+                } else {
+                    QRemoteConfigDeliveryOrigin.BundledFallback
+                }
+        }
+    }
+
+    private fun reissueRemoteConfigList(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback,
+    ) {
+        contextKeys?.let {
+            loadRemoteConfigList(it, includeEmptyContextKey, callback)
+        } ?: loadRemoteConfigList(callback)
+    }
+
+    private fun reissueRemoteConfigListAfterUserChange(
+        contextKeys: List<String>?,
+        includeEmptyContextKey: Boolean,
+        callback: QonversionRemoteConfigListCallback,
+    ) = enqueueIdentityAction {
+        reissueRemoteConfigList(contextKeys, includeEmptyContextKey, callback)
     }
 
     private fun fireToCallbacks(contextKey: String?, action: QonversionRemoteConfigCallback.() -> Unit) {
@@ -442,4 +810,30 @@ internal class QRemoteConfigManager @Inject constructor(
             mainHandler.post(action)
         }
     }
+
+    private fun postIdentityAction(action: () -> Unit) = postToMainThread {
+        synchronized(identityTransitionLock) {
+            resetIdentityStateIfNeeded()
+            action()
+        }
+    }
+
+    private fun enqueueIdentityAction(action: () -> Unit) {
+        mainHandler.post {
+            synchronized(identityTransitionLock) {
+                resetIdentityStateIfNeeded()
+                action()
+            }
+        }
+    }
+
+    private fun captureRequestIdentity() = RemoteConfigRequestIdentity(
+        userGeneration = userGeneration.get(),
+        cacheScope = persistentCache.currentScope(),
+    )
+
+    private fun RemoteConfigRequestIdentity.isCurrentAndStable(): Boolean =
+        this@QRemoteConfigManager.userGeneration.get() == this.userGeneration &&
+            persistentCache.currentScope() == cacheScope &&
+            userStateProvider.isUserStable
 }

@@ -134,9 +134,10 @@ internal class DefaultRepository internal constructor(
                 val body = it.body()
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
+                } else if (body.any { config -> !config.isCorrect }) {
+                    callback.onError(invalidRemoteConfigListError())
                 } else {
-                    val res = QRemoteConfigList(body.filter { config -> config.isCorrect })
-                    callback.onSuccess(res)
+                    callback.onSuccess(QRemoteConfigList(body))
                 }
             }
 
@@ -154,9 +155,10 @@ internal class DefaultRepository internal constructor(
                 val body = it.body()
                 if (body == null) {
                     callback.onError(errorMapper.getErrorFromResponse(it))
+                } else if (body.any { config -> !config.isCorrect }) {
+                    callback.onError(invalidRemoteConfigListError())
                 } else {
-                    val res = QRemoteConfigList(body.filter { config -> config.isCorrect })
-                    callback.onSuccess(res)
+                    callback.onSuccess(QRemoteConfigList(body))
                 }
             }
 
@@ -166,6 +168,11 @@ internal class DefaultRepository internal constructor(
             }
         }
     }
+
+    private fun invalidRemoteConfigListError() = QonversionError(
+        QonversionErrorCode.ResponseParsingFailed,
+        "Remote Config list contains an invalid element",
+    )
 
     override fun attachUserToExperiment(
         experimentId: String,

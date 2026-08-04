@@ -31,6 +31,13 @@ internal class SharedPreferencesCache(
     override fun putString(key: String, value: String?) =
         preferences.edit().putString(key, value).apply()
 
+    override fun updateStrings(values: Map<String, String?>, removedKeys: Set<String>) {
+        preferences.edit().also { editor ->
+            removedKeys.forEach { key -> editor.remove(key) }
+            values.forEach { (key, value) -> editor.putString(key, value) }
+        }.apply()
+    }
+
     override fun getString(key: String, defValue: String?): String? =
         preferences.getString(key, defValue)
 

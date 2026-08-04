@@ -11,6 +11,8 @@ import com.qonversion.android.sdk.getPrivateField
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
+import com.qonversion.android.sdk.internal.storage.RemoteConfigCache
+import com.qonversion.android.sdk.internal.storage.RemoteConfigCacheScope
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigCallback
 import com.qonversion.android.sdk.listeners.QonversionRemoteConfigListCallback
 import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
@@ -40,6 +42,7 @@ internal class QRemoteConfigManagerTest {
     private val mockFallbacksService = mockk<QFallbacksService>(relaxed = true)
     private val userStateProvider = FakeUserStateProvider()
     private val mockUserPropertiesManager = mockk<QUserPropertiesManager>(relaxed = true)
+    private lateinit var persistentCache: FakeRemoteConfigCache
 
     private lateinit var manager: QRemoteConfigManager
 
@@ -47,9 +50,529 @@ internal class QRemoteConfigManagerTest {
     fun setUp() {
         clearAllMocks()
 
-        manager = QRemoteConfigManager(mockRemoteConfigService, mockFallbacksService)
+        persistentCache = FakeRemoteConfigCache()
+        manager = QRemoteConfigManager(mockRemoteConfigService, mockFallbacksService, persistentCache)
         manager.userStateProvider = userStateProvider
         manager.userPropertiesManager = mockUserPropertiesManager
+    }
+
+    @Test
+    fun `successful server response is persisted as last known good`() {
+        userStateProvider.stable = true
+        val serverConfig = remoteConfigFor("ctx")
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(serverConfig)
+
+        assertEquals(serverConfig, persistentCache.get("ctx"))
+        assertEquals(QRemoteConfigDeliveryOrigin.Network, manager.lastDeliveryOrigin("ctx"))
+        verify(exactly = 1) { callback.onSuccess(serverConfig) }
+    }
+
+    @Test
+    fun `empty single context is canonicalized to the null context`() {
+        userStateProvider.stable = true
+        val callbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("", capture(callbacks)) } just runs
+        every { mockRemoteConfigService.loadRemoteConfig(null, capture(callbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+
+        manager.loadRemoteConfig("", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        callbacks.single().onSuccess(remoteConfigFor(null))
+
+        verify(exactly = 1) { mockRemoteConfigService.loadRemoteConfig(null, any()) }
+        verify(exactly = 0) { mockRemoteConfigService.loadRemoteConfig("", any()) }
+        verify(exactly = 1) { callback.onSuccess(any()) }
+        assertTrue(loadingStates().containsKey(null))
+        assertEquals(false, loadingStates().containsKey(""))
+        assertNotNull(persistentCache.get(null))
+    }
+
+    @Test
+    fun `single response for a different context is rejected without poisoning last known good`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("requested")
+        val poisonedResponse = remoteConfigFor("unexpected")
+        persistentCache.save(lastKnownGood)
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("requested", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("requested", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(poisonedResponse)
+
+        verify(exactly = 1) { callback.onSuccess(lastKnownGood) }
+        verify(exactly = 0) { callback.onSuccess(poisonedResponse) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(lastKnownGood, persistentCache.get("requested"))
+        assertEquals(null, persistentCache.get("unexpected"))
+        assertEquals(QRemoteConfigDeliveryOrigin.PersistentLastKnownGood, manager.lastDeliveryOrigin("requested"))
+    }
+
+    @Test
+    fun `offline load after process restart serves persistent last known good before bundle`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("ctx")
+        val bundledFallback = remoteConfigFor("ctx")
+        persistentCache.save(lastKnownGood)
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(bundledFallback)),
+        )
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        verify(exactly = 1) { callback.onSuccess(lastKnownGood) }
+        verify(exactly = 0) { callback.onSuccess(bundledFallback) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+        assertEquals(QRemoteConfigDeliveryOrigin.PersistentLastKnownGood, manager.lastDeliveryOrigin("ctx"))
+    }
+
+    @Test
+    fun `same identity invalidation forces network then degrades to persistent last known good`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("ctx")
+        val callbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(callbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+        callbacks.single().onSuccess(lastKnownGood)
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val afterInvalidation = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        manager.loadRemoteConfig("ctx", afterInvalidation)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(2, callbacks.size)
+        callbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        verify(exactly = 1) { afterInvalidation.onSuccess(lastKnownGood) }
+        verify(exactly = 0) { afterInvalidation.onError(any()) }
+    }
+
+    @Test
+    fun `authoritative single no-config evicts stale last known good`() {
+        userStateProvider.stable = true
+        val stale = remoteConfigFor("ctx")
+        persistentCache.save(stale)
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val noConfig = QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable)
+        serviceCallback.captured.onError(noConfig)
+
+        assertEquals(null, persistentCache.get("ctx"))
+        verify(exactly = 1) { callback.onError(noConfig) }
+        verify(exactly = 0) { callback.onSuccess(stale) }
+    }
+
+    @Test
+    fun `bundled fallback is never persisted as last known good`() {
+        userStateProvider.stable = true
+        val bundledFallback = remoteConfigFor("ctx")
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(bundledFallback)),
+        )
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", mockk(relaxed = true))
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+        assertEquals(QRemoteConfigDeliveryOrigin.BundledFallback, manager.lastDeliveryOrigin("ctx"))
+    }
+
+    @Test
+    fun `successful server list response persists every config`() {
+        userStateProvider.stable = true
+        val first = remoteConfigFor("first")
+        val second = remoteConfigFor("second")
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("first", "second"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("first", "second"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(first, second)))
+
+        assertEquals(listOf(first, second), persistentCache.getAll().remoteConfigs)
+    }
+
+    @Test
+    fun `empty named contexts are filtered before a scoped list request`() {
+        userStateProvider.stable = true
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(any<List<String>>(), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("", "ctx", ""), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val response = remoteConfigFor("ctx")
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(response)))
+
+        verify(exactly = 1) {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, any())
+        }
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(response) }) }
+        assertEquals(false, loadingStates().containsKey(""))
+    }
+
+    @Test
+    fun `filtered list reconciliation is one persistent cache mutation`() {
+        userStateProvider.stable = true
+        val oldFirst = remoteConfigFor("first")
+        val omittedSecond = remoteConfigFor("second")
+        val unrelated = remoteConfigFor("unrelated")
+        persistentCache.save(oldFirst)
+        persistentCache.save(omittedSecond)
+        persistentCache.save(unrelated)
+        persistentCache.mutationCount = 0
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("first", "second"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("first", "second"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val currentFirst = remoteConfigFor("first")
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(currentFirst)))
+
+        assertEquals(1, persistentCache.mutationCount)
+        assertEquals(currentFirst, persistentCache.get("first"))
+        assertEquals(null, persistentCache.get("second"))
+        assertEquals(unrelated, persistentCache.get("unrelated"))
+    }
+
+    @Test
+    fun `scoped list rejects unexpected context without mutating last known good`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("requested")
+        val unexpected = remoteConfigFor("unexpected")
+        persistentCache.save(lastKnownGood)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("requested"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("requested"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(unexpected)))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(lastKnownGood) }) }
+        verify(exactly = 0) { callback.onSuccess(match { unexpected in it.remoteConfigs }) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(lastKnownGood, persistentCache.get("requested"))
+        assertEquals(null, persistentCache.get("unexpected"))
+    }
+
+    @Test
+    fun `scoped list rejects duplicate contexts as one malformed response`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("requested")
+        val duplicateA = remoteConfigFor("requested")
+        val duplicateB = remoteConfigFor("requested")
+        persistentCache.save(lastKnownGood)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("requested"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("requested"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(duplicateA, duplicateB)))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(lastKnownGood) }) }
+        verify(exactly = 0) { callback.onSuccess(match { duplicateA in it.remoteConfigs || duplicateB in it.remoteConfigs }) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(lastKnownGood, persistentCache.get("requested"))
+    }
+
+    @Test
+    fun `all-context list rejects duplicate contexts and preserves the previous set`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("previous")
+        val duplicateA = remoteConfigFor("duplicate")
+        val duplicateB = remoteConfigFor("duplicate")
+        persistentCache.save(lastKnownGood)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every { mockRemoteConfigService.loadRemoteConfigs(capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(duplicateA, duplicateB)))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(lastKnownGood) }) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(listOf(lastKnownGood), persistentCache.getAll().remoteConfigs)
+    }
+
+    @Test
+    fun `requested server list omission evicts only the omitted requested context`() {
+        userStateProvider.stable = true
+        val staleRequested = remoteConfigFor("requested")
+        val unrelated = remoteConfigFor("unrelated")
+        persistentCache.save(staleRequested)
+        persistentCache.save(unrelated)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("requested"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("requested"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(emptyList()))
+
+        assertEquals(null, persistentCache.get("requested"))
+        assertEquals(unrelated, persistentCache.get("unrelated"))
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs.isEmpty() }) }
+    }
+
+    @Test
+    fun `all-context server list atomically replaces stale last known good set`() {
+        userStateProvider.stable = true
+        val stale = remoteConfigFor("stale")
+        val previousCurrent = remoteConfigFor("current")
+        val current = remoteConfigFor("current")
+        persistentCache.save(stale)
+        persistentCache.save(previousCurrent)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every { mockRemoteConfigService.loadRemoteConfigs(capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onSuccess(QRemoteConfigList(listOf(current)))
+
+        assertEquals(listOf(current), persistentCache.getAll().remoteConfigs)
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(current) }) }
+    }
+
+    @Test
+    fun `user switch mid-flight reissues list and never delivers prior identity config`() {
+        userStateProvider.stable = true
+        val priorIdentityConfig = remoteConfigFor("ctx")
+        val currentIdentityConfig = remoteConfigFor("ctx")
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(serviceCallbacks))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("ctx"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.first().onSuccess(QRemoteConfigList(listOf(priorIdentityConfig)))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(2, serviceCallbacks.size)
+        verify(exactly = 0) { callback.onSuccess(match { priorIdentityConfig in it.remoteConfigs }) }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        serviceCallbacks.last().onSuccess(QRemoteConfigList(listOf(currentIdentityConfig)))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(currentIdentityConfig) }) }
+        assertEquals(listOf(currentIdentityConfig), persistentCache.savedConfigs)
+    }
+
+    @Test
+    fun `user switch mid-flight reissues a failed list before consulting persistent fallback`() {
+        userStateProvider.stable = true
+        val priorIdentityConfig = remoteConfigFor("ctx")
+        val currentIdentityConfig = remoteConfigFor("ctx")
+        persistentCache.save(priorIdentityConfig)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(serviceCallbacks))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("ctx"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        persistentCache.savedConfigs.clear()
+        persistentCache.save(currentIdentityConfig)
+        serviceCallbacks.first().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(2, serviceCallbacks.size)
+        verify { callback wasNot Called }
+
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(currentIdentityConfig) }) }
+        verify(exactly = 0) { callback.onSuccess(match { priorIdentityConfig in it.remoteConfigs }) }
+        verify(exactly = 0) { callback.onError(any()) }
+    }
+
+    @Test
+    fun `non-recoverable error from a reissued list is not masked by persistent fallback`() {
+        userStateProvider.stable = true
+        val stale = remoteConfigFor("ctx")
+        persistentCache.save(stale)
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(serviceCallbacks))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("ctx"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallbacks.first().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+        shadowOf(Looper.getMainLooper()).idle()
+        val authError = QonversionError(QonversionErrorCode.InvalidCredentials, httpCode = 401)
+        serviceCallbacks.last().onError(authError)
+
+        verify(exactly = 1) { callback.onError(authError) }
+        verify(exactly = 0) { callback.onSuccess(match { stale in it.remoteConfigs }) }
+    }
+
+    @Test
+    fun `offline requested list fills cache misses from bundle but persistent values win`() {
+        userStateProvider.stable = true
+        val lastKnownGood = remoteConfigFor("first")
+        val bundledForSameKey = remoteConfigFor("first")
+        val bundledForMissingKey = remoteConfigFor("second")
+        persistentCache.save(lastKnownGood)
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(bundledForSameKey, bundledForMissingKey)),
+        )
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("first", "second"), false, capture(serviceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("first", "second"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        verify(exactly = 1) {
+            callback.onSuccess(match { it.remoteConfigs == listOf(lastKnownGood, bundledForMissingKey) })
+        }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(QRemoteConfigDeliveryOrigin.PersistentLastKnownGood, manager.lastDeliveryOrigin("first"))
+        assertEquals(QRemoteConfigDeliveryOrigin.BundledFallback, manager.lastDeliveryOrigin("second"))
+    }
+
+    @Test
+    fun `offline all-context list serves persistent values before bundled list`() {
+        userStateProvider.stable = true
+        val first = remoteConfigFor("first")
+        val second = remoteConfigFor("second")
+        persistentCache.save(first)
+        persistentCache.save(second)
+        val bundled = remoteConfigFor("bundled")
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(bundled)),
+        )
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+        every { mockRemoteConfigService.loadRemoteConfigs(capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        serviceCallback.captured.onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(first, second, bundled) }) }
+        verify(exactly = 0) { callback.onError(any()) }
     }
 
     @Test
@@ -289,10 +812,11 @@ internal class QRemoteConfigManagerTest {
         verify(exactly = 1) { callback.onSuccess(any()) }
         verify { mockRemoteConfigService wasNot Called }
         verify(exactly = 1) { mockUserPropertiesManager.forceSendProperties(any()) }
+        assertEquals(QRemoteConfigDeliveryOrigin.MemoryCache, manager.lastDeliveryOrigin("ctx"))
     }
 
     @Test
-    fun `loadRemoteConfigList cache hit does not flush properties while the user is unstable`() {
+    fun `loadRemoteConfigList cache hit waits for stable identity before serving or flushing`() {
         // given - cached configs, but the user is mid-identify. The stability
         // gate exists so the flush cannot POST to a switching uid.
         userStateProvider.stable = false
@@ -303,9 +827,147 @@ internal class QRemoteConfigManagerTest {
         // when
         manager.loadRemoteConfigList(listOf("ctx"), false, callback)
 
-        // then - the cached list is still served, but nothing is flushed
-        verify(exactly = 1) { callback.onSuccess(any()) }
+        // then - neither stale memory nor a properties request can cross the
+        // identity boundary. The request is retained for replay after identify.
+        verify(exactly = 0) { callback.onSuccess(any()) }
         verify(exactly = 0) { mockUserPropertiesManager.forceSendProperties(any()) }
+        assertEquals(1, listRequests().size)
+    }
+
+    @Test
+    fun `queued single waiter survives identity state reset and replays exactly once`() {
+        userStateProvider.stable = false
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        manager.onUserUpdate {
+            persistentCache.scope = persistentCache.scope.copy(userId = "user-b")
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        userStateProvider.stable = true
+        manager.handlePendingRequests()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, serviceCallbacks.size)
+
+        val currentConfig = remoteConfigFor("ctx")
+        serviceCallbacks.single().onSuccess(currentConfig)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify(exactly = 1) { callback.onSuccess(currentConfig) }
+        verify(exactly = 0) { callback.onError(any()) }
+    }
+
+    @Test
+    fun `single preflight completion while identity is unstable defers request and waiter`() {
+        userStateProvider.stable = true
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val propertyCallbacks = mutableListOf<QonversionEmptyCallback>()
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockUserPropertiesManager.forceSendProperties(capture(propertyCallbacks)) } just runs
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+
+        manager.loadRemoteConfig("ctx", callback)
+        userStateProvider.stable = false
+        propertyCallbacks.single().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(serviceCallbacks.isEmpty())
+        verify { callback wasNot Called }
+
+        userStateProvider.stable = true
+        manager.handlePendingRequests()
+        propertyCallbacks.last().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+        val currentConfig = remoteConfigFor("ctx")
+        serviceCallbacks.single().onSuccess(currentConfig)
+
+        verify(exactly = 1) { callback.onSuccess(currentConfig) }
+        verify(exactly = 0) { callback.onError(any()) }
+    }
+
+    @Test
+    fun `single response while identity is unstable is reissued and delivered exactly once`() {
+        userStateProvider.stable = true
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        userStateProvider.stable = false
+        val unstableConfig = remoteConfigFor("ctx")
+        serviceCallbacks.first().onSuccess(unstableConfig)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify { callback wasNot Called }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        userStateProvider.stable = true
+        manager.handlePendingRequests()
+        shadowOf(Looper.getMainLooper()).idle()
+        val currentConfig = remoteConfigFor("ctx")
+        serviceCallbacks.last().onSuccess(currentConfig)
+
+        verify(exactly = 0) { callback.onSuccess(unstableConfig) }
+        verify(exactly = 1) { callback.onSuccess(currentConfig) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(listOf(currentConfig), persistentCache.savedConfigs)
+    }
+
+    @Test
+    fun `list preflight and response both wait for stable identity`() {
+        userStateProvider.stable = true
+        val preflightCallback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val preflightPropertyCallbacks = mutableListOf<QonversionEmptyCallback>()
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigListCallback>()
+        every { mockUserPropertiesManager.forceSendProperties(capture(preflightPropertyCallbacks)) } just runs
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(serviceCallbacks))
+        } just runs
+
+        manager.loadRemoteConfigList(listOf("ctx"), false, preflightCallback)
+        userStateProvider.stable = false
+        preflightPropertyCallbacks.single().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(serviceCallbacks.isEmpty())
+        verify { preflightCallback wasNot Called }
+
+        userStateProvider.stable = true
+        manager.handlePendingRequests()
+        preflightPropertyCallbacks.last().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, serviceCallbacks.size)
+
+        userStateProvider.stable = false
+        val unstableConfig = remoteConfigFor("ctx")
+        serviceCallbacks.single().onSuccess(QRemoteConfigList(listOf(unstableConfig)))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify { preflightCallback wasNot Called }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        userStateProvider.stable = true
+        manager.handlePendingRequests()
+        preflightPropertyCallbacks.last().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+        val currentConfig = remoteConfigFor("ctx")
+        serviceCallbacks.last().onSuccess(QRemoteConfigList(listOf(currentConfig)))
+
+        verify(exactly = 1) {
+            preflightCallback.onSuccess(match { it.remoteConfigs == listOf(currentConfig) })
+        }
+        verify(exactly = 0) { preflightCallback.onError(any()) }
+        assertEquals(listOf(currentConfig), persistentCache.savedConfigs)
     }
 
     @Test
@@ -369,7 +1031,7 @@ internal class QRemoteConfigManagerTest {
         // response lands
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        val staleConfig = mockk<QRemoteConfig>(relaxed = true)
+        val staleConfig = remoteConfigFor("ctx")
         serviceCallbacks.first().onSuccess(staleConfig)
 
         // then - the stale evaluation is neither cached nor delivered; the
@@ -378,7 +1040,7 @@ internal class QRemoteConfigManagerTest {
         verify(exactly = 2) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
 
         // and the fresh response is delivered, cached, and the state settled
-        val freshConfig = mockk<QRemoteConfig>(relaxed = true)
+        val freshConfig = remoteConfigFor("ctx")
         serviceCallbacks.last().onSuccess(freshConfig)
         verify(exactly = 1) { loadCallback.onSuccess(freshConfig) }
         verify(exactly = 0) { loadCallback.onSuccess(staleConfig) }
@@ -405,7 +1067,7 @@ internal class QRemoteConfigManagerTest {
 
         manager.attachUserToRemoteConfiguration("config_id", mockk(relaxed = true))
         shadowOf(Looper.getMainLooper()).idle()
-        val staleConfig = mockk<QRemoteConfig>(relaxed = true)
+        val staleConfig = remoteConfigFor("ctx")
         serviceCallbacks.first().onSuccess(staleConfig)
 
         // then - the pre-attach evaluation is dropped and the load re-issued
@@ -440,7 +1102,7 @@ internal class QRemoteConfigManagerTest {
         val warmConfig = mockk<QRemoteConfig>(relaxed = true)
         every { warmConfig.source.contextKey } returns "ctx"
         listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(warmConfig)))
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.first().onSuccess(remoteConfigFor("ctx"))
 
         // then - the waiter is served exactly once with the warm (current
         // generation) config instead of hanging forever, and no second
@@ -465,12 +1127,12 @@ internal class QRemoteConfigManagerTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         // when - invalidation mid-flight, the superseded (valid) response
-        // triggers a re-issue, and the retry fails without a fallback
+        // triggers a re-issue, and the retry fails transiently
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        val supersededConfig = remoteConfigFor("ctx")
         serviceCallbacks.first().onSuccess(supersededConfig)
-        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
 
         // then - never worse than before: the superseded evaluation is
         // delivered as a success instead of surfacing the retry error, and
@@ -478,6 +1140,56 @@ internal class QRemoteConfigManagerTest {
         verify(exactly = 1) { loadCallback.onSuccess(supersededConfig) }
         verify(exactly = 0) { loadCallback.onError(any()) }
         assertEquals(null, loadingStates()["ctx"]?.loadedConfig)
+    }
+
+    @Test
+    fun `a non-recoverable re-issue error is not masked by the superseded evaluation`() {
+        userStateProvider.stable = true
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val supersededConfig = remoteConfigFor("ctx")
+        serviceCallbacks.first().onSuccess(supersededConfig)
+        val authError = QonversionError(QonversionErrorCode.InvalidCredentials, httpCode = 401)
+        serviceCallbacks.last().onError(authError)
+
+        verify(exactly = 1) { callback.onError(authError) }
+        verify(exactly = 0) { callback.onSuccess(supersededConfig) }
+        assertEquals(null, manager.lastDeliveryOrigin("ctx"))
+    }
+
+    @Test
+    fun `authoritative no-config during re-issue evicts disk and is not masked by baseline`() {
+        userStateProvider.stable = true
+        val stale = remoteConfigFor("ctx")
+        persistentCache.save(stale)
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+        val supersededConfig = remoteConfigFor("ctx")
+        serviceCallbacks.first().onSuccess(supersededConfig)
+        val noConfig = QonversionError(QonversionErrorCode.RemoteConfigurationNotAvailable)
+        serviceCallbacks.last().onError(noConfig)
+
+        verify(exactly = 1) { callback.onError(noConfig) }
+        verify(exactly = 0) { callback.onSuccess(any()) }
+        assertEquals(null, persistentCache.get("ctx"))
     }
 
     @Test
@@ -505,7 +1217,7 @@ internal class QRemoteConfigManagerTest {
         // triggers a re-issue, and the retry fails in a FALLBACK-ELIGIBLE way
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        val supersededConfig = remoteConfigFor("ctx")
         serviceCallbacks.first().onSuccess(supersededConfig)
         serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
 
@@ -531,14 +1243,14 @@ internal class QRemoteConfigManagerTest {
 
         // when - invalidation mid-flight, the superseded response triggers a
         // re-issue, a SECOND caller joins while the retry is flying, and the
-        // retry fails without a fallback
+        // retry fails transiently
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        val supersededConfig = mockk<QRemoteConfig>(relaxed = true)
+        val supersededConfig = remoteConfigFor("ctx")
         serviceCallbacks.first().onSuccess(supersededConfig)
         val callbackB = mockk<QonversionRemoteConfigCallback>(relaxed = true)
         manager.loadRemoteConfig("ctx", callbackB)
-        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.BackendError))
+        serviceCallbacks.last().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
 
         // then - the never-worse guarantee is uniform: the late joiner gets
         // the baseline too, not the retry error
@@ -562,8 +1274,8 @@ internal class QRemoteConfigManagerTest {
         shadowOf(Looper.getMainLooper()).idle()
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
-        serviceCallbacks.last().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.first().onSuccess(remoteConfigFor("ctx"))
+        serviceCallbacks.last().onSuccess(remoteConfigFor("ctx"))
 
         // when - a later, unrelated load for the same key fails
         manager.invalidateRemoteConfigsCache()
@@ -603,7 +1315,7 @@ internal class QRemoteConfigManagerTest {
         val warmConfig = mockk<QRemoteConfig>(relaxed = true)
         every { warmConfig.source.contextKey } returns "ctx"
         listServiceCallback.captured.onSuccess(QRemoteConfigList(listOf(warmConfig)))
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.first().onSuccess(remoteConfigFor("ctx"))
         verify(exactly = 1) { loadCallback.onSuccess(warmConfig) }
 
         // when - a later, unrelated load for the same key fails
@@ -636,7 +1348,7 @@ internal class QRemoteConfigManagerTest {
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
         userStateProvider.stable = false
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.first().onSuccess(remoteConfigFor("ctx"))
         manager.userChangingRequestFailedWithError(QonversionError(QonversionErrorCode.BackendError))
         shadowOf(Looper.getMainLooper()).idle()
 
@@ -672,7 +1384,7 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
-    fun `a user switch mid-flight does not trigger an unrequested re-issue`() {
+    fun `a user switch mid-flight reissues an awaited single load`() {
         // given - a load with a waiter is in flight
         userStateProvider.stable = true
         val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
@@ -688,10 +1400,255 @@ internal class QRemoteConfigManagerTest {
         // the now-orphaned state
         manager.onUserUpdate()
         shadowOf(Looper.getMainLooper()).idle()
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        val priorIdentityConfig = remoteConfigFor("ctx")
+        serviceCallbacks.first().onSuccess(priorIdentityConfig)
+        shadowOf(Looper.getMainLooper()).idle()
 
-        // then - the orphaned state must not fire a request nobody awaits
-        verify(exactly = 1) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+        // then - the old identity result is dropped and the original waiter is
+        // carried into a request evaluated for the current identity.
+        verify(exactly = 2) { mockRemoteConfigService.loadRemoteConfig("ctx", any()) }
+        verify(exactly = 0) { loadCallback.onSuccess(priorIdentityConfig) }
+
+        val currentIdentityConfig = remoteConfigFor("ctx")
+        serviceCallbacks.last().onSuccess(currentIdentityConfig)
+
+        verify(exactly = 1) { loadCallback.onSuccess(currentIdentityConfig) }
+        verify(exactly = 0) { loadCallback.onError(any()) }
+    }
+
+    @Test
+    fun `old identity single success never resolves a new identity request`() {
+        userStateProvider.stable = true
+        val oldIdentityConfig = remoteConfigFor("ctx")
+        val currentIdentityConfig = remoteConfigFor("ctx")
+        val oldCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val currentCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", oldCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.loadRemoteConfig("ctx", currentCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        serviceCallbacks.first().onSuccess(oldIdentityConfig)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify { currentCallback wasNot Called }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        serviceCallbacks.last().onSuccess(currentIdentityConfig)
+
+        verify(exactly = 1) { oldCallback.onSuccess(currentIdentityConfig) }
+        verify(exactly = 0) { oldCallback.onSuccess(oldIdentityConfig) }
+        verify(exactly = 0) { oldCallback.onError(any()) }
+        verify(exactly = 1) { currentCallback.onSuccess(currentIdentityConfig) }
+        verify(exactly = 0) { currentCallback.onSuccess(oldIdentityConfig) }
+        assertEquals(listOf(currentIdentityConfig), persistentCache.savedConfigs)
+    }
+
+    @Test
+    fun `old identity single error never resolves a new identity request`() {
+        userStateProvider.stable = true
+        val currentIdentityLkg = remoteConfigFor("ctx")
+        val currentIdentityServerConfig = remoteConfigFor("ctx")
+        val oldCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val currentCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", oldCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        persistentCache.save(currentIdentityLkg)
+        manager.loadRemoteConfig("ctx", currentCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        serviceCallbacks.first().onError(QonversionError(QonversionErrorCode.NetworkConnectionFailed))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify { currentCallback wasNot Called }
+
+        serviceCallbacks.last().onSuccess(currentIdentityServerConfig)
+
+        verify(exactly = 1) { oldCallback.onSuccess(currentIdentityServerConfig) }
+        verify(exactly = 0) { oldCallback.onSuccess(currentIdentityLkg) }
+        verify(exactly = 0) { oldCallback.onError(any()) }
+        verify(exactly = 1) { currentCallback.onSuccess(currentIdentityServerConfig) }
+        verify(exactly = 0) { currentCallback.onSuccess(currentIdentityLkg) }
+    }
+
+    @Test
+    fun `background identity transition reissues with current scope and never saves or delivers old identity`() {
+        userStateProvider.stable = true
+        val oldConfig = remoteConfigFor("ctx")
+        val currentConfig = remoteConfigFor("ctx")
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        val requestUsers = mutableListOf<String>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } answers {
+            requestUsers += persistentCache.scope.userId
+        }
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val transition = Thread {
+            manager.onUserUpdate {
+                persistentCache.scope = persistentCache.scope.copy(userId = "user-b")
+            }
+        }
+        transition.start()
+        transition.join()
+
+        serviceCallbacks.first().onSuccess(oldConfig)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(listOf("user-a", "user-b"), requestUsers)
+        verify { callback wasNot Called }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        serviceCallbacks.last().onSuccess(currentConfig)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        verify(exactly = 1) { callback.onSuccess(currentConfig) }
+        verify(exactly = 0) { callback.onSuccess(oldConfig) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(listOf("user-b"), persistentCache.savedScopes.map { it.userId })
+    }
+
+    @Test
+    fun `main load immediately after background identity transition cannot join old identity state`() {
+        userStateProvider.stable = true
+        val oldCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val currentCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        val requestUsers = mutableListOf<String>()
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } answers {
+            requestUsers += persistentCache.scope.userId
+        }
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("ctx", oldCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val transition = Thread {
+            manager.onUserUpdate {
+                persistentCache.scope = persistentCache.scope.copy(userId = "user-b")
+            }
+        }
+        transition.start()
+        transition.join()
+
+        // The transition is already complete even though its housekeeping
+        // runnable has not drained. This load must create current-user state,
+        // while the old request's waiter is transferred into that state rather
+        // than stranded on the orphaned user-a state.
+        manager.loadRemoteConfig("ctx", currentCallback)
+
+        assertEquals(listOf("user-a", "user-b"), requestUsers)
+        val currentConfig = remoteConfigFor("ctx")
+        serviceCallbacks.last().onSuccess(currentConfig)
+        verify(exactly = 1) { currentCallback.onSuccess(currentConfig) }
+        verify(exactly = 1) { oldCallback.onSuccess(currentConfig) }
+        verify(exactly = 0) { oldCallback.onError(any()) }
+    }
+
+    @Test
+    fun `identity transition during property flush only requests saves and delivers current user`() {
+        userStateProvider.stable = true
+        val currentConfig = remoteConfigFor("ctx")
+        val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val propertyCallbacks = mutableListOf<QonversionEmptyCallback>()
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigCallback>()
+        val requestUsers = mutableListOf<String>()
+        every { mockUserPropertiesManager.forceSendProperties(capture(propertyCallbacks)) } just runs
+        every { mockRemoteConfigService.loadRemoteConfig("ctx", capture(serviceCallbacks)) } answers {
+            requestUsers += persistentCache.scope.userId
+        }
+
+        manager.loadRemoteConfig("ctx", callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, propertyCallbacks.size)
+        assertTrue(serviceCallbacks.isEmpty())
+
+        val transition = Thread {
+            manager.onUserUpdate {
+                persistentCache.scope = persistentCache.scope.copy(userId = "user-b")
+            }
+        }
+        transition.start()
+        transition.join()
+
+        propertyCallbacks.first().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(2, propertyCallbacks.size)
+        assertTrue(serviceCallbacks.isEmpty())
+
+        propertyCallbacks.last().onComplete()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(listOf("user-b"), requestUsers)
+
+        serviceCallbacks.single().onSuccess(currentConfig)
+
+        verify(exactly = 1) { callback.onSuccess(currentConfig) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(listOf(currentConfig), persistentCache.savedConfigs)
+        assertEquals(listOf("user-b"), persistentCache.savedScopes.map { it.userId })
+    }
+
+    @Test
+    fun `background identity transition reissues list in current scope`() {
+        userStateProvider.stable = true
+        val oldConfig = remoteConfigFor("ctx")
+        val currentConfig = remoteConfigFor("ctx")
+        val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val serviceCallbacks = mutableListOf<QonversionRemoteConfigListCallback>()
+        val requestUsers = mutableListOf<String>()
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("ctx"), false, capture(serviceCallbacks))
+        } answers {
+            requestUsers += persistentCache.scope.userId
+        }
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfigList(listOf("ctx"), false, callback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val transition = Thread {
+            manager.onUserUpdate {
+                persistentCache.scope = persistentCache.scope.copy(userId = "user-b")
+            }
+        }
+        transition.start()
+        transition.join()
+
+        serviceCallbacks.first().onSuccess(QRemoteConfigList(listOf(oldConfig)))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(listOf("user-a", "user-b"), requestUsers)
+        verify { callback wasNot Called }
+        assertTrue(persistentCache.savedConfigs.isEmpty())
+
+        serviceCallbacks.last().onSuccess(QRemoteConfigList(listOf(currentConfig)))
+
+        verify(exactly = 1) { callback.onSuccess(match { it.remoteConfigs == listOf(currentConfig) }) }
+        verify(exactly = 0) { callback.onError(any()) }
+        assertEquals(listOf(currentConfig), persistentCache.savedConfigs)
+        assertEquals(listOf("user-b"), persistentCache.savedScopes.map { it.userId })
     }
 
     @Test
@@ -749,6 +1706,124 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `server timeout and rate limit responses deliver single persistent last known good`() {
+        userStateProvider.stable = true
+        listOf(408, 429).forEach { statusCode ->
+            val contextKey = "ctx_$statusCode"
+            val lastKnownGood = remoteConfigFor(contextKey)
+            persistentCache.save(lastKnownGood)
+            val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+            val serviceCallback = slot<QonversionRemoteConfigCallback>()
+            every { mockRemoteConfigService.loadRemoteConfig(contextKey, capture(serviceCallback)) } just runs
+            every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+                firstArg<QonversionEmptyCallback?>()?.onComplete()
+            }
+
+            manager.loadRemoteConfig(contextKey, callback)
+            shadowOf(Looper.getMainLooper()).idle()
+            serviceCallback.captured.onError(
+                QonversionError(QonversionErrorCode.BackendError, httpCode = statusCode),
+            )
+
+            verify(exactly = 1) { callback.onSuccess(lastKnownGood) }
+            verify(exactly = 0) { callback.onError(any()) }
+        }
+    }
+
+    @Test
+    fun `server timeout and rate limit responses deliver list persistent last known good`() {
+        userStateProvider.stable = true
+        listOf(408, 429).forEach { statusCode ->
+            val contextKey = "ctx_$statusCode"
+            val lastKnownGood = remoteConfigFor(contextKey)
+            persistentCache.save(lastKnownGood)
+            val callback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+            val serviceCallback = slot<QonversionRemoteConfigListCallback>()
+            every {
+                mockRemoteConfigService.loadRemoteConfigs(listOf(contextKey), false, capture(serviceCallback))
+            } just runs
+            every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+                firstArg<QonversionEmptyCallback?>()?.onComplete()
+            }
+
+            manager.loadRemoteConfigList(listOf(contextKey), false, callback)
+            shadowOf(Looper.getMainLooper()).idle()
+            serviceCallback.captured.onError(
+                QonversionError(QonversionErrorCode.BackendError, httpCode = statusCode),
+            )
+
+            verify(exactly = 1) {
+                callback.onSuccess(match { it.remoteConfigs == listOf(lastKnownGood) })
+            }
+            verify(exactly = 0) { callback.onError(any()) }
+        }
+    }
+
+    @Test
+    fun `response parsing failure delivers persistent fallback for single and list`() {
+        userStateProvider.stable = true
+        val singleConfig = remoteConfigFor("single")
+        val listConfig = remoteConfigFor("list")
+        persistentCache.save(singleConfig)
+        persistentCache.save(listConfig)
+        val singleCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val listCallback = mockk<QonversionRemoteConfigListCallback>(relaxed = true)
+        val singleServiceCallback = slot<QonversionRemoteConfigCallback>()
+        val listServiceCallback = slot<QonversionRemoteConfigListCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("single", capture(singleServiceCallback)) } just runs
+        every {
+            mockRemoteConfigService.loadRemoteConfigs(listOf("list"), false, capture(listServiceCallback))
+        } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("single", singleCallback)
+        manager.loadRemoteConfigList(listOf("list"), false, listCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val parsingError = QonversionError(QonversionErrorCode.ResponseParsingFailed)
+        singleServiceCallback.captured.onError(parsingError)
+        listServiceCallback.captured.onError(parsingError)
+
+        verify(exactly = 1) { singleCallback.onSuccess(singleConfig) }
+        verify(exactly = 0) { singleCallback.onError(any()) }
+        verify(exactly = 1) { listCallback.onSuccess(match { it.remoteConfigs == listOf(listConfig) }) }
+        verify(exactly = 0) { listCallback.onError(any()) }
+        assertEquals(singleConfig, persistentCache.get("single"))
+        assertEquals(listConfig, persistentCache.get("list"))
+    }
+
+    @Test
+    fun `unknown authentication and client errors never deliver local fallback`() {
+        userStateProvider.stable = true
+        val nonTransientErrors = listOf(
+            QonversionError(QonversionErrorCode.Unknown),
+            QonversionError(QonversionErrorCode.Unknown, httpCode = 503),
+            QonversionError(QonversionErrorCode.InvalidCredentials),
+            QonversionError(QonversionErrorCode.InvalidCredentials, httpCode = 503),
+            QonversionError(QonversionErrorCode.BackendError, httpCode = 400),
+        )
+        nonTransientErrors.forEachIndexed { index, error ->
+            val contextKey = "non_transient_$index"
+            val stale = remoteConfigFor(contextKey)
+            persistentCache.save(stale)
+            val callback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+            val serviceCallback = slot<QonversionRemoteConfigCallback>()
+            every { mockRemoteConfigService.loadRemoteConfig(contextKey, capture(serviceCallback)) } just runs
+            every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+                firstArg<QonversionEmptyCallback?>()?.onComplete()
+            }
+
+            manager.loadRemoteConfig(contextKey, callback)
+            shadowOf(Looper.getMainLooper()).idle()
+            serviceCallback.captured.onError(error)
+
+            verify(exactly = 1) { callback.onError(error) }
+            verify(exactly = 0) { callback.onSuccess(stale) }
+        }
+    }
+
+    @Test
     fun `invalidation mid-flight does not re-issue a load nobody awaits`() {
         // given - a load with NO waiting callback is in flight
         userStateProvider.stable = true
@@ -764,7 +1839,7 @@ internal class QRemoteConfigManagerTest {
         // when - the cache is invalidated mid-flight, then the response lands
         manager.invalidateRemoteConfigsCache()
         shadowOf(Looper.getMainLooper()).idle()
-        serviceCallbacks.first().onSuccess(mockk<QRemoteConfig>(relaxed = true))
+        serviceCallbacks.first().onSuccess(remoteConfigFor("ctx"))
 
         // then - no waiter means no retry; the superseded response is simply
         // not cached and the state is left refetchable
@@ -965,6 +2040,31 @@ internal class QRemoteConfigManagerTest {
     }
 
     @Test
+    fun `named context never receives the empty-context bundled fallback`() {
+        userStateProvider.stable = true
+        val emptyContextFallback = remoteConfigFor(null)
+        every { mockFallbacksService.obtainFallbackData() } returns QFallbackObject(
+            offerings = null,
+            productPermissions = null,
+            remoteConfigList = QRemoteConfigList(listOf(emptyContextFallback)),
+        )
+        val loadCallback = mockk<QonversionRemoteConfigCallback>(relaxed = true)
+        val serviceCallback = slot<QonversionRemoteConfigCallback>()
+        every { mockRemoteConfigService.loadRemoteConfig("missing", capture(serviceCallback)) } just runs
+        every { mockUserPropertiesManager.forceSendProperties(any()) } answers {
+            firstArg<QonversionEmptyCallback?>()?.onComplete()
+        }
+
+        manager.loadRemoteConfig("missing", loadCallback)
+        shadowOf(Looper.getMainLooper()).idle()
+        val networkError = QonversionError(QonversionErrorCode.NetworkConnectionFailed)
+        serviceCallback.captured.onError(networkError)
+
+        verify(exactly = 0) { loadCallback.onSuccess(any()) }
+        verify(exactly = 1) { loadCallback.onError(networkError) }
+    }
+
+    @Test
     fun `fallback list configs are delivered without being cached`() {
         // given - a bundled fallback exists and a list load is in flight
         userStateProvider.stable = true
@@ -1000,6 +2100,93 @@ internal class QRemoteConfigManagerTest {
 
     private fun loadingStates() =
         manager.getPrivateField<MutableMap<String?, QRemoteConfigManager.LoadingState>>("loadingStates")
+
+    private fun remoteConfigFor(contextKey: String?): QRemoteConfig {
+        val config = mockk<QRemoteConfig>()
+        every { config.source.contextKey } returns contextKey
+        return config
+    }
+
+    private class FakeRemoteConfigCache : RemoteConfigCache {
+        val savedConfigs = mutableListOf<QRemoteConfig>()
+        var scope = RemoteConfigCacheScope("project", "Production", "user-a")
+        val savedScopes = mutableListOf<RemoteConfigCacheScope>()
+        var mutationCount = 0
+        private val scopedConfigs = linkedMapOf<RemoteConfigCacheScope, LinkedHashMap<String?, QRemoteConfig>>()
+
+        override fun currentScope(): RemoteConfigCacheScope = scope
+
+        override fun save(remoteConfig: QRemoteConfig) {
+            save(scope, remoteConfig)
+        }
+
+        override fun save(scope: RemoteConfigCacheScope, remoteConfig: QRemoteConfig) {
+            mutationCount += 1
+            savedConfigs += remoteConfig
+            savedScopes += scope
+            scopedConfigs.getOrPut(scope, ::linkedMapOf)[remoteConfig.source.contextKey] = remoteConfig
+        }
+
+        override fun remove(contextKey: String?) {
+            remove(scope, contextKey)
+        }
+
+        override fun remove(scope: RemoteConfigCacheScope, contextKey: String?) {
+            mutationCount += 1
+            scopedConfigs[scope]?.remove(contextKey)
+            savedConfigs.removeAll { it.source.contextKey == contextKey }
+        }
+
+        override fun replaceAll(remoteConfigs: List<QRemoteConfig>) {
+            replaceAll(scope, remoteConfigs)
+        }
+
+        override fun replaceAll(scope: RemoteConfigCacheScope, remoteConfigs: List<QRemoteConfig>) {
+            mutationCount += 1
+            scopedConfigs[scope] = linkedMapOf()
+            savedConfigs.clear()
+            remoteConfigs.forEach { remoteConfig ->
+                savedConfigs += remoteConfig
+                savedScopes += scope
+                scopedConfigs.getValue(scope)[remoteConfig.source.contextKey] = remoteConfig
+            }
+        }
+
+        override fun replaceRequested(
+            requestedContextKeys: Set<String?>,
+            remoteConfigs: List<QRemoteConfig>,
+        ) {
+            replaceRequested(scope, requestedContextKeys, remoteConfigs)
+        }
+
+        override fun replaceRequested(
+            scope: RemoteConfigCacheScope,
+            requestedContextKeys: Set<String?>,
+            remoteConfigs: List<QRemoteConfig>,
+        ) {
+            mutationCount += 1
+            val scoped = scopedConfigs.getOrPut(scope, ::linkedMapOf)
+            requestedContextKeys.forEach { contextKey ->
+                scoped.remove(contextKey)
+                savedConfigs.removeAll { it.source.contextKey == contextKey }
+            }
+            remoteConfigs.forEach { remoteConfig ->
+                savedConfigs += remoteConfig
+                savedScopes += scope
+                scoped[remoteConfig.source.contextKey] = remoteConfig
+            }
+        }
+
+        override fun get(contextKey: String?): QRemoteConfig? = get(scope, contextKey)
+
+        override fun get(scope: RemoteConfigCacheScope, contextKey: String?): QRemoteConfig? =
+            scopedConfigs[scope]?.get(contextKey)
+
+        override fun getAll(): QRemoteConfigList = getAll(scope)
+
+        override fun getAll(scope: RemoteConfigCacheScope): QRemoteConfigList =
+            QRemoteConfigList(scopedConfigs[scope]?.values.orEmpty().toList())
+    }
 
     // Hand-written fake instead of a mockk: isUserStable is read thousands of times inside
     // the concurrent stress loops, and driving a mockk proxy at that volume trips a

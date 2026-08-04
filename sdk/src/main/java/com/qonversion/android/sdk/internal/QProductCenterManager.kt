@@ -241,8 +241,9 @@ internal class QProductCenterManager internal constructor(
                     handlePendingRequests()
                     fireIdentitySuccess(identityId)
                 } else {
-                    internalConfig.uid = qonversionUid
-                    remoteConfigManager.onUserUpdate()
+                    remoteConfigManager.onUserUpdate {
+                        internalConfig.uid = qonversionUid
+                    }
                     launchResultCache.clearPermissionsCache()
                     launch(RequestTrigger.Identify, object : QonversionLaunchCallback {
                         override fun onSuccess(launchResult: QLaunchResult) {
@@ -472,13 +473,13 @@ internal class QProductCenterManager internal constructor(
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
-            remoteConfigManager.onUserUpdate()
+            val userId = userInfoService.obtainUserId()
+            remoteConfigManager.onUserUpdate {
+                internalConfig.uid = userId
+            }
             launchResultCache.clearPermissionsCache()
 
             unhandledLogoutAvailable = true
-
-            val userId = userInfoService.obtainUserId()
-            internalConfig.uid = userId
         }
     }
 
@@ -527,8 +528,9 @@ internal class QProductCenterManager internal constructor(
         )
 
         userInfoService.storeQonversionUserId(newUserId)
-        internalConfig.uid = newUserId
-        remoteConfigManager.onUserUpdate()
+        remoteConfigManager.onUserUpdate {
+            internalConfig.uid = newUserId
+        }
         launchResultCache.clearPermissionsCache()
     }
 

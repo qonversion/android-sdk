@@ -77,6 +77,9 @@ internal class QProductCenterManagerIdentifyContractTest {
         // would otherwise spin up a background Thread and break the
         // synchronous verifyOrder window.
         every { mockConfig.primaryConfig.isKidsMode } returns true
+        every { mockRemoteConfigManager.onUserUpdate(any()) } answers {
+            firstArg<() -> Unit>().invoke()
+        }
 
         // billingService.queryPurchases is the synchronous entry point
         // into continueLaunchWithPurchasesInfo → processInit →
@@ -137,8 +140,8 @@ internal class QProductCenterManagerIdentifyContractTest {
         // cache and finds stale permissions before clear, the UX is
         // broken.
         verifyOrder {
+            mockRemoteConfigManager.onUserUpdate(any())
             mockConfig.uid = mergedUid
-            mockRemoteConfigManager.onUserUpdate()
             mockLaunchResultCacheWrapper.clearPermissionsCache()
             mockRepository.init(match { it.requestTrigger == RequestTrigger.Identify })
         }
@@ -181,7 +184,7 @@ internal class QProductCenterManagerIdentifyContractTest {
         }
         verify(exactly = 1) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
         // ...and the destructive user-switch path must NOT fire on same-uid
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any()) }
     }
 
     /**
@@ -201,7 +204,7 @@ internal class QProductCenterManagerIdentifyContractTest {
 
         verify(exactly = 0) { mockIdentityManager.identify(any(), any()) }
         verify(exactly = 0) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any()) }
     }
 
     /**

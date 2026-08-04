@@ -4,6 +4,7 @@ import com.android.billingclient.api.BillingClient
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.billing.BillingError
+import com.squareup.moshi.JsonDataException
 import org.json.JSONException
 import java.io.IOException
 
@@ -39,7 +40,7 @@ internal fun BillingError.toQonversionError(): QonversionError {
 
 internal fun Throwable.toQonversionError(): QonversionError {
     return when (this) {
-        is JSONException -> {
+        is JSONException, is JsonDataException -> {
             QonversionError(QonversionErrorCode.ResponseParsingFailed, localizedMessage ?: "")
         }
 
