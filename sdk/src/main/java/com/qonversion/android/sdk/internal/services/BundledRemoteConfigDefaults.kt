@@ -224,6 +224,7 @@ internal class BundledRemoteConfigDefaultsDocument(
     private val defaultsByKey = Collections.unmodifiableMap(orderedDefaults.associateBy { it.key })
 
     fun defaultFor(key: String): BundledRemoteConfigDefault? = defaultsByKey[key]
+    internal fun allDefaults(): List<BundledRemoteConfigDefault> = orderedDefaults
 
     internal fun canonicalJson(): String = buildString {
         append("{\"schemaVersion\":1,\"projectId\":").append(projectId)
@@ -268,6 +269,8 @@ private fun parsePortableJson(bytes: ByteArray): ParsedJson? = try {
 } catch (_: Exception) {
     null
 }
+
+internal fun isPortableRemoteConfigJson(bytes: ByteArray): Boolean = parsePortableJson(bytes) != null
 
 @Suppress("ComplexMethod")
 private fun JsonReader.readPortableJsonValue(depth: Int): Any? = when (peek()) {
