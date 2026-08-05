@@ -33,6 +33,10 @@ internal interface Cache {
         values.forEach(::putString)
     }
 
+    fun updateStringsDurably(values: Map<String, String?>, removedKeys: Set<String>): Boolean {
+        throw UnsupportedOperationException("This cache does not provide durable atomic string updates")
+    }
+
     /**
     * @param defValue is returned if the String preference for key does not exist
     */

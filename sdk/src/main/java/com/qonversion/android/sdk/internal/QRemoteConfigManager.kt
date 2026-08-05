@@ -306,7 +306,7 @@ internal class QRemoteConfigManager @Inject constructor(
                                 contextKey,
                                 loadingState,
                                 generationAtStart,
-                                requestIdentity.cacheScope,
+                                requestIdentity,
                                 remoteConfig,
                             )
                         } else {
@@ -326,13 +326,57 @@ internal class QRemoteConfigManager @Inject constructor(
             override fun onError(error: QonversionError) {
                 postIdentityAction {
                     if (requestIdentity.isCurrentAndStable()) {
-                        handleRemoteConfigError(contextKey, loadingState, requestIdentity.cacheScope, error)
+                        if (error.code == QonversionErrorCode.RemoteConfigurationNotAvailable &&
+                            requestIdentity.cacheScope != null
+                        ) {
+                            handleAuthoritativeRemoteConfigRemoval(
+                                contextKey,
+                                loadingState,
+                                generationAtStart,
+                                requestIdentity,
+                                error,
+                            )
+                        } else {
+                            handleRemoteConfigError(contextKey, loadingState, requestIdentity.cacheScope, error)
+                        }
                     } else {
                         reissueSingleAfterUserChange(contextKey, loadingState)
                     }
                 }
             }
         })
+    }
+
+    private fun handleAuthoritativeRemoteConfigRemoval(
+        contextKey: String?,
+        loadingState: LoadingState,
+        generationAtStart: Int,
+        requestIdentity: RemoteConfigRequestIdentity,
+        error: QonversionError,
+    ) {
+        if (invalidationGeneration.get() != generationAtStart) {
+            reissueSingleAfterUserChange(contextKey, loadingState)
+            return
+        }
+        val cacheScope = requestIdentity.cacheScope ?: run {
+            handleRemoteConfigError(contextKey, loadingState, null, error)
+            return
+        }
+        persistentCache.remove(cacheScope, contextKey) { committed ->
+            postIdentityAction {
+                when {
+                    !requestIdentity.isCurrentAndStable() ->
+                        reissueSingleAfterUserChange(contextKey, loadingState)
+                    invalidationGeneration.get() != generationAtStart ->
+                        reissueSingleAfterUserChange(contextKey, loadingState)
+                    committed -> handleRemoteConfigError(contextKey, loadingState, cacheScope, error)
+                    else -> {
+                        loadingState.retryBaseline = null
+                        fireToCallbacks(contextKey) { onError(remoteConfigPersistenceError()) }
+                    }
+                }
+            }
+        }
     }
 
     private fun reissueSingleAfterUserChange(
@@ -351,13 +395,69 @@ internal class QRemoteConfigManager @Inject constructor(
         contextKey: String?,
         loadingState: LoadingState,
         generationAtStart: Int,
-        cacheScope: RemoteConfigCacheScope?,
+        requestIdentity: RemoteConfigRequestIdentity,
         remoteConfig: QRemoteConfig,
     ) {
         loadingState.retryBaseline = null
         val currentGeneration = invalidationGeneration.get()
+        if (currentGeneration != generationAtStart) {
+            deliverOrReissueRemoteConfigSuccess(
+                contextKey,
+                loadingState,
+                generationAtStart,
+                remoteConfig,
+            )
+            return
+        }
+
+        val cacheScope = requestIdentity.cacheScope
+        if (cacheScope == null) {
+            deliverOrReissueRemoteConfigSuccess(
+                contextKey,
+                loadingState,
+                generationAtStart,
+                remoteConfig,
+            )
+            return
+        }
+
+        persistentCache.save(cacheScope, remoteConfig) { committed ->
+            postIdentityAction {
+                when {
+                    !requestIdentity.isCurrentAndStable() ->
+                        reissueSingleAfterUserChange(contextKey, loadingState)
+                    invalidationGeneration.get() != generationAtStart ->
+                        deliverOrReissueRemoteConfigSuccess(
+                            contextKey,
+                            loadingState,
+                            generationAtStart,
+                            remoteConfig,
+                        )
+                    committed -> deliverOrReissueRemoteConfigSuccess(
+                        contextKey,
+                        loadingState,
+                        generationAtStart,
+                        remoteConfig,
+                    )
+                    else -> handleRemoteConfigError(
+                        contextKey,
+                        loadingState,
+                        cacheScope,
+                        remoteConfigPersistenceError(),
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deliverOrReissueRemoteConfigSuccess(
+        contextKey: String?,
+        loadingState: LoadingState,
+        generationAtStart: Int,
+        remoteConfig: QRemoteConfig,
+    ) {
+        val currentGeneration = invalidationGeneration.get()
         if (currentGeneration == generationAtStart) {
-            cacheScope?.let { persistentCache.save(it, remoteConfig) }
             deliveryOrigins[contextKey] = QRemoteConfigDeliveryOrigin.Network
             loadingState.loadedConfig = remoteConfig
             loadingState.generation = generationAtStart
@@ -418,12 +518,6 @@ internal class QRemoteConfigManager @Inject constructor(
     ) {
         val baseline = loadingState.retryBaseline
         loadingState.retryBaseline = null
-        if (error.code == QonversionErrorCode.RemoteConfigurationNotAvailable) {
-            // The server authoritatively evaluated this context and found no
-            // config. Keeping the old disk value would resurrect a removed
-            // assignment on the next transient outage.
-            cacheScope?.let { persistentCache.remove(it, contextKey) }
-        }
         val canRecover = error.shouldFireRemoteConfigFallback
         val lastKnownGood = if (canRecover && cacheScope != null) {
             persistentCache.get(cacheScope, contextKey)
@@ -619,7 +713,7 @@ internal class QRemoteConfigManager @Inject constructor(
                         contextKeys,
                         includeEmptyContextKey,
                         callback,
-                        requestIdentity.cacheScope,
+                        requestIdentity,
                         generationAtStart,
                         localLoadingStates,
                         remoteConfigList,
@@ -665,11 +759,72 @@ internal class QRemoteConfigManager @Inject constructor(
         "Remote Config response does not match the request",
     )
 
+    private fun remoteConfigPersistenceError() = QonversionError(
+        QonversionErrorCode.ResponseParsingFailed,
+        "Remote Config could not be persisted as last known good",
+    )
+
     private fun handleRemoteConfigListSuccess(
         contextKeys: List<String>?,
         includeEmptyContextKey: Boolean,
         callback: QonversionRemoteConfigListCallback,
-        cacheScope: RemoteConfigCacheScope?,
+        requestIdentity: RemoteConfigRequestIdentity,
+        generationAtStart: Int,
+        localLoadingStates: MutableMap<String?, LoadingState>,
+        remoteConfigList: QRemoteConfigList,
+    ) {
+        if (invalidationGeneration.get() != generationAtStart) {
+            // Preserve the legacy list contract: an already-valid response is
+            // still delivered, but a superseded evaluation is never promoted
+            // into either the in-memory cache or the persistent LKG.
+            remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+                deliveryOrigins[remoteConfig.source.contextKey] = QRemoteConfigDeliveryOrigin.Network
+            }
+            callback.onSuccess(remoteConfigList)
+            return
+        }
+
+        val cacheScope = requestIdentity.cacheScope
+        if (cacheScope == null) {
+            completeRemoteConfigListSuccess(
+                callback,
+                generationAtStart,
+                localLoadingStates,
+                remoteConfigList,
+            )
+            return
+        }
+
+        reconcilePersistentCache(
+            contextKeys,
+            includeEmptyContextKey,
+            cacheScope,
+            remoteConfigList.remoteConfigs,
+        ) { committed ->
+            postIdentityAction {
+                when {
+                    !requestIdentity.isCurrentAndStable() ->
+                        reissueRemoteConfigListAfterUserChange(contextKeys, includeEmptyContextKey, callback)
+                    invalidationGeneration.get() != generationAtStart ->
+                        reissueRemoteConfigList(contextKeys, includeEmptyContextKey, callback)
+                    committed -> completeRemoteConfigListSuccess(
+                        callback,
+                        generationAtStart,
+                        localLoadingStates,
+                        remoteConfigList,
+                    )
+                    else -> remoteConfigListFallback(
+                        contextKeys,
+                        includeEmptyContextKey,
+                        cacheScope,
+                    )?.let(callback::onSuccess) ?: callback.onError(remoteConfigPersistenceError())
+                }
+            }
+        }
+    }
+
+    private fun completeRemoteConfigListSuccess(
+        callback: QonversionRemoteConfigListCallback,
         generationAtStart: Int,
         localLoadingStates: MutableMap<String?, LoadingState>,
         remoteConfigList: QRemoteConfigList,
@@ -677,22 +832,12 @@ internal class QRemoteConfigManager @Inject constructor(
         remoteConfigList.remoteConfigs.forEach { remoteConfig ->
             deliveryOrigins[remoteConfig.source.contextKey] = QRemoteConfigDeliveryOrigin.Network
         }
-        if (invalidationGeneration.get() == generationAtStart) {
-            cacheScope?.let {
-                reconcilePersistentCache(
-                    contextKeys,
-                    includeEmptyContextKey,
-                    it,
-                    remoteConfigList.remoteConfigs,
-                )
-            }
-            remoteConfigList.remoteConfigs.forEach { remoteConfig ->
-                val contextKey = remoteConfig.source.contextKey
-                val loadingState = localLoadingStates[contextKey] ?: LoadingState()
-                loadingState.loadedConfig = remoteConfig
-                loadingState.generation = generationAtStart
-                localLoadingStates[contextKey] = loadingState
-            }
+        remoteConfigList.remoteConfigs.forEach { remoteConfig ->
+            val contextKey = remoteConfig.source.contextKey
+            val loadingState = localLoadingStates[contextKey] ?: LoadingState()
+            loadingState.loadedConfig = remoteConfig
+            loadingState.generation = generationAtStart
+            localLoadingStates[contextKey] = loadingState
         }
 
         callback.onSuccess(remoteConfigList)
@@ -703,9 +848,10 @@ internal class QRemoteConfigManager @Inject constructor(
         includeEmptyContextKey: Boolean,
         cacheScope: RemoteConfigCacheScope,
         remoteConfigs: List<QRemoteConfig>,
+        completion: (Boolean) -> Unit,
     ) {
         if (contextKeys == null) {
-            persistentCache.replaceAll(cacheScope, remoteConfigs)
+            persistentCache.replaceAll(cacheScope, remoteConfigs, completion)
             return
         }
 
@@ -713,7 +859,7 @@ internal class QRemoteConfigManager @Inject constructor(
             addAll(contextKeys)
             if (includeEmptyContextKey) add(null)
         }.toSet()
-        persistentCache.replaceRequested(cacheScope, requestedContextKeys, remoteConfigs)
+        persistentCache.replaceRequested(cacheScope, requestedContextKeys, remoteConfigs, completion)
     }
 
     private fun remoteConfigListFallback(

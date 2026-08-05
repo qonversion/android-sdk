@@ -8,6 +8,7 @@ import com.squareup.moshi.Moshi
 import java.security.MessageDigest
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 private const val DEFAULT_MAX_REMOTE_CONFIG_CACHE_BYTES = 512 * 1024
 private const val MAX_REMOTE_CONFIG_INDEX_BYTES = 64 * 1024
@@ -36,16 +37,37 @@ internal interface RemoteConfigCache {
     fun currentScope(): RemoteConfigCacheScope? = null
     fun save(remoteConfig: QRemoteConfig)
     fun save(scope: RemoteConfigCacheScope, remoteConfig: QRemoteConfig) = save(remoteConfig)
+    fun save(
+        scope: RemoteConfigCacheScope,
+        remoteConfig: QRemoteConfig,
+        completion: (Boolean) -> Unit,
+    )
     fun remove(contextKey: String?)
     fun remove(scope: RemoteConfigCacheScope, contextKey: String?) = remove(contextKey)
+    fun remove(
+        scope: RemoteConfigCacheScope,
+        contextKey: String?,
+        completion: (Boolean) -> Unit,
+    )
     fun replaceAll(remoteConfigs: List<QRemoteConfig>)
     fun replaceAll(scope: RemoteConfigCacheScope, remoteConfigs: List<QRemoteConfig>) = replaceAll(remoteConfigs)
+    fun replaceAll(
+        scope: RemoteConfigCacheScope,
+        remoteConfigs: List<QRemoteConfig>,
+        completion: (Boolean) -> Unit,
+    )
     fun replaceRequested(requestedContextKeys: Set<String?>, remoteConfigs: List<QRemoteConfig>)
     fun replaceRequested(
         scope: RemoteConfigCacheScope,
         requestedContextKeys: Set<String?>,
         remoteConfigs: List<QRemoteConfig>,
     ) = replaceRequested(requestedContextKeys, remoteConfigs)
+    fun replaceRequested(
+        scope: RemoteConfigCacheScope,
+        requestedContextKeys: Set<String?>,
+        remoteConfigs: List<QRemoteConfig>,
+        completion: (Boolean) -> Unit,
+    )
     fun get(contextKey: String?): QRemoteConfig?
     fun get(scope: RemoteConfigCacheScope, contextKey: String?): QRemoteConfig? = get(contextKey)
     fun getAll(): QRemoteConfigList
@@ -64,6 +86,8 @@ internal class PersistentRemoteConfigCache(
     private val indexAdapter = moshi.adapter(PersistentRemoteConfigIndex::class.java)
     private val memoryEnvelopes = mutableMapOf<String, PersistentRemoteConfigEnvelope>()
     private val pendingRevisions = mutableMapOf<String, Long>()
+    private val pendingEnvelopes = mutableMapOf<String, PersistentRemoteConfigEnvelope?>()
+    private val pendingCompletions = mutableMapOf<String, MutableList<PendingCompletion>>()
     private var nextRevision = 0L
 
     @Synchronized
@@ -74,15 +98,41 @@ internal class PersistentRemoteConfigCache(
 
     @Synchronized
     override fun save(scope: RemoteConfigCacheScope, remoteConfig: QRemoteConfig) {
-        if (!remoteConfig.isCorrect) return
+        save(scope, remoteConfig, requireExactPersistence = false) {}
+    }
 
-        val currentConfigs = loadEnvelope(scope)?.remoteConfigs.orEmpty()
+    @Synchronized
+    override fun save(
+        scope: RemoteConfigCacheScope,
+        remoteConfig: QRemoteConfig,
+        completion: (Boolean) -> Unit,
+    ) = save(scope, remoteConfig, requireExactPersistence = false, completion)
+
+    private fun save(
+        scope: RemoteConfigCacheScope,
+        remoteConfig: QRemoteConfig,
+        requireExactPersistence: Boolean,
+        completion: (Boolean) -> Unit,
+    ) {
+        if (!remoteConfig.isCorrect) {
+            completion(false)
+            return
+        }
+
+        val currentConfigs = loadLatestEnvelope(scope)?.remoteConfigs.orEmpty()
         val contextKey = remoteConfig.source.contextKey.normalizedRemoteConfigContextKey()
         val updatedConfigs = currentConfigs
             .filterNot { it.source.contextKey.normalizedRemoteConfigContextKey() == contextKey }
             .plus(remoteConfig)
             .takeLast(limits.maxEntriesPerScope)
-        scheduleWrite(scope, updatedConfigs)
+        scheduleWrite(
+            scope,
+            updatedConfigs,
+            completion,
+            requireExactPersistence,
+        ) { committedEnvelope ->
+            committedEnvelope?.remoteConfigs?.any { it == remoteConfig } == true
+        }
     }
 
     @Synchronized
@@ -93,10 +143,35 @@ internal class PersistentRemoteConfigCache(
 
     @Synchronized
     override fun remove(scope: RemoteConfigCacheScope, contextKey: String?) {
+        remove(scope, contextKey, requireExactPersistence = false) {}
+    }
+
+    @Synchronized
+    override fun remove(
+        scope: RemoteConfigCacheScope,
+        contextKey: String?,
+        completion: (Boolean) -> Unit,
+    ) = remove(scope, contextKey, requireExactPersistence = true, completion)
+
+    private fun remove(
+        scope: RemoteConfigCacheScope,
+        contextKey: String?,
+        requireExactPersistence: Boolean,
+        completion: (Boolean) -> Unit,
+    ) {
         val normalizedContextKey = contextKey.normalizedRemoteConfigContextKey()
-        val updatedConfigs = loadEnvelope(scope)?.remoteConfigs.orEmpty()
+        val updatedConfigs = loadLatestEnvelope(scope)?.remoteConfigs.orEmpty()
             .filterNot { it.source.contextKey.normalizedRemoteConfigContextKey() == normalizedContextKey }
-        scheduleWrite(scope, updatedConfigs)
+        scheduleWrite(
+            scope,
+            updatedConfigs,
+            completion,
+            requireExactPersistence,
+        ) { committedEnvelope ->
+            committedEnvelope?.remoteConfigs.orEmpty().none {
+                it.source.contextKey.normalizedRemoteConfigContextKey() == normalizedContextKey
+            }
+        }
     }
 
     @Synchronized
@@ -107,13 +182,36 @@ internal class PersistentRemoteConfigCache(
 
     @Synchronized
     override fun replaceAll(scope: RemoteConfigCacheScope, remoteConfigs: List<QRemoteConfig>) {
-        if (!remoteConfigs.areValidForPersistence()) return
+        replaceAll(scope, remoteConfigs, requireExactPersistence = false) {}
+    }
 
-        val previousEnvelope = loadEnvelope(scope)
+    @Synchronized
+    override fun replaceAll(
+        scope: RemoteConfigCacheScope,
+        remoteConfigs: List<QRemoteConfig>,
+        completion: (Boolean) -> Unit,
+    ) = replaceAll(scope, remoteConfigs, requireExactPersistence = true, completion)
+
+    private fun replaceAll(
+        scope: RemoteConfigCacheScope,
+        remoteConfigs: List<QRemoteConfig>,
+        requireExactPersistence: Boolean,
+        completion: (Boolean) -> Unit,
+    ) {
+        if (!remoteConfigs.areValidForPersistence()) {
+            completion(false)
+            return
+        }
+        if (requireExactPersistence && remoteConfigs.size > limits.maxEntriesPerScope) {
+            completion(false)
+            return
+        }
+
         scheduleWrite(
             scope,
             remoteConfigs.takeLast(limits.maxEntriesPerScope),
-            previousEnvelope,
+            completion,
+            requireExactPersistence,
         )
     }
 
@@ -132,27 +230,68 @@ internal class PersistentRemoteConfigCache(
         requestedContextKeys: Set<String?>,
         remoteConfigs: List<QRemoteConfig>,
     ) {
-        if (remoteConfigs.any { !it.isCorrect }) return
+        replaceRequested(
+            scope,
+            requestedContextKeys,
+            remoteConfigs,
+            requireExactPersistence = false,
+        ) {}
+    }
 
+    @Synchronized
+    override fun replaceRequested(
+        scope: RemoteConfigCacheScope,
+        requestedContextKeys: Set<String?>,
+        remoteConfigs: List<QRemoteConfig>,
+        completion: (Boolean) -> Unit,
+    ) = replaceRequested(
+        scope,
+        requestedContextKeys,
+        remoteConfigs,
+        requireExactPersistence = true,
+        completion,
+    )
+
+    private fun replaceRequested(
+        scope: RemoteConfigCacheScope,
+        requestedContextKeys: Set<String?>,
+        remoteConfigs: List<QRemoteConfig>,
+        requireExactPersistence: Boolean,
+        completion: (Boolean) -> Unit,
+    ) {
         val normalizedRequestedKeys = requestedContextKeys
             .mapTo(mutableSetOf()) { it.normalizedRemoteConfigContextKey() }
-        val returnedKeys = remoteConfigs.map { config ->
-            config.source.contextKey.normalizedRemoteConfigContextKey()
-        }
-        if (returnedKeys.size != returnedKeys.distinct().size ||
-            returnedKeys.any { it !in normalizedRequestedKeys }
-        ) {
+        if (!remoteConfigs.areValidForRequestedPersistence(normalizedRequestedKeys)) {
+            completion(false)
             return
         }
 
-        val previousEnvelope = loadEnvelope(scope)
-        val updatedConfigs = previousEnvelope?.remoteConfigs.orEmpty()
+        val requestedUpdate = loadLatestEnvelope(scope)?.remoteConfigs.orEmpty()
             .filterNot { config ->
                 config.source.contextKey.normalizedRemoteConfigContextKey() in normalizedRequestedKeys
             }
             .plus(remoteConfigs)
-            .takeLast(limits.maxEntriesPerScope)
-        scheduleWrite(scope, updatedConfigs, previousEnvelope)
+        if (requireExactPersistence && requestedUpdate.size > limits.maxEntriesPerScope) {
+            completion(false)
+            return
+        }
+        val updatedConfigs = requestedUpdate.takeLast(limits.maxEntriesPerScope)
+        val expectedConfigs = remoteConfigs.associateBy {
+            it.source.contextKey.normalizedRemoteConfigContextKey()
+        }
+        val omittedContextKeys = normalizedRequestedKeys - expectedConfigs.keys
+        scheduleWrite(
+            scope,
+            updatedConfigs,
+            completion,
+            requireExactPersistence,
+        ) { committedEnvelope ->
+            val committedConfigs = committedEnvelope?.remoteConfigs.orEmpty().associateBy {
+                it.source.contextKey.normalizedRemoteConfigContextKey()
+            }
+            expectedConfigs.all { (contextKey, expected) -> committedConfigs[contextKey] == expected } &&
+                omittedContextKeys.none { it in committedConfigs }
+        }
     }
 
     @Synchronized
@@ -169,12 +308,14 @@ internal class PersistentRemoteConfigCache(
             it.source.contextKey.normalizedRemoteConfigContextKey() == normalizedContextKey
         }
         remoteConfig?.let { accessed ->
-            scheduleWrite(
-                scope,
-                envelope.remoteConfigs.filterNot {
-                    it.source.contextKey.normalizedRemoteConfigContextKey() == normalizedContextKey
-                } + accessed,
-            )
+            if (!pendingEnvelopes.containsKey(scope.storageKey)) {
+                scheduleWrite(
+                    scope,
+                    envelope.remoteConfigs.filterNot {
+                        it.source.contextKey.normalizedRemoteConfigContextKey() == normalizedContextKey
+                    } + accessed,
+                )
+            }
         }
         return remoteConfig
     }
@@ -188,7 +329,7 @@ internal class PersistentRemoteConfigCache(
     @Synchronized
     override fun getAll(scope: RemoteConfigCacheScope): QRemoteConfigList {
         val remoteConfigs = loadEnvelope(scope)?.remoteConfigs.orEmpty()
-        if (remoteConfigs.isNotEmpty()) {
+        if (remoteConfigs.isNotEmpty() && !pendingEnvelopes.containsKey(scope.storageKey)) {
             scheduleWrite(scope, remoteConfigs)
         }
         return QRemoteConfigList(remoteConfigs)
@@ -197,11 +338,11 @@ internal class PersistentRemoteConfigCache(
     private fun scheduleWrite(
         scope: RemoteConfigCacheScope,
         remoteConfigs: List<QRemoteConfig>,
-        previousEnvelope: PersistentRemoteConfigEnvelope? = memoryEnvelopes[scope.storageKey],
+        completion: (Boolean) -> Unit = {},
+        requireExactPersistence: Boolean = false,
+        isSuccessfulCommit: ((PersistentRemoteConfigEnvelope?) -> Boolean)? = null,
     ) {
         val storageKey = scope.storageKey
-        val revision = ++nextRevision
-        pendingRevisions[storageKey] = revision
         val envelope = remoteConfigs.takeIf { it.isNotEmpty() }?.let {
             PersistentRemoteConfigEnvelope(
                 version = CACHE_VERSION,
@@ -211,43 +352,114 @@ internal class PersistentRemoteConfigCache(
                 remoteConfigs = it,
             )
         }
-        if (envelope == null) {
-            memoryEnvelopes.remove(storageKey)
-        } else {
-            memoryEnvelopes[storageKey] = envelope
+        // Admission must finish before publishing a new pending revision: otherwise an
+        // unpersistable newer mutation can cancel an already accepted write. This bounded
+        // serialization runs on the caller; production evaluates at most 64 entries and
+        // admits at most 512 KiB (an oversized entry is serialized once to reject it), while
+        // the durable SharedPreferences commit remains on persistenceExecutor.
+        val persistencePayload = preparePersistencePayload(envelope, requireExactPersistence)
+        if (persistencePayload == null) {
+            completion(false)
+            return
         }
-        persistenceExecutor.execute {
-            persistLatest(storageKey, revision, envelope, previousEnvelope)
+
+        val previousPendingState = PendingState(
+            revision = pendingRevisions[storageKey],
+            hasEnvelope = pendingEnvelopes.containsKey(storageKey),
+            envelope = pendingEnvelopes[storageKey],
+            completions = pendingCompletions[storageKey],
+        )
+        val revision = ++nextRevision
+        pendingRevisions[storageKey] = revision
+        // Subsequent coalesced mutations must build from what can actually become durable,
+        // not from entries removed by byte-bound admission.
+        pendingEnvelopes[storageKey] = persistencePayload.envelope
+        pendingCompletions[storageKey] = previousPendingState.completions.orEmpty().toMutableList().apply {
+            add(PendingCompletion(isSuccessfulCommit ?: { committed -> committed == envelope }, completion))
+        }
+        try {
+            persistenceExecutor.execute {
+                persistLatest(storageKey, revision, persistencePayload)
+            }
+        } catch (_: RejectedExecutionException) {
+            if (pendingRevisions[storageKey] == revision) {
+                restorePendingState(storageKey, previousPendingState)
+                completion(false)
+            }
         }
     }
 
     private fun persistLatest(
         storageKey: String,
         revision: Long,
-        envelope: PersistentRemoteConfigEnvelope?,
-        previousEnvelope: PersistentRemoteConfigEnvelope?,
+        persistencePayload: PersistencePayload,
     ) {
-        val boundedEnvelopeAndJson = envelope?.let(::fitWithinByteLimit)
-            ?: envelope?.let { previousEnvelope?.let(::fitWithinByteLimit) }
-        synchronized(this) {
-            if (pendingRevisions[storageKey] != revision) return
+        val completionResults = commitLatestPersistence(storageKey, revision, persistencePayload)
+        completionResults.forEach { (completion, committed) -> completion(committed) }
+    }
 
-            val boundedEnvelope = boundedEnvelopeAndJson?.first
-            val json = boundedEnvelopeAndJson?.second
+    private fun restorePendingState(storageKey: String, previous: PendingState) {
+        previous.revision?.let { pendingRevisions[storageKey] = it }
+            ?: pendingRevisions.remove(storageKey)
+        if (previous.hasEnvelope) {
+            pendingEnvelopes[storageKey] = previous.envelope
+        } else {
+            pendingEnvelopes.remove(storageKey)
+        }
+        previous.completions?.let { pendingCompletions[storageKey] = it }
+            ?: pendingCompletions.remove(storageKey)
+    }
+
+    private fun preparePersistencePayload(
+        envelope: PersistentRemoteConfigEnvelope?,
+        requireExactPersistence: Boolean,
+    ): PersistencePayload? = try {
+        if (envelope == null) {
+            PersistencePayload(null, null)
+        } else {
+            envelope.let(::fitWithinByteLimit)
+                ?.takeUnless { (boundedEnvelope) ->
+                    requireExactPersistence && boundedEnvelope != envelope
+                }
+                ?.let { (boundedEnvelope, json) -> PersistencePayload(boundedEnvelope, json) }
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    @Synchronized
+    private fun commitLatestPersistence(
+        storageKey: String,
+        revision: Long,
+        persistencePayload: PersistencePayload?,
+    ): List<Pair<(Boolean) -> Unit, Boolean>> {
+        if (pendingRevisions[storageKey] != revision) return emptyList()
+
+        val attempt = persistPayload(storageKey, persistencePayload)
+        if (attempt.committed) {
+            updateCommittedMemory(storageKey, persistencePayload, attempt.indexUpdate)
+        }
+        pendingRevisions.remove(storageKey)
+        pendingEnvelopes.remove(storageKey)
+        return pendingCompletions.remove(storageKey).orEmpty().map { pending ->
+            pending.callback to (
+                attempt.committed && pending.isSuccessfulCommit(persistencePayload?.envelope)
+            )
+        }
+    }
+
+    private fun persistPayload(
+        storageKey: String,
+        persistencePayload: PersistencePayload?,
+    ): PersistenceAttempt {
+        if (persistencePayload == null) return PersistenceAttempt.failed()
+
+        return try {
+            val json = persistencePayload.json
             val indexUpdate = createIndexUpdate(
                 storageKey,
                 json?.toByteArray(Charsets.UTF_8)?.size,
             )
-            if (boundedEnvelope == null || json == null) {
-                memoryEnvelopes.remove(storageKey)
-            } else {
-                memoryEnvelopes[storageKey] = boundedEnvelope
-            }
-            indexUpdate.evictedStorageKeys.forEach { evictedStorageKey ->
-                if (!pendingRevisions.containsKey(evictedStorageKey)) {
-                    memoryEnvelopes.remove(evictedStorageKey)
-                }
-            }
             val values = buildMap<String, String?> {
                 json?.let { put(storageKey, it) }
                 indexUpdate.index?.let { put(CACHE_INDEX_KEY, indexAdapter.toJson(it)) }
@@ -257,10 +469,33 @@ internal class PersistentRemoteConfigCache(
                 addAll(indexUpdate.evictedStorageKeys)
                 if (indexUpdate.index == null) add(CACHE_INDEX_KEY)
             } - values.keys
-            cache.updateStrings(values, removedKeys)
-            if (pendingRevisions[storageKey] == revision) {
-                pendingRevisions.remove(storageKey)
+            PersistenceAttempt(cache.updateStringsDurably(values, removedKeys), indexUpdate)
+        } catch (_: Exception) {
+            PersistenceAttempt.failed()
+        }
+    }
+
+    private fun updateCommittedMemory(
+        storageKey: String,
+        persistencePayload: PersistencePayload?,
+        indexUpdate: PersistentRemoteConfigIndexUpdate?,
+    ) {
+        persistencePayload?.envelope?.let { memoryEnvelopes[storageKey] = it }
+            ?: memoryEnvelopes.remove(storageKey)
+        indexUpdate?.evictedStorageKeys.orEmpty().forEach { evictedStorageKey ->
+            if (!pendingRevisions.containsKey(evictedStorageKey)) {
+                memoryEnvelopes.remove(evictedStorageKey)
             }
+        }
+    }
+
+    @Synchronized
+    private fun loadLatestEnvelope(scope: RemoteConfigCacheScope): PersistentRemoteConfigEnvelope? {
+        val storageKey = scope.storageKey
+        return if (pendingEnvelopes.containsKey(storageKey)) {
+            pendingEnvelopes[storageKey]
+        } else {
+            loadEnvelope(scope)
         }
     }
 
@@ -326,10 +561,7 @@ internal class PersistentRemoteConfigCache(
         } else {
             null
         }
-        return index?.takeIf { it.isValid() } ?: run {
-            cache.remove(CACHE_INDEX_KEY)
-            emptyIndex()
-        }
+        return index?.takeIf { it.isValid() } ?: emptyIndex()
     }
 
     private fun PersistentRemoteConfigIndex.isValid(): Boolean {
@@ -407,6 +639,18 @@ internal class PersistentRemoteConfigCache(
         return contextKeys.size == contextKeys.distinct().size
     }
 
+    private fun List<QRemoteConfig>.areValidForRequestedPersistence(
+        normalizedRequestedKeys: Set<String?>,
+    ): Boolean = if (any { !it.isCorrect }) {
+        false
+    } else {
+        val returnedKeys = map { config ->
+            config.source.contextKey.normalizedRemoteConfigContextKey()
+        }
+        returnedKeys.size == returnedKeys.distinct().size &&
+            returnedKeys.all { it in normalizedRequestedKeys }
+    }
+
     private fun String.utf8Size(): Int = toByteArray(Charsets.UTF_8).size
 
     override fun currentScope(): RemoteConfigCacheScope? {
@@ -475,3 +719,29 @@ private data class PersistentRemoteConfigIndexUpdate(
     val index: PersistentRemoteConfigIndex?,
     val evictedStorageKeys: Set<String>,
 )
+
+private data class PersistencePayload(
+    val envelope: PersistentRemoteConfigEnvelope?,
+    val json: String?,
+)
+
+private data class PendingCompletion(
+    val isSuccessfulCommit: (PersistentRemoteConfigEnvelope?) -> Boolean,
+    val callback: (Boolean) -> Unit,
+)
+
+private data class PendingState(
+    val revision: Long?,
+    val hasEnvelope: Boolean,
+    val envelope: PersistentRemoteConfigEnvelope?,
+    val completions: MutableList<PendingCompletion>?,
+)
+
+private data class PersistenceAttempt(
+    val committed: Boolean,
+    val indexUpdate: PersistentRemoteConfigIndexUpdate?,
+) {
+    companion object {
+        fun failed() = PersistenceAttempt(false, null)
+    }
+}
