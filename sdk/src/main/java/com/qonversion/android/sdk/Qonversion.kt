@@ -1,15 +1,18 @@
 package com.qonversion.android.sdk
 
 import android.app.Activity
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
 import com.qonversion.android.sdk.dto.QPurchaseResult
+import com.qonversion.android.sdk.dto.QRemoteConfigFallbackValue
 import com.qonversion.android.sdk.dto.products.QProduct
 import com.qonversion.android.sdk.dto.properties.QUserPropertyKey
 import com.qonversion.android.sdk.internal.InternalConfig
 import com.qonversion.android.sdk.internal.QonversionInternal
+import com.qonversion.android.sdk.internal.services.BundledRemoteConfigDefaults
 import com.qonversion.android.sdk.listeners.QonversionEmptyCallback
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
@@ -48,6 +51,24 @@ interface Qonversion {
                 "Qonversion has not been initialized. You should call " +
                         "the initialize method before accessing the shared instance of Qonversion."
             )
+
+        /**
+         * Reads a Remote Config default directly from the generated asset bundled with the app.
+         *
+         * This synchronous API is independent of SDK initialization, networking, identity and
+         * caches. Put the generated `qonversion_remote_config_defaults.json` file in the app's
+         * `assets` directory and call this method with its logical [contextKey]. A non-null
+         * wrapper whose [QRemoteConfigFallbackValue.rawValue] is null represents a present JSON
+         * `null`; a null wrapper means the key is absent or the bundle failed strict validation.
+         *
+         * @param context any Android context used only to access the application asset.
+         * @param contextKey logical Remote Config key from the generated bundle.
+         */
+        @JvmStatic
+        fun fallbackRemoteConfigValue(
+            context: Context,
+            contextKey: String,
+        ): QRemoteConfigFallbackValue? = BundledRemoteConfigDefaults.value(context, contextKey)
 
         /**
          * An entry point to use Qonversion SDK. Call to initialize Qonversion SDK with required and extra configs.
