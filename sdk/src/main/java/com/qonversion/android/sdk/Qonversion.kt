@@ -172,7 +172,7 @@ interface Qonversion {
 
     /**
      * Return Qonversion Products in association with Google Play Store Products
-     * If you get an empty SkuDetails be sure your products are correctly set up in Google Play Store.
+     * If you get empty ProductDetails be sure your products are correctly set up in Google Play Store.
      * @param callback - callback that will be called when response is received
      * @see [Product Center](https://qonversion.io/docs/product-center)
      */
