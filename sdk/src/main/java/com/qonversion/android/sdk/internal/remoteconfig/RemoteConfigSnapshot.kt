@@ -132,6 +132,7 @@ internal class RemoteConfigSnapshotRelease(
 
     val entries: Map<String, RemoteConfigSnapshotEntry> get() = entriesByKey
     val canonicalBodyBytes: ByteArray? get() = storedCanonicalBody?.clone()
+    internal val hasCanonicalBody: Boolean get() = storedCanonicalBody != null
     val bodyDigest: String? get() = strongETag?.removeSurrounding("\"")
     internal val contentDigest: String by lazy(LazyThreadSafetyMode.PUBLICATION) {
         calculateContentDigest()

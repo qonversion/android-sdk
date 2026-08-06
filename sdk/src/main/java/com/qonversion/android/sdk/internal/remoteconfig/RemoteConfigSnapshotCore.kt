@@ -54,6 +54,12 @@ internal data class BoundRemoteConfigSnapshotAdmission(
     val expectation: RemoteConfigSnapshotEnvelopeExpectation,
 )
 
+internal data class RemoteConfigConditionalRequestValidator(
+    val etag: String,
+    val headAdmissionToken: Long,
+    val headContentDigest: String,
+)
+
 internal class RemoteConfigSnapshotCore(
     private val store: RemoteConfigSnapshotStore,
     private val bundledRelease: RemoteConfigScopedBundledRelease?,
@@ -98,6 +104,25 @@ internal class RemoteConfigSnapshotCore(
             snapshotFor(candidate, previous)
         }
     }
+
+    fun conditionalRequestValidator(): RemoteConfigConditionalRequestValidator? = synchronized(lock) {
+        conditionalHeadLocked()?.toConditionalRequestValidator()
+    }
+
+    fun isConditionalRequestValidatorCurrent(validator: RemoteConfigConditionalRequestValidator): Boolean =
+        synchronized(lock) {
+            conditionalHeadLocked()?.toConditionalRequestValidator() == validator
+        }
+
+    private fun conditionalHeadLocked(): RemoteConfigSnapshotRelease? = (state.candidate ?: state.active)
+        ?.takeIf { it.strongETag != null && it.hasCanonicalBody }
+
+    private fun RemoteConfigSnapshotRelease.toConditionalRequestValidator() =
+        RemoteConfigConditionalRequestValidator(
+            etag = requireNotNull(strongETag),
+            headAdmissionToken = admissionToken,
+            headContentDigest = contentDigest,
+        )
 
     fun addUpdateObserver(observer: (RemoteConfigSnapshotUpdate) -> Unit): Long = synchronized(lock) {
         val token = ++nextObserverToken
