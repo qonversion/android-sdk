@@ -109,7 +109,9 @@ internal class PersistentRemoteConfigSnapshotStoreTest {
                 "{\"version\":1,\"storageKeys\":[\"$storageKey\"]}",
             )
 
-            assertNull(store().loadState(userA))
+            val result = store().load(userA)
+            assertEquals(RemoteConfigSnapshotLoadStatus.Corrupt, result.status)
+            assertNull(result.state)
 
             assertNull(cache.getString(storageKey, null))
             assertEquals("legacy-must-survive", cache.getString(LEGACY_LKG_KEY, null))
@@ -587,6 +589,25 @@ internal class PersistentRemoteConfigSnapshotStoreTest {
         assertNull(cache.getString(REMOTE_CONFIG_SNAPSHOT_INDEX_KEY, null))
         assertEquals(legacyIndex, cache.getString(LEGACY_LKG_KEY, null))
         assertEquals("legacy-payload", cache.getString(legacyPayloadKey, null))
+    }
+
+    @Test
+    fun `malformed and oversized v1 lookalikes are corrupt rather than legacy missing`() {
+        val storageKey = remoteConfigSnapshotStorageKey(userA)
+        val malformedState = persistedSnapshotEnvelopeV1().replace(
+            "\"didActivate\":false",
+            "\"didActivate\":\"false\"",
+        )
+        cache.putString(storageKey, malformedState)
+        assertEquals(RemoteConfigSnapshotLoadStatus.Corrupt, store().load(userA).status)
+
+        cache.putString(storageKey, persistedSnapshotEnvelopeV1())
+        val bounded = PersistentRemoteConfigSnapshotStore(
+            cache = cache,
+            moshi = moshi,
+            maxStateBytes = 128,
+        )
+        assertEquals(RemoteConfigSnapshotLoadStatus.Corrupt, bounded.load(userA).status)
     }
 
     @Test

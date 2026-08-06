@@ -5,6 +5,8 @@ import com.qonversion.android.sdk.internal.storage.RemoteConfigSnapshotLoadStatu
 import com.qonversion.android.sdk.internal.storage.RemoteConfigSnapshotStore
 import java.util.ArrayDeque
 import java.util.UUID
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 internal enum class RemoteConfigSnapshotTransitionStatus {
     Accepted,
@@ -47,6 +49,37 @@ internal class RemoteConfigSnapshotAdmissionToken private constructor(
     }
 }
 
+internal class RemoteConfigScopePreloadToken private constructor(
+    private val ownerNonce: UUID,
+    internal val scope: RemoteConfigSnapshotScope,
+    internal val scopeGeneration: Long,
+    internal val installEpoch: Long,
+) {
+    internal fun belongsTo(ownerNonce: UUID): Boolean = this.ownerNonce == ownerNonce
+
+    internal companion object {
+        fun issue(
+            ownerNonce: UUID,
+            scope: RemoteConfigSnapshotScope,
+            scopeGeneration: Long,
+            installEpoch: Long,
+        ) = RemoteConfigScopePreloadToken(ownerNonce, scope, scopeGeneration, installEpoch)
+    }
+}
+
+internal enum class RemoteConfigScopePreloadInstallStatus {
+    Installed,
+    PersistenceFailed,
+    Superseded,
+    Ignored,
+}
+
+internal enum class RemoteConfigImplicitActivationClaimStatus {
+    Claimed,
+    Stale,
+    AlreadyConsumed,
+}
+
 internal data class BoundRemoteConfigSnapshotAdmission(
     val ordinal: Long,
     val scope: RemoteConfigSnapshotScope,
@@ -64,35 +97,169 @@ internal class RemoteConfigSnapshotCore(
     private val store: RemoteConfigSnapshotStore,
     private val bundledRelease: RemoteConfigScopedBundledRelease?,
     private val envelopeParser: RemoteConfigSnapshotEnvelopeDecoder = RemoteConfigSnapshotEnvelopeParser(),
+    private val deliveryQueueObservedEmpty: (() -> Unit)? = null,
+    private val scopePreloadMutatedBeforeBinding: (() -> Unit)? = null,
 ) {
     private val lock = Any()
-    private val deliveryLock = Any()
+    private val deliveryLock = ReentrantLock()
+    private val deliveryBoundaryChanged = deliveryLock.newCondition()
     private val admissionOwnerNonce = UUID.randomUUID()
+    private val preloadOwnerNonce = UUID.randomUUID()
     private var currentScope: RemoteConfigSnapshotScope? = null
     private var state = RemoteConfigSnapshotState()
+    private var prepersistedFirstReadActivation: PrepersistedFirstReadActivation? = null
+    private var firstReadActivationArmed = false
+    private var implicitActivationOpportunityConsumed = false
     private var scopeLoadFailed = false
     private var scopeGeneration = 0L
+    private var stateMutationEpoch = 0L
     private var nextAdmissionToken = 0L
     private var nextObserverToken = 0L
     private val observers = linkedMapOf<Long, (RemoteConfigSnapshotUpdate) -> Unit>()
     private val pendingDeliveries = ArrayDeque<TransitionDelivery>()
     private var isDrainingDeliveries = false
+    private var deliveryOwnerThread: Thread? = null
+    private var scopeTransitionInProgress = false
 
     fun setScope(scope: RemoteConfigSnapshotScope?) {
-        synchronized(deliveryLock) {
+        withDeliveryBoundary {
             synchronized(lock) {
                 if (currentScope == scope && !(scope != null && scopeLoadFailed)) return
                 if (currentScope != scope) {
                     currentScope = scope
                     state = RemoteConfigSnapshotState()
+                    prepersistedFirstReadActivation = null
+                    firstReadActivationArmed = false
                     scopeLoadFailed = false
                     nextAdmissionToken = 0L
                     scopeGeneration++
+                    stateMutationEpoch++
                 }
                 scope?.let(::loadScopeState)
             }
         }
     }
+
+    fun beginScopePreload(
+        scope: RemoteConfigSnapshotScope?,
+        armFirstReadActivation: Boolean,
+        onBound: (RemoteConfigScopePreloadToken?) -> Unit = {},
+    ): RemoteConfigScopePreloadToken? = withDeliveryBoundary {
+        val token = synchronized(lock) {
+                currentScope = scope
+                state = RemoteConfigSnapshotState()
+                prepersistedFirstReadActivation = null
+                firstReadActivationArmed =
+                    armFirstReadActivation && !implicitActivationOpportunityConsumed
+                scopeLoadFailed = scope != null
+                nextAdmissionToken = 0L
+                scopeGeneration++
+                stateMutationEpoch++
+                scope?.let {
+                    RemoteConfigScopePreloadToken.issue(
+                        preloadOwnerNonce,
+                        it,
+                        scopeGeneration,
+                        stateMutationEpoch,
+                    )
+                }
+        }
+        scopePreloadMutatedBeforeBinding?.invoke()
+        onBound(token)
+        token
+    }
+
+    fun installPreloadedScope(
+        token: RemoteConfigScopePreloadToken,
+        preloadedState: RemoteConfigSnapshotState,
+        preparedActivationState: RemoteConfigSnapshotState?,
+    ): RemoteConfigScopePreloadInstallStatus = synchronized(lock) {
+        if (!isCurrentPreloadToken(token)) {
+            return@synchronized RemoteConfigScopePreloadInstallStatus.Ignored
+        }
+        if (token.installEpoch != stateMutationEpoch) {
+            return@synchronized RemoteConfigScopePreloadInstallStatus.Superseded
+        }
+        val preparedState = preparedActivationState.takeIf { firstReadActivationArmed }
+        val preparedStateWasPersisted = preparedState == null ||
+            preparedState === preloadedState || saveCurrentScope(preparedState)
+        state = preloadedState
+        prepersistedFirstReadActivation = if (preparedStateWasPersisted) {
+            preparedState?.let { PrepersistedFirstReadActivation(preloadedState, it) }
+        } else {
+            null
+        }
+        nextAdmissionToken = preloadedState.latestAdmissionToken
+        scopeLoadFailed = false
+        stateMutationEpoch++
+        if (preparedStateWasPersisted) {
+            RemoteConfigScopePreloadInstallStatus.Installed
+        } else {
+            RemoteConfigScopePreloadInstallStatus.PersistenceFailed
+        }
+    }
+
+    fun commitPrepersistedActivation(
+        token: RemoteConfigScopePreloadToken,
+    ): RemoteConfigSnapshotTransitionResult {
+        val result = commitPrepersistedActivationWithoutDelivery(token)
+        deliverPendingUpdates()
+        return result
+    }
+
+    fun commitPrepersistedActivationWithoutDelivery(
+        token: RemoteConfigScopePreloadToken,
+    ): RemoteConfigSnapshotTransitionResult {
+        val delivery = synchronized(lock) {
+            if (!isCurrentPreloadToken(token)) return@synchronized TransitionDelivery.ignored()
+            implicitActivationOpportunityConsumed = true
+            firstReadActivationArmed = false
+            if (scopeLoadFailed) return@synchronized TransitionDelivery.ignored()
+            val activation = prepersistedFirstReadActivation
+            prepersistedFirstReadActivation = null
+            if (activation == null || state !== activation.expectedState) {
+                return@synchronized TransitionDelivery.ignored()
+            }
+            val preparedState = activation.preparedState
+            val expectedState = activation.expectedState
+            if (preparedState === expectedState) return@synchronized TransitionDelivery.unchanged()
+            val oldSnapshot = snapshotFor(state.active, state.previous)
+            state = preparedState
+            stateMutationEpoch++
+            nextAdmissionToken = maxOf(nextAdmissionToken, preparedState.latestAdmissionToken)
+            val update = buildUpdate(oldSnapshot, snapshotFor(preparedState.active, preparedState.previous))
+            TransitionDelivery
+                .activated(update, observers.values.toList(), scopeGeneration)
+                .also(::enqueueDeliveryLocked)
+        }
+        return delivery.result
+    }
+
+    fun deliverPendingUpdates() {
+        drainDeliveries()
+    }
+
+    private data class PrepersistedFirstReadActivation(
+        val expectedState: RemoteConfigSnapshotState,
+        val preparedState: RemoteConfigSnapshotState,
+    )
+
+    fun claimImplicitActivationOpportunity(
+        token: RemoteConfigScopePreloadToken?,
+    ): RemoteConfigImplicitActivationClaimStatus = synchronized(lock) {
+        if (token == null || !isCurrentPreloadToken(token)) {
+            return@synchronized RemoteConfigImplicitActivationClaimStatus.Stale
+        }
+        if (implicitActivationOpportunityConsumed) {
+            return@synchronized RemoteConfigImplicitActivationClaimStatus.AlreadyConsumed
+        }
+        implicitActivationOpportunityConsumed = true
+        RemoteConfigImplicitActivationClaimStatus.Claimed
+    }
+
+    private fun isCurrentPreloadToken(token: RemoteConfigScopePreloadToken): Boolean =
+        token.belongsTo(preloadOwnerNonce) && token.scope == currentScope &&
+            token.scopeGeneration == scopeGeneration
 
     fun currentSnapshot(): RemoteConfigSnapshot = synchronized(lock) {
         snapshotFor(state.active, state.previous)
@@ -276,8 +443,21 @@ internal class RemoteConfigSnapshotCore(
             } else {
                 state.copy(candidate = admittedRelease, latestAdmissionToken = admissionOrdinal)
             }
-            if (!saveCurrentScope(nextState)) return@synchronized TransitionDelivery.persistenceFailed()
+            val preparedFirstReadState = if (firstReadActivationArmed) {
+                nextState.preparedActivationState()
+            } else {
+                null
+            }
+            val persistedState = preparedFirstReadState ?: nextState
+            if (!saveCurrentScope(persistedState)) return@synchronized TransitionDelivery.persistenceFailed()
             state = nextState
+            stateMutationEpoch++
+            if (firstReadActivationArmed && preparedFirstReadState != null) {
+                prepersistedFirstReadActivation = PrepersistedFirstReadActivation(
+                    expectedState = nextState,
+                    preparedState = preparedFirstReadState,
+                )
+            }
             if (admittedRelease.containsImmediateEntry) {
                 val update = buildUpdate(oldSnapshot, snapshotFor(nextState.active, nextState.previous))
                 TransitionDelivery(
@@ -301,8 +481,16 @@ internal class RemoteConfigSnapshotCore(
         return delivery.result
     }
 
-    fun activate(): RemoteConfigSnapshotTransitionResult {
+    fun activate(): RemoteConfigSnapshotTransitionResult = activateForPreloadToken(null)
+
+    fun activateForPreloadToken(
+        expectedToken: RemoteConfigScopePreloadToken?,
+    ): RemoteConfigSnapshotTransitionResult {
         val delivery = synchronized(lock) {
+            if (expectedToken != null && !isCurrentPreloadToken(expectedToken)) {
+                return@synchronized TransitionDelivery.ignored()
+            }
+            implicitActivationOpportunityConsumed = true
             if (currentScope == null) return@synchronized TransitionDelivery.ignored()
             if (!ensureCurrentScopeLoaded()) return@synchronized TransitionDelivery.persistenceFailed()
             val candidate = state.candidate
@@ -312,6 +500,7 @@ internal class RemoteConfigSnapshotCore(
                 if (!saveCurrentScope(nextState)) return@synchronized TransitionDelivery.persistenceFailed()
                 val oldSnapshot = snapshotFor(state.active, state.previous)
                 state = nextState
+                stateMutationEpoch++
                 val update = buildUpdate(oldSnapshot = null, newSnapshot = oldSnapshot)
                 return@synchronized TransitionDelivery
                     .activated(update, observers.values.toList(), scopeGeneration)
@@ -331,6 +520,7 @@ internal class RemoteConfigSnapshotCore(
             )
             if (!saveCurrentScope(nextState)) return@synchronized TransitionDelivery.persistenceFailed()
             state = nextState
+            stateMutationEpoch++
             val update = buildUpdate(oldSnapshot, snapshotFor(nextState.active, nextState.previous))
             TransitionDelivery
                 .activated(update, observers.values.toList(), scopeGeneration)
@@ -355,15 +545,20 @@ internal class RemoteConfigSnapshotCore(
         when (result.status) {
             RemoteConfigSnapshotLoadStatus.Found -> {
                 state = requireNotNull(result.state)
+                stateMutationEpoch++
                 nextAdmissionToken = state.latestAdmissionToken
                 scopeLoadFailed = false
             }
             RemoteConfigSnapshotLoadStatus.Missing -> {
                 state = RemoteConfigSnapshotState()
+                stateMutationEpoch++
                 nextAdmissionToken = 0L
                 scopeLoadFailed = false
             }
             RemoteConfigSnapshotLoadStatus.Failed -> {
+                scopeLoadFailed = true
+            }
+            RemoteConfigSnapshotLoadStatus.Corrupt -> {
                 scopeLoadFailed = true
             }
         }
@@ -406,17 +601,63 @@ internal class RemoteConfigSnapshotCore(
         if (delivery.update?.changedKeys?.isNotEmpty() == true) pendingDeliveries.addLast(delivery)
     }
 
+    private inline fun <T> withDeliveryBoundary(block: () -> T): T {
+        deliveryLock.withLock {
+            val currentThread = Thread.currentThread()
+            while (scopeTransitionInProgress ||
+                (isDrainingDeliveries && deliveryOwnerThread !== currentThread)
+            ) {
+                deliveryBoundaryChanged.awaitUninterruptibly()
+            }
+            scopeTransitionInProgress = true
+        }
+        return try {
+            block()
+        } finally {
+            deliveryLock.withLock {
+                scopeTransitionInProgress = false
+                deliveryBoundaryChanged.signalAll()
+            }
+        }
+    }
+
+    @Suppress("NestedBlockDepth")
     private fun drainDeliveries() {
-        synchronized(deliveryLock) {
+        deliveryLock.withLock {
+            while (scopeTransitionInProgress) deliveryBoundaryChanged.awaitUninterruptibly()
             if (isDrainingDeliveries) return
             isDrainingDeliveries = true
-            try {
-                while (true) {
-                    val delivery = synchronized(lock) { pollCurrentDeliveryLocked() } ?: break
+            deliveryOwnerThread = Thread.currentThread()
+        }
+        try {
+            while (true) {
+                val delivery = synchronized(lock) { pollCurrentDeliveryLocked() }
+                if (delivery == null) {
+                    deliveryQueueObservedEmpty?.invoke()
+                    val racedDelivery = takeRacedDeliveryOrReleaseOwnership()
+                    if (racedDelivery == null) return
+                    deliverIfCurrent(racedDelivery)
+                } else {
                     deliverIfCurrent(delivery)
                 }
-            } finally {
+            }
+        } finally {
+            deliveryLock.withLock {
+                if (isDrainingDeliveries && deliveryOwnerThread === Thread.currentThread()) {
+                    isDrainingDeliveries = false
+                    deliveryOwnerThread = null
+                    deliveryBoundaryChanged.signalAll()
+                }
+            }
+        }
+    }
+
+    private fun takeRacedDeliveryOrReleaseOwnership(): TransitionDelivery? = deliveryLock.withLock {
+        synchronized(lock) { pollCurrentDeliveryLocked() }.also { nextDelivery ->
+            if (nextDelivery == null) {
                 isDrainingDeliveries = false
+                deliveryOwnerThread = null
+                deliveryBoundaryChanged.signalAll()
             }
         }
     }

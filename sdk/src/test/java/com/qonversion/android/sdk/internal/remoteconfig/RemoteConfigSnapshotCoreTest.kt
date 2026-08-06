@@ -381,6 +381,36 @@ internal class RemoteConfigSnapshotCoreTest {
     }
 
     @Test
+    fun `delivery enqueued at the empty handoff is never stranded`() {
+        val raceStore = RecordingSnapshotStore()
+        val injectAtEmpty = AtomicBoolean(true)
+        lateinit var raceCore: RemoteConfigSnapshotCore
+        raceCore = RemoteConfigSnapshotCore(
+            raceStore,
+            bundled,
+            deliveryQueueObservedEmpty = {
+                if (injectAtEmpty.compareAndSet(true, false)) {
+                    raceCore.acceptCandidate(
+                        scopeA,
+                        release("two", 2, mapOf("a" to "2"), immediateKey = "a"),
+                    )
+                }
+            },
+        )
+        val observed = mutableListOf<String>()
+        raceCore.setScope(scopeA)
+        raceCore.addUpdateObserver { update -> observed += update.snapshot.releaseUid }
+
+        raceCore.acceptCandidate(
+            scopeA,
+            release("one", 1, mapOf("a" to "1"), immediateKey = "a"),
+        )
+
+        assertEquals(listOf("one", "two"), observed)
+        assertEquals("two", raceCore.currentSnapshot().releaseUid)
+    }
+
+    @Test
     fun `wire admission rejects one malformed item without any partial durable candidate`() {
         core.setScope(scopeA)
         val malformed = wireBody(

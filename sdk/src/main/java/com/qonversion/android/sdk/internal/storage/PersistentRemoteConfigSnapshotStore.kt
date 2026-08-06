@@ -33,6 +33,7 @@ internal enum class RemoteConfigSnapshotLoadStatus {
     Found,
     Missing,
     Failed,
+    Corrupt,
 }
 
 internal data class RemoteConfigSnapshotLoadResult(
@@ -57,6 +58,8 @@ internal class PersistentRemoteConfigSnapshotStore(
     private val maxTotalBytes: Int = DEFAULT_REMOTE_CONFIG_SNAPSHOT_MAX_TOTAL_BYTES,
 ) : RemoteConfigSnapshotStore {
     private val envelopeAdapter = moshi.adapter(PersistedRemoteConfigSnapshotEnvelope::class.java).failOnUnknown()
+    private val legacyEnvelopeAdapter =
+        moshi.adapter(PersistedRemoteConfigSnapshotEnvelopeV1::class.java).failOnUnknown()
     private val indexAdapter = moshi.adapter(PersistedRemoteConfigSnapshotIndex::class.java).failOnUnknown()
 
     init {
@@ -68,22 +71,30 @@ internal class PersistentRemoteConfigSnapshotStore(
     @Synchronized
     @Suppress("ReturnCount")
     override fun load(scope: RemoteConfigSnapshotScope): RemoteConfigSnapshotLoadResult = try {
-        loadTrusted(scope)?.let { state ->
-            RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Found, state)
-        } ?: RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Missing)
+        when (val result = loadTrusted(scope)) {
+            is TrustedSnapshotLoad.Found -> {
+                RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Found, result.state)
+            }
+            TrustedSnapshotLoad.Missing -> {
+                RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Missing)
+            }
+            TrustedSnapshotLoad.Corrupt -> {
+                RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Corrupt)
+            }
+        }
     } catch (_: Exception) {
         RemoteConfigSnapshotLoadResult(RemoteConfigSnapshotLoadStatus.Failed)
     }
 
     @Suppress("ReturnCount")
-    private fun loadTrusted(scope: RemoteConfigSnapshotScope): RemoteConfigSnapshotState? {
+    private fun loadTrusted(scope: RemoteConfigSnapshotScope): TrustedSnapshotLoad {
         val storageKey = remoteConfigSnapshotStorageKey(scope)
         val index = loadIndex(clearInvalid = true)
-        val rawEnvelope = cache.getString(storageKey, null)
-        val envelopeBytes = rawEnvelope?.toByteArray(Charsets.UTF_8)?.size
+        val rawEnvelope = cache.getString(storageKey, null) ?: return TrustedSnapshotLoad.Missing
+        val envelopeBytes = rawEnvelope.toByteArray(Charsets.UTF_8).size
         val envelope = rawEnvelope
-            ?.takeIf {
-                requireNotNull(envelopeBytes) <= maxStateBytes && envelopeBytes <= maxTotalBytes
+            .takeIf {
+                envelopeBytes <= maxStateBytes && envelopeBytes <= maxTotalBytes
             }
             ?.let(::decodeEnvelope)
         val decoded = envelope
@@ -96,13 +107,32 @@ internal class PersistentRemoteConfigSnapshotStore(
                 if (storageKey in index.storageKeys) {
                     promoteAfterRead(storageKey, index)
                 } else {
-                    admitRecoveredAfterRead(storageKey, requireNotNull(envelopeBytes), index)
+                    admitRecoveredAfterRead(storageKey, envelopeBytes, index)
                 }
             }
-            return decoded.state
+            return TrustedSnapshotLoad.Found(decoded.state)
         }
         removeInvalidEnvelope(storageKey, index)
-        return null
+        return if (
+            envelopeBytes <= maxStateBytes && envelopeBytes <= maxTotalBytes &&
+            isLegacyEnvelopeV1(rawEnvelope, scope)
+        ) {
+            TrustedSnapshotLoad.Missing
+        } else {
+            TrustedSnapshotLoad.Corrupt
+        }
+    }
+
+    private fun isLegacyEnvelopeV1(raw: String, scope: RemoteConfigSnapshotScope): Boolean {
+        return try {
+            val envelope = legacyEnvelopeAdapter.fromJson(raw) ?: return false
+            envelope.version == 1 && envelope.projectKey == scope.projectKey &&
+                envelope.environment == scope.environment &&
+                envelope.canonicalUserId == scope.canonicalUserId &&
+                envelope.state.isValid(scope.environment)
+        } catch (_: Exception) {
+            false
+        }
     }
 
     @Synchronized
@@ -334,6 +364,12 @@ internal class PersistentRemoteConfigSnapshotStore(
         val storageKey: String,
         val bytes: Int,
     )
+
+    private sealed class TrustedSnapshotLoad {
+        data class Found(val state: RemoteConfigSnapshotState) : TrustedSnapshotLoad()
+        data object Missing : TrustedSnapshotLoad()
+        data object Corrupt : TrustedSnapshotLoad()
+    }
 }
 
 @JsonClass(generateAdapter = true)
@@ -349,6 +385,33 @@ internal data class PersistedRemoteConfigSnapshotEnvelope(
     val environment: String,
     val canonicalUserId: String,
     val state: PersistedRemoteConfigSnapshotState,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class PersistedRemoteConfigSnapshotEnvelopeV1(
+    val version: Int,
+    val projectKey: String,
+    val environment: String,
+    val canonicalUserId: String,
+    val state: PersistedRemoteConfigSnapshotStateV1,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class PersistedRemoteConfigSnapshotStateV1(
+    val candidate: PersistedRemoteConfigSnapshotReleaseV1?,
+    val active: PersistedRemoteConfigSnapshotReleaseV1?,
+    val previous: PersistedRemoteConfigSnapshotReleaseV1?,
+    val didActivate: Boolean,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class PersistedRemoteConfigSnapshotReleaseV1(
+    val releaseUid: String,
+    val releaseNumber: Long,
+    val manifestContentHash: String,
+    val entries: List<PersistedRemoteConfigSnapshotEntry>,
+    val canonicalBodyBase64: String?,
+    val strongETag: String?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -387,6 +450,69 @@ private data class DecodedRemoteConfigSnapshotState(
     val state: RemoteConfigSnapshotState,
     val requiresRewrite: Boolean,
 )
+
+@Suppress("ComplexCondition", "ReturnCount")
+private fun PersistedRemoteConfigSnapshotStateV1.isValid(expectedEnvironment: String): Boolean {
+    val candidateModel = candidate?.toLegacyModel(expectedEnvironment)
+    val activeModel = active?.toLegacyModel(expectedEnvironment)
+    val previousModel = previous?.toLegacyModel(expectedEnvironment)
+    if (candidate != null && candidateModel == null ||
+        active != null && activeModel == null ||
+        previous != null && previousModel == null
+    ) {
+        return false
+    }
+    if (!didActivate && (activeModel != null || previousModel != null)) return false
+    if (activeModel == null && previousModel != null) return false
+    return true
+}
+
+@Suppress("ComplexCondition", "ReturnCount")
+private fun PersistedRemoteConfigSnapshotReleaseV1.toLegacyModel(
+    expectedEnvironment: String,
+): RemoteConfigSnapshotRelease? {
+    return try {
+        val canonicalBody = canonicalBodyBase64.decodeCanonicalBase64()
+        if ((canonicalBodyBase64 == null) != (strongETag == null) ||
+            (canonicalBodyBase64 != null && canonicalBody == null)
+        ) {
+            return null
+        }
+        val decodedEntries = entries.map { it.toModel() ?: return null }
+        var contextFingerprint: String? = null
+        if (canonicalBody != null) {
+            val envelope = RemoteConfigSnapshotEnvelopeParser().parseBoundBody(
+                canonicalBody,
+                requireNotNull(strongETag),
+            ) ?: return null
+            if (envelope.environmentUid != expectedEnvironment ||
+                envelope.release.releaseUid != releaseUid ||
+                envelope.release.releaseNumber != releaseNumber ||
+                envelope.release.manifestContentHash != manifestContentHash
+            ) {
+                return null
+            }
+            val persistedValues = decodedEntries.filterNot(RemoteConfigSnapshotEntry::isTombstone)
+            if (persistedValues.size != envelope.release.entries.size ||
+                persistedValues.any { entry -> !entry.contentEquals(envelope.release.entry(entry.key)) }
+            ) {
+                return null
+            }
+            contextFingerprint = envelope.contextFingerprint
+        }
+        RemoteConfigSnapshotRelease(
+            releaseUid = releaseUid,
+            releaseNumber = releaseNumber,
+            manifestContentHash = manifestContentHash,
+            entries = decodedEntries,
+            canonicalBody = canonicalBody,
+            strongETag = strongETag,
+            contextFingerprint = contextFingerprint,
+        )
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+}
 
 @Suppress("ComplexMethod", "LongMethod")
 private fun PersistedRemoteConfigSnapshotState.toDecodedModel(
