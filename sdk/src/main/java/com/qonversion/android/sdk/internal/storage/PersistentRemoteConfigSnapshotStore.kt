@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal.storage
 
 import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotApplyPolicy
 import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotEntry
+import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotEnvelopeParser
 import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotRelease
 import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotScope
 import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigSnapshotState
@@ -15,7 +16,7 @@ import java.security.MessageDigest
 internal const val REMOTE_CONFIG_SNAPSHOT_INDEX_KEY = "qonversion_remote_config_v2_snapshot_index"
 
 private const val REMOTE_CONFIG_SNAPSHOT_STORAGE_PREFIX = "qonversion_remote_config_v2_snapshot_"
-private const val REMOTE_CONFIG_SNAPSHOT_ENVELOPE_VERSION = 1
+private const val REMOTE_CONFIG_SNAPSHOT_ENVELOPE_VERSION = 2
 private const val REMOTE_CONFIG_SNAPSHOT_INDEX_VERSION = 1
 private const val DEFAULT_REMOTE_CONFIG_SNAPSHOT_MAX_SCOPES = 16
 private const val DEFAULT_REMOTE_CONFIG_SNAPSHOT_MAX_STATE_BYTES = 20 * 1024 * 1024
@@ -88,7 +89,7 @@ internal class PersistentRemoteConfigSnapshotStore(
         val decoded = envelope
             ?.takeIf { it.matches(scope, storageKey) }
             ?.state
-            ?.toDecodedModel()
+            ?.toDecodedModel(scope.environment)
         if (decoded != null) {
             val rewritten = decoded.requiresRewrite && save(scope, decoded.state)
             if (!rewritten) {
@@ -214,7 +215,7 @@ internal class PersistentRemoteConfigSnapshotStore(
             return null
         }
         if (!envelope.matches(scope, storageKey)) return null
-        val decoded = envelope.state.toDecodedModel()
+        val decoded = envelope.state.toDecodedModel(scope.environment)
         if (decoded.requiresRewrite && decoded.state == RemoteConfigSnapshotState()) return null
         return rawBytes
     }
@@ -356,6 +357,8 @@ internal data class PersistedRemoteConfigSnapshotState(
     val active: PersistedRemoteConfigSnapshotRelease?,
     val previous: PersistedRemoteConfigSnapshotRelease?,
     val didActivate: Boolean,
+    val latestAdmissionToken: Long,
+    val stateDigest: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -364,6 +367,11 @@ internal data class PersistedRemoteConfigSnapshotRelease(
     val releaseNumber: Long,
     val manifestContentHash: String,
     val entries: List<PersistedRemoteConfigSnapshotEntry>,
+    val canonicalBodyBase64: String? = null,
+    val strongETag: String? = null,
+    val contextFingerprint: String?,
+    val admissionToken: Long,
+    val contentDigest: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -380,17 +388,40 @@ private data class DecodedRemoteConfigSnapshotState(
     val requiresRewrite: Boolean,
 )
 
-@Suppress("ComplexMethod")
-private fun PersistedRemoteConfigSnapshotState.toDecodedModel(): DecodedRemoteConfigSnapshotState {
-    var candidateModel = candidate?.toModel()
-    var activeModel = active?.toModel()
-    var previousModel = previous?.toModel()
+@Suppress("ComplexMethod", "LongMethod")
+private fun PersistedRemoteConfigSnapshotState.toDecodedModel(
+    expectedEnvironment: String,
+): DecodedRemoteConfigSnapshotState {
+    val stateDigestMatches = stateDigest == calculateRemoteConfigSnapshotStateDigest(
+        latestAdmissionToken = latestAdmissionToken,
+        didActivate = didActivate,
+        candidate = candidate,
+        active = active,
+        previous = previous,
+    )
+    var candidateModel = candidate?.toModel(expectedEnvironment)
+    var activeModel = active?.toModel(expectedEnvironment)
+    var previousModel = previous?.toModel(expectedEnvironment)
     var requiresRewrite =
-        (candidate != null && candidateModel == null) ||
+        !stateDigestMatches ||
+            (candidate != null && candidateModel == null) ||
             (active != null && activeModel == null) ||
             (previous != null && previousModel == null)
+    val normalizedDidActivate = if (stateDigestMatches) didActivate else activeModel != null
 
-    if (!didActivate && activeModel != null) {
+    val persistedCandidateAndActiveShareGeneration = candidate != null && active != null &&
+        candidate.admissionToken == active.admissionToken
+    if (persistedCandidateAndActiveShareGeneration) {
+        if (candidateModel == null) {
+            if (activeModel != null) requiresRewrite = true
+            activeModel = null
+        } else {
+            if (!candidateModel.contentEquals(activeModel)) requiresRewrite = true
+            activeModel = candidateModel
+        }
+    }
+
+    if (!normalizedDidActivate && activeModel != null) {
         activeModel = null
         previousModel = null
         requiresRewrite = true
@@ -400,47 +431,93 @@ private fun PersistedRemoteConfigSnapshotState.toDecodedModel(): DecodedRemoteCo
         requiresRewrite = true
     }
     if (candidateModel != null && activeModel != null &&
-        candidateModel.releaseNumber < activeModel.releaseNumber
+        candidateModel.admissionToken < activeModel.admissionToken
     ) {
-        candidateModel = null
+        if (candidateModel.canonicalBodyBytes != null) {
+            activeModel = null
+            previousModel = null
+        } else {
+            candidateModel = null
+        }
         requiresRewrite = true
     }
     if (candidateModel != null && activeModel != null &&
-        candidateModel.releaseNumber == activeModel.releaseNumber
+        candidateModel.admissionToken == activeModel.admissionToken
     ) {
-        if (candidateModel.contentEquals(activeModel)) {
-            candidateModel = activeModel
-        } else {
-            candidateModel = null
-            requiresRewrite = true
-        }
+        if (!candidateModel.contentEquals(activeModel)) requiresRewrite = true
+        activeModel = candidateModel
     }
     if (previousModel != null && activeModel != null &&
-        previousModel.releaseNumber >= activeModel.releaseNumber
+        previousModel.admissionToken >= activeModel.admissionToken
     ) {
         previousModel = null
         requiresRewrite = true
     }
+    val highestSlotToken = maxOf(
+        candidateModel?.admissionToken ?: 0,
+        activeModel?.admissionToken ?: 0,
+        previousModel?.admissionToken ?: 0,
+    )
+    val normalizedLatestAdmissionToken = if (stateDigestMatches) {
+        latestAdmissionToken.coerceAtLeast(highestSlotToken)
+    } else {
+        highestSlotToken
+    }
+    if (normalizedLatestAdmissionToken != latestAdmissionToken) requiresRewrite = true
     return DecodedRemoteConfigSnapshotState(
         state = RemoteConfigSnapshotState(
             candidate = candidateModel,
             active = activeModel,
             previous = previousModel,
-            didActivate = didActivate,
+            didActivate = normalizedDidActivate,
+            latestAdmissionToken = normalizedLatestAdmissionToken,
         ),
         requiresRewrite = requiresRewrite,
     )
 }
 
-@Suppress("ReturnCount")
-private fun PersistedRemoteConfigSnapshotRelease.toModel(): RemoteConfigSnapshotRelease? {
+@Suppress("ComplexCondition", "ComplexMethod", "ReturnCount")
+private fun PersistedRemoteConfigSnapshotRelease.toModel(
+    expectedEnvironment: String,
+): RemoteConfigSnapshotRelease? {
     return try {
+        val canonicalBody = canonicalBodyBase64.decodeCanonicalBase64()
+        if ((canonicalBodyBase64 == null) != (strongETag == null) ||
+            (canonicalBodyBase64 != null && canonicalBody == null)
+        ) {
+            return null
+        }
+        val decodedEntries = entries.map { it.toModel() ?: return null }
+        if (canonicalBody != null) {
+            val envelope = RemoteConfigSnapshotEnvelopeParser().parseBoundBody(
+                canonicalBody,
+                requireNotNull(strongETag),
+            ) ?: return null
+            if (envelope.environmentUid != expectedEnvironment ||
+                envelope.release.releaseUid != releaseUid ||
+                envelope.release.releaseNumber != releaseNumber ||
+                envelope.release.manifestContentHash != manifestContentHash ||
+                envelope.contextFingerprint != contextFingerprint
+            ) {
+                return null
+            }
+            val persistedValues = decodedEntries.filterNot(RemoteConfigSnapshotEntry::isTombstone)
+            if (persistedValues.size != envelope.release.entries.size ||
+                persistedValues.any { entry -> !entry.contentEquals(envelope.release.entry(entry.key)) }
+            ) {
+                return null
+            }
+        }
         RemoteConfigSnapshotRelease(
             releaseUid = releaseUid,
             releaseNumber = releaseNumber,
             manifestContentHash = manifestContentHash,
-            entries = entries.map { it.toModel() ?: return null },
-        )
+            entries = decodedEntries,
+            canonicalBody = canonicalBody,
+            strongETag = strongETag,
+            contextFingerprint = contextFingerprint,
+            admissionToken = admissionToken,
+        ).takeIf { it.contentDigest == contentDigest }
     } catch (_: IllegalArgumentException) {
         null
     }
@@ -474,14 +551,29 @@ private fun String?.decodeCanonicalBase64(): ByteArray? {
     return decoded.takeIf { it.base64() == this }?.toByteArray()
 }
 
-private fun RemoteConfigSnapshotState.toPersisted() = PersistedRemoteConfigSnapshotState(
-    candidate = candidate?.toPersisted(),
-    active = active?.toPersisted(),
-    previous = previous?.toPersisted(),
-    didActivate = didActivate,
-)
+private fun RemoteConfigSnapshotState.toPersisted(): PersistedRemoteConfigSnapshotState {
+    val persistedCandidate = candidate?.toPersisted(includeTransportEvidence = true)
+    val persistedActive = active?.toPersisted(includeTransportEvidence = false)
+    val persistedPrevious = previous?.toPersisted(includeTransportEvidence = false)
+    return PersistedRemoteConfigSnapshotState(
+        candidate = persistedCandidate,
+        active = persistedActive,
+        previous = persistedPrevious,
+        didActivate = didActivate,
+        latestAdmissionToken = latestAdmissionToken,
+        stateDigest = calculateRemoteConfigSnapshotStateDigest(
+            latestAdmissionToken = latestAdmissionToken,
+            didActivate = didActivate,
+            candidate = persistedCandidate,
+            active = persistedActive,
+            previous = persistedPrevious,
+        ),
+    )
+}
 
-private fun RemoteConfigSnapshotRelease.toPersisted() = PersistedRemoteConfigSnapshotRelease(
+private fun RemoteConfigSnapshotRelease.toPersisted(
+    includeTransportEvidence: Boolean,
+) = PersistedRemoteConfigSnapshotRelease(
     releaseUid = releaseUid,
     releaseNumber = releaseNumber,
     manifestContentHash = manifestContentHash,
@@ -497,7 +589,48 @@ private fun RemoteConfigSnapshotRelease.toPersisted() = PersistedRemoteConfigSna
             metadataBase64 = entry.metadataBytes?.toByteString()?.base64(),
         )
     },
+    canonicalBodyBase64 = canonicalBodyBytes
+        ?.takeIf { includeTransportEvidence }
+        ?.toByteString()
+        ?.base64(),
+    strongETag = strongETag?.takeIf { includeTransportEvidence },
+    contextFingerprint = contextFingerprint,
+    admissionToken = admissionToken,
+    contentDigest = contentDigest,
 )
+
+private fun calculateRemoteConfigSnapshotStateDigest(
+    latestAdmissionToken: Long,
+    didActivate: Boolean,
+    candidate: PersistedRemoteConfigSnapshotRelease?,
+    active: PersistedRemoteConfigSnapshotRelease?,
+    previous: PersistedRemoteConfigSnapshotRelease?,
+): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    digest.updateLengthPrefixed("remote-config-snapshot-state-v1".encodeToByteArray())
+    digest.update(ByteBuffer.allocate(Long.SIZE_BYTES).putLong(latestAdmissionToken).array())
+    digest.update(if (didActivate) STATE_TRUE_MARKER else STATE_FALSE_MARKER)
+    listOf(candidate, active, previous).forEachIndexed { index, release ->
+        digest.update(index.toByte())
+        if (release == null) {
+            digest.update(STATE_ABSENT_MARKER)
+        } else {
+            digest.update(STATE_PRESENT_MARKER)
+            digest.updateLengthPrefixed(release.contentDigest.encodeToByteArray())
+        }
+    }
+    return digest.digest().toLowercaseHex()
+}
+
+private fun MessageDigest.updateLengthPrefixed(bytes: ByteArray) {
+    update(ByteBuffer.allocate(Int.SIZE_BYTES).putInt(bytes.size).array())
+    update(bytes)
+}
+
+private fun ByteArray.toLowercaseHex(): String = joinToString(separator = "") { byte ->
+    val value = byte.toInt() and BYTE_MASK
+    "${HEX[value ushr NIBBLE_SHIFT]}${HEX[value and LOW_NIBBLE_MASK]}"
+}
 
 internal fun remoteConfigSnapshotStorageKey(scope: RemoteConfigSnapshotScope): String {
     val messageDigest = MessageDigest.getInstance("SHA-256")
@@ -506,10 +639,11 @@ internal fun remoteConfigSnapshotStorageKey(scope: RemoteConfigSnapshotScope): S
         messageDigest.update(ByteBuffer.allocate(Int.SIZE_BYTES).putInt(bytes.size).array())
         messageDigest.update(bytes)
     }
-    val digest = messageDigest.digest()
-        .joinToString(separator = "") { byte ->
-            val value = byte.toInt() and BYTE_MASK
-            "${HEX[value ushr NIBBLE_SHIFT]}${HEX[value and LOW_NIBBLE_MASK]}"
-        }
+    val digest = messageDigest.digest().toLowercaseHex()
     return "$REMOTE_CONFIG_SNAPSHOT_STORAGE_PREFIX$digest"
 }
+
+private const val STATE_FALSE_MARKER: Byte = 0
+private const val STATE_TRUE_MARKER: Byte = 1
+private const val STATE_ABSENT_MARKER: Byte = 2
+private const val STATE_PRESENT_MARKER: Byte = 3

@@ -4,12 +4,14 @@ import com.qonversion.android.sdk.internal.storage.RemoteConfigSnapshotLoadResul
 import com.qonversion.android.sdk.internal.storage.RemoteConfigSnapshotLoadStatus
 import com.qonversion.android.sdk.internal.storage.RemoteConfigSnapshotStore
 import java.util.ArrayDeque
+import java.util.UUID
 
 internal enum class RemoteConfigSnapshotTransitionStatus {
     Accepted,
     Activated,
     Ignored,
     PersistenceFailed,
+    Rejected,
     Unchanged,
 }
 
@@ -19,16 +21,52 @@ internal data class RemoteConfigSnapshotTransitionResult(
     val update: RemoteConfigSnapshotUpdate? = null,
 )
 
+internal class RemoteConfigSnapshotAdmissionToken private constructor(
+    private val ownerNonce: UUID,
+    private val admission: BoundRemoteConfigSnapshotAdmission,
+) {
+    internal fun resolve(ownerNonce: UUID): BoundRemoteConfigSnapshotAdmission? =
+        admission.takeIf { this.ownerNonce == ownerNonce }
+
+    internal companion object {
+        fun issue(
+            ownerNonce: UUID,
+            ordinal: Long,
+            scope: RemoteConfigSnapshotScope,
+            scopeGeneration: Long,
+            expectation: RemoteConfigSnapshotEnvelopeExpectation,
+        ) = RemoteConfigSnapshotAdmissionToken(
+            ownerNonce = ownerNonce,
+            admission = BoundRemoteConfigSnapshotAdmission(
+                ordinal = ordinal,
+                scope = scope,
+                scopeGeneration = scopeGeneration,
+                expectation = expectation,
+            ),
+        )
+    }
+}
+
+internal data class BoundRemoteConfigSnapshotAdmission(
+    val ordinal: Long,
+    val scope: RemoteConfigSnapshotScope,
+    val scopeGeneration: Long,
+    val expectation: RemoteConfigSnapshotEnvelopeExpectation,
+)
+
 internal class RemoteConfigSnapshotCore(
     private val store: RemoteConfigSnapshotStore,
     private val bundledRelease: RemoteConfigScopedBundledRelease?,
+    private val envelopeParser: RemoteConfigSnapshotEnvelopeDecoder = RemoteConfigSnapshotEnvelopeParser(),
 ) {
     private val lock = Any()
     private val deliveryLock = Any()
+    private val admissionOwnerNonce = UUID.randomUUID()
     private var currentScope: RemoteConfigSnapshotScope? = null
     private var state = RemoteConfigSnapshotState()
     private var scopeLoadFailed = false
     private var scopeGeneration = 0L
+    private var nextAdmissionToken = 0L
     private var nextObserverToken = 0L
     private val observers = linkedMapOf<Long, (RemoteConfigSnapshotUpdate) -> Unit>()
     private val pendingDeliveries = ArrayDeque<TransitionDelivery>()
@@ -42,6 +80,7 @@ internal class RemoteConfigSnapshotCore(
                     currentScope = scope
                     state = RemoteConfigSnapshotState()
                     scopeLoadFailed = false
+                    nextAdmissionToken = 0L
                     scopeGeneration++
                 }
                 scope?.let(::loadScopeState)
@@ -70,33 +109,151 @@ internal class RemoteConfigSnapshotCore(
         synchronized(lock) { observers.remove(token) }
     }
 
+    fun beginAdmission(
+        scope: RemoteConfigSnapshotScope,
+        expectation: RemoteConfigSnapshotEnvelopeExpectation,
+    ): RemoteConfigSnapshotAdmissionToken? =
+        synchronized(lock) {
+            if (expectation.environmentUid != scope.environment) return@synchronized null
+            val admission = issueAdmissionLocked(scope) ?: return@synchronized null
+            RemoteConfigSnapshotAdmissionToken.issue(
+                ownerNonce = admissionOwnerNonce,
+                ordinal = admission.ordinal,
+                scope = scope,
+                scopeGeneration = admission.scopeGeneration,
+                expectation = expectation,
+            )
+        }
+
+    private fun issueAdmissionLocked(scope: RemoteConfigSnapshotScope): IssuedAdmission? {
+        if (scope != currentScope || !ensureCurrentScopeLoaded() || nextAdmissionToken == Long.MAX_VALUE) {
+            return null
+        }
+        return IssuedAdmission(
+            ordinal = ++nextAdmissionToken,
+            scopeGeneration = scopeGeneration,
+        )
+    }
+
+    private data class IssuedAdmission(
+        val ordinal: Long,
+        val scopeGeneration: Long,
+    )
+
+    private fun issueAdmission(scope: RemoteConfigSnapshotScope): IssuedAdmission? = synchronized(lock) {
+        issueAdmissionLocked(scope)
+    }
+
+    private fun failedDirectAdmission(scope: RemoteConfigSnapshotScope) = synchronized(lock) {
+        RemoteConfigSnapshotTransitionResult(
+            if (scope == currentScope) {
+                RemoteConfigSnapshotTransitionStatus.PersistenceFailed
+            } else {
+                RemoteConfigSnapshotTransitionStatus.Ignored
+            },
+        )
+    }
+
     fun acceptCandidate(
         scope: RemoteConfigSnapshotScope,
         release: RemoteConfigSnapshotRelease,
     ): RemoteConfigSnapshotTransitionResult {
+        val admission = issueAdmission(scope) ?: return failedDirectAdmission(scope)
+        return acceptCandidate(
+            scope = scope,
+            release = release,
+            admissionOrdinal = admission.ordinal,
+            admissionScopeGeneration = admission.scopeGeneration,
+            authoritativeComplete = false,
+        )
+    }
+
+    @Suppress("ReturnCount")
+    fun admitCandidate(
+        admissionToken: RemoteConfigSnapshotAdmissionToken,
+        body: ByteArray,
+        etag: String,
+    ): RemoteConfigSnapshotTransitionResult {
+        val admission = admissionToken.resolve(admissionOwnerNonce)
+            ?: return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
+        val tokenIsCurrent = synchronized(lock) {
+            admission.scope == currentScope &&
+                admission.scopeGeneration == scopeGeneration &&
+                admission.ordinal == nextAdmissionToken &&
+                admission.ordinal > state.latestAdmissionToken
+        }
+        if (!tokenIsCurrent) {
+            return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
+        }
+        val envelope = envelopeParser.parse(body, etag, admission.expectation)
+            ?: return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
+        return acceptCandidate(
+            scope = admission.scope,
+            release = envelope.release,
+            admissionOrdinal = admission.ordinal,
+            admissionScopeGeneration = admission.scopeGeneration,
+            authoritativeComplete = true,
+        )
+    }
+
+    @Suppress("ComplexMethod", "LongMethod")
+    private fun acceptCandidate(
+        scope: RemoteConfigSnapshotScope,
+        release: RemoteConfigSnapshotRelease,
+        admissionOrdinal: Long,
+        admissionScopeGeneration: Long,
+        authoritativeComplete: Boolean,
+    ): RemoteConfigSnapshotTransitionResult {
         val delivery = synchronized(lock) {
-            if (scope != currentScope) return@synchronized TransitionDelivery.ignored()
+            if (scope != currentScope || admissionScopeGeneration != scopeGeneration) {
+                return@synchronized if (authoritativeComplete) {
+                    TransitionDelivery.rejected()
+                } else {
+                    TransitionDelivery.ignored()
+                }
+            }
             if (!ensureCurrentScopeLoaded()) return@synchronized TransitionDelivery.persistenceFailed()
-            val latestNumber = maxOf(
+            if (admissionOrdinal != nextAdmissionToken || admissionOrdinal <= state.latestAdmissionToken) {
+                return@synchronized if (authoritativeComplete) {
+                    TransitionDelivery.rejected()
+                } else {
+                    TransitionDelivery.ignored()
+                }
+            }
+            val releaseNumberFloor = maxOf(
                 state.candidate?.releaseNumber ?: 0,
                 state.active?.releaseNumber ?: 0,
             )
-            if (release.releaseNumber <= latestNumber) return@synchronized TransitionDelivery.ignored()
+            if (release.releaseNumber < releaseNumberFloor) {
+                return@synchronized if (authoritativeComplete) {
+                    TransitionDelivery.rejected()
+                } else {
+                    TransitionDelivery.ignored()
+                }
+            }
+            val tokenizedRelease = release.withAdmissionToken(admissionOrdinal)
+            val admittedRelease = if (authoritativeComplete) {
+                tokenizedRelease.withMissingActiveKeysTombstoned(state.active)
+                    ?: return@synchronized TransitionDelivery.rejected()
+            } else {
+                tokenizedRelease
+            }
 
             val oldSnapshot = snapshotFor(state.active, state.previous)
-            val nextState = if (release.containsImmediateEntry) {
+            val nextState = if (admittedRelease.containsImmediateEntry) {
                 RemoteConfigSnapshotState(
-                    candidate = release,
-                    active = release,
+                    candidate = admittedRelease,
+                    active = admittedRelease,
                     previous = state.active,
                     didActivate = true,
+                    latestAdmissionToken = admissionOrdinal,
                 )
             } else {
-                state.copy(candidate = release)
+                state.copy(candidate = admittedRelease, latestAdmissionToken = admissionOrdinal)
             }
             if (!saveCurrentScope(nextState)) return@synchronized TransitionDelivery.persistenceFailed()
             state = nextState
-            if (release.containsImmediateEntry) {
+            if (admittedRelease.containsImmediateEntry) {
                 val update = buildUpdate(oldSnapshot, snapshotFor(nextState.active, nextState.previous))
                 TransitionDelivery(
                     result = RemoteConfigSnapshotTransitionResult(
@@ -107,6 +264,7 @@ internal class RemoteConfigSnapshotCore(
                     update = update,
                     observers = observers.values.toList(),
                     scopeGeneration = scopeGeneration,
+                    admissionOrdinal = admissionOrdinal,
                 ).also(::enqueueDeliveryLocked)
             } else {
                 TransitionDelivery(
@@ -144,6 +302,7 @@ internal class RemoteConfigSnapshotCore(
                 active = candidate,
                 previous = state.active,
                 didActivate = true,
+                latestAdmissionToken = state.latestAdmissionToken,
             )
             if (!saveCurrentScope(nextState)) return@synchronized TransitionDelivery.persistenceFailed()
             state = nextState
@@ -171,10 +330,12 @@ internal class RemoteConfigSnapshotCore(
         when (result.status) {
             RemoteConfigSnapshotLoadStatus.Found -> {
                 state = requireNotNull(result.state)
+                nextAdmissionToken = state.latestAdmissionToken
                 scopeLoadFailed = false
             }
             RemoteConfigSnapshotLoadStatus.Missing -> {
                 state = RemoteConfigSnapshotState()
+                nextAdmissionToken = 0L
                 scopeLoadFailed = false
             }
             RemoteConfigSnapshotLoadStatus.Failed -> {
@@ -226,13 +387,23 @@ internal class RemoteConfigSnapshotCore(
             isDrainingDeliveries = true
             try {
                 while (true) {
-                    val delivery = synchronized(lock) { pendingDeliveries.pollFirst() } ?: break
+                    val delivery = synchronized(lock) { pollCurrentDeliveryLocked() } ?: break
                     deliverIfCurrent(delivery)
                 }
             } finally {
                 isDrainingDeliveries = false
             }
         }
+    }
+
+    private fun pollCurrentDeliveryLocked(): TransitionDelivery? {
+        while (pendingDeliveries.isNotEmpty()) {
+            val delivery = pendingDeliveries.removeFirst()
+            val generationIsCurrent = delivery.scopeGeneration == scopeGeneration
+            val admissionIsCurrent = delivery.admissionOrdinal?.let { it == nextAdmissionToken } ?: true
+            if (generationIsCurrent && admissionIsCurrent) return delivery
+        }
+        return null
     }
 
     private fun deliverIfCurrent(delivery: TransitionDelivery) {
@@ -250,13 +421,14 @@ internal class RemoteConfigSnapshotCore(
     }
 
     private fun RemoteConfigSnapshotRelease.isSameRelease(other: RemoteConfigSnapshotRelease?): Boolean =
-        contentEquals(other)
+        other != null && admissionToken == other.admissionToken
 
     private data class TransitionDelivery(
         val result: RemoteConfigSnapshotTransitionResult,
         val update: RemoteConfigSnapshotUpdate? = null,
         val observers: List<(RemoteConfigSnapshotUpdate) -> Unit> = emptyList(),
         val scopeGeneration: Long? = null,
+        val admissionOrdinal: Long? = null,
     ) {
         companion object {
             fun ignored() = TransitionDelivery(
@@ -265,6 +437,10 @@ internal class RemoteConfigSnapshotCore(
 
             fun persistenceFailed() = TransitionDelivery(
                 RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.PersistenceFailed),
+            )
+
+            fun rejected() = TransitionDelivery(
+                RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected),
             )
 
             fun unchanged() = TransitionDelivery(
@@ -286,5 +462,31 @@ internal class RemoteConfigSnapshotCore(
                 scopeGeneration = scopeGeneration,
             )
         }
+    }
+}
+
+private fun RemoteConfigSnapshotRelease.withMissingActiveKeysTombstoned(
+    active: RemoteConfigSnapshotRelease?,
+): RemoteConfigSnapshotRelease? {
+    val missingActiveKeys = active?.entries?.values.orEmpty()
+        .asSequence()
+        .filterNot(RemoteConfigSnapshotEntry::isTombstone)
+        .map(RemoteConfigSnapshotEntry::key)
+        .filterNot(entries::containsKey)
+        .toList()
+    if (missingActiveKeys.isEmpty()) return this
+    return try {
+        RemoteConfigSnapshotRelease(
+            releaseUid = releaseUid,
+            releaseNumber = releaseNumber,
+            manifestContentHash = manifestContentHash,
+            entries = entries.values + missingActiveKeys.map(RemoteConfigSnapshotEntry::tombstone),
+            canonicalBody = canonicalBodyBytes,
+            strongETag = strongETag,
+            contextFingerprint = contextFingerprint,
+            admissionToken = admissionToken,
+        )
+    } catch (_: IllegalArgumentException) {
+        null
     }
 }

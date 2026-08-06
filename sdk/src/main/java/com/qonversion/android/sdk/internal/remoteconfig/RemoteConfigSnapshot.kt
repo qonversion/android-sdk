@@ -3,6 +3,8 @@ package com.qonversion.android.sdk.internal.remoteconfig
 import com.qonversion.android.sdk.internal.services.BUNDLED_REMOTE_CONFIG_DEFAULT_VALUE_MAX_BYTES
 import com.qonversion.android.sdk.internal.services.BundledRemoteConfigDefaultsDocument
 import com.qonversion.android.sdk.internal.services.isPortableRemoteConfigJson
+import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.util.Collections
 
 private const val REMOTE_CONFIG_METADATA_MAX_BYTES = 4 * 1024
@@ -120,10 +122,20 @@ internal class RemoteConfigSnapshotRelease(
     val releaseNumber: Long,
     val manifestContentHash: String,
     entries: Collection<RemoteConfigSnapshotEntry>,
+    canonicalBody: ByteArray? = null,
+    val strongETag: String? = null,
+    val contextFingerprint: String? = null,
+    val admissionToken: Long = 0,
 ) {
     private val entriesByKey: Map<String, RemoteConfigSnapshotEntry>
+    private val storedCanonicalBody = canonicalBody?.clone()
 
     val entries: Map<String, RemoteConfigSnapshotEntry> get() = entriesByKey
+    val canonicalBodyBytes: ByteArray? get() = storedCanonicalBody?.clone()
+    val bodyDigest: String? get() = strongETag?.removeSurrounding("\"")
+    internal val contentDigest: String by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        calculateContentDigest()
+    }
     val containsImmediateEntry: Boolean
         get() = entriesByKey.values.any { it.applyPolicy == RemoteConfigSnapshotApplyPolicy.Immediate }
 
@@ -131,8 +143,16 @@ internal class RemoteConfigSnapshotRelease(
         require(releaseUid.isNotEmpty() && releaseUid.hasValidUidLength() && releaseUid.hasValidSurrogatePairs())
         require(releaseNumber in 1..PORTABLE_JSON_MAX_INTEGER)
         require(LOWERCASE_SHA256_PATTERN.matches(manifestContentHash))
-        require(entries.size <= REMOTE_CONFIG_MAX_KEYS)
+        require(contextFingerprint == null || LOWERCASE_SHA256_PATTERN.matches(contextFingerprint))
+        require(admissionToken >= 0)
+        require(entries.count { !it.isTombstone } <= REMOTE_CONFIG_MAX_KEYS)
+        require(entries.count(RemoteConfigSnapshotEntry::isTombstone) <= REMOTE_CONFIG_MAX_KEYS)
         require(entries.map { it.key }.distinct().size == entries.size)
+        require((storedCanonicalBody == null) == (strongETag == null))
+        if (storedCanonicalBody != null) {
+            require(storedCanonicalBody.size <= REMOTE_CONFIG_SNAPSHOT_ENVELOPE_MAX_BYTES)
+            require(remoteConfigStrongETagDigest(storedCanonicalBody, requireNotNull(strongETag)) != null)
+        }
         val aggregateBytes = releaseUid.toByteArray().size.toLong() + manifestContentHash.length +
             entries.sumOf(RemoteConfigSnapshotEntry::budgetBytes)
         require(aggregateBytes <= REMOTE_CONFIG_MAX_RELEASE_BYTES)
@@ -143,8 +163,44 @@ internal class RemoteConfigSnapshotRelease(
 
     internal fun contentEquals(other: RemoteConfigSnapshotRelease?): Boolean =
         other != null && releaseUid == other.releaseUid && releaseNumber == other.releaseNumber &&
-            manifestContentHash == other.manifestContentHash && entriesByKey.size == other.entriesByKey.size &&
+            manifestContentHash == other.manifestContentHash && contextFingerprint == other.contextFingerprint &&
+            entriesByKey.size == other.entriesByKey.size &&
             entriesByKey.all { (key, entry) -> entry.contentEquals(other.entriesByKey[key]) }
+
+    internal fun withAdmissionToken(token: Long): RemoteConfigSnapshotRelease = RemoteConfigSnapshotRelease(
+        releaseUid = releaseUid,
+        releaseNumber = releaseNumber,
+        manifestContentHash = manifestContentHash,
+        entries = entriesByKey.values,
+        canonicalBody = canonicalBodyBytes,
+        strongETag = strongETag,
+        contextFingerprint = contextFingerprint,
+        admissionToken = token,
+    )
+
+    private fun calculateContentDigest(): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.updateLengthPrefixed("remote-config-snapshot-release-v1".encodeToByteArray())
+        digest.update(ByteBuffer.allocate(Long.SIZE_BYTES).putLong(admissionToken).array())
+        digest.updateLengthPrefixed(releaseUid.encodeToByteArray())
+        digest.update(ByteBuffer.allocate(Long.SIZE_BYTES).putLong(releaseNumber).array())
+        digest.updateLengthPrefixed(manifestContentHash.encodeToByteArray())
+        digest.updateNullable(contextFingerprint?.encodeToByteArray())
+        entriesByKey.toSortedMap().values.forEach { entry ->
+            digest.updateLengthPrefixed(entry.key.encodeToByteArray())
+            digest.update(if (entry.isTombstone) TOMBSTONE_MARKER else VALUE_MARKER)
+            digest.updateNullable(entry.rawValueBytes)
+            digest.updateNullable(entry.variationUid?.encodeToByteArray())
+            digest.update(
+                when (entry.applyPolicy) {
+                    RemoteConfigSnapshotApplyPolicy.OnNextActivate -> ON_NEXT_ACTIVATE_MARKER
+                    RemoteConfigSnapshotApplyPolicy.Immediate -> IMMEDIATE_MARKER
+                },
+            )
+            digest.updateNullable(entry.metadataBytes)
+        }
+        return digest.digest().toLowercaseHex()
+    }
 }
 
 internal class RemoteConfigScopedBundledRelease(
@@ -168,18 +224,59 @@ internal data class RemoteConfigSnapshotState(
     val active: RemoteConfigSnapshotRelease? = null,
     val previous: RemoteConfigSnapshotRelease? = null,
     val didActivate: Boolean = false,
+    val latestAdmissionToken: Long = maxOf(
+        candidate?.admissionToken ?: 0,
+        active?.admissionToken ?: 0,
+        previous?.admissionToken ?: 0,
+    ),
 ) {
     init {
+        val highestSlotToken = maxOf(
+            candidate?.admissionToken ?: 0,
+            active?.admissionToken ?: 0,
+            previous?.admissionToken ?: 0,
+        )
         require(active != null || previous == null)
         require(didActivate || (active == null && previous == null))
-        require(candidate == null || active == null || candidate.releaseNumber >= active.releaseNumber)
+        require(latestAdmissionToken >= highestSlotToken)
+        require(candidate == null || active == null || candidate.admissionToken >= active.admissionToken)
         require(
-            candidate == null || active == null || candidate.releaseNumber != active.releaseNumber ||
+            candidate == null || active == null || candidate.admissionToken != active.admissionToken ||
                 candidate.contentEquals(active),
         )
-        require(previous == null || active == null || previous.releaseNumber < active.releaseNumber)
+        require(previous == null || active == null || previous.admissionToken < active.admissionToken)
     }
 }
+
+private fun MessageDigest.updateLengthPrefixed(bytes: ByteArray) {
+    update(ByteBuffer.allocate(Int.SIZE_BYTES).putInt(bytes.size).array())
+    update(bytes)
+}
+
+private fun MessageDigest.updateNullable(bytes: ByteArray?) {
+    if (bytes == null) {
+        update(NULL_MARKER)
+    } else {
+        update(PRESENT_MARKER)
+        updateLengthPrefixed(bytes)
+    }
+}
+
+private fun ByteArray.toLowercaseHex(): String = joinToString(separator = "") { byte ->
+    val value = byte.toInt() and BYTE_MASK
+    "${HEX[value ushr NIBBLE_SHIFT]}${HEX[value and LOW_NIBBLE_MASK]}"
+}
+
+private const val NULL_MARKER: Byte = 0
+private const val PRESENT_MARKER: Byte = 1
+private const val TOMBSTONE_MARKER: Byte = 2
+private const val VALUE_MARKER: Byte = 3
+private const val ON_NEXT_ACTIVATE_MARKER: Byte = 4
+private const val IMMEDIATE_MARKER: Byte = 5
+private const val BYTE_MASK = 0xff
+private const val LOW_NIBBLE_MASK = 0x0f
+private const val NIBBLE_SHIFT = 4
+private const val HEX = "0123456789abcdef"
 
 internal class RemoteConfigResolvedValue<T>(
     val value: T,
