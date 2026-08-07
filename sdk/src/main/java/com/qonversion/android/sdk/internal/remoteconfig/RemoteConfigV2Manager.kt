@@ -78,6 +78,7 @@ internal class RemoteConfigV2Manager(
     private val core: RemoteConfigSnapshotCore,
     private val readGuard: RemoteConfigReadGuard,
     private val coordinator: RemoteConfigFetchCoordinator,
+    private val ackSender: RemoteConfigActivationAckSender,
     private val options: RemoteConfigV2Options,
     private val scopeHolder: RemoteConfigV2ScopeHolder,
     private val scheduler: RemoteConfigFetchScheduler,
@@ -86,6 +87,23 @@ internal class RemoteConfigV2Manager(
     private val logger: Logger,
     private val defaultFetchTimeoutMillis: Long = REMOTE_CONFIG_V2_DEFAULT_FETCH_TIMEOUT_MILLIS,
 ) {
+    /**
+     * The (scope, release) this manager has already handed to the ack sender, so an ordinary
+     * `current` read costs one reference compare instead of a worker task. It is a cache of the
+     * sender's own idempotency, never a substitute for it: the sender is the only thing that
+     * decides whether an ack is actually owed.
+     *
+     * The scope is part of it precisely because the cache is written from the caller's thread: a
+     * read that started before an identity change can land after it, and a bare release number
+     * would then suppress the new identity's ack for the same release number.
+     */
+    private val notedActivation = AtomicReference<NotedActivation?>(null)
+
+    private data class NotedActivation(
+        val scope: RemoteConfigSnapshotScope,
+        val releaseNumber: Long,
+    )
+
     /**
      * Switches the served scope to [canonicalUserId] and kicks off a forced fetch.
      *
@@ -102,6 +120,10 @@ internal class RemoteConfigV2Manager(
         scopeHolder.scope = scope
         val submitted = submit {
             coordinator.transitionTo(scope)
+            // Binds the ack queue to the new identity — and, on the first identity of a process,
+            // resumes an ack an earlier process activated but never managed to deliver.
+            notedActivation.set(null)
+            ackSender.bind(scope)
             if (scope != null) forceFetch(forceReason)
         }
         if (!submitted) logger.debug("Remote Config v2 could not apply an identity change")
@@ -130,7 +152,13 @@ internal class RemoteConfigV2Manager(
         }
     }
 
-    val current: QRemoteConfigSnapshot get() = QRemoteConfigSnapshot(readGuard.currentSnapshot())
+    val current: QRemoteConfigSnapshot get() {
+        val snapshot = readGuard.currentSnapshot()
+        // A read can itself activate (the guard's one-shot implicit activation in release builds),
+        // and that activation is exactly as ack-worthy as an explicit one.
+        noteActivatedRelease(snapshot.releaseNumber)
+        return QRemoteConfigSnapshot(snapshot)
+    }
 
     /**
      * Fetches a release and completes with the best available data.
@@ -174,13 +202,25 @@ internal class RemoteConfigV2Manager(
                 logger.error("Remote Config v2 activation could not be persisted")
             }
             val changed = transition.status == RemoteConfigSnapshotTransitionStatus.Activated && transition.changed
+            val snapshot = core.currentSnapshot()
             delivery.deliver(
                 QRemoteConfigActivationResult(
                     changed = changed,
-                    snapshot = QRemoteConfigSnapshot(core.currentSnapshot()),
+                    snapshot = QRemoteConfigSnapshot(snapshot),
                     fetchStatus = fetchStatus,
                 ),
             )
+            // Strictly after the completion is handed off, and on a later worker task: the ack
+            // queue does durable I/O and the activation contract promises none of it.
+            //
+            // `Unchanged` is included deliberately. It means "this release is already the active
+            // one" — which is the shape an activation takes when the read guard activated it
+            // implicitly first, and that release is owed exactly the same ack.
+            if (transition.status == RemoteConfigSnapshotTransitionStatus.Activated ||
+                transition.status == RemoteConfigSnapshotTransitionStatus.Unchanged
+            ) {
+                noteActivatedRelease(snapshot.releaseNumber)
+            }
         }
         if (!submitted) {
             delivery.deliver(
@@ -204,6 +244,23 @@ internal class RemoteConfigV2Manager(
             mainDispatcher.postDeferred { listener(QRemoteConfigUpdate(update)) }
         }
         return QRemoteConfigSubscription { core.removeUpdateObserver(token) }
+    }
+
+    /**
+     * Offers [releaseNumber] to the ack queue, off the caller's thread.
+     *
+     * Always asynchronous, including when it is already called from the worker: queueing an ack
+     * writes to durable storage, and neither `activate()`'s completion nor a `current` read may pay
+     * for that. The scope is captured here rather than inside the task so a task that lands after
+     * an identity change is dropped by the sender instead of acking the wrong identity.
+     */
+    @Suppress("ReturnCount")
+    private fun noteActivatedRelease(releaseNumber: Long) {
+        if (releaseNumber <= 0) return
+        val scope = scopeHolder.scope ?: return
+        val noted = NotedActivation(scope, releaseNumber)
+        if (notedActivation.getAndSet(noted) == noted) return
+        submit { ackSender.recordActivation(scope, releaseNumber) }
     }
 
     private fun scopeFor(canonicalUserId: String): RemoteConfigSnapshotScope? = try {

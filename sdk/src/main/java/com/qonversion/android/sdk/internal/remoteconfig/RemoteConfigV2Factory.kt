@@ -94,12 +94,16 @@ internal object RemoteConfigV2Factory {
         )
         val scopeHolder = RemoteConfigV2ScopeHolder()
         val clock = RemoteConfigFetchClock { System.currentTimeMillis() }
+        val random = RemoteConfigFetchRandom { Random.Default.nextDouble() }
+        // One transport for both routes: the activation ack rides the very same session, bootstrap
+        // and re-bootstrap-once rule as a snapshot read.
+        val transport = transport(application, internalConfig, config, scopeHolder, cache, moshi, logger, clock)
         val coordinator = RemoteConfigFetchCoordinator(
             core = core,
-            transport = transport(application, internalConfig, config, scopeHolder, cache, moshi, logger, clock),
+            transport = transport,
             policyStore = PersistentRemoteConfigFetchPolicyStore(cache, moshi),
             clock = clock,
-            random = { Random.Default.nextDouble() },
+            random = random,
             scheduler = scheduler,
             policy = RemoteConfigFetchPolicy(
                 minimumFetchIntervalMillis = REMOTE_CONFIG_V2_MINIMUM_FETCH_INTERVAL_MILLIS,
@@ -112,6 +116,13 @@ internal object RemoteConfigV2Factory {
             core = core,
             readGuard = readGuard,
             coordinator = coordinator,
+            ackSender = RemoteConfigActivationAckSender(
+                transport = transport,
+                store = PersistentRemoteConfigActivationAckStore(cache, moshi),
+                clock = clock,
+                random = random,
+                scheduler = scheduler,
+            ),
             options = RemoteConfigV2Options(
                 projectKey = primaryConfig.projectKey,
                 environmentUid = config.environmentUid,

@@ -38,10 +38,22 @@ internal const val RC_AWAIT_SECONDS = 10L
 internal const val RC_MAIN_THREAD_NAME = "qonversion-test-main"
 internal const val RC_SESSION_PATH = "/v3/remote-config-v2/session"
 internal const val RC_SNAPSHOT_PATH = "/v3/remote-config-v2/snapshot"
+internal const val RC_ACK_PATH = "/v3/remote-config-v2/ack"
 internal const val RC_DEVICE_INSTALLED_AT = 1_577_836_800L
 internal const val HTTP_OK = 200
+internal const val HTTP_NO_CONTENT = 204
 internal const val HTTP_NOT_MODIFIED = 304
+internal const val HTTP_UNAUTHORIZED = 401
+internal const val HTTP_NOT_FOUND = 404
 internal const val HTTP_SERVER_ERROR = 500
+internal const val HTTP_SERVICE_UNAVAILABLE = 503
+
+/** One activation ack as the gateway saw it. */
+internal data class RcRecordedAck(
+    val body: String,
+    val sessionHeader: String?,
+    val authorization: String?,
+)
 
 internal val RC_FINGERPRINT = "a".repeat(RC_FINGERPRINT_LENGTH)
 
@@ -118,6 +130,10 @@ internal class RemoteConfigV2Harness(
     bundled: RemoteConfigScopedBundledRelease? = rcBundledRelease(),
     defaultFetchTimeoutMillis: Long = 0,
     minimumFetchIntervalMillis: Long = 0,
+    // Handed in so a "process restart" can be modelled as a second harness over the same durable
+    // state, which is the only honest way to test that a queued ack survives one.
+    val snapshotStore: InMemorySnapshotStore = InMemorySnapshotStore(),
+    val ackStore: InMemoryActivationAckStore = InMemoryActivationAckStore(),
     clientContextProvider: RemoteConfigClientContextProvider = RemoteConfigClientContextProvider {
         RemoteConfigClientContext(
             platform = "android",
@@ -133,12 +149,12 @@ internal class RemoteConfigV2Harness(
     private val bundledEntries = bundled?.release
     private val httpClient = OkHttpClient()
     val server = MockWebServer()
-    val snapshotStore = InMemorySnapshotStore()
     val timeoutScheduler = ManualScheduler()
     val assertions: MutableList<String> = Collections.synchronizedList(mutableListOf())
     val guardEvents: MutableList<RemoteConfigReadGuardEvent> = Collections.synchronizedList(mutableListOf())
     val snapshotRequests: MutableList<String> = Collections.synchronizedList(mutableListOf())
     val sessionRequests: MutableList<String> = Collections.synchronizedList(mutableListOf())
+    val ackRequests: MutableList<RcRecordedAck> = Collections.synchronizedList(mutableListOf())
 
     @Volatile
     var userUid: String = "QON_anon_a"
@@ -147,6 +163,8 @@ internal class RemoteConfigV2Harness(
     private val hang = AtomicReference(false)
     private val responseDelayMillis = AtomicReference(0L)
     private val snapshotStatusCode = AtomicReference(HTTP_OK)
+    private val ackStatusCode = AtomicReference(HTTP_NO_CONTENT)
+    private val hangAcks = AtomicReference(false)
     private val contextFingerprint = AtomicReference(RC_FINGERPRINT)
     private val worker: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "qonversion-test-worker")
@@ -167,23 +185,35 @@ internal class RemoteConfigV2Harness(
         telemetry = { event -> guardEvents += event },
     )
 
+    val transport = RemoteConfigGatewayTransport(
+        callFactory = httpClient,
+        baseUrlProvider = { server.url("/").toString() },
+        identityProvider = {
+            scopeHolder.scope?.let { scope ->
+                RemoteConfigTransportIdentity(scope, "project-token", userUid)
+            }
+        },
+        clientContextProvider = clientContextProvider,
+        sessionStore = InMemorySessionStore(),
+        projectIds = RemoteConfigProjectIdRegistry(InMemoryProjectIdStore()),
+        clock = { System.currentTimeMillis() },
+        moshi = Moshi.Builder().build(),
+        logger = SilentLogger(),
+    )
+
+    val ackScheduler = ManualScheduler()
+
+    val ackSender = RemoteConfigActivationAckSender(
+        transport = transport,
+        store = ackStore,
+        clock = { System.currentTimeMillis() },
+        random = { 0.5 },
+        scheduler = ackScheduler,
+    )
+
     val coordinator = RemoteConfigFetchCoordinator(
         core = core,
-        transport = RemoteConfigGatewayTransport(
-            callFactory = httpClient,
-            baseUrlProvider = { server.url("/").toString() },
-            identityProvider = {
-                scopeHolder.scope?.let { scope ->
-                    RemoteConfigTransportIdentity(scope, "project-token", userUid)
-                }
-            },
-            clientContextProvider = clientContextProvider,
-            sessionStore = InMemorySessionStore(),
-            projectIds = RemoteConfigProjectIdRegistry(InMemoryProjectIdStore()),
-            clock = { System.currentTimeMillis() },
-            moshi = Moshi.Builder().build(),
-            logger = SilentLogger(),
-        ),
+        transport = transport,
         policyStore = InMemoryFetchPolicyStore(),
         clock = { System.currentTimeMillis() },
         random = { 0.5 },
@@ -200,6 +230,7 @@ internal class RemoteConfigV2Harness(
         core = core,
         readGuard = readGuard,
         coordinator = coordinator,
+        ackSender = ackSender,
         options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT),
         scopeHolder = scopeHolder,
         scheduler = timeoutScheduler,
@@ -226,6 +257,18 @@ internal class RemoteConfigV2Harness(
                     snapshotRequests += request.body.readUtf8()
                     snapshotResponse()
                 }
+                RC_ACK_PATH -> {
+                    ackRequests += RcRecordedAck(
+                        body = request.body.readUtf8(),
+                        sessionHeader = request.getHeader(REMOTE_CONFIG_SESSION_HEADER),
+                        authorization = request.getHeader("Authorization"),
+                    )
+                    if (hangAcks.get()) {
+                        MockResponse().setSocketPolicy(okhttp3.mockwebserver.SocketPolicy.NO_RESPONSE)
+                    } else {
+                        MockResponse().setResponseCode(ackStatusCode.get())
+                    }
+                }
                 else -> MockResponse().setResponseCode(404)
             }
         }
@@ -247,6 +290,22 @@ internal class RemoteConfigV2Harness(
 
     /** Makes the gateway answer snapshot reads with [statusCode] instead of a release. */
     fun serveStatus(statusCode: Int) = snapshotStatusCode.set(statusCode)
+
+    /** Makes the gateway answer activation acks with [statusCode] instead of `204`. */
+    fun serveAckStatus(statusCode: Int) = ackStatusCode.set(statusCode)
+
+    /** Makes the gateway accept activation acks and never answer them, without closing the socket. */
+    fun hangAckReads(hanging: Boolean) = hangAcks.set(hanging)
+
+    /** Waits until [count] acks have reached the gateway. */
+    fun awaitAcks(count: Int) {
+        val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(RC_AWAIT_SECONDS)
+        while (System.currentTimeMillis() < deadline) {
+            if (ackRequests.size >= count) return
+            Thread.sleep(POLL_INTERVAL_MILLIS)
+        }
+        throw AssertionError("expected $count acks, saw ${ackRequests.size}")
+    }
 
     /**
      * Rotates the targeting context the gateway reports, as it does for real when the app version,
@@ -439,6 +498,29 @@ internal class InMemorySessionStore : RemoteConfigSessionStore {
     @Synchronized
     override fun clear(key: RemoteConfigSessionKey): Boolean {
         sessions.remove(key)
+        return true
+    }
+}
+
+/**
+ * In-memory ack bookkeeping that outlives the harness instance it was handed to, so a "process
+ * restart" is a new harness over the same map.
+ */
+internal class InMemoryActivationAckStore : RemoteConfigActivationAckStore {
+    private val records = mutableMapOf<RemoteConfigSnapshotScope, RemoteConfigActivationAckRecord>()
+
+    @Synchronized
+    override fun load(scope: RemoteConfigSnapshotScope): RemoteConfigActivationAckRecord? = records[scope]
+
+    @Synchronized
+    override fun save(scope: RemoteConfigSnapshotScope, record: RemoteConfigActivationAckRecord): Boolean {
+        records[scope] = record
+        return true
+    }
+
+    @Synchronized
+    override fun clear(scope: RemoteConfigSnapshotScope): Boolean {
+        records.remove(scope)
         return true
     }
 }

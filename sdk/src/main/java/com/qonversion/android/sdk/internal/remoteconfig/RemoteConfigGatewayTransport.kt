@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val REMOTE_CONFIG_SESSION_PATH = "v3/remote-config-v2/session"
 internal const val REMOTE_CONFIG_SNAPSHOT_PATH = "v3/remote-config-v2/snapshot"
+internal const val REMOTE_CONFIG_ACK_PATH = "v3/remote-config-v2/ack"
 internal const val REMOTE_CONFIG_SESSION_HEADER = "X-Qonversion-RC-Session"
 internal const val REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES = 8L * 1024 * 1024
 
@@ -28,8 +29,13 @@ private const val REMOTE_CONFIG_CLIENT_CONTEXT_SCALAR_MAX_BYTES = 256
 private const val REMOTE_CONFIG_SESSION_EXPIRY_SKEW_MILLIS = 30_000L
 private const val MILLIS_PER_SECOND = 1_000L
 private const val HTTP_OK = 200
+private const val HTTP_SUCCESS_MIN = 200
+private const val HTTP_SUCCESS_MAX = 299
 private const val HTTP_NOT_MODIFIED = 304
 private const val HTTP_UNAUTHORIZED = 401
+private const val HTTP_TOO_MANY_REQUESTS = 429
+private const val HTTP_SERVER_ERROR_MIN = 500
+private const val HTTP_SERVER_ERROR_MAX = 599
 private const val ASCII_PRINTABLE_MIN = 0x20
 private const val ASCII_PRINTABLE_MAX = 0x7e
 
@@ -123,13 +129,18 @@ internal fun interface RemoteConfigTransportIdentityProvider {
  * dispatcher thread: the coordinator parks a waiter on it, and a lost completion would strand that
  * waiter until its (optional) timeout.
  *
+ * The same session seam serves the activation ack route — `POST {base}/v3/remote-config-v2/ack` —
+ * see [sendAck]. It is a strictly out-of-band signal: it shares the session, the bootstrap and the
+ * single re-bootstrap-on-401 rule, and nothing else. It can neither admit nor invalidate config
+ * data.
+ *
  * The [callFactory] must NOT carry the legacy `NetworkInterceptor`: this transport owns its
  * request headers (including `Authorization`) and a second interceptor-provided value would be
  * appended rather than replaced.
  *
  * Neither the project token nor the session token is ever logged.
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class RemoteConfigGatewayTransport(
     private val callFactory: Call.Factory,
     private val baseUrlProvider: () -> String,
@@ -141,10 +152,11 @@ internal class RemoteConfigGatewayTransport(
     moshi: Moshi,
     private val logger: Logger,
     private val maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
-) : RemoteConfigFetchTransport {
+) : RemoteConfigFetchTransport, RemoteConfigAckTransport {
     private val bootstrapRequestAdapter = moshi.adapter(RemoteConfigSessionRequest::class.java)
     private val bootstrapResponseAdapter = moshi.adapter(RemoteConfigSessionResponse::class.java)
     private val snapshotRequestAdapter = moshi.adapter(RemoteConfigSnapshotRequest::class.java)
+    private val ackRequestAdapter = moshi.adapter(RemoteConfigActivationAckRequest::class.java)
 
     private val lock = Any()
     private var cachedKey: RemoteConfigSessionKey? = null
@@ -166,12 +178,120 @@ internal class RemoteConfigGatewayTransport(
         if (session == null) {
             // Bootstrap-on-missing-session. The snapshot that follows a fresh mint may not
             // re-bootstrap on 401 — that is what keeps the flow finite.
-            mint(identity, deliver) { minted ->
-                requestSnapshot(identity, context, minted, request, deliver, allowReBootstrap = false)
+            mint(identity) { minted ->
+                when (minted) {
+                    is MintResult.Minted ->
+                        requestSnapshot(identity, context, minted.session, request, deliver, allowReBootstrap = false)
+                    is MintResult.Refused -> deliver(minted.fetchResponse)
+                }
             }
         } else {
             establishProjectId(identity, session)?.let { refusal -> deliver(refusal) }
                 ?: requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = true)
+        }
+    }
+
+    /**
+     * Reports one activation out of band — `POST {base}/v3/remote-config-v2/ack`.
+     *
+     * The [scope] the ack was queued for is compared against the identity the transport currently
+     * addresses: an identity change between queueing and sending must never let one identity's
+     * session vouch for another identity's activation, so the attempt is refused as
+     * [RemoteConfigAckResponse.NotAddressable] (which costs no retry budget) rather than sent.
+     *
+     * Failure classification is deliberately coarse, because the gateway answers opaquely:
+     * `2xx` is delivered, `429`/`5xx`/transport faults are retryable, and everything else —
+     * including a `401` that survives one re-bootstrap and a `404` — is permanent.
+     */
+    override fun sendAck(
+        scope: RemoteConfigSnapshotScope,
+        ack: RemoteConfigActivationAck,
+        completion: (RemoteConfigAckResponse) -> Unit,
+    ) {
+        val deliver = SingleDelivery(completion)
+        val identity = identityProvider.currentIdentity()
+            ?.takeIf { it.isValid() && it.scope == scope }
+        if (identity == null) {
+            deliver(RemoteConfigAckResponse.NotAddressable)
+            return
+        }
+        val session = loadUsableSession(identity.sessionKey)
+        if (session == null) {
+            mint(identity) { minted ->
+                when (minted) {
+                    is MintResult.Minted ->
+                        postAck(identity, minted.session, ack, deliver, allowReBootstrap = false)
+                    is MintResult.Refused -> deliver(minted.ackResponse)
+                }
+            }
+        } else {
+            val refusal = establishProjectId(identity, session)
+            if (refusal != null) {
+                deliver(refusal.toAckResponse())
+            } else {
+                postAck(identity, session, ack, deliver, allowReBootstrap = true)
+            }
+        }
+    }
+
+    private fun postAck(
+        identity: RemoteConfigTransportIdentity,
+        session: RemoteConfigGatewaySession,
+        ack: RemoteConfigActivationAck,
+        deliver: SingleDelivery<RemoteConfigAckResponse>,
+        allowReBootstrap: Boolean,
+    ) {
+        val body = try {
+            ackRequestAdapter.toJson(
+                RemoteConfigActivationAckRequest(
+                    releaseNumber = ack.releaseNumber,
+                    activatedAt = ack.activatedAtSeconds,
+                ),
+            )
+        } catch (_: Throwable) {
+            null
+        }
+        val httpRequest = body?.let {
+            buildRequest(REMOTE_CONFIG_ACK_PATH, identity, it) { builder ->
+                builder.header(REMOTE_CONFIG_SESSION_HEADER, session.token)
+            }
+        }
+        if (httpRequest == null) {
+            deliver(RemoteConfigAckResponse.Permanent)
+            return
+        }
+        enqueue(httpRequest, onThrow = { deliver(RemoteConfigAckResponse.Retryable) }) { outcome ->
+            onAckOutcome(identity, ack, deliver, allowReBootstrap, outcome)
+        }
+    }
+
+    @Suppress("LongParameterList")
+    private fun onAckOutcome(
+        identity: RemoteConfigTransportIdentity,
+        ack: RemoteConfigActivationAck,
+        deliver: SingleDelivery<RemoteConfigAckResponse>,
+        allowReBootstrap: Boolean,
+        outcome: HttpOutcome?,
+    ) {
+        when {
+            outcome == null -> deliver(RemoteConfigAckResponse.Retryable)
+            outcome.code in HTTP_SUCCESS_MIN..HTTP_SUCCESS_MAX -> deliver(RemoteConfigAckResponse.Delivered)
+            outcome.code == HTTP_UNAUTHORIZED -> {
+                forgetSession(identity.sessionKey)
+                if (!allowReBootstrap) {
+                    deliver(RemoteConfigAckResponse.Permanent)
+                    return
+                }
+                mint(identity) { minted ->
+                    when (minted) {
+                        is MintResult.Minted ->
+                            postAck(identity, minted.session, ack, deliver, allowReBootstrap = false)
+                        is MintResult.Refused -> deliver(minted.ackResponse)
+                    }
+                }
+            }
+            outcome.isRetryableStatus() -> deliver(RemoteConfigAckResponse.Retryable)
+            else -> deliver(RemoteConfigAckResponse.Permanent)
         }
     }
 
@@ -208,7 +328,7 @@ internal class RemoteConfigGatewayTransport(
         context: RemoteConfigClientContext,
         session: RemoteConfigGatewaySession,
         request: RemoteConfigFetchRequest,
-        deliver: SingleDelivery,
+        deliver: SingleDelivery<RemoteConfigFetchResponse>,
         allowReBootstrap: Boolean,
     ) {
         val body = try {
@@ -228,7 +348,7 @@ internal class RemoteConfigGatewayTransport(
             deliver(RemoteConfigFetchResponse.Failure())
             return
         }
-        enqueue(httpRequest, deliver) { outcome ->
+        enqueue(httpRequest, onThrow = { deliver(RemoteConfigFetchResponse.Failure()) }) { outcome ->
             onSnapshotOutcome(identity, context, session, request, deliver, allowReBootstrap, outcome)
         }
     }
@@ -239,7 +359,7 @@ internal class RemoteConfigGatewayTransport(
         context: RemoteConfigClientContext,
         session: RemoteConfigGatewaySession,
         request: RemoteConfigFetchRequest,
-        deliver: SingleDelivery,
+        deliver: SingleDelivery<RemoteConfigFetchResponse>,
         allowReBootstrap: Boolean,
         outcome: HttpOutcome?,
     ) {
@@ -257,18 +377,35 @@ internal class RemoteConfigGatewayTransport(
                     deliver(RemoteConfigFetchResponse.Failure(statusCode = outcome.code))
                     return
                 }
-                mint(identity, deliver) { session ->
-                    requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = false)
+                mint(identity) { minted ->
+                    when (minted) {
+                        is MintResult.Minted ->
+                            requestSnapshot(
+                                identity,
+                                context,
+                                minted.session,
+                                request,
+                                deliver,
+                                allowReBootstrap = false,
+                            )
+                        is MintResult.Refused -> deliver(minted.fetchResponse)
+                    }
                 }
             }
             else -> deliver(outcome.asFailure())
         }
     }
 
+    /**
+     * Bootstraps a session and reports the outcome to [onResult].
+     *
+     * The refusal carries the response the *fetch* path would deliver plus the classification the
+     * *ack* path needs, so both routes share one bootstrap implementation without either of them
+     * re-deriving the other's vocabulary. [onResult] is invoked exactly once on every path.
+     */
     private fun mint(
         identity: RemoteConfigTransportIdentity,
-        deliver: SingleDelivery,
-        onMinted: (RemoteConfigGatewaySession) -> Unit,
+        onResult: (MintResult) -> Unit,
     ) {
         val body = try {
             bootstrapRequestAdapter.toJson(RemoteConfigSessionRequest(identity.userUid))
@@ -277,10 +414,15 @@ internal class RemoteConfigGatewayTransport(
         }
         val httpRequest = body?.let { buildRequest(REMOTE_CONFIG_SESSION_PATH, identity, it) }
         if (httpRequest == null) {
-            deliver(RemoteConfigFetchResponse.Failure())
+            onResult(MintResult.refused(RemoteConfigFetchResponse.Failure(), RemoteConfigAckResponse.Permanent))
             return
         }
-        enqueue(httpRequest, deliver) { outcome ->
+        enqueue(
+            httpRequest,
+            onThrow = {
+                onResult(MintResult.refused(RemoteConfigFetchResponse.Failure(), RemoteConfigAckResponse.Retryable))
+            },
+        ) { outcome ->
             val session = outcome
                 ?.takeIf { it.code == HTTP_OK }
                 ?.body
@@ -289,17 +431,22 @@ internal class RemoteConfigGatewayTransport(
                 logger.debug("Remote Config v2 session bootstrap failed with code ${outcome?.code}")
                 // A 200 that does not carry a usable session is a contract violation, not a
                 // status the fetch policy should reason about.
-                deliver(if (outcome?.code == HTTP_OK) RemoteConfigFetchResponse.Failure() else outcome.asFailure())
+                val fetchResponse = if (outcome?.code == HTTP_OK) {
+                    RemoteConfigFetchResponse.Failure()
+                } else {
+                    outcome.asFailure()
+                }
+                onResult(MintResult.refused(fetchResponse, outcome.asAckResponse()))
                 return@enqueue
             }
             // Established BEFORE the session is remembered: a session minted for a project this
             // installation has never read must not survive the fetch that revealed the conflict.
             establishProjectId(identity, session)?.let { refusal ->
-                deliver(refusal)
+                onResult(MintResult.refused(refusal, refusal.toAckResponse()))
                 return@enqueue
             }
             rememberSession(identity.sessionKey, session)
-            onMinted(session)
+            onResult(MintResult.Minted(session))
         }
     }
 
@@ -332,15 +479,19 @@ internal class RemoteConfigGatewayTransport(
     }
 
     /**
-     * Every exit of this method must end in exactly one [deliver] call: the coordinator parks a
-     * waiter on the callback, so a swallowed throw on an OkHttp dispatcher thread would strand it
-     * until its timeout instead of failing fast.
+     * Every exit of this method must end in exactly one completion: the coordinator parks a waiter
+     * on the callback, so a swallowed throw on an OkHttp dispatcher thread would strand it until
+     * its timeout instead of failing fast. [onThrow] is that last-resort completion.
      */
-    private fun enqueue(request: Request, deliver: SingleDelivery, onOutcome: (HttpOutcome?) -> Unit) {
+    private fun enqueue(request: Request, onThrow: () -> Unit, onOutcome: (HttpOutcome?) -> Unit) {
         fun handle(outcome: HttpOutcome?) = try {
             onOutcome(outcome)
         } catch (_: Throwable) {
-            deliver(RemoteConfigFetchResponse.Failure())
+            try {
+                onThrow()
+            } catch (_: Throwable) {
+                // The caller's own last-resort completion is best effort by definition.
+            }
         }
 
         val call = try {
@@ -477,13 +628,29 @@ internal class RemoteConfigGatewayTransport(
         deviceInstalledAt = deviceInstalledAtSeconds,
     )
 
-    private class SingleDelivery(
-        private val completion: (RemoteConfigFetchResponse) -> Unit,
-    ) : (RemoteConfigFetchResponse) -> Unit {
+    private class SingleDelivery<T>(
+        private val completion: (T) -> Unit,
+    ) : (T) -> Unit {
         private val delivered = AtomicBoolean(false)
 
-        override fun invoke(response: RemoteConfigFetchResponse) {
+        override fun invoke(response: T) {
             if (delivered.compareAndSet(false, true)) completion(response)
+        }
+    }
+
+    private sealed class MintResult {
+        class Minted(val session: RemoteConfigGatewaySession) : MintResult()
+
+        class Refused(
+            val fetchResponse: RemoteConfigFetchResponse,
+            val ackResponse: RemoteConfigAckResponse,
+        ) : MintResult()
+
+        companion object {
+            fun refused(
+                fetchResponse: RemoteConfigFetchResponse,
+                ackResponse: RemoteConfigAckResponse,
+            ) = Refused(fetchResponse, ackResponse)
         }
     }
 
@@ -514,6 +681,27 @@ internal class RemoteConfigGatewayTransport(
             statusCode = this?.code,
             retryAfterMillis = this?.retryAfterMillis,
         )
+
+        fun HttpOutcome.isRetryableStatus(): Boolean =
+            code == HTTP_TOO_MANY_REQUESTS || code in HTTP_SERVER_ERROR_MIN..HTTP_SERVER_ERROR_MAX
+
+        /** A bootstrap that could not mint a session, seen from the ack route. */
+        fun HttpOutcome?.asAckResponse(): RemoteConfigAckResponse = when {
+            // No outcome at all is a transport fault; a 200 that carried no usable session is a
+            // gateway contract violation that a later attempt may well not repeat.
+            this == null || code == HTTP_OK -> RemoteConfigAckResponse.Retryable
+            isRetryableStatus() -> RemoteConfigAckResponse.Retryable
+            else -> RemoteConfigAckResponse.Permanent
+        }
+
+        /** A session refusal, seen from the ack route. */
+        fun RemoteConfigFetchResponse.toAckResponse(): RemoteConfigAckResponse =
+            if (this is RemoteConfigFetchResponse.ProjectMismatch) {
+                // Permanent until the gateway is fixed: retrying only buys another bootstrap.
+                RemoteConfigAckResponse.Permanent
+            } else {
+                RemoteConfigAckResponse.Retryable
+            }
     }
 }
 
@@ -580,6 +768,12 @@ internal data class RemoteConfigSessionResponse(
     @Json(name = "project_id") val projectId: Long?,
     @Json(name = "environment") val environment: String?,
     @Json(name = "expires_at") val expiresAt: String?,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class RemoteConfigActivationAckRequest(
+    @Json(name = "release_number") val releaseNumber: Long,
+    @Json(name = "activated_at") val activatedAt: Long,
 )
 
 @JsonClass(generateAdapter = true)
