@@ -2,15 +2,6 @@ package com.qonversion.android.sdk.internal.remoteconfig
 
 import java.util.ArrayDeque
 
-internal data class RemoteConfigFetchBinding(
-    val scope: RemoteConfigSnapshotScope,
-    val expectation: RemoteConfigSnapshotEnvelopeExpectation,
-) {
-    init {
-        require(scope.environment == expectation.environmentUid)
-    }
-}
-
 internal enum class RemoteConfigFetchForceReason {
     Build,
     Identify,
@@ -80,12 +71,30 @@ internal data class RemoteConfigFetchRequest(
 )
 
 internal sealed class RemoteConfigFetchResponse {
-    data class Success(val body: ByteArray, val etag: String) : RemoteConfigFetchResponse()
+    /**
+     * [projectId] is the project the transport's session was minted for — the SDK's only source for
+     * it — and is what the envelope's own project id is admitted against.
+     */
+    data class Success(
+        val body: ByteArray,
+        val etag: String,
+        val projectId: Long,
+    ) : RemoteConfigFetchResponse()
+
     data class NotModified(val etag: String? = null) : RemoteConfigFetchResponse()
     data class Failure(
         val statusCode: Int? = null,
         val retryAfterMillis: Long? = null,
     ) : RemoteConfigFetchResponse()
+
+    /**
+     * The transport was answered for a different project than the one this installation
+     * established. Permanent until the gateway is fixed, and the refusal costs a bootstrap round
+     * trip every time, so it feeds the failure backoff: forced fetches bypass the minimum interval
+     * but NOT the backoff gate, which is what keeps an identify/logout loop from turning a
+     * misrouted gateway into a request storm.
+     */
+    data object ProjectMismatch : RemoteConfigFetchResponse()
 }
 
 internal fun interface RemoteConfigFetchTransport {
@@ -102,6 +111,7 @@ internal sealed class RemoteConfigFetchResult {
     data class PolicyPersistenceFailed(val result: RemoteConfigFetchResult) : RemoteConfigFetchResult()
     data object InvalidNotModified : RemoteConfigFetchResult()
     data object Superseded : RemoteConfigFetchResult()
+    data object ProjectMismatch : RemoteConfigFetchResult()
 }
 
 internal class RemoteConfigFetchCoordinator(
@@ -119,19 +129,19 @@ internal class RemoteConfigFetchCoordinator(
     private val deliveryLock = Any()
     private val pendingDeliveries = ArrayDeque<PendingDelivery>()
     private var isDrainingDeliveries = false
-    private var binding: RemoteConfigFetchBinding? = null
+    private var boundScope: RemoteConfigSnapshotScope? = null
     private var operationGeneration = 0L
     private var inFlight: InFlight? = null
     private var policyState = RemoteConfigFetchPolicyState()
 
-    fun transitionTo(nextBinding: RemoteConfigFetchBinding?) {
+    fun transitionTo(nextScope: RemoteConfigSnapshotScope?) {
         val persistenceFailure = synchronized(operationLock) {
             synchronized(lock) {
                 operationGeneration = nextGeneration(operationGeneration)
-                binding = nextBinding
-                core.setScope(nextBinding?.scope)
-                val loaded = nextBinding?.let {
-                    loadPolicyState(RemoteConfigFetchPolicyScope.from(it.scope))
+                boundScope = nextScope
+                core.setScope(nextScope)
+                val loaded = nextScope?.let {
+                    loadPolicyState(RemoteConfigFetchPolicyScope.from(it))
                 } ?: LoadedPolicyState(RemoteConfigFetchPolicyState())
                 policyState = loaded.state
                 val superseded = inFlight?.let { operation ->
@@ -179,19 +189,19 @@ internal class RemoteConfigFetchCoordinator(
         // A request with no live waiters continues in the transport, but a new caller owns a new
         // admission token. This fences the zombie response without relying on HTTP cancellation.
         inFlight = null
-        val currentBinding = binding
+        val currentScope = boundScope
             ?: return FetchDecision.immediate(operationGeneration, RemoteConfigFetchResult.Superseded)
         fetchGateLocked(forceReason, nowMillis())?.let { gate ->
             return FetchDecision.immediate(operationGeneration, gate)
         }
-        val admission = core.beginAdmission(currentBinding.scope, currentBinding.expectation)
+        val admission = core.beginAdmission(currentScope)
             ?: return FetchDecision.immediate(
                 operationGeneration,
                 RemoteConfigFetchResult.Failed(statusCode = null),
             )
         val operation = InFlight(
             generation = operationGeneration,
-            binding = currentBinding,
+            scope = currentScope,
             admission = admission,
             waiters = mutableListOf(),
             conditionalValidator = core.conditionalRequestValidator(),
@@ -306,7 +316,7 @@ internal class RemoteConfigFetchCoordinator(
             return@synchronized NotModifiedDisposition.Accept
         }
         if (operation.didRetryWithoutETag) return@synchronized NotModifiedDisposition.Reject
-        val refreshedAdmission = core.beginAdmission(operation.binding.scope, operation.binding.expectation)
+        val refreshedAdmission = core.beginAdmission(operation.scope)
             ?: return@synchronized NotModifiedDisposition.Reject
         operation.didRetryWithoutETag = true
         operation.conditionalValidator = null
@@ -320,7 +330,12 @@ internal class RemoteConfigFetchCoordinator(
         notModifiedDisposition: NotModifiedDisposition,
     ): ResponseOutcome = when (response) {
         is RemoteConfigFetchResponse.Success -> {
-            val transition = core.admitCandidate(operation.admission, response.body, response.etag)
+            val transition = core.admitCandidate(
+                admissionToken = operation.admission,
+                body = response.body,
+                etag = response.etag,
+                projectId = response.projectId,
+            )
             val succeeded = transition.status == RemoteConfigSnapshotTransitionStatus.Accepted ||
                 transition.status == RemoteConfigSnapshotTransitionStatus.Activated
             ResponseOutcome(
@@ -340,6 +355,10 @@ internal class RemoteConfigFetchCoordinator(
         is RemoteConfigFetchResponse.Failure -> ResponseOutcome(
             result = RemoteConfigFetchResult.Failed(response.statusCode),
             nextPolicyState = retryableFailureState(response).takeIf { response.isRetryable() },
+        )
+        RemoteConfigFetchResponse.ProjectMismatch -> ResponseOutcome(
+            result = RemoteConfigFetchResult.ProjectMismatch,
+            nextPolicyState = retryableFailureState(RemoteConfigFetchResponse.Failure()),
         )
     }
 
@@ -585,14 +604,14 @@ internal class RemoteConfigFetchCoordinator(
 
     private data class InFlight(
         val generation: Long,
-        val binding: RemoteConfigFetchBinding,
+        val scope: RemoteConfigSnapshotScope,
         var admission: RemoteConfigSnapshotAdmissionToken,
         val waiters: MutableList<FetchWaiter>,
         var conditionalValidator: RemoteConfigConditionalRequestValidator?,
         var attemptOrdinal: Long = 0,
         var didRetryWithoutETag: Boolean = false,
     ) {
-        val policyScope: RemoteConfigFetchPolicyScope = RemoteConfigFetchPolicyScope.from(binding.scope)
+        val policyScope: RemoteConfigFetchPolicyScope = RemoteConfigFetchPolicyScope.from(scope)
     }
 
     private class FetchWaiter(

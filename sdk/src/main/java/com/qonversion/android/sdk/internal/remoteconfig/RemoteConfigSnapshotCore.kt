@@ -36,14 +36,12 @@ internal class RemoteConfigSnapshotAdmissionToken private constructor(
             ordinal: Long,
             scope: RemoteConfigSnapshotScope,
             scopeGeneration: Long,
-            expectation: RemoteConfigSnapshotEnvelopeExpectation,
         ) = RemoteConfigSnapshotAdmissionToken(
             ownerNonce = ownerNonce,
             admission = BoundRemoteConfigSnapshotAdmission(
                 ordinal = ordinal,
                 scope = scope,
                 scopeGeneration = scopeGeneration,
-                expectation = expectation,
             ),
         )
     }
@@ -84,7 +82,6 @@ internal data class BoundRemoteConfigSnapshotAdmission(
     val ordinal: Long,
     val scope: RemoteConfigSnapshotScope,
     val scopeGeneration: Long,
-    val expectation: RemoteConfigSnapshotEnvelopeExpectation,
 )
 
 internal data class RemoteConfigConditionalRequestValidator(
@@ -301,19 +298,22 @@ internal class RemoteConfigSnapshotCore(
         synchronized(lock) { observers.remove(token) }
     }
 
-    fun beginAdmission(
-        scope: RemoteConfigSnapshotScope,
-        expectation: RemoteConfigSnapshotEnvelopeExpectation,
-    ): RemoteConfigSnapshotAdmissionToken? =
+    /**
+     * Claims the right to admit the next release for [scope].
+     *
+     * The envelope expectation is deliberately NOT taken here: its environment uid is the scope's
+     * own, and its project id is only known once the transport has bootstrapped a session — which
+     * happens after this claim is made. It is therefore supplied to [admitCandidate], the step that
+     * actually has the response in hand.
+     */
+    fun beginAdmission(scope: RemoteConfigSnapshotScope): RemoteConfigSnapshotAdmissionToken? =
         synchronized(lock) {
-            if (expectation.environmentUid != scope.environment) return@synchronized null
             val admission = issueAdmissionLocked(scope) ?: return@synchronized null
             RemoteConfigSnapshotAdmissionToken.issue(
                 ownerNonce = admissionOwnerNonce,
                 ordinal = admission.ordinal,
                 scope = scope,
                 scopeGeneration = admission.scopeGeneration,
-                expectation = expectation,
             )
         }
 
@@ -360,11 +360,19 @@ internal class RemoteConfigSnapshotCore(
         )
     }
 
+    /**
+     * Admits [body] under a claim taken by [beginAdmission].
+     *
+     * [projectId] is the project the response was served for, as established by the gateway session
+     * that authorised the read. The envelope must name exactly it — and the admitting scope's
+     * environment — or it is [RemoteConfigSnapshotTransitionStatus.Rejected].
+     */
     @Suppress("ReturnCount")
     fun admitCandidate(
         admissionToken: RemoteConfigSnapshotAdmissionToken,
         body: ByteArray,
         etag: String,
+        projectId: Long,
     ): RemoteConfigSnapshotTransitionResult {
         val admission = admissionToken.resolve(admissionOwnerNonce)
             ?: return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
@@ -377,7 +385,11 @@ internal class RemoteConfigSnapshotCore(
         if (!tokenIsCurrent) {
             return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
         }
-        val envelope = envelopeParser.parse(body, etag, admission.expectation)
+        val expectation = RemoteConfigSnapshotEnvelopeExpectation(
+            projectId = projectId,
+            environmentUid = admission.scope.environment,
+        )
+        val envelope = envelopeParser.parse(body, etag, expectation)
             ?: return RemoteConfigSnapshotTransitionResult(RemoteConfigSnapshotTransitionStatus.Rejected)
         return acceptCandidate(
             scope = admission.scope,

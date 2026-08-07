@@ -23,8 +23,12 @@ private val PORTABLE_JSON_MIN_INTEGER_BIG = PORTABLE_JSON_MAX_INTEGER_BIG.negate
 private val LOWERCASE_SHA256_PATTERN = Regex("^[0-9a-f]{64}$")
 
 /**
- * The addressing an envelope must match to be admitted: exactly the project and environment the SDK
- * was configured for.
+ * The addressing an envelope must match to be admitted: exactly the environment the SDK was
+ * configured for and the project its gateway session was minted for.
+ *
+ * [projectId] is learned, not configured: the session bootstrap is the SDK's only source for it,
+ * the first bootstrap of a scope pins it, and a later disagreement is refused before a snapshot is
+ * ever read (see [RemoteConfigProjectIdRegistry]).
  *
  * The targeting context is deliberately absent. The fingerprint hashes mutable targeting context
  * (app/OS version, locale, purchases, properties); it rotates legitimately and MUST NOT be pinned

@@ -506,15 +506,7 @@ internal class PersistentRemoteConfigSnapshotStoreTest {
         assertEquals(7L, recovered?.latestAdmissionToken)
         val restartedCore = RemoteConfigSnapshotCore(store(), bundledRelease = null)
         restartedCore.setScope(userA)
-        assertNotNull(
-            restartedCore.beginAdmission(
-                userA,
-                RemoteConfigSnapshotEnvelopeExpectation(
-                    projectId = 42,
-                    environmentUid = "production",
-                ),
-            ),
-        )
+        assertNotNull(restartedCore.beginAdmission(userA))
     }
 
     @Test

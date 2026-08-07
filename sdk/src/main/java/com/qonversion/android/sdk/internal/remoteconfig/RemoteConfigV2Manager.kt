@@ -23,11 +23,13 @@ internal const val REMOTE_CONFIG_V2_DEFAULT_FETCH_TIMEOUT_MILLIS = 5_000L
  * mutable targeting context (app/OS version, locale, purchases, properties); it rotates legitimately
  * and MUST NOT be pinned across fetches. Identity isolation is the session's job — see
  * [RemoteConfigGatewaySession] and the per-scope storage keys.
+ *
+ * The numeric project id is not part of it either: the SDK learns it from the session bootstrap
+ * rather than from the app, and it travels with the response it addresses.
  */
 internal data class RemoteConfigV2Options(
     val projectKey: String,
     val environmentUid: String,
-    val projectId: Long,
 )
 
 /**
@@ -69,7 +71,7 @@ internal fun interface RemoteConfigMainDispatcher {
  * - every operation that can touch durable storage runs on [worker], which MUST be the same
  *   single-threaded executor the read guard's preloader uses. That ordering is what keeps a scope
  *   transition from racing its own preload: the preload task is enqueued first and therefore
- *   installs the loaded state before the coordinator's binding change observes the scope.
+ *   installs the loaded state before the coordinator observes the new scope.
  */
 @Suppress("LongParameterList")
 internal class RemoteConfigV2Manager(
@@ -98,10 +100,9 @@ internal class RemoteConfigV2Manager(
         // concurrent fetch reads the new identity and admits its snapshot into the old store.
         readGuard.transitionScopeBeforeSdkReady(scope)
         scopeHolder.scope = scope
-        val binding = scope?.let { RemoteConfigFetchBinding(it, expectation()) }
         val submitted = submit {
-            coordinator.transitionTo(binding)
-            if (binding != null) forceFetch(forceReason)
+            coordinator.transitionTo(scope)
+            if (scope != null) forceFetch(forceReason)
         }
         if (!submitted) logger.debug("Remote Config v2 could not apply an identity change")
     }
@@ -216,11 +217,6 @@ internal class RemoteConfigV2Manager(
         null
     }
 
-    private fun expectation() = RemoteConfigSnapshotEnvelopeExpectation(
-        projectId = options.projectId,
-        environmentUid = options.environmentUid,
-    )
-
     private fun scheduleTimeout(
         timeoutMillis: Long?,
         delivery: SingleDelivery<QRemoteConfigFetchResult>,
@@ -263,13 +259,17 @@ internal class RemoteConfigV2Manager(
         is RemoteConfigFetchResult.PolicyPersistenceFailed -> result.toPublicResult()
         RemoteConfigFetchResult.InvalidNotModified -> result(QRemoteConfigFetchStatus.Failed)
         RemoteConfigFetchResult.Superseded -> result(QRemoteConfigFetchStatus.Superseded)
+        // A permanent addressing fault the transport has already reported: no snapshot was read at
+        // all, so there is nothing to report beyond the failure itself.
+        RemoteConfigFetchResult.ProjectMismatch -> result(QRemoteConfigFetchStatus.Failed)
     }
 
     private fun RemoteConfigSnapshotTransitionResult.toFetchStatus(): QRemoteConfigFetchStatus = when (status) {
-        // Rejected covers a malformed envelope AND a snapshot whose project id or environment does
-        // not match the configured expectation. The latter is a permanent misconfiguration that
-        // otherwise looks exactly like a network failure. A changed targeting context is NOT in
-        // this class: it rotates on any app/OS update, locale change, purchase or property edit.
+        // Rejected covers a malformed envelope AND a snapshot addressed to another project or
+        // environment than the session it was served for. The latter is a permanent server-side
+        // fault that otherwise looks exactly like a network failure. A changed targeting context is
+        // NOT in this class: it rotates on any app/OS update, locale change, purchase or property
+        // edit.
         RemoteConfigSnapshotTransitionStatus.Accepted,
         RemoteConfigSnapshotTransitionStatus.Activated,
         RemoteConfigSnapshotTransitionStatus.Unchanged,
@@ -278,8 +278,8 @@ internal class RemoteConfigV2Manager(
         RemoteConfigSnapshotTransitionStatus.PersistenceFailed -> QRemoteConfigFetchStatus.Failed
         RemoteConfigSnapshotTransitionStatus.Rejected -> {
             logger.error(
-                "Remote Config v2 refused a snapshot: it did not match the configured project id " +
-                    "or environment uid, or the envelope was malformed",
+                "Remote Config v2 refused a snapshot: it did not match the project id or " +
+                    "environment uid of the session it was served for, or the envelope was malformed",
             )
             QRemoteConfigFetchStatus.Failed
         }

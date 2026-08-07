@@ -14,6 +14,7 @@ import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -49,7 +50,7 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
     fun `server bytes reach durable admission unchanged`() {
         val core = core()
         val coordinator = coordinator(core)
-        coordinator.transitionTo(BINDING)
+        coordinator.transitionTo(SCOPE)
         val body = WIRE_BODY.toByteArray(Charsets.UTF_8)
         server.enqueue(sessionResponse())
         server.enqueue(snapshotResponse(body, strongETag(body)))
@@ -71,7 +72,7 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
     fun `304 is recovered against the current head instead of re-admitting`() {
         val core = core()
         val coordinator = coordinator(core)
-        coordinator.transitionTo(BINDING)
+        coordinator.transitionTo(SCOPE)
         val body = WIRE_BODY.toByteArray(Charsets.UTF_8)
         server.enqueue(sessionResponse())
         server.enqueue(snapshotResponse(body, strongETag(body)))
@@ -90,10 +91,57 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
     }
 
     @Test
+    fun `the bootstrapped project id is what a snapshot is admitted against`() {
+        // Nothing in the app configured 43: the session bootstrap alone establishes the project the
+        // snapshot must belong to, and this envelope names 42.
+        val core = core()
+        val coordinator = coordinator(core)
+        coordinator.transitionTo(SCOPE)
+        val body = WIRE_BODY.toByteArray(Charsets.UTF_8)
+        server.enqueue(sessionResponse(projectId = 43))
+        server.enqueue(snapshotResponse(body, strongETag(body)))
+
+        val result = fetch(coordinator)
+
+        assertEquals(
+            RemoteConfigSnapshotTransitionStatus.Rejected,
+            (result as RemoteConfigFetchResult.Fetched).transition.status,
+        )
+        assertNull(snapshotStore.states[SCOPE]?.candidate)
+    }
+
+    @Test
+    fun `a later bootstrap that changes the project id is a typed failure, not a re-learn`() {
+        val core = core()
+        val coordinator = coordinator(core)
+        coordinator.transitionTo(SCOPE)
+        val body = WIRE_BODY.toByteArray(Charsets.UTF_8)
+        server.enqueue(sessionResponse())
+        server.enqueue(snapshotResponse(body, strongETag(body)))
+        assertTrue(fetch(coordinator) is RemoteConfigFetchResult.Fetched)
+
+        // A 401 drops the established session, so the next read re-bootstraps — and this time the
+        // gateway answers for a different project.
+        server.enqueue(MockResponse().setResponseCode(401))
+        server.enqueue(sessionResponse(projectId = 43))
+
+        assertEquals(RemoteConfigFetchResult.ProjectMismatch, fetch(coordinator))
+        // Snapshot, session, snapshot, session: no read was attempted on the refused session.
+        assertEquals(4, server.requestCount)
+
+        // And the refusal arms the failure backoff, so an identify/logout loop cannot turn a
+        // misrouted gateway into one bootstrap round trip per call. Forced fetches bypass the
+        // minimum interval, never this gate.
+        val gated = fetch(coordinator, RemoteConfigFetchForceReason.Identify)
+        assertTrue(gated.toString(), gated is RemoteConfigFetchResult.Backoff)
+        assertEquals(4, server.requestCount)
+    }
+
+    @Test
     fun `a stalled gateway times out through the fetch policy`() {
         val core = core()
         val coordinator = coordinator(core)
-        coordinator.transitionTo(BINDING)
+        coordinator.transitionTo(SCOPE)
         server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))
 
         val latch = CountDownLatch(1)
@@ -111,10 +159,13 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
         assertNotNull(server.takeRequest(AWAIT_SECONDS, TimeUnit.SECONDS))
     }
 
-    private fun fetch(coordinator: RemoteConfigFetchCoordinator): RemoteConfigFetchResult {
+    private fun fetch(
+        coordinator: RemoteConfigFetchCoordinator,
+        forceReason: RemoteConfigFetchForceReason? = null,
+    ): RemoteConfigFetchResult {
         val latch = CountDownLatch(1)
         var result: RemoteConfigFetchResult? = null
-        coordinator.fetch { fetchResult ->
+        coordinator.fetch(forceReason) { fetchResult ->
             result = fetchResult
             latch.countDown()
         }
@@ -152,15 +203,16 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
             )
         },
         sessionStore = InMemorySessionStore(),
+        projectIds = RemoteConfigProjectIdRegistry(InMemoryProjectIdStore()),
         clock = { CLOCK_MILLIS },
         moshi = Moshi.Builder().build(),
         logger = SilentLogger(),
     )
 
-    private fun sessionResponse() = MockResponse()
+    private fun sessionResponse(projectId: Long = 42) = MockResponse()
         .setResponseCode(200)
         .setBody(
-            "{\"session_token\":\"qrcs1.session-secret\",\"project_id\":42," +
+            "{\"session_token\":\"qrcs1.session-secret\",\"project_id\":$projectId," +
                 "\"environment\":\"prod\",\"expires_at\":\"2030-01-01T00:00:00Z\"}",
         )
 
@@ -244,13 +296,6 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
         const val AWAIT_SECONDS = 10L
         const val CLOCK_MILLIS = 1_000_000L
         val SCOPE = RemoteConfigSnapshotScope("project", "production", "canonical-user")
-        val BINDING = RemoteConfigFetchBinding(
-            scope = SCOPE,
-            expectation = RemoteConfigSnapshotEnvelopeExpectation(
-                projectId = 42,
-                environmentUid = "production",
-            ),
-        )
         val WIRE_BODY = "{\"schema_version\":1,\"project_id\":42,\"environment_uid\":\"production\"," +
             "\"release_uid\":\"release-1\",\"release_number\":1," +
             "\"manifest_content_hash\":\"${"1".padStart(64, '0')}\"," +

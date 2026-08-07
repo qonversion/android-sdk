@@ -419,8 +419,8 @@ internal class RemoteConfigSnapshotCoreTest {
             values = "\"good\":${wireItem("1")},\"bad\":${wireItem("{\"x\":1,\"x\":2}")}",
         )
 
-        val result = core.admitCandidate(
-            admissionToken = requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+        val result = core.admitWire(
+            admissionToken = requireNotNull(core.beginAdmission(scopeA)),
             body = malformed.encodeToByteArray(),
             etag = strongETag(malformed.encodeToByteArray()),
         )
@@ -434,13 +434,28 @@ internal class RemoteConfigSnapshotCoreTest {
     fun `wire admission fences exact identity project and environment`() {
         core.setScope(scopeA)
         val body = wireBody("wire", 1, "\"a\":${wireItem("1")}").encodeToByteArray()
-        assertNull(core.beginAdmission(scopeB, wireExpectation()))
-        assertNull(core.beginAdmission(scopeA, wireExpectation().copy(environmentUid = "staging")))
-        val token = requireNotNull(core.beginAdmission(scopeA, wireExpectation().copy(projectId = 43)))
+        assertNull(core.beginAdmission(scopeB))
 
+        // The environment is the admitting scope's own, so an envelope for another one is refused
+        // without anyone having to restate it; the project id is the one the session established.
+        val staging = wireBody("wire", 1, "\"a\":${wireItem("1")}", environmentUid = "staging")
+            .encodeToByteArray()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            core.admitCandidate(token, body, strongETag(body)).status,
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
+                staging,
+                strongETag(staging),
+            ).status,
+        )
+        assertEquals(
+            RemoteConfigSnapshotTransitionStatus.Rejected,
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
+                body,
+                strongETag(body),
+                projectId = 43,
+            ).status,
         )
         assertTrue(store.savedStates.isEmpty())
     }
@@ -456,8 +471,8 @@ internal class RemoteConfigSnapshotCoreTest {
             values = "\"kept\":${wireItem("2", immediate = true)}",
         ).encodeToByteArray()
 
-        val result = core.admitCandidate(
-            requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+        val result = core.admitWire(
+            requireNotNull(core.beginAdmission(scopeA)),
             body,
             strongETag(body),
         )
@@ -487,10 +502,10 @@ internal class RemoteConfigSnapshotCoreTest {
         }
         val raceCore = RemoteConfigSnapshotCore(raceStore, bundled, blockingParser)
         raceCore.setScope(scopeA)
-        val admissionToken = requireNotNull(raceCore.beginAdmission(scopeA, expectation))
+        val admissionToken = requireNotNull(raceCore.beginAdmission(scopeA))
         val result = AtomicReference<RemoteConfigSnapshotTransitionResult>()
         val admissionThread = Thread {
-            result.set(raceCore.admitCandidate(admissionToken, body, etag))
+            result.set(raceCore.admitWire(admissionToken, body, etag))
         }
         admissionThread.start()
         assertTrue(parserStarted.await(2, TimeUnit.SECONDS))
@@ -505,30 +520,33 @@ internal class RemoteConfigSnapshotCoreTest {
     }
 
     @Test
-    fun `admission token is opaque to another core and carries its original expectation`() {
+    fun `admission token is opaque to another core and admits only the served project`() {
         val firstStore = RecordingSnapshotStore()
         val secondStore = RecordingSnapshotStore()
         val firstCore = RemoteConfigSnapshotCore(firstStore, bundled)
         val secondCore = RemoteConfigSnapshotCore(secondStore, bundled)
         firstCore.setScope(scopeA)
         secondCore.setScope(scopeA)
-        val token = requireNotNull(firstCore.beginAdmission(scopeA, wireExpectation()))
+        val token = requireNotNull(firstCore.beginAdmission(scopeA))
         val validBody = wireBody("wire-a", 7, "\"a\":${wireItem("1")}").encodeToByteArray()
 
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            secondCore.admitCandidate(token, validBody, strongETag(validBody)).status,
+            secondCore.admitWire(token, validBody, strongETag(validBody)).status,
         )
         assertTrue(secondStore.savedStates.isEmpty())
 
-        // The expectation travels with the token: one issued for another project cannot admit this
-        // project's body, even from the core that issued it and on the scope it was issued for.
-        val foreignProjectToken = requireNotNull(
-            firstCore.beginAdmission(scopeA, wireExpectation().copy(projectId = 43)),
-        )
+        // The project the response was served for travels with the response: a body naming another
+        // project than the session it arrived on cannot be admitted, even by the core and scope the
+        // token was issued for.
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            firstCore.admitCandidate(foreignProjectToken, validBody, strongETag(validBody)).status,
+            firstCore.admitWire(
+                requireNotNull(firstCore.beginAdmission(scopeA)),
+                validBody,
+                strongETag(validBody),
+                projectId = 43,
+            ).status,
         )
         assertTrue(firstStore.savedStates.isEmpty())
     }
@@ -560,15 +578,15 @@ internal class RemoteConfigSnapshotCoreTest {
         raceCore.setScope(scopeA)
         val observed = mutableListOf<RemoteConfigSnapshotUpdate>()
         raceCore.addUpdateObserver(observed::add)
-        val superseded = requireNotNull(raceCore.beginAdmission(scopeA, expectation))
+        val superseded = requireNotNull(raceCore.beginAdmission(scopeA))
         val result = AtomicReference<RemoteConfigSnapshotTransitionResult>()
         val admissionThread = Thread {
-            result.set(raceCore.admitCandidate(superseded, immediateBody, strongETag(immediateBody)))
+            result.set(raceCore.admitWire(superseded, immediateBody, strongETag(immediateBody)))
         }
         admissionThread.start()
         assertTrue(parserStarted.await(2, TimeUnit.SECONDS))
 
-        requireNotNull(raceCore.beginAdmission(scopeA, expectation))
+        requireNotNull(raceCore.beginAdmission(scopeA))
         releaseParser.countDown()
         admissionThread.join(2_000)
 
@@ -614,12 +632,11 @@ internal class RemoteConfigSnapshotCoreTest {
             2,
             "\"a\":${wireItem("2", immediate = true)}",
         ).encodeToByteArray()
-        val expectation = wireExpectation()
-        val supersededToken = requireNotNull(raceCore.beginAdmission(scopeA, expectation))
+        val supersededToken = requireNotNull(raceCore.beginAdmission(scopeA))
         val supersededResult = AtomicReference<RemoteConfigSnapshotTransitionResult>()
         val supersededThread = Thread {
             supersededResult.set(
-                raceCore.admitCandidate(
+                raceCore.admitWire(
                     supersededToken,
                     supersededBody,
                     strongETag(supersededBody),
@@ -629,7 +646,7 @@ internal class RemoteConfigSnapshotCoreTest {
         supersededThread.start()
         assertTrue(supersededCommitFinished.await(2, TimeUnit.SECONDS))
 
-        requireNotNull(raceCore.beginAdmission(scopeA, expectation))
+        requireNotNull(raceCore.beginAdmission(scopeA))
         releaseFirstDelivery.countDown()
         blockingDeliveryThread.join(2_000)
         supersededThread.join(2_000)
@@ -645,8 +662,8 @@ internal class RemoteConfigSnapshotCoreTest {
         val current = wireBody("release-seven", 7, "\"a\":${wireItem("7")}").encodeToByteArray()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 current,
                 strongETag(current),
             ).status,
@@ -655,8 +672,8 @@ internal class RemoteConfigSnapshotCoreTest {
 
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 rollback,
                 strongETag(rollback),
             ).status,
@@ -667,8 +684,8 @@ internal class RemoteConfigSnapshotCoreTest {
         val secondRollback = wireBody("release-five", 5, "\"a\":${wireItem("5")}").encodeToByteArray()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 secondRollback,
                 strongETag(secondRollback),
             ).status,
@@ -700,8 +717,8 @@ internal class RemoteConfigSnapshotCoreTest {
 
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 first,
                 strongETag(first),
             ).status,
@@ -709,8 +726,8 @@ internal class RemoteConfigSnapshotCoreTest {
         core.activate()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 second,
                 strongETag(second),
             ).status,
@@ -724,44 +741,44 @@ internal class RemoteConfigSnapshotCoreTest {
     @Test
     fun `request start token rejects old response after new and accepts new response after old`() {
         core.setScope(scopeA)
-        val oldToken = requireNotNull(core.beginAdmission(scopeA, wireExpectation()))
-        val newToken = requireNotNull(core.beginAdmission(scopeA, wireExpectation()))
+        val oldToken = requireNotNull(core.beginAdmission(scopeA))
+        val newToken = requireNotNull(core.beginAdmission(scopeA))
         val oldBody = wireBody("old", 7, "\"a\":${wireItem("1")}").encodeToByteArray()
         val newBody = wireBody("new", 7, "\"a\":${wireItem("2")}").encodeToByteArray()
 
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(newToken, newBody, strongETag(newBody)).status,
+            core.admitWire(newToken, newBody, strongETag(newBody)).status,
         )
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            core.admitCandidate(oldToken, oldBody, strongETag(oldBody)).status,
+            core.admitWire(oldToken, oldBody, strongETag(oldBody)).status,
         )
         assertEquals("new", core.lastFetchedSnapshot()?.releaseUid)
 
-        val laterToken = requireNotNull(core.beginAdmission(scopeA, wireExpectation()))
+        val laterToken = requireNotNull(core.beginAdmission(scopeA))
         val laterBody = wireBody("later", 7, "\"a\":${wireItem("3")}").encodeToByteArray()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(laterToken, laterBody, strongETag(laterBody)).status,
+            core.admitWire(laterToken, laterBody, strongETag(laterBody)).status,
         )
         assertEquals("later", core.lastFetchedSnapshot()?.releaseUid)
 
         val orderedCore = RemoteConfigSnapshotCore(store, bundled)
         orderedCore.setScope(scopeB)
-        val orderedOldToken = requireNotNull(orderedCore.beginAdmission(scopeB, wireExpectation()))
+        val orderedOldToken = requireNotNull(orderedCore.beginAdmission(scopeB))
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            orderedCore.admitCandidate(
+            orderedCore.admitWire(
                 orderedOldToken,
                 oldBody,
                 strongETag(oldBody),
             ).status,
         )
-        val orderedNewToken = requireNotNull(orderedCore.beginAdmission(scopeB, wireExpectation()))
+        val orderedNewToken = requireNotNull(orderedCore.beginAdmission(scopeB))
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            orderedCore.admitCandidate(
+            orderedCore.admitWire(
                 orderedNewToken,
                 newBody,
                 strongETag(newBody),
@@ -774,20 +791,20 @@ internal class RemoteConfigSnapshotCoreTest {
     fun `restart restores admission token high water mark`() {
         core.setScope(scopeA)
         val body = wireBody("wire", 7, "\"a\":${wireItem("1")}").encodeToByteArray()
-        val committedToken = requireNotNull(core.beginAdmission(scopeA, wireExpectation()))
+        val committedToken = requireNotNull(core.beginAdmission(scopeA))
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            core.admitCandidate(committedToken, body, strongETag(body)).status,
+            core.admitWire(committedToken, body, strongETag(body)).status,
         )
         val committedOrdinal = requireNotNull(store.states.getValue(scopeA).candidate).admissionToken
 
         val restarted = RemoteConfigSnapshotCore(store, bundled)
         restarted.setScope(scopeA)
-        val restartedToken = requireNotNull(restarted.beginAdmission(scopeA, wireExpectation()))
+        val restartedToken = requireNotNull(restarted.beginAdmission(scopeA))
         val restartedBody = wireBody("wire-restarted", 7, "\"a\":${wireItem("2")}").encodeToByteArray()
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
-            restarted.admitCandidate(restartedToken, restartedBody, strongETag(restartedBody)).status,
+            restarted.admitWire(restartedToken, restartedBody, strongETag(restartedBody)).status,
         )
 
         assertTrue(requireNotNull(store.states.getValue(scopeA).candidate).admissionToken > committedOrdinal)
@@ -809,16 +826,16 @@ internal class RemoteConfigSnapshotCoreTest {
 
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Activated,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 first,
                 strongETag(first),
             ).status,
         )
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Activated,
-            core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
+            core.admitWire(
+                requireNotNull(core.beginAdmission(scopeA)),
                 second,
                 strongETag(second),
             ).status,
@@ -836,17 +853,30 @@ internal class RemoteConfigSnapshotCoreTest {
     }
 
     private fun wireExpectation() = RemoteConfigSnapshotEnvelopeExpectation(
-        projectId = 42,
+        projectId = WIRE_PROJECT_ID,
         environmentUid = "production",
     )
+
+    /**
+     * Admits a body the way the coordinator does: the project id comes from the gateway session the
+     * response was served on, not from the admission claim.
+     */
+    private fun RemoteConfigSnapshotCore.admitWire(
+        admissionToken: RemoteConfigSnapshotAdmissionToken,
+        body: ByteArray,
+        etag: String,
+        projectId: Long = WIRE_PROJECT_ID,
+    ) = admitCandidate(admissionToken, body, etag, projectId)
 
     private fun wireBody(
         releaseUid: String,
         releaseNumber: Long,
         values: String,
         contextFingerprint: String = "a".repeat(64),
+        environmentUid: String = "production",
+        projectId: Long = WIRE_PROJECT_ID,
     ) =
-        "{\"schema_version\":1,\"project_id\":42,\"environment_uid\":\"production\"," +
+        "{\"schema_version\":1,\"project_id\":$projectId,\"environment_uid\":\"$environmentUid\"," +
             "\"release_uid\":\"$releaseUid\",\"release_number\":$releaseNumber," +
             "\"manifest_content_hash\":\"${hash(releaseNumber)}\",\"complete_key_set\":true," +
             "\"context_fingerprint\":\"$contextFingerprint\",\"values\":{$values}}"
@@ -913,5 +943,9 @@ internal class RemoteConfigSnapshotCoreTest {
             saveObserver?.invoke(state)
             return true
         }
+    }
+
+    private companion object {
+        const val WIRE_PROJECT_ID = 42L
     }
 }

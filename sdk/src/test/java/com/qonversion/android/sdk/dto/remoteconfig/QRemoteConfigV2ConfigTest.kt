@@ -4,6 +4,7 @@ package com.qonversion.android.sdk.dto.remoteconfig
 
 import com.qonversion.android.sdk.ExperimentalQonversionApi
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
@@ -18,12 +19,10 @@ internal class QRemoteConfigV2ConfigTest {
         val config = QRemoteConfigV2Config(
             baseUrl = "https://gateway.example.com/",
             environmentUid = "production",
-            projectId = 42,
         )
 
         assertEquals("https://gateway.example.com/", config.baseUrl)
         assertEquals("production", config.environmentUid)
-        assertEquals(42L, config.projectId)
     }
 
     @Test
@@ -33,8 +32,6 @@ internal class QRemoteConfigV2ConfigTest {
             "scheme-less base url" to { config(baseUrl = "//gateway.example.com") },
             "empty environment" to { config(environmentUid = "") },
             "over-long environment" to { config(environmentUid = "e".repeat(37)) },
-            "zero project id" to { config(projectId = 0) },
-            "negative project id" to { config(projectId = -1) },
         )
 
         malformed.forEach { (name, build) ->
@@ -42,9 +39,22 @@ internal class QRemoteConfigV2ConfigTest {
         }
     }
 
+    @Test
+    fun `the configuration neither takes nor exposes a project id`() {
+        // The numeric project id is learned from the gateway session bootstrap. Re-introducing it
+        // here would put a value the app cannot verify back into the public surface. Asserted by
+        // name rather than by shape, so an unrelated field of the same type does not fail this.
+        val members = QRemoteConfigV2Config::class.java.declaredFields.map { it.name } +
+            QRemoteConfigV2Config::class.java.declaredMethods.map { it.name }
+        members.forEach { name -> assertFalse(name, name.contains("rojectId")) }
+        assertEquals(
+            setOf("baseUrl", "environmentUid"),
+            QRemoteConfigV2Config::class.java.declaredFields.map { it.name }.toSet(),
+        )
+    }
+
     private fun config(
         baseUrl: String = "https://gateway.example.com/",
         environmentUid: String = "production",
-        projectId: Long = 42,
-    ) = QRemoteConfigV2Config(baseUrl, environmentUid, projectId)
+    ) = QRemoteConfigV2Config(baseUrl, environmentUid)
 }

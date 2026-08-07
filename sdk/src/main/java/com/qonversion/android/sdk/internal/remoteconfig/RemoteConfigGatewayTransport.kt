@@ -113,6 +113,11 @@ internal fun interface RemoteConfigTransportIdentityProvider {
  *    is a typed failure, never another bootstrap — the flow cannot loop.
  * 4. Hand the response body to the coordinator as the EXACT bytes received, paired with the exact
  *    `ETag` header. Nothing is decoded, re-encoded or charset-converted on the way in.
+ * 5. Publish the project id the session was minted for, which is what the admission check compares
+ *    the envelope against. The bootstrap is the SDK's only source for it, so it is established here
+ *    (see [RemoteConfigProjectIdRegistry]) rather than configured by the app, and a session whose
+ *    project id contradicts the established one is refused as
+ *    [RemoteConfigFetchResponse.ProjectMismatch] instead of being used for a read.
  *
  * The completion is invoked exactly once on every path, including one that throws on an OkHttp
  * dispatcher thread: the coordinator parks a waiter on it, and a lost completion would strand that
@@ -131,6 +136,7 @@ internal class RemoteConfigGatewayTransport(
     private val identityProvider: RemoteConfigTransportIdentityProvider,
     private val clientContextProvider: RemoteConfigClientContextProvider,
     private val sessionStore: RemoteConfigSessionStore,
+    private val projectIds: RemoteConfigProjectIdRegistry,
     private val clock: RemoteConfigFetchClock,
     moshi: Moshi,
     private val logger: Logger,
@@ -164,7 +170,35 @@ internal class RemoteConfigGatewayTransport(
                 requestSnapshot(identity, context, minted, request, deliver, allowReBootstrap = false)
             }
         } else {
-            requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = true)
+            establishProjectId(identity, session)?.let { refusal -> deliver(refusal) }
+                ?: requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = true)
+        }
+    }
+
+    /**
+     * Pins the project id this session was minted for, or returns the response that refuses it.
+     *
+     * A refused session is dropped rather than merely skipped for this fetch: it addresses a
+     * project this installation has never read, so keeping it would replay the same refusal on
+     * every later fetch.
+     */
+    private fun establishProjectId(
+        identity: RemoteConfigTransportIdentity,
+        session: RemoteConfigGatewaySession,
+    ): RemoteConfigFetchResponse? {
+        val outcome = projectIds.establish(identity.scope, session.projectId)
+        if (outcome == RemoteConfigProjectIdOutcome.Established) return null
+        forgetSession(identity.sessionKey)
+        return if (outcome == RemoteConfigProjectIdOutcome.Conflict) {
+            logger.error(
+                "Remote Config v2 refused a gateway session: it was minted for a different " +
+                    "project than the one this installation established",
+            )
+            RemoteConfigFetchResponse.ProjectMismatch
+        } else {
+            // A malformed answer, not an addressing fault: it stays an ordinary failure.
+            logger.debug("Remote Config v2 refused a gateway session without a usable project id")
+            RemoteConfigFetchResponse.Failure()
         }
     }
 
@@ -195,7 +229,7 @@ internal class RemoteConfigGatewayTransport(
             return
         }
         enqueue(httpRequest, deliver) { outcome ->
-            onSnapshotOutcome(identity, context, request, deliver, allowReBootstrap, outcome)
+            onSnapshotOutcome(identity, context, session, request, deliver, allowReBootstrap, outcome)
         }
     }
 
@@ -203,6 +237,7 @@ internal class RemoteConfigGatewayTransport(
     private fun onSnapshotOutcome(
         identity: RemoteConfigTransportIdentity,
         context: RemoteConfigClientContext,
+        session: RemoteConfigGatewaySession,
         request: RemoteConfigFetchRequest,
         deliver: SingleDelivery,
         allowReBootstrap: Boolean,
@@ -210,7 +245,9 @@ internal class RemoteConfigGatewayTransport(
     ) {
         when {
             outcome == null -> deliver(RemoteConfigFetchResponse.Failure())
-            outcome.code == HTTP_OK -> deliver(outcome.asSuccessOrFailure())
+            // The project id travels with the session that authorised this exact read, so the
+            // admission check compares the envelope against the session it was served for.
+            outcome.code == HTTP_OK -> deliver(outcome.asSuccessOrFailure(session.projectId))
             outcome.code == HTTP_NOT_MODIFIED ->
                 deliver(RemoteConfigFetchResponse.NotModified(outcome.etag))
             outcome.code == HTTP_UNAUTHORIZED -> {
@@ -253,6 +290,12 @@ internal class RemoteConfigGatewayTransport(
                 // A 200 that does not carry a usable session is a contract violation, not a
                 // status the fetch policy should reason about.
                 deliver(if (outcome?.code == HTTP_OK) RemoteConfigFetchResponse.Failure() else outcome.asFailure())
+                return@enqueue
+            }
+            // Established BEFORE the session is remembered: a session minted for a project this
+            // installation has never read must not survive the fetch that revealed the conflict.
+            establishProjectId(identity, session)?.let { refusal ->
+                deliver(refusal)
                 return@enqueue
             }
             rememberSession(identity.sessionKey, session)
@@ -450,15 +493,15 @@ internal class RemoteConfigGatewayTransport(
         val etag: String?,
         val retryAfterMillis: Long?,
     ) {
-        fun asSuccessOrFailure(): RemoteConfigFetchResponse {
-            val bytes = body
-            val validator = etag
-            return if (bytes == null || bytes.isEmpty() || validator.isNullOrEmpty()) {
-                // An empty body, an over-budget body or a 200 without a strong validator cannot be
-                // admitted, and none of them is retryable.
-                RemoteConfigFetchResponse.Failure()
+        fun asSuccessOrFailure(projectId: Long): RemoteConfigFetchResponse {
+            val bytes = body?.takeIf { it.isNotEmpty() }
+            val validator = etag?.takeIf { it.isNotEmpty() }
+            // An empty body, an over-budget body, a 200 without a strong validator or a session
+            // carrying no usable project id cannot be admitted, and none of them is retryable.
+            return if (bytes != null && validator != null && projectId > 0) {
+                RemoteConfigFetchResponse.Success(bytes, validator, projectId)
             } else {
-                RemoteConfigFetchResponse.Success(bytes, validator)
+                RemoteConfigFetchResponse.Failure()
             }
         }
     }

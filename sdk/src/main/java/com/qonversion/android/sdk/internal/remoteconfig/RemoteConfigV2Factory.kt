@@ -72,7 +72,7 @@ internal object RemoteConfigV2Factory {
         val store = PersistentRemoteConfigSnapshotStore(cache, moshi)
         val core = RemoteConfigSnapshotCore(store, bundledRelease(application, primaryConfig.projectKey))
         // One single-threaded worker for BOTH the preloader and the manager: the manager's
-        // ordering contract (preload installs before a binding change observes the scope) is
+        // ordering contract (preload installs before a scope transition is observed) is
         // exactly this executor's FIFO ordering.
         val worker = Executors.newSingleThreadExecutor(daemonThreadFactory(REMOTE_CONFIG_V2_WORKER_THREAD_NAME))
         val scheduler = scheduler()
@@ -115,7 +115,6 @@ internal object RemoteConfigV2Factory {
             options = RemoteConfigV2Options(
                 projectKey = primaryConfig.projectKey,
                 environmentUid = config.environmentUid,
-                projectId = config.projectId,
             ),
             scopeHolder = scopeHolder,
             scheduler = scheduler,
@@ -161,6 +160,9 @@ internal object RemoteConfigV2Factory {
             sdkVersion = internalConfig.primaryConfig.sdkVersion,
         ),
         sessionStore = PersistentRemoteConfigSessionStore(cache, moshi),
+        // Durable per project key + environment: the project id the first bootstrap established
+        // must outlive both the session that carried it and the process that learned it.
+        projectIds = RemoteConfigProjectIdRegistry(PersistentRemoteConfigProjectIdStore(cache)),
         clock = clock,
         moshi = moshi,
         logger = logger,

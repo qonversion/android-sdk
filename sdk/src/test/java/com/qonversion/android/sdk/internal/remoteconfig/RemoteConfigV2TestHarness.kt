@@ -179,6 +179,7 @@ internal class RemoteConfigV2Harness(
             },
             clientContextProvider = clientContextProvider,
             sessionStore = InMemorySessionStore(),
+            projectIds = RemoteConfigProjectIdRegistry(InMemoryProjectIdStore()),
             clock = { System.currentTimeMillis() },
             moshi = Moshi.Builder().build(),
             logger = SilentLogger(),
@@ -199,7 +200,7 @@ internal class RemoteConfigV2Harness(
         core = core,
         readGuard = readGuard,
         coordinator = coordinator,
-        options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT, RC_PROJECT_ID),
+        options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT),
         scopeHolder = scopeHolder,
         scheduler = timeoutScheduler,
         worker = worker,
@@ -440,6 +441,21 @@ internal class InMemorySessionStore : RemoteConfigSessionStore {
         sessions.remove(key)
         return true
     }
+}
+
+internal class InMemoryProjectIdStore : RemoteConfigProjectIdStore {
+    private val projectIds = mutableMapOf<Pair<String, String>, Long>()
+
+    @Synchronized
+    override fun load(scope: RemoteConfigSnapshotScope): Long? = projectIds[key(scope)]
+
+    @Synchronized
+    override fun save(scope: RemoteConfigSnapshotScope, projectId: Long): Boolean {
+        projectIds[key(scope)] = projectId
+        return true
+    }
+
+    private fun key(scope: RemoteConfigSnapshotScope) = scope.projectKey to scope.environment
 }
 
 internal class SilentLogger : Logger {

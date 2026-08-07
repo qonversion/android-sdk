@@ -20,17 +20,26 @@ private const val REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS = 36
  * for exactly one identity, the gateway routes on that session, and the SDK stores each identity's
  * releases under its own scoped storage key.
  *
+ * The numeric project id is deliberately **not** configured here either, although a served snapshot
+ * is checked against one. Unlike the fingerprint it is stable, but the app is not its source: the
+ * SDK learns it from the gateway's session bootstrap, pins the first value it is ever told, and
+ * treats a later bootstrap that answers with a different one as a hard failure.
+ *
+ * That is a trade, not a strict improvement: the check no longer proves a snapshot belongs to the
+ * project the developer meant to target — the first bootstrap is trusted — it proves that every
+ * snapshot and every later session agree with the first one. What it buys is that a value the app
+ * could only ever get wrong is gone, and the property that actually protects a user — a snapshot
+ * being served for the session that asked for it — is enforced against the server's own answer.
+ *
  * @param baseUrl base URL of the Remote Config v2 gateway, e.g. `https://host/`. The SDK appends
  * its own paths, so a bare origin is expected.
  * @param environmentUid uid of the Remote Config environment to read.
- * @param projectId numeric project id the served snapshots must belong to.
  * @throws IllegalArgumentException if any value is malformed.
  */
 @ExperimentalQonversionApi
 class QRemoteConfigV2Config(
     val baseUrl: String,
     val environmentUid: String,
-    val projectId: Long,
 ) {
     init {
         require(baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
@@ -40,6 +49,5 @@ class QRemoteConfigV2Config(
             environmentUid.isNotEmpty() &&
                 environmentUid.codePointCount(0, environmentUid.length) <= REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS,
         ) { "Remote Config v2 environment uid must be 1..$REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS code points" }
-        require(projectId > 0) { "Remote Config v2 project id must be positive" }
     }
 }

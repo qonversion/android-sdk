@@ -15,19 +15,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class RemoteConfigFetchCoordinatorTest {
     private val scope = RemoteConfigSnapshotScope("project", "production", "canonical-user")
-    private val binding = RemoteConfigFetchBinding(
-        scope = scope,
-        expectation = RemoteConfigSnapshotEnvelopeExpectation(
-            projectId = 42,
-            environmentUid = "production",
-        ),
-    )
 
     @Test
     fun `concurrent fetches coalesce into one transport request`() {
         val transport = RecordingTransport()
         val coordinator = coordinator(transport)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val results = mutableListOf<RemoteConfigFetchResult>()
 
         coordinator.fetch(callback = results::add)
@@ -49,7 +42,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             policyStore = policyStore,
             policy = RemoteConfigFetchPolicy(minimumFetchIntervalMillis = 60_000),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         coordinator.fetch(callback = {})
         transport.complete(success("first", 1))
 
@@ -73,7 +66,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             maximumBackoffMillis = 10_000,
         )
         val first = coordinator(transport, clock, policyStore, policy)
-        first.transitionTo(binding)
+        first.transitionTo(scope)
         first.fetch(callback = {})
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 429, retryAfterMillis = 4_000))
 
@@ -84,7 +77,7 @@ internal class RemoteConfigFetchCoordinatorTest {
 
         val restartedTransport = RecordingTransport()
         val restarted = coordinator(restartedTransport, clock, policyStore, policy)
-        restarted.transitionTo(binding)
+        restarted.transitionTo(scope)
         val beforeDeadline = mutableListOf<RemoteConfigFetchResult>()
         restarted.fetch(callback = beforeDeadline::add)
         assertTrue(beforeDeadline.single() is RemoteConfigFetchResult.Backoff)
@@ -108,13 +101,11 @@ internal class RemoteConfigFetchCoordinatorTest {
                 maximumBackoffMillis = 10_000,
             ),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         coordinator.fetch(callback = {})
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 429, retryAfterMillis = 4_000))
 
-        coordinator.transitionTo(
-            binding.copy(scope = RemoteConfigSnapshotScope("project", "production", "identified-user")),
-        )
+        coordinator.transitionTo(RemoteConfigSnapshotScope("project", "production", "identified-user"))
         val result = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(forceReason = RemoteConfigFetchForceReason.Identify, callback = result::add)
 
@@ -139,7 +130,7 @@ internal class RemoteConfigFetchCoordinatorTest {
                 maximumBackoffMillis = 1_500,
             ),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         coordinator.fetch(callback = {})
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 500))
         assertEquals(
@@ -185,7 +176,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             scheduler = scheduler,
             policy = RemoteConfigFetchPolicy(minimumFetchIntervalMillis = 0, timeoutMillis = 100),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         core.acceptCandidate(scope, release("active", 1, "1"))
         core.activate()
         val results = mutableListOf<RemoteConfigFetchResult>()
@@ -212,7 +203,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             scheduler = scheduler,
             policy = RemoteConfigFetchPolicy(minimumFetchIntervalMillis = 0, timeoutMillis = 100),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val first = mutableListOf<RemoteConfigFetchResult>()
         val second = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(callback = first::add)
@@ -244,7 +235,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             scheduler = scheduler,
             policy = RemoteConfigFetchPolicy(minimumFetchIntervalMillis = 0, timeoutMillis = 100),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val results = mutableListOf<RemoteConfigFetchResult>()
 
         coordinator.fetch(callback = results::add)
@@ -259,7 +250,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val first = success("first", 1)
         coordinator.fetch(callback = {})
         transport.complete(first)
@@ -278,7 +269,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         coordinator.fetch(callback = {})
         transport.complete(success("active", 1))
         core.activate()
@@ -294,7 +285,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val canonical = success("canonical", 1)
         coordinator.fetch(callback = {})
         transport.complete(canonical)
@@ -315,7 +306,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val results = mutableListOf<RemoteConfigFetchResult>()
 
         coordinator.fetch(callback = results::add)
@@ -335,37 +326,36 @@ internal class RemoteConfigFetchCoordinatorTest {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val oldResults = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(callback = oldResults::add)
 
-        val nextBinding = binding.copy(
-            scope = RemoteConfigSnapshotScope("project", "production", "canonical-user-next"),
-            expectation = binding.expectation.copy(projectId = 43),
-        )
-        coordinator.transitionTo(nextBinding)
+        val nextScope = RemoteConfigSnapshotScope("project", "production", "canonical-user-next")
+        coordinator.transitionTo(nextScope)
         assertEquals(listOf(RemoteConfigFetchResult.Superseded), oldResults)
         transport.complete(success("late-private", 1))
         assertEquals(null, core.lastFetchedSnapshot())
 
         val nextResults = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(forceReason = RemoteConfigFetchForceReason.Identify, callback = nextResults::add)
-        transport.complete(success("wrong-project", 1))
+        // The session the response arrived on was minted for another project than the envelope
+        // names, so the admission is refused rather than stored under the new identity.
+        transport.complete(success("wrong-project", 1, projectId = 43))
         val transition = (nextResults.single() as RemoteConfigFetchResult.Fetched).transition
         assertEquals(RemoteConfigSnapshotTransitionStatus.Rejected, transition.status)
         assertEquals(null, core.lastFetchedSnapshot())
     }
 
     @Test
-    fun `same visible binding can be explicitly generation fenced on identify`() {
+    fun `same visible scope can be explicitly generation fenced on identify`() {
         val transport = RecordingTransport()
         val core = RemoteConfigSnapshotCore(InMemorySnapshotStore(), bundledRelease = null)
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val results = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(callback = results::add)
 
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         transport.complete(success("stale", 1))
 
         assertEquals(listOf(RemoteConfigFetchResult.Superseded), results)
@@ -388,7 +378,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             envelopeParser = parser,
         )
         val coordinator = coordinator(transport = transport, core = core)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val events = Collections.synchronizedList(mutableListOf<String>())
         coordinator.fetch { events += "callback" }
 
@@ -420,7 +410,7 @@ internal class RemoteConfigFetchCoordinatorTest {
     fun `one throwing coalesced callback cannot starve the remaining waiters`() {
         val transport = RecordingTransport()
         val coordinator = coordinator(transport)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val delivered = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch { throw AssertionError("consumer failure") }
         coordinator.fetch(callback = delivered::add)
@@ -434,7 +424,7 @@ internal class RemoteConfigFetchCoordinatorTest {
     fun `reentrant identity transition converts every remaining claimed callback to Superseded`() {
         val transport = RecordingTransport()
         val coordinator = coordinator(transport)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val first = mutableListOf<RemoteConfigFetchResult>()
         val second = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch { result ->
@@ -453,7 +443,7 @@ internal class RemoteConfigFetchCoordinatorTest {
     fun `callback delivery holds no coordinator monitor needed by a concurrent transition`() {
         val transport = RecordingTransport()
         val coordinator = coordinator(transport)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val transitionCompletedInsideCallback = AtomicBoolean(false)
         coordinator.fetch {
             val completed = CountDownLatch(1)
@@ -480,7 +470,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             maximumBackoffMillis = 10_000,
         )
         val coordinator = coordinator(transport, clock, policyStore, policy)
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val failed = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(callback = failed::add)
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 500))
@@ -492,7 +482,7 @@ internal class RemoteConfigFetchCoordinatorTest {
 
         val restartedTransport = RecordingTransport()
         val restarted = coordinator(restartedTransport, clock, policyStore, policy)
-        restarted.transitionTo(binding)
+        restarted.transitionTo(scope)
         restarted.fetch(callback = {})
         assertEquals(1, restartedTransport.requests.size)
     }
@@ -500,7 +490,7 @@ internal class RemoteConfigFetchCoordinatorTest {
     @Test
     fun `transport and timeout scheduler failures still complete or continue the operation`() {
         val transportFailure = coordinator(RemoteConfigFetchTransport { _, _ -> error("transport") })
-        transportFailure.transitionTo(binding)
+        transportFailure.transitionTo(scope)
         val failed = mutableListOf<RemoteConfigFetchResult>()
         transportFailure.fetch(callback = failed::add)
         assertTrue(failed.single() is RemoteConfigFetchResult.Failed)
@@ -511,7 +501,7 @@ internal class RemoteConfigFetchCoordinatorTest {
             scheduler = RemoteConfigFetchScheduler { _, _ -> error("scheduler") },
             policy = RemoteConfigFetchPolicy(minimumFetchIntervalMillis = 0, timeoutMillis = 100),
         )
-        schedulerFailure.transitionTo(binding)
+        schedulerFailure.transitionTo(scope)
         val recovered = mutableListOf<RemoteConfigFetchResult>()
         schedulerFailure.fetch(callback = recovered::add)
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 400))
@@ -539,7 +529,7 @@ internal class RemoteConfigFetchCoordinatorTest {
                 maximumBackoffMillis = 10_000,
             ),
         )
-        coordinator.transitionTo(binding)
+        coordinator.transitionTo(scope)
         val result = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(callback = result::add)
 
@@ -572,7 +562,7 @@ internal class RemoteConfigFetchCoordinatorTest {
                     maximumBackoffMillis = 10_000,
                 ),
             )
-            coordinator.transitionTo(binding)
+            coordinator.transitionTo(scope)
             coordinator.fetch(callback = {})
             transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 500))
             assertTrue(
@@ -605,9 +595,9 @@ internal class RemoteConfigFetchCoordinatorTest {
         )
     }
 
-    private fun success(uid: String, number: Long): RemoteConfigFetchResponse.Success {
+    private fun success(uid: String, number: Long, projectId: Long = 42): RemoteConfigFetchResponse.Success {
         val body = wireBody(uid, number).encodeToByteArray()
-        return RemoteConfigFetchResponse.Success(body, strongETag(body))
+        return RemoteConfigFetchResponse.Success(body, strongETag(body), projectId)
     }
 
     private fun wireBody(uid: String, number: Long) =

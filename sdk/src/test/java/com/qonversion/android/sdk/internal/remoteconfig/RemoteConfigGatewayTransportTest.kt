@@ -202,10 +202,13 @@ internal class RemoteConfigGatewayTransportTest {
         fetch(RemoteConfigFetchRequest(), transport)
         server.takeRequest()
         server.takeRequest()
+        // The session record plus the project id the bootstrap established.
         val keysAfterFirstIdentity = cache.strings.keys.toSet()
-        assertEquals(1, keysAfterFirstIdentity.size)
-        assertFalse(keysAfterFirstIdentity.single().contains(USER_A))
-        assertFalse(keysAfterFirstIdentity.single().contains(PROJECT_TOKEN))
+        assertEquals(2, keysAfterFirstIdentity.size)
+        keysAfterFirstIdentity.forEach { key ->
+            assertFalse(key, key.contains(USER_A))
+            assertFalse(key, key.contains(PROJECT_TOKEN))
+        }
 
         identity = identityFor(SCOPE_B, USER_B)
         server.enqueue(sessionResponse(OTHER_SESSION_TOKEN))
@@ -217,9 +220,100 @@ internal class RemoteConfigGatewayTransportTest {
         assertEquals("{\"user_uid\":\"$USER_B\"}", bootstrap.body.readUtf8())
         val snapshot = server.takeRequest()
         assertEquals(OTHER_SESSION_TOKEN, snapshot.getHeader(REMOTE_CONFIG_SESSION_HEADER))
-        assertEquals(2, cache.strings.size)
+        // Two session records, and still ONE project id record: it addresses the project, not the
+        // identity, so the second identity inherits the pin rather than re-learning it.
+        assertEquals(3, cache.strings.size)
         assertEquals(SESSION_TOKEN, store().load(KEY_A)?.token)
         assertEquals(OTHER_SESSION_TOKEN, store().load(KEY_B)?.token)
+    }
+
+    @Test
+    fun `the bootstrapped project id is published with the snapshot it authorised`() {
+        server.enqueue(sessionResponse(SESSION_TOKEN, projectId = 77))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+
+        val success = fetch(RemoteConfigFetchRequest()) as RemoteConfigFetchResponse.Success
+
+        // The admission check has no other source for it: nothing in this transport was configured
+        // with a project id.
+        assertEquals(77L, success.projectId)
+        assertEquals(77L, projectIdStore().load(SCOPE_A))
+    }
+
+    @Test
+    fun `a later bootstrap for a different project is refused instead of re-learned`() {
+        val transport = transport()
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport) is RemoteConfigFetchResponse.Success)
+
+        // The 401 forces a re-bootstrap, which now answers for another project.
+        server.enqueue(MockResponse().setResponseCode(401))
+        server.enqueue(sessionResponse(OTHER_SESSION_TOKEN, projectId = 43))
+
+        assertEquals(RemoteConfigFetchResponse.ProjectMismatch, fetch(RemoteConfigFetchRequest(), transport))
+        // No snapshot was read on the refused session, and it was not kept either.
+        assertEquals(4, server.requestCount)
+        assertNull(store().load(KEY_A))
+        assertEquals(PROJECT_ID, projectIdStore().load(SCOPE_A))
+    }
+
+    @Test
+    fun `a persisted session for another project is refused and dropped`() {
+        assertTrue(projectIdStore().save(SCOPE_A, PROJECT_ID))
+        persistSession(KEY_A, SESSION_TOKEN, projectId = 43)
+
+        assertEquals(RemoteConfigFetchResponse.ProjectMismatch, fetch(RemoteConfigFetchRequest()))
+        assertEquals(0, server.requestCount)
+        assertNull(store().load(KEY_A))
+    }
+
+    @Test
+    fun `an established project id outlives the registry and store instances that learned it`() {
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+        fetch(RemoteConfigFetchRequest())
+
+        // Brand new registry over a brand new store instance, i.e. what a cold start builds: the
+        // pin is read back from durable storage rather than re-learned from the next answer.
+        assertEquals(RemoteConfigProjectIdOutcome.Conflict, registry().establish(SCOPE_A, 43))
+        assertEquals(RemoteConfigProjectIdOutcome.Established, registry().establish(SCOPE_A, PROJECT_ID))
+    }
+
+    @Test
+    fun `a pin that could not be persisted still fences this process`() {
+        val refusingStore = object : RemoteConfigProjectIdStore {
+            override fun load(scope: RemoteConfigSnapshotScope): Long? = throw IllegalStateException("boom")
+            override fun save(scope: RemoteConfigSnapshotScope, projectId: Long) = false
+        }
+        val registry = RemoteConfigProjectIdRegistry(refusingStore)
+        val transport = transport(projectIds = registry)
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport) is RemoteConfigFetchResponse.Success)
+
+        // Storage neither kept nor could re-read the pin, and it still cannot be re-learned.
+        assertEquals(RemoteConfigProjectIdOutcome.Conflict, registry.establish(SCOPE_A, 43))
+        assertEquals(RemoteConfigProjectIdOutcome.Established, registry.establish(SCOPE_A, PROJECT_ID))
+    }
+
+    @Test
+    fun `a session without a usable project id is an ordinary failure, not a mismatch`() {
+        // Malformed, not misrouted: it says nothing about which project this installation reads,
+        // so neither the registry nor the transport may report the permanent addressing fault.
+        val registry = registry()
+        assertEquals(RemoteConfigProjectIdOutcome.Unusable, registry.establish(SCOPE_A, 0))
+        assertEquals(RemoteConfigProjectIdOutcome.Established, registry.establish(SCOPE_A, PROJECT_ID))
+
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                "{\"session_token\":\"$SESSION_TOKEN\",\"project_id\":0," +
+                    "\"environment\":\"prod\",\"expires_at\":\"2030-01-01T00:00:00Z\"}",
+            ),
+        )
+
+        assertEquals(RemoteConfigFetchResponse.Failure(), fetch(RemoteConfigFetchRequest()))
+        assertEquals(1, server.requestCount)
     }
 
     @Test
@@ -434,12 +528,14 @@ internal class RemoteConfigGatewayTransportTest {
     private fun transport(
         sessionStore: RemoteConfigSessionStore = store(),
         maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
+        projectIds: RemoteConfigProjectIdRegistry = registry(),
     ) = RemoteConfigGatewayTransport(
         callFactory = client,
         baseUrlProvider = { server.url("/").toString() },
         identityProvider = { identity },
         clientContextProvider = { clientContext },
         sessionStore = sessionStore,
+        projectIds = projectIds,
         clock = clock,
         moshi = Moshi.Builder().build(),
         logger = logger,
@@ -448,17 +544,22 @@ internal class RemoteConfigGatewayTransportTest {
 
     private fun store() = PersistentRemoteConfigSessionStore(cache, Moshi.Builder().build())
 
+    private fun projectIdStore() = PersistentRemoteConfigProjectIdStore(cache)
+
+    private fun registry() = RemoteConfigProjectIdRegistry(projectIdStore())
+
     private fun persistSession(
         key: RemoteConfigSessionKey,
         token: String,
         expiresAtMillis: Long = clock.now + 3_600_000,
+        projectId: Long = PROJECT_ID,
     ) {
         assertTrue(
             store().save(
                 key,
                 RemoteConfigGatewaySession(
                     token = token,
-                    projectId = 42,
+                    projectId = projectId,
                     environment = "prod",
                     expiresAtMillis = expiresAtMillis,
                 ),
@@ -466,11 +567,11 @@ internal class RemoteConfigGatewayTransportTest {
         )
     }
 
-    private fun sessionResponse(token: String) = MockResponse()
+    private fun sessionResponse(token: String, projectId: Long = PROJECT_ID) = MockResponse()
         .setResponseCode(200)
         .setHeader("Cache-Control", "private, no-store")
         .setBody(
-            "{\"session_token\":\"$token\",\"project_id\":42,\"environment\":\"prod\"," +
+            "{\"session_token\":\"$token\",\"project_id\":$projectId,\"environment\":\"prod\"," +
                 "\"expires_at\":\"2030-01-01T00:00:00Z\"}",
         )
 
@@ -547,6 +648,7 @@ internal class RemoteConfigGatewayTransportTest {
         const val AWAIT_SECONDS = 10L
         const val THREADS = 4
         const val PROJECT_TOKEN = "project-key-secret"
+        const val PROJECT_ID = 42L
         const val SESSION_TOKEN = "qrcs1.session-secret"
         const val OTHER_SESSION_TOKEN = "qrcs1.other-session-secret"
         const val USER_A = "QON_anon_a"
