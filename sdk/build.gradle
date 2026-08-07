@@ -84,7 +84,8 @@ ext {
     network = [
             core              : "com.squareup.retrofit2:retrofit:$retrofit_version",
             moshiConverter    : "com.squareup.retrofit2:converter-moshi:$retrofit_version",
-            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version"
+            okhttp            : "com.squareup.okhttp3:okhttp:$okhttp_version",
+            mockWebServer     : "com.squareup.okhttp3:mockwebserver:$okhttp_version"
     ]
 
     lifecycle = [
@@ -163,6 +164,9 @@ dependencies {
 
     // Mockito
     testImplementation 'org.mockito:mockito-core:4.3.1'
+
+    // MockWebServer (HTTP contract tests, pinned to the SDK's OkHttp version)
+    testImplementation network.mockWebServer
 
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'androidx.test.ext:junit:1.1.5'
