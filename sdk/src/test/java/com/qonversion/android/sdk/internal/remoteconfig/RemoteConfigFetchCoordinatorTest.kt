@@ -400,13 +400,19 @@ internal class RemoteConfigFetchCoordinatorTest {
         responseThread.start()
         assertTrue(parserStarted.await(2, TimeUnit.SECONDS))
         val transitionFinished = CountDownLatch(1)
+        val transitionEntered = CountDownLatch(1)
         val transitionThread = Thread {
+            transitionEntered.countDown()
             coordinator.transitionTo(null)
             events += "transition"
             transitionFinished.countDown()
         }
         transitionThread.start()
 
+        // Wait for the thread to actually be running before timing it: without this the
+        // "did not finish in 100 ms" check also passes when the thread was never scheduled,
+        // which turns the ordering assertion below into a race on a loaded machine.
+        assertTrue(transitionEntered.await(2, TimeUnit.SECONDS))
         assertFalse(transitionFinished.await(100, TimeUnit.MILLISECONDS))
         releaseParser.countDown()
         responseThread.join(2_000)

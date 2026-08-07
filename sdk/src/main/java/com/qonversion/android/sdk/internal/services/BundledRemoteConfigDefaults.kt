@@ -272,6 +272,18 @@ private fun parsePortableJson(bytes: ByteArray): ParsedJson? = try {
 
 internal fun isPortableRemoteConfigJson(bytes: ByteArray): Boolean = parsePortableJson(bytes) != null
 
+/**
+ * Holds one decoded portable JSON value.
+ *
+ * The wrapper exists so a valid JSON `null` stays distinguishable from "these bytes are not
+ * portable JSON": both would otherwise be a bare `null`, and the snapshot resolution ladder reads
+ * a `null` decode as "reject this value and try the next ladder position".
+ */
+internal class PortableRemoteConfigJson(val value: Any?)
+
+internal fun decodePortableRemoteConfigJson(bytes: ByteArray): PortableRemoteConfigJson? =
+    parsePortableJson(bytes)?.let { parsed -> PortableRemoteConfigJson(parsed.value) }
+
 @Suppress("ComplexMethod")
 private fun JsonReader.readPortableJsonValue(depth: Int): Any? = when (peek()) {
     JsonReader.Token.BEGIN_ARRAY -> {

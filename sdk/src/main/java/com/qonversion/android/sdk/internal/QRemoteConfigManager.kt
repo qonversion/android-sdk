@@ -8,6 +8,7 @@ import com.qonversion.android.sdk.dto.QRemoteConfigList
 import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.provider.UserStateProvider
+import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigIdentityBridge
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.services.QRemoteConfigService
 import com.qonversion.android.sdk.internal.storage.RemoteConfigCache
@@ -107,6 +108,9 @@ internal class QRemoteConfigManager @Inject constructor(
     private val deliveryOrigins = mutableMapOf<String?, QRemoteConfigDeliveryOrigin>()
     private val listRequests = mutableListOf<ListRequestData>()
     lateinit var userPropertiesManager: QUserPropertiesManager
+
+    /** Observers of the identity/targeting transitions this manager owns (Remote Config v2). */
+    internal val identityBridge = RemoteConfigIdentityBridge()
     private val mainHandler = Handler(Looper.getMainLooper())
     private val identityTransitionLock = Any()
 
@@ -158,7 +162,10 @@ internal class QRemoteConfigManager @Inject constructor(
     // stale so the next load fetches a fresh evaluation. Non-destructive —
     // loading states and pending callbacks survive, and the generation bump
     // stops in-flight loads from re-caching a superseded response.
-    fun invalidateRemoteConfigsCache() = invalidateOnAnyThread {}
+    fun invalidateRemoteConfigsCache() {
+        invalidateOnAnyThread {}
+        identityBridge.targetingInvalidated()
+    }
 
     fun onUserUpdate(updateIdentity: () -> Unit = {}) {
         // The generation and the UID mutation share one linearization point.
@@ -168,6 +175,7 @@ internal class QRemoteConfigManager @Inject constructor(
             invalidationGeneration.incrementAndGet()
             userGeneration.incrementAndGet()
             updateIdentity()
+            identityBridge.identityScopeChanged()
             if (Looper.myLooper() == Looper.getMainLooper()) {
                 resetIdentityStateIfNeeded()
             } else {

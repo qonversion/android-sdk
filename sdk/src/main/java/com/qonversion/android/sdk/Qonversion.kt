@@ -98,6 +98,23 @@ interface Qonversion {
     }
 
     /**
+     * The experimental Remote Config v2 snapshot API: fetch, activate, and read an immutable
+     * release whose every value reports its own source (server, cache or bundled fallback).
+     *
+     * Unrelated to [remoteConfig] / [remoteConfigList], which serve the v1 pipeline.
+     *
+     * Always returns a usable object. If the app did not pass a
+     * [com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigV2Config] to
+     * [QonversionConfig.Builder.setRemoteConfigV2Config], the pipeline is dormant: fetches
+     * complete with `NotConfigured`, `current` is empty, and only
+     * [QRemoteConfigSnapshots.fallbackRemoteConfigValue] answers.
+     *
+     * @see QRemoteConfigSnapshots
+     */
+    @ExperimentalQonversionApi
+    fun remoteConfigSnapshots(): QRemoteConfigSnapshots
+
+    /**
      * Call this function to sync the subscriber data with the first launch
      * when Qonversion is implemented.
      *

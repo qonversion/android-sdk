@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalQonversionApi::class)
+
 package com.qonversion.android.sdk
 
 import android.app.Application
@@ -7,6 +9,7 @@ import com.qonversion.android.sdk.dto.QLaunchMode
 import android.content.Context
 import androidx.annotation.RawRes
 import com.qonversion.android.sdk.dto.entitlements.QEntitlementsCacheLifetime
+import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigV2Config
 import com.qonversion.android.sdk.internal.EntitlementsUpdateListenerAdapter
 import com.qonversion.android.sdk.internal.dto.config.CacheConfig
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
@@ -28,7 +31,8 @@ class QonversionConfig internal constructor(
     internal val application: Application,
     internal val primaryConfig: PrimaryConfig,
     internal val cacheConfig: CacheConfig,
-    internal val deferredPurchasesListener: QDeferredPurchasesListener? = null
+    internal val deferredPurchasesListener: QDeferredPurchasesListener? = null,
+    internal val remoteConfigV2Config: QRemoteConfigV2Config? = null
 ) {
 
     /**
@@ -53,6 +57,7 @@ class QonversionConfig internal constructor(
         internal var proxyUrl: String? = null
         internal var isKidsMode: Boolean = false
         internal var sendFbAttribution: Boolean = true
+        internal var remoteConfigV2Config: QRemoteConfigV2Config? = null
         @RawRes
         internal var fallbackFileIdentifier: Int? = null
 
@@ -146,6 +151,22 @@ class QonversionConfig internal constructor(
         }
 
         /**
+         * Enables the experimental Remote Config v2 snapshot pipeline.
+         *
+         * Without this call the pipeline stays dormant: the SDK creates no v2 storage, starts no
+         * background workers and contacts no v2 endpoint. There is no default base URL — the whole
+         * feature is opt-in per app.
+         *
+         * @param config addressing of the Remote Config v2 gateway.
+         * @return builder instance for chain calls.
+         * @see Qonversion.remoteConfigs
+         */
+        @ExperimentalQonversionApi
+        fun setRemoteConfigV2Config(config: QRemoteConfigV2Config): Builder = apply {
+            this.remoteConfigV2Config = config
+        }
+
+        /**
          * Use this function to enable Qonversion SDK Kids mode.
          * With this mode activated, our SDK does not collect any information that violates Google Children's Privacy Policy.
          */
@@ -186,7 +207,8 @@ class QonversionConfig internal constructor(
                 context.application,
                 primaryConfig,
                 cacheConfig,
-                deferredPurchasesListener
+                deferredPurchasesListener,
+                remoteConfigV2Config
             )
         }
     }
