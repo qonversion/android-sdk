@@ -15,6 +15,7 @@ import com.qonversion.android.sdk.internal.storage.Cache
 import com.qonversion.android.sdk.internal.storage.PersistentRemoteConfigSnapshotStore
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadFactory
@@ -116,13 +117,7 @@ internal object RemoteConfigV2Factory {
             core = core,
             readGuard = readGuard,
             coordinator = coordinator,
-            ackSender = RemoteConfigActivationAckSender(
-                transport = transport,
-                store = PersistentRemoteConfigActivationAckStore(cache, moshi),
-                clock = clock,
-                random = random,
-                scheduler = scheduler,
-            ),
+            ackSender = ackSender(transport, cache, moshi, clock, random, scheduler, worker),
             options = RemoteConfigV2Options(
                 projectKey = primaryConfig.projectKey,
                 environmentUid = config.environmentUid,
@@ -134,6 +129,39 @@ internal object RemoteConfigV2Factory {
             logger = logger,
         )
     }
+
+    /**
+     * The activation ack queue.
+     *
+     * It shares the transport (same session, same bootstrap) and the jitter source with the fetch
+     * path, but its retries are handed to [worker] rather than run on the timer thread: the timer
+     * also releases fetch waiters, and an ack retry does a preferences read and a durable write.
+     */
+    @Suppress("LongParameterList")
+    private fun ackSender(
+        transport: RemoteConfigAckTransport,
+        cache: Cache,
+        moshi: Moshi,
+        clock: RemoteConfigFetchClock,
+        random: RemoteConfigFetchRandom,
+        scheduler: RemoteConfigFetchScheduler,
+        worker: Executor,
+    ) = RemoteConfigActivationAckSender(
+        transport = transport,
+        store = PersistentRemoteConfigActivationAckStore(cache, moshi),
+        clock = clock,
+        random = random,
+        scheduler = { delayMillis, action ->
+            scheduler.schedule(delayMillis) {
+                try {
+                    worker.execute(action)
+                } catch (@Suppress("TooGenericExceptionCaught") _: RuntimeException) {
+                    // A shut-down worker simply means this retry is not taken; the ack stays
+                    // durable for the next process.
+                }
+            }
+        },
+    )
 
     @Suppress("LongParameterList")
     private fun transport(

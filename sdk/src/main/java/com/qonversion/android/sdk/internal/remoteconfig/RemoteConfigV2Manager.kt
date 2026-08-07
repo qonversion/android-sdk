@@ -260,7 +260,11 @@ internal class RemoteConfigV2Manager(
         val scope = scopeHolder.scope ?: return
         val noted = NotedActivation(scope, releaseNumber)
         if (notedActivation.getAndSet(noted) == noted) return
-        submit { ackSender.recordActivation(scope, releaseNumber) }
+        // A rejected submit must not leave the activation marked as handed off, or the ack would be
+        // lost for good; the next read or activation of the same release then offers it again.
+        if (!submit { ackSender.recordActivation(scope, releaseNumber) }) {
+            notedActivation.compareAndSet(noted, null)
+        }
     }
 
     private fun scopeFor(canonicalUserId: String): RemoteConfigSnapshotScope? = try {

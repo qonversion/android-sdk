@@ -277,7 +277,9 @@ internal class RemoteConfigGatewayTransport(
             outcome == null -> deliver(RemoteConfigAckResponse.Retryable)
             outcome.code in HTTP_SUCCESS_MIN..HTTP_SUCCESS_MAX -> deliver(RemoteConfigAckResponse.Delivered)
             outcome.code == HTTP_UNAUTHORIZED -> {
-                forgetSession(identity.sessionKey)
+                // Deliberately NOT forgetSession(): the stored session is shared with the config
+                // read path, and an out-of-band signal may not invalidate it. Minting simply
+                // replaces it if it really is dead, and the read path applies its own 401 rule.
                 if (!allowReBootstrap) {
                     deliver(RemoteConfigAckResponse.Permanent)
                     return

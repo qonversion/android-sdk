@@ -35,13 +35,14 @@ internal data class RemoteConfigActivationAck(
 /**
  * The durable ack bookkeeping of one identity scope.
  *
- * [lastAckedReleaseNumber] is what makes the "exactly one ack per (scope, release)" promise survive
- * a restart: without it every cold start would re-ack the release it activates from persisted
- * state.
+ * [settledReleaseNumber] is what makes the "exactly one ack per (scope, release)" promise survive a
+ * restart: without it every cold start would re-ack the release it activates from persisted state.
+ * A release is settled once the gateway either accepted the ack or refused it permanently — both
+ * are answers, and neither is worth asking again.
  */
 internal data class RemoteConfigActivationAckRecord(
     val pending: RemoteConfigActivationAck?,
-    val lastAckedReleaseNumber: Long,
+    val settledReleaseNumber: Long,
 )
 
 internal interface RemoteConfigActivationAckStore {
@@ -89,10 +90,11 @@ internal fun interface RemoteConfigAckTransport {
  * 3. **A queued ack is durable.** It is persisted before the first attempt and cleared only when
  *    delivered, permanently refused, or superseded — so a process death between activation and
  *    delivery does not lose it.
- * 4. **Retries are bounded.** [maxAttempts] attempts with exponentially growing, jittered delays,
- *    then the in-process delivery is abandoned. The durable record survives that abandonment, so
- *    the next process start (or the next identity binding) picks it up once — which is a bounded
- *    number of attempts per process, never a storm inside one.
+ * 4. **Retries are bounded per process, not per binding.** [maxAttempts] attempts with
+ *    exponentially growing, jittered delays, then delivery of that release is abandoned for the
+ *    lifetime of the process — a rebind cannot buy it another three. The durable record survives
+ *    the abandonment, so the next process start tries once more, and only a newer release re-arms
+ *    delivery inside this one.
  *
  * The whole object only exists when the app configured Remote Config v2 (see
  * [RemoteConfigV2Factory]), which is what keeps the feature dormant otherwise.
@@ -109,15 +111,29 @@ internal class RemoteConfigActivationAckSender(
     private val maximumRetryDelayMillis: Long = REMOTE_CONFIG_ACK_MAXIMUM_RETRY_DELAY_MILLIS,
 ) {
     private val lock = Any()
+    private val storeLock = Any()
     private val dropped = AtomicLong()
     private var boundScope: RemoteConfigSnapshotScope? = null
     private var pending: RemoteConfigActivationAck? = null
-    private var lastAckedReleaseNumber = 0L
+    private var settledReleaseNumber = 0L
     private var generation = 0L
     private var inFlight = false
     private var attempt = 0
     private var retryScheduled = false
     private var retryTask: RemoteConfigFetchScheduledTask? = null
+    private var writeStamp = 0L
+    private var lastWrittenStamp = 0L
+
+    /**
+     * The (scope, release) whose retry ladder this process already exhausted.
+     *
+     * In memory on purpose: the bound on attempts is per process, so a rebind — an identify that
+     * returns to an identity, a logout and back — must NOT buy the same release three more
+     * attempts against a gateway that is failing. Only a NEWER release re-arms delivery, and a
+     * genuinely new process reads the still-pending record and tries once more.
+     */
+    private var abandonedScope: RemoteConfigSnapshotScope? = null
+    private var abandonedReleaseNumber = 0L
 
     /** Acks abandoned without delivery, ever. Deliberately a counter and not a log. */
     val droppedAckCount: Long get() = dropped.get()
@@ -136,11 +152,11 @@ internal class RemoteConfigActivationAckSender(
             invalidateLocked()
             boundScope = scope
             pending = null
-            lastAckedReleaseNumber = 0
+            settledReleaseNumber = 0
             if (scope != null) {
                 val record = loadRecord(scope)
                 pending = record?.pending
-                lastAckedReleaseNumber = record?.lastAckedReleaseNumber ?: 0
+                settledReleaseNumber = record?.settledReleaseNumber ?: 0
             }
         }
         startIfIdle()
@@ -157,15 +173,18 @@ internal class RemoteConfigActivationAckSender(
     @Suppress("ReturnCount")
     fun recordActivation(scope: RemoteConfigSnapshotScope?, releaseNumber: Long) {
         if (scope == null || releaseNumber <= 0) return
-        synchronized(lock) {
+        val write = synchronized(lock) {
             if (scope != boundScope) return
-            if (releaseNumber == lastAckedReleaseNumber) return
+            if (releaseNumber == settledReleaseNumber) return
             if (pending?.releaseNumber == releaseNumber) return
             pending = RemoteConfigActivationAck(releaseNumber, nowSeconds())
-            persistLocked(scope)
             // The newest activation supersedes an older in-flight or scheduled one.
             invalidateLocked()
+            prepareWriteLocked(scope)
         }
+        // Durable BEFORE the first attempt, and outside the lock: the write ends in a synchronous
+        // disk commit, and no other thread may be parked on the sender while it runs.
+        flush(write)
         startIfIdle()
     }
 
@@ -187,12 +206,18 @@ internal class RemoteConfigActivationAckSender(
             val scope = boundScope ?: return
             val ack = pending ?: return
             if (inFlight || retryScheduled) return
+            if (isAbandonedLocked(scope, ack)) return
             inFlight = true
             attempt = 1
             Attempt(generation, scope, ack)
         }
         dispatch(started)
     }
+
+    private fun isAbandonedLocked(
+        scope: RemoteConfigSnapshotScope,
+        ack: RemoteConfigActivationAck,
+    ): Boolean = scope == abandonedScope && ack.releaseNumber == abandonedReleaseNumber
 
     private fun dispatch(sending: Attempt) {
         try {
@@ -202,38 +227,49 @@ internal class RemoteConfigActivationAckSender(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun onResponse(sent: Attempt, response: RemoteConfigAckResponse) {
         if (!sent.claim()) return
         var retryDelayMillis: Long? = null
-        synchronized(lock) {
+        val write = synchronized(lock) {
             // A bind or a newer activation happened while this attempt was on the wire: its answer
             // says nothing about the state the sender is in now.
             if (sent.generation != generation || sent.scope != boundScope) return
             inFlight = false
-            when (response) {
-                RemoteConfigAckResponse.Delivered -> {
-                    lastAckedReleaseNumber = maxOf(lastAckedReleaseNumber, sent.ack.releaseNumber)
-                    clearPendingLocked(sent)
-                }
+            val write = when (response) {
+                // Both outcomes SETTLE the release durably. A permanent refusal is settled rather
+                // than forgotten on purpose: the likeliest one is a gateway that does not serve
+                // /ack at all, and forgetting it would re-queue and re-POST the very same ack on
+                // every process start and every identity binding, forever.
+                RemoteConfigAckResponse.Delivered -> settleLocked(sent)
                 RemoteConfigAckResponse.Permanent -> {
                     dropped.incrementAndGet()
-                    clearPendingLocked(sent)
+                    settleLocked(sent)
                 }
                 // Not an attempt: the retry budget is untouched and the record stays queued.
-                RemoteConfigAckResponse.NotAddressable -> Unit
+                RemoteConfigAckResponse.NotAddressable -> null
                 RemoteConfigAckResponse.Retryable -> if (attempt >= maxAttempts) {
                     dropped.incrementAndGet()
+                    // Owed but abandoned for this process; the durable record is left untouched so
+                    // the next process start delivers it.
+                    abandonedScope = sent.scope
+                    abandonedReleaseNumber = sent.ack.releaseNumber
+                    null
                 } else {
                     retryDelayMillis = retryDelayLocked(attempt)
+                    null
                 }
             }
             retryDelayMillis?.let { scheduleRetryLocked(it) }
+            write
         }
+        flush(write)
     }
 
-    private fun clearPendingLocked(sent: Attempt) {
+    private fun settleLocked(sent: Attempt): PendingWrite {
+        settledReleaseNumber = maxOf(settledReleaseNumber, sent.ack.releaseNumber)
         if (pending?.releaseNumber == sent.ack.releaseNumber) pending = null
-        persistLocked(sent.scope)
+        return prepareWriteLocked(sent.scope)
     }
 
     private fun scheduleRetryLocked(delayMillis: Long) {
@@ -298,22 +334,48 @@ internal class RemoteConfigActivationAckSender(
             SAFE_FALLBACK_JITTER
         }
         val jitter = randomValue.takeIf { it.isFinite() && it >= 0.0 && it < 1.0 } ?: SAFE_FALLBACK_JITTER
-        return (cap.toDouble() * jitter).toLong().coerceAtLeast(MINIMUM_RETRY_DELAY_MILLIS)
+        // Half the cap plus jitter, not full-downward jitter: the latter can put all three attempts
+        // inside a few milliseconds, which is the storm the bound exists to prevent.
+        val half = cap / 2
+        return (half + (half.toDouble() * jitter).toLong()).coerceAtLeast(MINIMUM_RETRY_DELAY_MILLIS)
     }
 
-    private fun persistLocked(scope: RemoteConfigSnapshotScope) {
-        val record = RemoteConfigActivationAckRecord(pending, lastAckedReleaseNumber)
-        try {
-            if (record.pending == null && record.lastAckedReleaseNumber <= 0) {
-                store.clear(scope)
-            } else {
-                store.save(scope, record)
+    private fun prepareWriteLocked(scope: RemoteConfigSnapshotScope) = PendingWrite(
+        scope = scope,
+        record = RemoteConfigActivationAckRecord(pending, settledReleaseNumber),
+        stamp = ++writeStamp,
+    )
+
+    /**
+     * Writes a prepared record, outside [lock] so a synchronous disk commit can never park the
+     * thread that is activating or fetching.
+     *
+     * The stamp is what keeps two concurrent writers from committing out of order: a write that
+     * was prepared before the last committed one is dropped rather than allowed to resurrect it.
+     */
+    private fun flush(write: PendingWrite?) {
+        if (write == null) return
+        synchronized(storeLock) {
+            if (write.stamp <= lastWrittenStamp) return
+            lastWrittenStamp = write.stamp
+            try {
+                if (write.record.pending == null && write.record.settledReleaseNumber <= 0) {
+                    store.clear(write.scope)
+                } else {
+                    store.save(write.scope, write.record)
+                }
+            } catch (@Suppress("TooGenericExceptionCaught") _: Throwable) {
+                // The in-memory record still governs this process; a lost write can at worst cost
+                // one duplicate ack after a restart, which the gateway must tolerate anyway.
             }
-        } catch (@Suppress("TooGenericExceptionCaught") _: Throwable) {
-            // The in-memory record still governs this process; a lost write can at worst cost one
-            // duplicate ack after a restart, which the gateway is required to tolerate.
         }
     }
+
+    private class PendingWrite(
+        val scope: RemoteConfigSnapshotScope,
+        val record: RemoteConfigActivationAckRecord,
+        val stamp: Long,
+    )
 
     private fun loadRecord(scope: RemoteConfigSnapshotScope): RemoteConfigActivationAckRecord? = try {
         store.load(scope)
@@ -321,11 +383,15 @@ internal class RemoteConfigActivationAckSender(
         null
     }
 
+    /**
+     * The activation timestamp, floored at 1: a zero would be indistinguishable from "absent" in
+     * the durable record and would make the queued ack silently un-persistable.
+     */
     private fun nowSeconds(): Long = try {
         clock.nowMillis().coerceAtLeast(0) / MILLIS_PER_SECOND
     } catch (@Suppress("TooGenericExceptionCaught") _: Throwable) {
         0
-    }
+    }.coerceAtLeast(1)
 
     /**
      * One delivery attempt.
@@ -379,7 +445,7 @@ internal class PersistentRemoteConfigActivationAckStore(
             pending = persisted.pendingReleaseNumber
                 .takeIf { it > 0 }
                 ?.let { RemoteConfigActivationAck(it, persisted.pendingActivatedAtSeconds) },
-            lastAckedReleaseNumber = persisted.lastAckedReleaseNumber,
+            settledReleaseNumber = persisted.settledReleaseNumber,
         )
     }
 
@@ -390,7 +456,7 @@ internal class PersistentRemoteConfigActivationAckStore(
             version = REMOTE_CONFIG_ACK_VERSION,
             pendingReleaseNumber = record.pending?.releaseNumber ?: 0,
             pendingActivatedAtSeconds = record.pending?.activatedAtSeconds ?: 0,
-            lastAckedReleaseNumber = record.lastAckedReleaseNumber,
+            settledReleaseNumber = record.settledReleaseNumber,
         )
         if (!persisted.isValid()) return false
         val raw = try {
@@ -419,7 +485,7 @@ internal class PersistentRemoteConfigActivationAckStore(
     private fun PersistedRemoteConfigActivationAck.isValid(): Boolean =
         version == REMOTE_CONFIG_ACK_VERSION &&
             pendingReleaseNumber >= 0 &&
-            lastAckedReleaseNumber >= 0 &&
+            settledReleaseNumber >= 0 &&
             pendingActivatedAtSeconds >= 0 &&
             (pendingReleaseNumber == 0L || pendingActivatedAtSeconds > 0)
 
@@ -439,8 +505,8 @@ internal data class PersistedRemoteConfigActivationAck(
     val pendingReleaseNumber: Long,
     @Json(name = "pending_activated_at")
     val pendingActivatedAtSeconds: Long,
-    @Json(name = "last_acked_release_number")
-    val lastAckedReleaseNumber: Long,
+    @Json(name = "settled_release_number")
+    val settledReleaseNumber: Long,
 )
 
 private fun remoteConfigAckStorageKey(scope: RemoteConfigSnapshotScope): String {

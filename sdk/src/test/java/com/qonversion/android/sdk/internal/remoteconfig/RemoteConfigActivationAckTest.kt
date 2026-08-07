@@ -81,7 +81,7 @@ internal class RemoteConfigActivationAckTest {
         assertEquals("application/json; charset=utf-8", ack.contentType)
         assertEquals(SEEDED_SESSION_TOKEN, ack.sessionHeader)
         assertEquals("{\"release_number\":$RELEASE_7,\"activated_at\":$ACTIVATED_AT_SECONDS}", ack.body)
-        awaitRecord { it?.pending == null && it?.lastAckedReleaseNumber == RELEASE_7 }
+        awaitRecord { it?.pending == null && it?.settledReleaseNumber == RELEASE_7 }
         assertEquals(0, sender.droppedAckCount)
     }
 
@@ -91,7 +91,7 @@ internal class RemoteConfigActivationAckTest {
         sender.bind(SCOPE_A)
         sender.recordActivation(SCOPE_A, RELEASE_7)
         awaitAcks(1)
-        awaitRecord { it?.lastAckedReleaseNumber == RELEASE_7 }
+        awaitRecord { it?.settledReleaseNumber == RELEASE_7 }
 
         // The same release re-reported (an implicit activation followed by an explicit activate()).
         sender.recordActivation(SCOPE_A, RELEASE_7)
@@ -111,7 +111,7 @@ internal class RemoteConfigActivationAckTest {
         sender.recordActivation(SCOPE_A, RELEASE_7)
         awaitAcks(2)
 
-        awaitRecord { it?.lastAckedReleaseNumber == RELEASE_7 && it.pending == null }
+        awaitRecord { it?.settledReleaseNumber == RELEASE_7 && it.pending == null }
         // Exactly one mint: the single re-bootstrap the 401 licensed, and no other.
         assertEquals(1, gateway.sessions.size)
         assertEquals(listOf(SEEDED_SESSION_TOKEN, SESSION_TOKEN), gateway.acks.map { it.sessionHeader })
@@ -131,25 +131,32 @@ internal class RemoteConfigActivationAckTest {
         awaitAcks(2)
 
         awaitDropped(sender, 1)
-        awaitRecord { it?.pending == null }
+        // Permanent is an answer: the release is settled, not left owed.
+        awaitRecord { it?.pending == null && it?.settledReleaseNumber == RELEASE_7 }
         scheduler.runAll()
         assertEquals(2, gateway.acks.size)
-        assertEquals(0, store.load(SCOPE_A)?.lastAckedReleaseNumber ?: 0)
     }
 
     @Test
-    fun `a 404 is permanent and is never retried`() {
+    fun `a permanent refusal settles the release instead of forgetting it`() {
+        // A gateway that does not serve /ack at all answers every ack with 404. Forgetting such a
+        // release would re-queue and re-POST the same ack on every start and every binding.
         gateway.scriptAck(HTTP_NOT_FOUND)
         val sender = sender()
         sender.bind(SCOPE_A)
 
         sender.recordActivation(SCOPE_A, RELEASE_7)
         awaitAcks(1)
-
         awaitDropped(sender, 1)
+        awaitRecord { it?.pending == null && it?.settledReleaseNumber == RELEASE_7 }
+
         scheduler.runAll()
+        sender.bind(SCOPE_A)
+        sender.recordActivation(SCOPE_A, RELEASE_7)
+        // A whole new process over the same durable state must stay silent as well.
+        sender().bind(SCOPE_A)
+
         assertEquals(1, gateway.acks.size)
-        assertNull(store.load(SCOPE_A)?.pending)
     }
 
     @Test
@@ -159,21 +166,37 @@ internal class RemoteConfigActivationAckTest {
         sender.bind(SCOPE_A)
 
         sender.recordActivation(SCOPE_A, RELEASE_7)
-        awaitAcks(1)
-        scheduler.runAll()
-        awaitAcks(2)
-        scheduler.runAll()
-        awaitAcks(3)
-        awaitDropped(sender, 1)
+        runRetryLadder(sender)
 
-        // Three attempts, jittered off an exponential cap, and nothing scheduled afterwards.
+        // Three attempts, half-cap plus jitter, and nothing scheduled afterwards.
         assertEquals(REMOTE_CONFIG_ACK_MAX_ATTEMPTS, gateway.acks.size)
-        assertEquals(listOf(500L, 1_000L), scheduler.requestedDelays)
+        assertEquals(listOf(750L, 1_500L), scheduler.requestedDelays)
         assertEquals(0, scheduler.pendingCount())
         scheduler.runAll()
         assertEquals(REMOTE_CONFIG_ACK_MAX_ATTEMPTS, gateway.acks.size)
         // Dropped in this process, still owed: the record is what a later start picks up.
         assertEquals(RELEASE_7, store.load(SCOPE_A)?.pending?.releaseNumber)
+    }
+
+    @Test
+    fun `an exhausted retry ladder is not re-armed by a re-binding`() {
+        gateway.scriptAck(*IntArray(RETRY_SCRIPT_SIZE) { HTTP_SERVICE_UNAVAILABLE })
+        val sender = sender()
+        sender.bind(SCOPE_A)
+        sender.recordActivation(SCOPE_A, RELEASE_7)
+        runRetryLadder(sender)
+
+        // An identify that lands on the same identity, and a re-report of the same activation.
+        sender.bind(SCOPE_A)
+        sender.recordActivation(SCOPE_A, RELEASE_7)
+        sender.bind(SCOPE_B)
+        sender.bind(SCOPE_A)
+
+        assertEquals(REMOTE_CONFIG_ACK_MAX_ATTEMPTS, gateway.acks.size)
+        // Only a NEWER release re-arms delivery.
+        sender.recordActivation(SCOPE_A, RELEASE_9)
+        awaitAcks(REMOTE_CONFIG_ACK_MAX_ATTEMPTS + 1)
+        assertEquals(RELEASE_9, gateway.acks.last().releaseNumber())
     }
 
     @Test
@@ -192,7 +215,7 @@ internal class RemoteConfigActivationAckTest {
             "{\"release_number\":$RELEASE_9,\"activated_at\":$LATER_ACTIVATED_AT_SECONDS}",
             gateway.acks[1].body,
         )
-        awaitRecord { it?.lastAckedReleaseNumber == RELEASE_9 && it.pending == null }
+        awaitRecord { it?.settledReleaseNumber == RELEASE_9 && it.pending == null }
         // The superseded retry never fires, so release 7 is never re-sent.
         scheduler.runAll()
         assertEquals(2, gateway.acks.size)
@@ -205,12 +228,7 @@ internal class RemoteConfigActivationAckTest {
         val crashed = sender()
         crashed.bind(SCOPE_A)
         crashed.recordActivation(SCOPE_A, RELEASE_7)
-        awaitAcks(1)
-        scheduler.runAll()
-        awaitAcks(2)
-        scheduler.runAll()
-        awaitAcks(3)
-        awaitDropped(crashed, 1)
+        runRetryLadder(crashed)
 
         // A new process: new sender, new scheduler, same durable store.
         scheduler = ManualScheduler()
@@ -224,7 +242,7 @@ internal class RemoteConfigActivationAckTest {
             "{\"release_number\":$RELEASE_7,\"activated_at\":$ACTIVATED_AT_SECONDS}",
             gateway.acks[3].body,
         )
-        awaitRecord { it != null && it.pending == null && it.lastAckedReleaseNumber == RELEASE_7 }
+        awaitRecord { it != null && it.pending == null && it.settledReleaseNumber == RELEASE_7 }
         assertEquals(0, restarted.droppedAckCount)
     }
 
@@ -244,7 +262,7 @@ internal class RemoteConfigActivationAckTest {
         assertEquals(1, scheduler.pendingCount())
         scheduler.runAll()
         awaitAcks(2)
-        awaitRecord { it?.lastAckedReleaseNumber == RELEASE_7 }
+        awaitRecord { it?.settledReleaseNumber == RELEASE_7 }
         assertEquals(2, gateway.acks.size)
     }
 
@@ -327,6 +345,17 @@ internal class RemoteConfigActivationAckTest {
         moshi = Moshi.Builder().build(),
         logger = SilentLogger(),
     )
+
+    /** Walks the bounded retry ladder to its end, without racing the timer it arms. */
+    private fun runRetryLadder(sender: RemoteConfigActivationAckSender) {
+        repeat(REMOTE_CONFIG_ACK_MAX_ATTEMPTS - 1) { attempt ->
+            awaitAcks(attempt + 1)
+            await("no retry was scheduled after attempt ${attempt + 1}") { scheduler.pendingCount() > 0 }
+            scheduler.runAll()
+        }
+        awaitAcks(REMOTE_CONFIG_ACK_MAX_ATTEMPTS)
+        awaitDropped(sender, 1)
+    }
 
     private fun awaitAcks(count: Int) = await("expected $count acks, saw ${gateway.acks.size}") {
         gateway.acks.size >= count
@@ -416,6 +445,7 @@ internal class RemoteConfigActivationAckTest {
         const val RELEASE_9 = 9L
         const val ACTIVATED_AT_SECONDS = 1_700_000_000L
         const val LATER_ACTIVATED_AT_SECONDS = 1_700_000_900L
+        const val RETRY_SCRIPT_SIZE = 8
         val RELEASE_NUMBER_PATTERN = Regex("\"release_number\":(\\d+)")
         val SCOPE_A = RemoteConfigSnapshotScope(RC_PROJECT_KEY, RC_ENVIRONMENT, "QON_anon_a")
         val SCOPE_B = RemoteConfigSnapshotScope(RC_PROJECT_KEY, RC_ENVIRONMENT, "QON_anon_b")
