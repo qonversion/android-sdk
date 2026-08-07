@@ -380,7 +380,11 @@ internal class RemoteConfigFetchCoordinatorTest {
         val coordinator = coordinator(transport = transport, core = core)
         coordinator.transitionTo(scope)
         val events = Collections.synchronizedList(mutableListOf<String>())
-        coordinator.fetch { events += "callback" }
+        val results = Collections.synchronizedList(mutableListOf<RemoteConfigFetchResult>())
+        coordinator.fetch { result ->
+            events += "callback"
+            results += result
+        }
 
         val responseThread = Thread { transport.complete(success("admitted", 1)) }
         responseThread.start()
@@ -399,11 +403,26 @@ internal class RemoteConfigFetchCoordinatorTest {
         // "did not finish in 100 ms" check also passes when the thread was never scheduled,
         // which turns the ordering assertion below into a race on a loaded machine.
         assertTrue(transitionEntered.await(30, TimeUnit.SECONDS))
+        // The guarantee under test: a transition cannot run while a response is being admitted.
         assertFalse(transitionFinished.await(100, TimeUnit.MILLISECONDS))
         releaseParser.countDown()
         responseThread.join(30_000)
         transitionThread.join(30_000)
-        assertEquals(listOf("callback", "transition"), events)
+
+        // Both halves finish, and the waiter is answered exactly once.
+        assertEquals(setOf("callback", "transition"), events.toSet())
+        assertEquals(2, events.size)
+        assertEquals(1, results.size)
+        // Their ORDER is deliberately not asserted. The coordinator drains deliveries outside
+        // `operationLock`, so a transition that takes the lock in the window between the admission
+        // releasing it and the drain reaching the waiter legitimately returns first — and then the
+        // waiter is told `Superseded` rather than `Fetched`, because its identity is already gone.
+        // Both outcomes are correct; pinning the interleaving only made this test flaky under load.
+        assertTrue(
+            "unexpected result: ${results.single()}",
+            results.single() is RemoteConfigFetchResult.Fetched ||
+                results.single() == RemoteConfigFetchResult.Superseded,
+        )
     }
 
     @Test
