@@ -7,6 +7,7 @@ import java.util.Locale
 
 private const val ANDROID_PLATFORM = "android"
 private const val UNKNOWN = "UNKNOWN"
+private const val UNDETERMINED_LANGUAGE_TAG = "und"
 private const val MILLIS_IN_SECOND = 1_000L
 
 /**
@@ -56,10 +57,18 @@ internal class DeviceRemoteConfigClientContextProvider(
         null
     }
 
+    /**
+     * `Locale.getLanguage()` still returns the pre-1989 ISO-639 codes (`iw`, `in`, `ji` instead of
+     * `he`, `id`, `yi`), which would silently miss those users in locale targeting.
+     * `toLanguageTag()` gives the modern BCP-47 subtags; the separator is normalised to `_` to
+     * match the shape the gateway contract documents (`en_US`).
+     */
     private fun locale(): String {
-        val locale = Locale.getDefault()
-        val language = locale.language.takeIf { it.isNotEmpty() } ?: return UNKNOWN
-        val country = locale.country
-        return if (country.isEmpty()) language else "${language}_$country"
+        val tag = try {
+            Locale.getDefault().toLanguageTag()
+        } catch (_: Exception) {
+            ""
+        }
+        return if (tag.isEmpty() || tag == UNDETERMINED_LANGUAGE_TAG) UNKNOWN else tag.replace('-', '_')
     }
 }

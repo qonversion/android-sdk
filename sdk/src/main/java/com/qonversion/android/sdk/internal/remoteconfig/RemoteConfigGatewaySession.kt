@@ -30,10 +30,23 @@ internal data class RemoteConfigGatewaySession(
         token.isNotEmpty() && projectId > 0 && environment.isNotEmpty() && nowMillis < expiresAtMillis
 }
 
+/**
+ * Addresses one stored session.
+ *
+ * The snapshot [scope] alone is not enough: the gateway mints a session for a specific anonymous
+ * [userUid], and the canonical user id of the scope is a separate notion that can in principle
+ * stay put while the anonymous uid is re-minted. Keying on both means a session can only ever be
+ * replayed for the exact identity it was issued to.
+ */
+internal data class RemoteConfigSessionKey(
+    val scope: RemoteConfigSnapshotScope,
+    val userUid: String,
+)
+
 internal interface RemoteConfigSessionStore {
-    fun load(scope: RemoteConfigSnapshotScope): RemoteConfigGatewaySession?
-    fun save(scope: RemoteConfigSnapshotScope, session: RemoteConfigGatewaySession): Boolean
-    fun clear(scope: RemoteConfigSnapshotScope): Boolean
+    fun load(key: RemoteConfigSessionKey): RemoteConfigGatewaySession?
+    fun save(key: RemoteConfigSessionKey, session: RemoteConfigGatewaySession): Boolean
+    fun clear(key: RemoteConfigSessionKey): Boolean
 }
 
 /**
@@ -51,10 +64,10 @@ internal class PersistentRemoteConfigSessionStore(
 
     @Synchronized
     @Suppress("ReturnCount")
-    override fun load(scope: RemoteConfigSnapshotScope): RemoteConfigGatewaySession? {
-        val key = remoteConfigSessionStorageKey(scope)
+    override fun load(key: RemoteConfigSessionKey): RemoteConfigGatewaySession? {
+        val storageKey = remoteConfigSessionStorageKey(key)
         val raw = try {
-            cache.getString(key, null)
+            cache.getString(storageKey, null)
         } catch (_: Exception) {
             null
         } ?: return null
@@ -65,7 +78,7 @@ internal class PersistentRemoteConfigSessionStore(
             null
         }
         if (persisted == null || !persisted.isValid()) {
-            removeInvalid(key)
+            removeInvalid(storageKey)
             return null
         }
         return RemoteConfigGatewaySession(
@@ -78,7 +91,7 @@ internal class PersistentRemoteConfigSessionStore(
 
     @Synchronized
     @Suppress("ReturnCount")
-    override fun save(scope: RemoteConfigSnapshotScope, session: RemoteConfigGatewaySession): Boolean {
+    override fun save(key: RemoteConfigSessionKey, session: RemoteConfigGatewaySession): Boolean {
         val persisted = PersistedRemoteConfigGatewaySession(
             version = REMOTE_CONFIG_SESSION_VERSION,
             token = session.token,
@@ -95,7 +108,7 @@ internal class PersistentRemoteConfigSessionStore(
         if (raw.toByteArray(Charsets.UTF_8).size > REMOTE_CONFIG_SESSION_MAX_BYTES) return false
         return try {
             cache.updateStringsDurably(
-                values = mapOf(remoteConfigSessionStorageKey(scope) to raw),
+                values = mapOf(remoteConfigSessionStorageKey(key) to raw),
                 removedKeys = emptySet(),
             )
         } catch (_: Exception) {
@@ -104,8 +117,8 @@ internal class PersistentRemoteConfigSessionStore(
     }
 
     @Synchronized
-    override fun clear(scope: RemoteConfigSnapshotScope): Boolean = try {
-        cache.updateStringsDurably(emptyMap(), setOf(remoteConfigSessionStorageKey(scope)))
+    override fun clear(key: RemoteConfigSessionKey): Boolean = try {
+        cache.updateStringsDurably(emptyMap(), setOf(remoteConfigSessionStorageKey(key)))
     } catch (_: Exception) {
         false
     }
@@ -139,12 +152,13 @@ internal data class PersistedRemoteConfigGatewaySession(
     val expiresAtMillis: Long,
 )
 
-private fun remoteConfigSessionStorageKey(scope: RemoteConfigSnapshotScope): String {
+private fun remoteConfigSessionStorageKey(key: RemoteConfigSessionKey): String {
     val digest = MessageDigest.getInstance("SHA-256")
     digest.updateLengthPrefixed("remote-config-gateway-session-v1".encodeToByteArray())
-    digest.updateLengthPrefixed(scope.projectKey.encodeToByteArray())
-    digest.updateLengthPrefixed(scope.environment.encodeToByteArray())
-    digest.updateLengthPrefixed(scope.canonicalUserId.encodeToByteArray())
+    digest.updateLengthPrefixed(key.scope.projectKey.encodeToByteArray())
+    digest.updateLengthPrefixed(key.scope.environment.encodeToByteArray())
+    digest.updateLengthPrefixed(key.scope.canonicalUserId.encodeToByteArray())
+    digest.updateLengthPrefixed(key.userUid.encodeToByteArray())
     return REMOTE_CONFIG_SESSION_PREFIX + digest.digest().joinToString("") { byte -> "%02x".format(byte) }
 }
 

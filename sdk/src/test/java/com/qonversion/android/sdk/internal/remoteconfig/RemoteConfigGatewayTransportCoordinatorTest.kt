@@ -13,6 +13,7 @@ import okio.Buffer
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -89,7 +90,7 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
     }
 
     @Test
-    fun `a stalled gateway times out through the fetch policy while the socket is left alone`() {
+    fun `a stalled gateway times out through the fetch policy`() {
         val core = core()
         val coordinator = coordinator(core)
         coordinator.transitionTo(BINDING)
@@ -105,6 +106,9 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
 
         assertTrue(latch.await(AWAIT_SECONDS, TimeUnit.SECONDS))
         assertTrue(result is RemoteConfigFetchResult.TimedOut)
+        // The HTTP call is deliberately not cancelled on timeout: the coordinator fences the late
+        // response with a fresh admission token instead, so the request still reaches the server.
+        assertNotNull(server.takeRequest(AWAIT_SECONDS, TimeUnit.SECONDS))
     }
 
     private fun fetch(coordinator: RemoteConfigFetchCoordinator): RemoteConfigFetchResult {
@@ -183,20 +187,20 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
     }
 
     private class InMemorySessionStore : RemoteConfigSessionStore {
-        private val sessions = mutableMapOf<RemoteConfigSnapshotScope, RemoteConfigGatewaySession>()
+        private val sessions = mutableMapOf<RemoteConfigSessionKey, RemoteConfigGatewaySession>()
 
         @Synchronized
-        override fun load(scope: RemoteConfigSnapshotScope) = sessions[scope]
+        override fun load(key: RemoteConfigSessionKey) = sessions[key]
 
         @Synchronized
-        override fun save(scope: RemoteConfigSnapshotScope, session: RemoteConfigGatewaySession): Boolean {
-            sessions[scope] = session
+        override fun save(key: RemoteConfigSessionKey, session: RemoteConfigGatewaySession): Boolean {
+            sessions[key] = session
             return true
         }
 
         @Synchronized
-        override fun clear(scope: RemoteConfigSnapshotScope): Boolean {
-            sessions.remove(scope)
+        override fun clear(key: RemoteConfigSessionKey): Boolean {
+            sessions.remove(key)
             return true
         }
     }

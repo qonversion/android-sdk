@@ -11,7 +11,12 @@ import org.junit.Test
 
 internal class PersistentRemoteConfigSessionStoreTest {
     private val scope = RemoteConfigSnapshotScope("project-secret", "env-production", "customer-secret")
-    private val otherIdentity = RemoteConfigSnapshotScope("project-secret", "env-production", "other-secret")
+    private val key = RemoteConfigSessionKey(scope, "QON_anon_a")
+    private val otherIdentity = RemoteConfigSessionKey(
+        RemoteConfigSnapshotScope("project-secret", "env-production", "other-secret"),
+        "QON_anon_b",
+    )
+    private val sameScopeNewUid = RemoteConfigSessionKey(scope, "QON_anon_c")
     private val session = RemoteConfigGatewaySession(
         token = "qrcs1.session-secret",
         projectId = 42,
@@ -22,36 +27,48 @@ internal class PersistentRemoteConfigSessionStoreTest {
     @Test
     fun `session is durably scoped and survives a new store instance`() {
         val cache = MapCache()
-        assertTrue(store(cache).save(scope, session))
+        assertTrue(store(cache).save(key, session))
 
         val persistedKey = cache.strings.keys.single()
         assertFalse(persistedKey.contains("project-secret"))
         assertFalse(persistedKey.contains("customer-secret"))
-        assertEquals(session, store(cache).load(scope))
+        assertFalse(persistedKey.contains("QON_anon_a"))
+        assertEquals(session, store(cache).load(key))
     }
 
     @Test
     fun `an identity change addresses a different record and never reads the previous token`() {
         val cache = MapCache()
-        assertTrue(store(cache).save(scope, session))
+        assertTrue(store(cache).save(key, session))
 
         assertNull(store(cache).load(otherIdentity))
         assertTrue(store(cache).save(otherIdentity, session.copy(token = "qrcs1.other")))
         assertEquals(2, cache.strings.size)
-        assertEquals("qrcs1.session-secret", store(cache).load(scope)?.token)
+        assertEquals("qrcs1.session-secret", store(cache).load(key)?.token)
         assertEquals("qrcs1.other", store(cache).load(otherIdentity)?.token)
+    }
+
+    @Test
+    fun `a re-minted anonymous uid under the same scope addresses a different record`() {
+        // The scope's canonical user id can stay put while the SDK mints a new anonymous uid; the
+        // session was issued for the uid, so it must not be replayed for the new one.
+        val cache = MapCache()
+        assertTrue(store(cache).save(key, session))
+
+        assertNull(store(cache).load(sameScopeNewUid))
+        assertEquals(session.token, store(cache).load(key)?.token)
     }
 
     @Test
     fun `clearing drops only the addressed identity`() {
         val cache = MapCache()
         val sessionStore = store(cache)
-        assertTrue(sessionStore.save(scope, session))
+        assertTrue(sessionStore.save(key, session))
         assertTrue(sessionStore.save(otherIdentity, session.copy(token = "qrcs1.other")))
 
-        assertTrue(sessionStore.clear(scope))
+        assertTrue(sessionStore.clear(key))
 
-        assertNull(sessionStore.load(scope))
+        assertNull(sessionStore.load(key))
         assertEquals("qrcs1.other", sessionStore.load(otherIdentity)?.token)
     }
 
@@ -59,13 +76,13 @@ internal class PersistentRemoteConfigSessionStoreTest {
     fun `malformed persisted session is removed fail closed`() {
         val cache = MapCache()
         val sessionStore = store(cache)
-        assertTrue(sessionStore.save(scope, session))
+        assertTrue(sessionStore.save(key, session))
         val persistedKey = cache.strings.keys.single()
         cache.strings[persistedKey] =
             "{\"version\":1,\"session_token\":\"\",\"project_id\":42," +
             "\"environment\":\"prod\",\"expires_at_millis\":1}"
 
-        assertNull(sessionStore.load(scope))
+        assertNull(sessionStore.load(key))
         assertFalse(cache.strings.containsKey(persistedKey))
     }
 
@@ -73,9 +90,9 @@ internal class PersistentRemoteConfigSessionStoreTest {
     fun `a session that cannot be described is refused rather than half written`() {
         val cache = MapCache()
 
-        assertFalse(store(cache).save(scope, session.copy(token = "")))
-        assertFalse(store(cache).save(scope, session.copy(projectId = 0)))
-        assertFalse(store(cache).save(scope, session.copy(expiresAtMillis = 0)))
+        assertFalse(store(cache).save(key, session.copy(token = "")))
+        assertFalse(store(cache).save(key, session.copy(projectId = 0)))
+        assertFalse(store(cache).save(key, session.copy(expiresAtMillis = 0)))
         assertTrue(cache.strings.isEmpty())
     }
 

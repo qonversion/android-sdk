@@ -5,8 +5,10 @@ import com.qonversion.android.sdk.internal.storage.Cache
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
 import okhttp3.mockwebserver.SocketPolicy
 import okio.Buffer
 import org.junit.After
@@ -17,6 +19,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -93,7 +96,7 @@ internal class RemoteConfigGatewayTransportTest {
     }
 
     @Test
-    fun `200 hands the exact response bytes and etag to the admission seam`() {
+    fun `200 hands back the exact response bytes and etag`() {
         // Deliberately non-canonical: padded whitespace, an escaped code point and a raw
         // multi-byte character. Any re-encode or charset round trip changes these bytes and
         // therefore the sha256 the ETag pins.
@@ -119,7 +122,7 @@ internal class RemoteConfigGatewayTransportTest {
 
     @Test
     fun `snapshot 401 re-bootstraps once and retries successfully`() {
-        persistSession(SCOPE_A, "stale-token")
+        persistSession(KEY_A, "stale-token")
         server.enqueue(MockResponse().setResponseCode(401).setBody("{\"error\":\"unauthorized\"}"))
         server.enqueue(sessionResponse(SESSION_TOKEN))
         server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
@@ -139,7 +142,7 @@ internal class RemoteConfigGatewayTransportTest {
 
     @Test
     fun `two consecutive 401s fail typed without looping`() {
-        persistSession(SCOPE_A, "stale-token")
+        persistSession(KEY_A, "stale-token")
         server.enqueue(MockResponse().setResponseCode(401))
         server.enqueue(sessionResponse(SESSION_TOKEN))
         server.enqueue(MockResponse().setResponseCode(401))
@@ -148,7 +151,7 @@ internal class RemoteConfigGatewayTransportTest {
 
         assertEquals(RemoteConfigFetchResponse.Failure(statusCode = 401), response)
         assertEquals(3, server.requestCount)
-        assertNull(store().load(SCOPE_A))
+        assertNull(store().load(KEY_A))
     }
 
     @Test
@@ -215,13 +218,13 @@ internal class RemoteConfigGatewayTransportTest {
         val snapshot = server.takeRequest()
         assertEquals(OTHER_SESSION_TOKEN, snapshot.getHeader(REMOTE_CONFIG_SESSION_HEADER))
         assertEquals(2, cache.strings.size)
-        assertEquals(SESSION_TOKEN, store().load(SCOPE_A)?.token)
-        assertEquals(OTHER_SESSION_TOKEN, store().load(SCOPE_B)?.token)
+        assertEquals(SESSION_TOKEN, store().load(KEY_A)?.token)
+        assertEquals(OTHER_SESSION_TOKEN, store().load(KEY_B)?.token)
     }
 
     @Test
     fun `a persisted session is reused without another bootstrap until it expires`() {
-        persistSession(SCOPE_A, SESSION_TOKEN, expiresAtMillis = clock.now + 3_600_000)
+        persistSession(KEY_A, SESSION_TOKEN, expiresAtMillis = clock.now + 3_600_000)
         server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
 
         assertTrue(fetch(RemoteConfigFetchRequest()) is RemoteConfigFetchResponse.Success)
@@ -231,7 +234,7 @@ internal class RemoteConfigGatewayTransportTest {
 
     @Test
     fun `an expired persisted session is dropped and re-bootstrapped`() {
-        persistSession(SCOPE_A, "expired-token", expiresAtMillis = clock.now - 1)
+        persistSession(KEY_A, "expired-token", expiresAtMillis = clock.now - 1)
         server.enqueue(sessionResponse(SESSION_TOKEN))
         server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
 
@@ -265,7 +268,7 @@ internal class RemoteConfigGatewayTransportTest {
 
     @Test
     fun `neither the project token nor the session token is ever logged`() {
-        persistSession(SCOPE_A, "stale-token")
+        persistSession(KEY_A, "stale-token")
         server.enqueue(MockResponse().setResponseCode(401))
         server.enqueue(sessionResponse(SESSION_TOKEN))
         server.enqueue(MockResponse().setResponseCode(401))
@@ -301,7 +304,101 @@ internal class RemoteConfigGatewayTransportTest {
         server.enqueue(sessionResponse(" padded-token "))
 
         assertEquals(RemoteConfigFetchResponse.Failure(), fetch(RemoteConfigFetchRequest()))
-        assertNull(store().load(SCOPE_A))
+        assertNull(store().load(KEY_A))
+        // No snapshot may be attempted with a token we refused.
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun `a token that is not a legal header value is refused instead of thrown`() {
+        // OkHttp throws IllegalArgumentException for a non-printable header value, and its message
+        // quotes the value — i.e. the credential — so this must never reach Request.Builder.
+        server.enqueue(sessionResponse("session\u0001secret"))
+
+        assertEquals(RemoteConfigFetchResponse.Failure(), fetch(RemoteConfigFetchRequest()))
+        assertEquals(1, server.requestCount)
+        assertNull(store().load(KEY_A))
+        logger.messages.forEach { assertFalse(it, it.contains("secret")) }
+    }
+
+    @Test
+    fun `a project token that is not a legal header value fails closed before any request`() {
+        identity = RemoteConfigTransportIdentity(SCOPE_A, "project\u0001secret", USER_A)
+
+        assertEquals(RemoteConfigFetchResponse.Failure(), fetch(RemoteConfigFetchRequest()))
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun `a fractional or lowercase RFC3339 expiry is understood and persisted`() {
+        // Go marshals time.Time as RFC3339Nano with trailing zeros stripped, so the fraction is
+        // 0-9 digits wide; RFC 3339 also permits a lowercase t and z.
+        server.enqueue(sessionResponseWithExpiry("2030-01-01t00:00:00.123456789z"))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+
+        assertTrue(fetch(RemoteConfigFetchRequest()) is RemoteConfigFetchResponse.Success)
+
+        assertEquals(1_893_456_000_123, store().load(KEY_A)?.expiresAtMillis)
+    }
+
+    @Test
+    fun `an over-budget snapshot body is refused rather than allocated`() {
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(ByteArray(65) { '{'.code.toByte() }, SNAPSHOT_ETAG))
+
+        assertEquals(
+            RemoteConfigFetchResponse.Failure(),
+            fetch(RemoteConfigFetchRequest(), transport(maxSnapshotBodyBytes = 64)),
+        )
+    }
+
+    @Test
+    fun `an empty 200 body is a typed failure rather than an empty admission`() {
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(MockResponse().setResponseCode(200).setHeader("ETag", SNAPSHOT_ETAG))
+
+        assertEquals(RemoteConfigFetchResponse.Failure(), fetch(RemoteConfigFetchRequest()))
+    }
+
+    @Test
+    fun `one transport reuses its in-memory session across fetches`() {
+        val transport = transport(sessionStore = RefusingSessionStore())
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport) is RemoteConfigFetchResponse.Success)
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport) is RemoteConfigFetchResponse.Success)
+
+        // Bootstrap, snapshot, snapshot: the second fetch reused the cached session even though
+        // the durable store refuses to keep anything.
+        assertEquals(3, server.requestCount)
+        assertEquals("/v3/remote-config-v2/session", server.takeRequest().path)
+        assertEquals("/v3/remote-config-v2/snapshot", server.takeRequest().path)
+        assertEquals("/v3/remote-config-v2/snapshot", server.takeRequest().path)
+    }
+
+    @Test
+    fun `concurrent fetches on one transport each get exactly one answer`() {
+        server.dispatcher = PathDispatcher()
+        val transport = transport()
+        val start = CountDownLatch(1)
+        val done = CountDownLatch(THREADS)
+        val responses = Collections.synchronizedList(mutableListOf<RemoteConfigFetchResponse>())
+        repeat(THREADS) {
+            Thread {
+                start.await()
+                transport.fetch(RemoteConfigFetchRequest()) { response ->
+                    responses += response
+                    done.countDown()
+                }
+            }.start()
+        }
+        start.countDown()
+
+        assertTrue(done.await(AWAIT_SECONDS, TimeUnit.SECONDS))
+        assertEquals(THREADS, responses.size)
+        responses.forEach { assertTrue(it.toString(), it is RemoteConfigFetchResponse.Success) }
     }
 
     @Test
@@ -317,7 +414,7 @@ internal class RemoteConfigGatewayTransportTest {
         assertTrue(fetch(RemoteConfigFetchRequest()) is RemoteConfigFetchResponse.Success)
         server.takeRequest()
         assertEquals(SESSION_TOKEN, server.takeRequest().getHeader(REMOTE_CONFIG_SESSION_HEADER))
-        assertNull(store().load(SCOPE_A))
+        assertNull(store().load(KEY_A))
     }
 
     private fun fetch(
@@ -334,27 +431,31 @@ internal class RemoteConfigGatewayTransportTest {
         return requireNotNull(received)
     }
 
-    private fun transport() = RemoteConfigGatewayTransport(
+    private fun transport(
+        sessionStore: RemoteConfigSessionStore = store(),
+        maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
+    ) = RemoteConfigGatewayTransport(
         callFactory = client,
         baseUrlProvider = { server.url("/").toString() },
         identityProvider = { identity },
         clientContextProvider = { clientContext },
-        sessionStore = store(),
+        sessionStore = sessionStore,
         clock = clock,
         moshi = Moshi.Builder().build(),
         logger = logger,
+        maxSnapshotBodyBytes = maxSnapshotBodyBytes,
     )
 
     private fun store() = PersistentRemoteConfigSessionStore(cache, Moshi.Builder().build())
 
     private fun persistSession(
-        scope: RemoteConfigSnapshotScope,
+        key: RemoteConfigSessionKey,
         token: String,
         expiresAtMillis: Long = clock.now + 3_600_000,
     ) {
         assertTrue(
             store().save(
-                scope,
+                key,
                 RemoteConfigGatewaySession(
                     token = token,
                     projectId = 42,
@@ -373,6 +474,13 @@ internal class RemoteConfigGatewayTransportTest {
                 "\"expires_at\":\"2030-01-01T00:00:00Z\"}",
         )
 
+    private fun sessionResponseWithExpiry(expiresAt: String) = MockResponse()
+        .setResponseCode(200)
+        .setBody(
+            "{\"session_token\":\"$SESSION_TOKEN\",\"project_id\":42,\"environment\":\"prod\"," +
+                "\"expires_at\":\"$expiresAt\"}",
+        )
+
     private fun snapshotResponse(body: ByteArray, etag: String) = MockResponse()
         .setResponseCode(200)
         .setHeader("ETag", etag)
@@ -381,6 +489,22 @@ internal class RemoteConfigGatewayTransportTest {
 
     private fun identityFor(scope: RemoteConfigSnapshotScope, userUid: String) =
         RemoteConfigTransportIdentity(scope, PROJECT_TOKEN, userUid)
+
+    /** Answers by path so concurrent calls are not order-coupled. */
+    private inner class PathDispatcher : Dispatcher() {
+        override fun dispatch(request: RecordedRequest): MockResponse =
+            if (request.path.orEmpty().endsWith("/session")) {
+                sessionResponse(SESSION_TOKEN)
+            } else {
+                snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG)
+            }
+    }
+
+    private class RefusingSessionStore : RemoteConfigSessionStore {
+        override fun load(key: RemoteConfigSessionKey): RemoteConfigGatewaySession? = null
+        override fun save(key: RemoteConfigSessionKey, session: RemoteConfigGatewaySession) = false
+        override fun clear(key: RemoteConfigSessionKey) = false
+    }
 
     private class MutableClock(var now: Long) : RemoteConfigFetchClock {
         override fun nowMillis(): Long = now
@@ -421,6 +545,7 @@ internal class RemoteConfigGatewayTransportTest {
 
     private companion object {
         const val AWAIT_SECONDS = 10L
+        const val THREADS = 4
         const val PROJECT_TOKEN = "project-key-secret"
         const val SESSION_TOKEN = "qrcs1.session-secret"
         const val OTHER_SESSION_TOKEN = "qrcs1.other-session-secret"
@@ -428,6 +553,8 @@ internal class RemoteConfigGatewayTransportTest {
         const val USER_B = "QON_anon_b"
         val SCOPE_A = RemoteConfigSnapshotScope("project", "env-production", USER_A)
         val SCOPE_B = RemoteConfigSnapshotScope("project", "env-production", USER_B)
+        val KEY_A = RemoteConfigSessionKey(SCOPE_A, USER_A)
+        val KEY_B = RemoteConfigSessionKey(SCOPE_B, USER_B)
         val SNAPSHOT_BODY = "{\"schema_version\":1}".toByteArray(Charsets.UTF_8)
         const val SNAPSHOT_ETAG = "\"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\""
         val CLIENT_CONTEXT = RemoteConfigClientContext(

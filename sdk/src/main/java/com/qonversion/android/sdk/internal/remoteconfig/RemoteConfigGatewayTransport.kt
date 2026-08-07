@@ -11,16 +11,16 @@ import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import okhttp3.ResponseBody
 import java.io.IOException
-import java.text.ParsePosition
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.GregorianCalendar
 import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val REMOTE_CONFIG_SESSION_PATH = "v3/remote-config-v2/session"
 internal const val REMOTE_CONFIG_SNAPSHOT_PATH = "v3/remote-config-v2/snapshot"
 internal const val REMOTE_CONFIG_SESSION_HEADER = "X-Qonversion-RC-Session"
+internal const val REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES = 8L * 1024 * 1024
 
 private const val REMOTE_CONFIG_USER_UID_MAX_BYTES = 255
 private const val REMOTE_CONFIG_SESSION_TOKEN_HEADER_MAX_BYTES = 512
@@ -30,6 +30,8 @@ private const val MILLIS_PER_SECOND = 1_000L
 private const val HTTP_OK = 200
 private const val HTTP_NOT_MODIFIED = 304
 private const val HTTP_UNAUTHORIZED = 401
+private const val ASCII_PRINTABLE_MIN = 0x20
+private const val ASCII_PRINTABLE_MAX = 0x7e
 
 /**
  * Device-scoped facts the gateway needs to evaluate targeting.
@@ -73,14 +75,20 @@ internal fun interface RemoteConfigClientContextProvider {
  * Everything the transport needs to address one identity: the snapshot [scope] the session is
  * stored under, the SDK project token used as the bearer credential, and the anonymous SDK uid
  * the bootstrap route mints a session for.
+ *
+ * [projectToken] is validated as an HTTP header value, not merely as a non-empty string: it is
+ * interpolated into `Authorization`, and OkHttp rejects a non-printable byte by throwing an
+ * `IllegalArgumentException` whose message quotes the offending value — i.e. the credential.
  */
 internal data class RemoteConfigTransportIdentity(
     val scope: RemoteConfigSnapshotScope,
     val projectToken: String,
     val userUid: String,
 ) {
+    internal val sessionKey: RemoteConfigSessionKey get() = RemoteConfigSessionKey(scope, userUid)
+
     internal fun isValid(): Boolean = projectToken.isNotEmpty() &&
-        projectToken.trim() == projectToken &&
+        projectToken.isHttpHeaderSafe() &&
         userUid.isNotEmpty() &&
         userUid.toByteArray(Charsets.UTF_8).size <= REMOTE_CONFIG_USER_UID_MAX_BYTES &&
         !userUid.contains(UNICODE_REPLACEMENT_CHARACTER)
@@ -106,6 +114,10 @@ internal fun interface RemoteConfigTransportIdentityProvider {
  * 4. Hand the response body to the coordinator as the EXACT bytes received, paired with the exact
  *    `ETag` header. Nothing is decoded, re-encoded or charset-converted on the way in.
  *
+ * The completion is invoked exactly once on every path, including one that throws on an OkHttp
+ * dispatcher thread: the coordinator parks a waiter on it, and a lost completion would strand that
+ * waiter until its (optional) timeout.
+ *
  * The [callFactory] must NOT carry the legacy `NetworkInterceptor`: this transport owns its
  * request headers (including `Authorization`) and a second interceptor-provided value would be
  * appended rather than replaced.
@@ -122,13 +134,14 @@ internal class RemoteConfigGatewayTransport(
     private val clock: RemoteConfigFetchClock,
     moshi: Moshi,
     private val logger: Logger,
+    private val maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
 ) : RemoteConfigFetchTransport {
     private val bootstrapRequestAdapter = moshi.adapter(RemoteConfigSessionRequest::class.java)
     private val bootstrapResponseAdapter = moshi.adapter(RemoteConfigSessionResponse::class.java)
     private val snapshotRequestAdapter = moshi.adapter(RemoteConfigSnapshotRequest::class.java)
 
     private val lock = Any()
-    private var cachedScope: RemoteConfigSnapshotScope? = null
+    private var cachedKey: RemoteConfigSessionKey? = null
     private var cachedSession: RemoteConfigGatewaySession? = null
 
     override fun fetch(
@@ -143,7 +156,7 @@ internal class RemoteConfigGatewayTransport(
             deliver(RemoteConfigFetchResponse.Failure())
             return
         }
-        val session = loadUsableSession(identity.scope)
+        val session = loadUsableSession(identity.sessionKey)
         if (session == null) {
             // Bootstrap-on-missing-session. The snapshot that follows a fresh mint may not
             // re-bootstrap on 401 — that is what keeps the flow finite.
@@ -164,24 +177,23 @@ internal class RemoteConfigGatewayTransport(
         deliver: SingleDelivery,
         allowReBootstrap: Boolean,
     ) {
-        val url = resolve(REMOTE_CONFIG_SNAPSHOT_PATH)
         val body = try {
             snapshotRequestAdapter.toJson(RemoteConfigSnapshotRequest(context.toWire()))
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             null
         }
-        if (url == null || body == null) {
+        val httpRequest = body?.let {
+            buildRequest(REMOTE_CONFIG_SNAPSHOT_PATH, identity, it) { builder ->
+                builder.header(REMOTE_CONFIG_SESSION_HEADER, session.token)
+                request.ifNoneMatch
+                    ?.takeIf { validator -> validator.isNotEmpty() && validator.isHttpHeaderSafe() }
+                    ?.let { validator -> builder.header("If-None-Match", validator) }
+            }
+        }
+        if (httpRequest == null) {
             deliver(RemoteConfigFetchResponse.Failure())
             return
         }
-        val httpRequest = baseRequest(url, identity, body)
-            .header(REMOTE_CONFIG_SESSION_HEADER, session.token)
-            .apply {
-                request.ifNoneMatch
-                    ?.takeIf { it.isNotEmpty() && it.trim() == it }
-                    ?.let { header("If-None-Match", it) }
-            }
-            .build()
         enqueue(httpRequest, deliver) { outcome ->
             onSnapshotOutcome(identity, context, request, deliver, allowReBootstrap, outcome)
         }
@@ -202,26 +214,17 @@ internal class RemoteConfigGatewayTransport(
             outcome.code == HTTP_NOT_MODIFIED ->
                 deliver(RemoteConfigFetchResponse.NotModified(outcome.etag))
             outcome.code == HTTP_UNAUTHORIZED -> {
-                forgetSession(identity.scope)
+                forgetSession(identity.sessionKey)
                 if (!allowReBootstrap) {
                     logger.debug("Remote Config v2 snapshot stayed unauthorized after re-bootstrap")
                     deliver(RemoteConfigFetchResponse.Failure(statusCode = outcome.code))
                     return
                 }
-                reBootstrapOnce(identity, context, request, deliver)
+                mint(identity, deliver) { session ->
+                    requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = false)
+                }
             }
             else -> deliver(outcome.asFailure())
-        }
-    }
-
-    private fun reBootstrapOnce(
-        identity: RemoteConfigTransportIdentity,
-        context: RemoteConfigClientContext,
-        request: RemoteConfigFetchRequest,
-        deliver: SingleDelivery,
-    ) {
-        mint(identity, deliver) { session ->
-            requestSnapshot(identity, context, session, request, deliver, allowReBootstrap = false)
         }
     }
 
@@ -230,17 +233,17 @@ internal class RemoteConfigGatewayTransport(
         deliver: SingleDelivery,
         onMinted: (RemoteConfigGatewaySession) -> Unit,
     ) {
-        val url = resolve(REMOTE_CONFIG_SESSION_PATH)
         val body = try {
             bootstrapRequestAdapter.toJson(RemoteConfigSessionRequest(identity.userUid))
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             null
         }
-        if (url == null || body == null) {
+        val httpRequest = body?.let { buildRequest(REMOTE_CONFIG_SESSION_PATH, identity, it) }
+        if (httpRequest == null) {
             deliver(RemoteConfigFetchResponse.Failure())
             return
         }
-        enqueue(baseRequest(url, identity, body).build(), deliver) { outcome ->
+        enqueue(httpRequest, deliver) { outcome ->
             val session = outcome
                 ?.takeIf { it.code == HTTP_OK }
                 ?.body
@@ -252,23 +255,38 @@ internal class RemoteConfigGatewayTransport(
                 deliver(if (outcome?.code == HTTP_OK) RemoteConfigFetchResponse.Failure() else outcome.asFailure())
                 return@enqueue
             }
-            rememberSession(identity.scope, session)
+            rememberSession(identity.sessionKey, session)
             onMinted(session)
         }
     }
 
-    private fun baseRequest(
-        url: HttpUrl,
+    /**
+     * Builds a request, returning `null` instead of throwing. `Request.Builder.header` rejects
+     * non-printable values by throwing, and this is reached from OkHttp callback threads.
+     */
+    private fun buildRequest(
+        path: String,
         identity: RemoteConfigTransportIdentity,
         body: String,
-    ): Request.Builder = Request.Builder()
-        .url(url)
-        .header("Authorization", "Bearer ${identity.projectToken}")
-        .header("Content-Type", JSON_CONTENT_TYPE)
-        // The gateway answers `private, no-store`; declaring it on the request as well keeps a
-        // shared OkHttp cache from ever synthesising a body the strict parser never saw.
-        .header("Cache-Control", "no-store")
-        .post(RequestBody.create(JSON_MEDIA_TYPE, body.toByteArray(Charsets.UTF_8)))
+        configure: (Request.Builder) -> Unit = {},
+    ): Request? = try {
+        val url = HttpUrl.parse(baseUrlProvider())?.newBuilder()?.addPathSegments(path)?.build()
+        url?.let {
+            Request.Builder()
+                .url(it)
+                .header("Authorization", "Bearer ${identity.projectToken}")
+                .header("Content-Type", JSON_CONTENT_TYPE)
+                .header("Accept", "application/json")
+                // The gateway answers `private, no-store`; declaring it on the request as well
+                // keeps a shared OkHttp cache from ever synthesising a body the parser never saw.
+                .header("Cache-Control", "no-store")
+                .post(RequestBody.create(JSON_MEDIA_TYPE, body.toByteArray(Charsets.UTF_8)))
+                .also(configure)
+                .build()
+        }
+    } catch (_: Throwable) {
+        null
+    }
 
     /**
      * Every exit of this method must end in exactly one [deliver] call: the coordinator parks a
@@ -309,61 +327,69 @@ internal class RemoteConfigGatewayTransport(
 
     private fun Response.toOutcome(): HttpOutcome = HttpOutcome(
         code = code(),
-        // `bytes()` is the raw octet stream: no charset decode, no re-encode, no JSON round trip.
-        body = if (code() == HTTP_NOT_MODIFIED) null else body()?.bytes(),
+        body = if (code() == HTTP_NOT_MODIFIED) null else body()?.readBounded(maxSnapshotBodyBytes),
         etag = header("ETag"),
         retryAfterMillis = header("Retry-After").parseRetryAfterMillis(),
     )
 
+    /**
+     * Reads at most [max] bytes as the raw octet stream: no charset decode, no re-encode, no JSON
+     * round trip. A body over budget yields `null` rather than an unbounded allocation.
+     */
+    private fun ResponseBody.readBounded(max: Long): ByteArray? {
+        val source = source()
+        source.request(max + 1)
+        return if (source.buffer().size > max) null else source.readByteArray()
+    }
+
     @Suppress("ReturnCount")
-    private fun loadUsableSession(scope: RemoteConfigSnapshotScope): RemoteConfigGatewaySession? {
+    private fun loadUsableSession(key: RemoteConfigSessionKey): RemoteConfigGatewaySession? {
         val now = nowMillis()
-        synchronized(lock) {
-            if (cachedScope == scope) {
-                cachedSession?.let { return it.takeIf { session -> session.isUsable(now) } }
-            }
-        }
+        val cached = synchronized(lock) { cachedSession.takeIf { cachedKey == key } }
+        if (cached != null && cached.isUsable(now)) return cached
+        // A dead in-memory slot must not shadow the durable record, and a dead durable record must
+        // be dropped rather than re-read on every fetch.
         val persisted = try {
-            sessionStore.load(scope)
-        } catch (_: Exception) {
+            sessionStore.load(key)
+        } catch (_: Throwable) {
             null
-        } ?: return null
-        if (!persisted.isUsable(now)) {
-            forgetSession(scope)
+        }
+        if (persisted == null || !persisted.isUsable(now)) {
+            forgetSession(key)
             return null
         }
         synchronized(lock) {
-            cachedScope = scope
+            cachedKey = key
             cachedSession = persisted
         }
         return persisted
     }
 
-    private fun rememberSession(scope: RemoteConfigSnapshotScope, session: RemoteConfigGatewaySession) {
+    private fun rememberSession(key: RemoteConfigSessionKey, session: RemoteConfigGatewaySession) {
         synchronized(lock) {
-            cachedScope = scope
+            cachedKey = key
             cachedSession = session
         }
         // A session whose expiry could not be trusted is used for this fetch only: persisting it
         // would hand a later cold start a credential we cannot reason about.
         if (session.expiresAtMillis <= nowMillis()) return
         try {
-            sessionStore.save(scope, session)
-        } catch (_: Exception) {
+            sessionStore.save(key, session)
+        } catch (_: Throwable) {
             // The in-memory session still serves this process; the next cold start re-bootstraps.
         }
     }
 
-    private fun forgetSession(scope: RemoteConfigSnapshotScope) {
+    private fun forgetSession(key: RemoteConfigSessionKey) {
         synchronized(lock) {
-            if (cachedScope == scope) {
+            if (cachedKey == key) {
                 cachedSession = null
-                cachedScope = null
+                cachedKey = null
             }
         }
         try {
-            sessionStore.clear(scope)
-        } catch (_: Exception) {
+            sessionStore.clear(key)
+        } catch (_: Throwable) {
             // A stale record is re-validated (and dropped again) on the next load.
         }
     }
@@ -372,18 +398,13 @@ internal class RemoteConfigGatewayTransport(
     private fun readSession(body: ByteArray): RemoteConfigGatewaySession? {
         val parsed = try {
             bootstrapResponseAdapter.fromJson(body.toString(Charsets.UTF_8))
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             null
         } ?: return null
         val token = parsed.sessionToken ?: return null
-        if (token.isEmpty() || token.trim() != token ||
-            token.toByteArray(Charsets.UTF_8).size > REMOTE_CONFIG_SESSION_TOKEN_HEADER_MAX_BYTES
-        ) {
-            return null
-        }
-        val projectId = parsed.projectId ?: return null
+        if (!token.isUsableSessionToken()) return null
+        val projectId = parsed.projectId?.takeIf { it > 0 } ?: return null
         val environment = parsed.environment?.takeIf { it.isNotEmpty() } ?: return null
-        if (projectId <= 0) return null
         return RemoteConfigGatewaySession(
             token = token,
             projectId = projectId,
@@ -397,15 +418,9 @@ internal class RemoteConfigGatewayTransport(
     private fun RemoteConfigGatewaySession.isUsable(nowMillis: Long): Boolean =
         isUsableAt(nowMillis + REMOTE_CONFIG_SESSION_EXPIRY_SKEW_MILLIS)
 
-    private fun resolve(path: String): HttpUrl? = try {
-        HttpUrl.parse(baseUrlProvider())?.newBuilder()?.addPathSegments(path)?.build()
-    } catch (_: Exception) {
-        null
-    }
-
     private fun nowMillis(): Long = try {
         clock.nowMillis().coerceAtLeast(0)
-    } catch (_: Exception) {
+    } catch (_: Throwable) {
         0
     }
 
@@ -438,8 +453,9 @@ internal class RemoteConfigGatewayTransport(
         fun asSuccessOrFailure(): RemoteConfigFetchResponse {
             val bytes = body
             val validator = etag
-            return if (bytes == null || validator.isNullOrEmpty()) {
-                // A 200 without a strong validator cannot be admitted, and it is not retryable.
+            return if (bytes == null || bytes.isEmpty() || validator.isNullOrEmpty()) {
+                // An empty body, an over-budget body or a 200 without a strong validator cannot be
+                // admitted, and none of them is retryable.
                 RemoteConfigFetchResponse.Failure()
             } else {
                 RemoteConfigFetchResponse.Success(bytes, validator)
@@ -458,28 +474,56 @@ internal class RemoteConfigGatewayTransport(
     }
 }
 
+internal fun String.isHttpHeaderSafe(): Boolean =
+    all { character -> character.code in ASCII_PRINTABLE_MIN..ASCII_PRINTABLE_MAX }
+
+private fun String.isUsableSessionToken(): Boolean = isNotEmpty() &&
+    trim() == this &&
+    isHttpHeaderSafe() &&
+    toByteArray(Charsets.UTF_8).size <= REMOTE_CONFIG_SESSION_TOKEN_HEADER_MAX_BYTES
+
 private fun String?.parseRetryAfterMillis(): Long? =
     this?.trim()?.toLongOrNull()?.takeIf { it >= 0 }?.let { seconds ->
         if (seconds > Long.MAX_VALUE / MILLIS_PER_SECOND) Long.MAX_VALUE else seconds * MILLIS_PER_SECOND
     }
 
+/**
+ * RFC 3339 timestamps, as a Go gateway emits them.
+ *
+ * `time.Time` marshals as RFC3339Nano with trailing zeros stripped, so the fraction is 0-9 digits
+ * wide rather than the 3 a `SimpleDateFormat` pattern can express, and RFC 3339 §5.6 allows a
+ * lowercase `t`/`z`. Both are parsed here; anything else yields `null`, which the caller treats as
+ * "expiry unknown" (usable for this fetch, never persisted).
+ */
+@Suppress("MagicNumber", "ReturnCount")
 private fun String?.parseRfc3339Millis(): Long? {
-    val value = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    val normalized = value.replace("Z", "+0000").replace(Regex("([+\\-]\\d{2}):(\\d{2})$"), "$1$2")
-    return RFC3339_FORMATS.firstNotNullOfOrNull { pattern ->
-        val format = SimpleDateFormat(pattern, Locale.US).apply {
-            isLenient = false
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        val position = ParsePosition(0)
-        val parsed = format.parse(normalized, position)
-        parsed?.takeIf { position.index == normalized.length }?.time
+    val match = RFC3339_PATTERN.matchEntire(this?.trim().orEmpty()) ?: return null
+    val (year, month, day, hour, minute, second, fraction, sign, offsetHour, offsetMinute) =
+        match.destructured
+    val calendar = GregorianCalendar(TimeZone.getTimeZone("UTC")).apply {
+        isLenient = false
+        clear()
+        set(year.toInt(), month.toInt() - 1, day.toInt(), hour.toInt(), minute.toInt(), second.toInt())
     }
+    val epochMillis = try {
+        calendar.timeInMillis
+    } catch (_: IllegalArgumentException) {
+        return null
+    }
+    val fractionMillis = fraction.takeIf { it.isNotEmpty() }
+        ?.padEnd(3, '0')?.substring(0, 3)?.toLong() ?: 0
+    val offsetMillis = if (sign.isEmpty()) {
+        0
+    } else {
+        val magnitude = (offsetHour.toLong() * 60 + offsetMinute.toLong()) * 60 * MILLIS_PER_SECOND
+        if (sign == "-") -magnitude else magnitude
+    }
+    return epochMillis + fractionMillis - offsetMillis
 }
 
-private val RFC3339_FORMATS = listOf(
-    "yyyy-MM-dd'T'HH:mm:ssZ",
-    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+private val RFC3339_PATTERN = Regex(
+    "(\\d{4})-(\\d{2})-(\\d{2})[Tt](\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{1,9}))?" +
+        "(?:[Zz]|([+\\-])(\\d{2}):(\\d{2}))",
 )
 
 @JsonClass(generateAdapter = true)
