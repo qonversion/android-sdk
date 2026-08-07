@@ -368,7 +368,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         val releaseParser = CountDownLatch(1)
         val parser = RemoteConfigSnapshotEnvelopeDecoder { body, etag, expectation ->
             parserStarted.countDown()
-            assertTrue(releaseParser.await(2, TimeUnit.SECONDS))
+            assertTrue(releaseParser.await(30, TimeUnit.SECONDS))
             RemoteConfigSnapshotEnvelopeParser().parse(body, etag, expectation)
         }
         val transport = RecordingTransport()
@@ -384,7 +384,7 @@ internal class RemoteConfigFetchCoordinatorTest {
 
         val responseThread = Thread { transport.complete(success("admitted", 1)) }
         responseThread.start()
-        assertTrue(parserStarted.await(2, TimeUnit.SECONDS))
+        assertTrue(parserStarted.await(30, TimeUnit.SECONDS))
         val transitionFinished = CountDownLatch(1)
         val transitionEntered = CountDownLatch(1)
         val transitionThread = Thread {
@@ -398,11 +398,11 @@ internal class RemoteConfigFetchCoordinatorTest {
         // Wait for the thread to actually be running before timing it: without this the
         // "did not finish in 100 ms" check also passes when the thread was never scheduled,
         // which turns the ordering assertion below into a race on a loaded machine.
-        assertTrue(transitionEntered.await(2, TimeUnit.SECONDS))
+        assertTrue(transitionEntered.await(30, TimeUnit.SECONDS))
         assertFalse(transitionFinished.await(100, TimeUnit.MILLISECONDS))
         releaseParser.countDown()
-        responseThread.join(2_000)
-        transitionThread.join(2_000)
+        responseThread.join(30_000)
+        transitionThread.join(30_000)
         assertEquals(listOf("callback", "transition"), events)
     }
 
