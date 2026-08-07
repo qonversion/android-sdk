@@ -172,14 +172,23 @@ internal class QRemoteConfigsPublicApiTest {
     }
 
     @Test
-    fun `a snapshot bound to another targeting context is refused`() {
+    fun `a rotated targeting context keeps being served, it is not an identity signal`() {
+        // The gateway recomputes the fingerprint from mutable inputs — app/OS version, locale,
+        // purchases, properties, experiment enrollment — so it changes for the same identity all
+        // the time. Refusing the new value would freeze this user's config until logout.
         val harness = harness()
-        harness.serveForeignContextFingerprint()
         harness.identify("QON_anon_a", "canonical-a", RemoteConfigFetchForceReason.Build)
+        assertEquals(QRemoteConfigFetchStatus.Fetched, harness.fetchBlocking().status)
+        harness.activateBlocking()
 
-        assertEquals(QRemoteConfigFetchStatus.Failed, harness.fetchBlocking().status)
-        assertNull(harness.core.lastFetchedSnapshot())
-        assertEquals(QRemoteConfigSource.Fallback, harness.configs.current.rawValue("count")?.source)
+        harness.rotateContextFingerprint()
+
+        assertEquals(QRemoteConfigFetchStatus.Fetched, harness.fetchBlocking().status)
+        harness.activateBlocking()
+        val served = requireNotNull(harness.configs.current.rawValue("count"))
+        assertEquals(QRemoteConfigSource.Server, served.source)
+        assertEquals("2", served.value)
+        assertEquals("release-rotated", harness.core.lastFetchedSnapshot()?.releaseUid)
     }
 
     @Test

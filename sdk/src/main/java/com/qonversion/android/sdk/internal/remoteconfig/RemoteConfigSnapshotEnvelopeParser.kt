@@ -22,10 +22,20 @@ private val PORTABLE_JSON_MAX_INTEGER_BIG = BigInteger.valueOf(PORTABLE_JSON_MAX
 private val PORTABLE_JSON_MIN_INTEGER_BIG = PORTABLE_JSON_MAX_INTEGER_BIG.negate()
 private val LOWERCASE_SHA256_PATTERN = Regex("^[0-9a-f]{64}$")
 
+/**
+ * The addressing an envelope must match to be admitted: exactly the project and environment the SDK
+ * was configured for.
+ *
+ * The targeting context is deliberately absent. The fingerprint hashes mutable targeting context
+ * (app/OS version, locale, purchases, properties); it rotates legitimately and MUST NOT be pinned
+ * across fetches. Identity isolation is the session's job — the snapshot read travels on a session
+ * token minted for one identity and the gateway routes on it — so the parser validates the
+ * fingerprint's *shape* and carries it through as an opaque per-response tag, and nothing anywhere
+ * compares it against a previous response's value.
+ */
 internal data class RemoteConfigSnapshotEnvelopeExpectation(
     val projectId: Long,
     val environmentUid: String,
-    val contextFingerprint: String,
 )
 
 internal class RemoteConfigSnapshotEnvelope internal constructor(
@@ -58,8 +68,7 @@ internal class RemoteConfigSnapshotEnvelopeParser : RemoteConfigSnapshotEnvelope
         if (!expectation.isValid()) return null
         return parseBoundBody(body, etag)?.takeIf { envelope ->
             envelope.projectId == expectation.projectId &&
-                envelope.environmentUid == expectation.environmentUid &&
-                envelope.contextFingerprint == expectation.contextFingerprint
+                envelope.environmentUid == expectation.environmentUid
         }
     }
 
@@ -475,9 +484,7 @@ private class SnapshotJsonReader(private val bytes: ByteArray) {
 }
 
 private fun RemoteConfigSnapshotEnvelopeExpectation.isValid(): Boolean =
-    projectId in 1..PORTABLE_JSON_MAX_INTEGER &&
-        environmentUid.isValidUid() &&
-        LOWERCASE_SHA256_PATTERN.matches(contextFingerprint)
+    projectId in 1..PORTABLE_JSON_MAX_INTEGER && environmentUid.isValidUid()
 
 private fun String.isValidUid(): Boolean =
     isNotEmpty() && hasValidSurrogatePairs() && codePointCount(0, length) <= REMOTE_CONFIG_SNAPSHOT_UID_MAX_CODE_POINTS

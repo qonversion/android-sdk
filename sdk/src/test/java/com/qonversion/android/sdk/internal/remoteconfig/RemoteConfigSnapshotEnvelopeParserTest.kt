@@ -12,7 +12,6 @@ internal class RemoteConfigSnapshotEnvelopeParserTest {
     private val expectation = RemoteConfigSnapshotEnvelopeExpectation(
         projectId = 42,
         environmentUid = "env-production",
-        contextFingerprint = "a".repeat(64),
     )
 
     @Test
@@ -74,18 +73,36 @@ internal class RemoteConfigSnapshotEnvelopeParserTest {
     }
 
     @Test
-    fun `expected project environment and context fingerprint are exact admission boundaries`() {
+    fun `expected project and environment are exact admission boundaries`() {
         val body = validBody()
         val mismatches = listOf(
             expectation.copy(projectId = 43),
             expectation.copy(environmentUid = "env-staging"),
-            expectation.copy(contextFingerprint = "b".repeat(64)),
         )
 
         mismatches.forEach { mismatch -> assertNull(parse(body, mismatch)) }
         assertNull(parse(body.replace("\"project_id\":42", "\"project_id\":43")))
         assertNull(parse(body.replace("env-production", "env-staging")))
-        assertNull(parse(body.replace("a".repeat(64), "b".repeat(64))))
+    }
+
+    @Test
+    fun `the targeting context is shape checked and then carried through as an opaque tag`() {
+        // It hashes mutable targeting context (app/OS version, locale, purchases, properties), so
+        // it rotates legitimately and is never compared against a previous response's value.
+        val rotated = parse(withContextFingerprint("b".repeat(64)))
+        assertEquals("b".repeat(64), rotated?.contextFingerprint)
+        assertEquals("b".repeat(64), rotated?.release?.contextFingerprint)
+
+        for (malformed in listOf(
+            "A".repeat(64),
+            "a".repeat(63),
+            "a".repeat(65),
+            "z".repeat(64),
+            "",
+        )) {
+            assertNull(malformed, parse(withContextFingerprint(malformed)))
+        }
+        assertNull(parse(validBody().replace("\"context_fingerprint\":\"${"a".repeat(64)}\",", "")))
     }
 
     @Test
@@ -228,6 +245,11 @@ internal class RemoteConfigSnapshotEnvelopeParserTest {
         val body = json.encodeToByteArray()
         return parser.parse(body, strongETag(body), expected)
     }
+
+    private fun withContextFingerprint(fingerprint: String) = validBody().replace(
+        "\"context_fingerprint\":\"${"a".repeat(64)}\"",
+        "\"context_fingerprint\":\"$fingerprint\"",
+    )
 
     private fun validBody(values: String = "\"only\":${item()}") =
         "{\"schema_version\":1,\"project_id\":42,\"environment_uid\":\"env-production\"," +

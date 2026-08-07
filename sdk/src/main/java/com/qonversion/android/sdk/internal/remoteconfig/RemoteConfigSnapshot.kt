@@ -117,6 +117,15 @@ internal class RemoteConfigSnapshotEntry private constructor(
     }
 }
 
+/**
+ * One admitted Remote Config release.
+ *
+ * [contextFingerprint] is **informational**: it records which targeting context the gateway resolved
+ * this response for, which is useful in a bug report or a log line. It is not an admission input.
+ * The fingerprint hashes mutable targeting context (app/OS version, locale, purchases, properties);
+ * it rotates legitimately and MUST NOT be pinned across fetches. Identity isolation is the session's
+ * job.
+ */
 internal class RemoteConfigSnapshotRelease(
     val releaseUid: String,
     val releaseNumber: Long,

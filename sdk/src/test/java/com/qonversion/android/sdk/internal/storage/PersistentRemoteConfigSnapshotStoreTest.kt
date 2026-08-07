@@ -512,7 +512,6 @@ internal class PersistentRemoteConfigSnapshotStoreTest {
                 RemoteConfigSnapshotEnvelopeExpectation(
                     projectId = 42,
                     environmentUid = "production",
-                    contextFingerprint = "b".repeat(64),
                 ),
             ),
         )
@@ -694,7 +693,6 @@ internal class PersistentRemoteConfigSnapshotStoreTest {
             expectation = RemoteConfigSnapshotEnvelopeExpectation(
                 projectId = 42,
                 environmentUid = "production",
-                contextFingerprint = "b".repeat(64),
             ),
             ),
         ).release

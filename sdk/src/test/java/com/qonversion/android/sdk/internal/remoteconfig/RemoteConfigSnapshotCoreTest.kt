@@ -431,19 +431,17 @@ internal class RemoteConfigSnapshotCoreTest {
     }
 
     @Test
-    fun `wire admission fences exact identity project environment and context scope`() {
+    fun `wire admission fences exact identity project and environment`() {
         core.setScope(scopeA)
         val body = wireBody("wire", 1, "\"a\":${wireItem("1")}").encodeToByteArray()
         assertNull(core.beginAdmission(scopeB, wireExpectation()))
         assertNull(core.beginAdmission(scopeA, wireExpectation().copy(environmentUid = "staging")))
-        for (expectation in listOf(
-            wireExpectation().copy(projectId = 43),
-            wireExpectation().copy(contextFingerprint = "b".repeat(64)),
-        )) {
-            val token = requireNotNull(core.beginAdmission(scopeA, expectation))
-            val result = core.admitCandidate(token, body, strongETag(body))
-            assertEquals(RemoteConfigSnapshotTransitionStatus.Rejected, result.status)
-        }
+        val token = requireNotNull(core.beginAdmission(scopeA, wireExpectation().copy(projectId = 43)))
+
+        assertEquals(
+            RemoteConfigSnapshotTransitionStatus.Rejected,
+            core.admitCandidate(token, body, strongETag(body)).status,
+        )
         assertTrue(store.savedStates.isEmpty())
     }
 
@@ -523,15 +521,14 @@ internal class RemoteConfigSnapshotCoreTest {
         )
         assertTrue(secondStore.savedStates.isEmpty())
 
-        val swappedContextBody = wireBody(
-            "wire-b",
-            7,
-            "\"a\":${wireItem("2")}",
-            contextFingerprint = "b".repeat(64),
-        ).encodeToByteArray()
+        // The expectation travels with the token: one issued for another project cannot admit this
+        // project's body, even from the core that issued it and on the scope it was issued for.
+        val foreignProjectToken = requireNotNull(
+            firstCore.beginAdmission(scopeA, wireExpectation().copy(projectId = 43)),
+        )
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Rejected,
-            firstCore.admitCandidate(token, swappedContextBody, strongETag(swappedContextBody)).status,
+            firstCore.admitCandidate(foreignProjectToken, validBody, strongETag(validBody)).status,
         )
         assertTrue(firstStore.savedStates.isEmpty())
     }
@@ -680,7 +677,11 @@ internal class RemoteConfigSnapshotCoreTest {
     }
 
     @Test
-    fun `same server release can be sequentially admitted for different contexts`() {
+    fun `a rotated targeting context is admitted, it is an opaque per response tag`() {
+        // The fingerprint hashes mutable targeting context (app/OS version, locale, purchases,
+        // properties), so it rotates for reasons that have nothing to do with identity: an app
+        // update or a language switch changes it. Refusing the new value would freeze this
+        // identity's config until logout. Identity isolation is the session's job.
         core.setScope(scopeA)
         val firstContext = "a".repeat(64)
         val secondContext = "b".repeat(64)
@@ -700,7 +701,7 @@ internal class RemoteConfigSnapshotCoreTest {
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
             core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation(firstContext))),
+                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
                 first,
                 strongETag(first),
             ).status,
@@ -709,7 +710,7 @@ internal class RemoteConfigSnapshotCoreTest {
         assertEquals(
             RemoteConfigSnapshotTransitionStatus.Accepted,
             core.admitCandidate(
-                requireNotNull(core.beginAdmission(scopeA, wireExpectation(secondContext))),
+                requireNotNull(core.beginAdmission(scopeA, wireExpectation())),
                 second,
                 strongETag(second),
             ).status,
@@ -834,11 +835,9 @@ internal class RemoteConfigSnapshotCoreTest {
         assertTrue(requireNotNull(saved.active).admissionToken > requireNotNull(saved.previous).admissionToken)
     }
 
-    private fun wireExpectation(contextFingerprint: String = "a".repeat(64)) =
-        RemoteConfigSnapshotEnvelopeExpectation(
+    private fun wireExpectation() = RemoteConfigSnapshotEnvelopeExpectation(
         projectId = 42,
         environmentUid = "production",
-        contextFingerprint = contextFingerprint,
     )
 
     private fun wireBody(

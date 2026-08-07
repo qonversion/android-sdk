@@ -20,7 +20,6 @@ internal class RemoteConfigFetchCoordinatorTest {
         expectation = RemoteConfigSnapshotEnvelopeExpectation(
             projectId = 42,
             environmentUid = "production",
-            contextFingerprint = "a".repeat(64),
         ),
     )
 
@@ -114,10 +113,7 @@ internal class RemoteConfigFetchCoordinatorTest {
         transport.complete(RemoteConfigFetchResponse.Failure(statusCode = 429, retryAfterMillis = 4_000))
 
         coordinator.transitionTo(
-            binding.copy(
-                scope = RemoteConfigSnapshotScope("project", "production", "identified-user"),
-                expectation = binding.expectation.copy(contextFingerprint = "b".repeat(64)),
-            ),
+            binding.copy(scope = RemoteConfigSnapshotScope("project", "production", "identified-user")),
         )
         val result = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(forceReason = RemoteConfigFetchForceReason.Identify, callback = result::add)
@@ -345,7 +341,7 @@ internal class RemoteConfigFetchCoordinatorTest {
 
         val nextBinding = binding.copy(
             scope = RemoteConfigSnapshotScope("project", "production", "canonical-user-next"),
-            expectation = binding.expectation.copy(contextFingerprint = "b".repeat(64)),
+            expectation = binding.expectation.copy(projectId = 43),
         )
         coordinator.transitionTo(nextBinding)
         assertEquals(listOf(RemoteConfigFetchResult.Superseded), oldResults)
@@ -354,7 +350,7 @@ internal class RemoteConfigFetchCoordinatorTest {
 
         val nextResults = mutableListOf<RemoteConfigFetchResult>()
         coordinator.fetch(forceReason = RemoteConfigFetchForceReason.Identify, callback = nextResults::add)
-        transport.complete(success("wrong-context", 1))
+        transport.complete(success("wrong-project", 1))
         val transition = (nextResults.single() as RemoteConfigFetchResult.Fetched).transition
         assertEquals(RemoteConfigSnapshotTransitionStatus.Rejected, transition.status)
         assertEquals(null, core.lastFetchedSnapshot())

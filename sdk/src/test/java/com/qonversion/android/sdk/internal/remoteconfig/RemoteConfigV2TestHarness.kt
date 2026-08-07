@@ -199,7 +199,7 @@ internal class RemoteConfigV2Harness(
         core = core,
         readGuard = readGuard,
         coordinator = coordinator,
-        options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT, RC_PROJECT_ID, RC_FINGERPRINT),
+        options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT, RC_PROJECT_ID),
         scopeHolder = scopeHolder,
         scheduler = timeoutScheduler,
         worker = worker,
@@ -247,10 +247,20 @@ internal class RemoteConfigV2Harness(
     /** Makes the gateway answer snapshot reads with [statusCode] instead of a release. */
     fun serveStatus(statusCode: Int) = snapshotStatusCode.set(statusCode)
 
-    /** Serves releases bound to a different targeting context than the one the SDK expects. */
-    fun serveForeignContextFingerprint() {
+    /**
+     * Rotates the targeting context the gateway reports, as it does for real when the app version,
+     * locale, purchases, properties or experiment enrollment change.
+     */
+    fun rotateContextFingerprint() {
         contextFingerprint.set("b".repeat(RC_FINGERPRINT_LENGTH))
-        body.set(defaultBody(contextFingerprint.get()))
+        body.set(
+            rcWireBody(
+                releaseUid = "release-rotated",
+                releaseNumber = ROTATED_RELEASE_NUMBER,
+                values = listOf(RcWireValue("count", "2")),
+                contextFingerprint = contextFingerprint.get(),
+            ),
+        )
     }
 
     /** Makes the gateway stop answering snapshot reads, without closing the socket. */
@@ -357,6 +367,7 @@ internal class RemoteConfigV2Harness(
 
     private companion object {
         const val POLL_INTERVAL_MILLIS = 20L
+        const val ROTATED_RELEASE_NUMBER = 2L
     }
 }
 

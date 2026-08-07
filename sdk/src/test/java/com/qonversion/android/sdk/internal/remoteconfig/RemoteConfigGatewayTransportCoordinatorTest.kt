@@ -249,7 +249,6 @@ internal class RemoteConfigGatewayTransportCoordinatorTest {
             expectation = RemoteConfigSnapshotEnvelopeExpectation(
                 projectId = 42,
                 environmentUid = "production",
-                contextFingerprint = "a".repeat(64),
             ),
         )
         val WIRE_BODY = "{\"schema_version\":1,\"project_id\":42,\"environment_uid\":\"production\"," +

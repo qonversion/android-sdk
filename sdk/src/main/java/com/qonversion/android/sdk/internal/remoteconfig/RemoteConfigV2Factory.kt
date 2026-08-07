@@ -116,7 +116,6 @@ internal object RemoteConfigV2Factory {
                 projectKey = primaryConfig.projectKey,
                 environmentUid = config.environmentUid,
                 projectId = config.projectId,
-                contextFingerprint = config.contextFingerprint,
             ),
             scopeHolder = scopeHolder,
             scheduler = scheduler,

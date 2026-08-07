@@ -19,15 +19,15 @@ internal const val REMOTE_CONFIG_V2_DEFAULT_FETCH_TIMEOUT_MILLIS = 5_000L
 /**
  * Immutable addressing of one Remote Config v2 integration.
  *
- * [contextFingerprint] is the server-resolved targeting-context binding an admitted snapshot must
- * carry. The SDK cannot compute it (it is keyed server-side), so it is supplied by configuration
- * until the gateway hands it over on session bootstrap.
+ * The server-resolved targeting context is deliberately not part of it. The fingerprint hashes
+ * mutable targeting context (app/OS version, locale, purchases, properties); it rotates legitimately
+ * and MUST NOT be pinned across fetches. Identity isolation is the session's job — see
+ * [RemoteConfigGatewaySession] and the per-scope storage keys.
  */
 internal data class RemoteConfigV2Options(
     val projectKey: String,
     val environmentUid: String,
     val projectId: Long,
-    val contextFingerprint: String,
 )
 
 /**
@@ -219,7 +219,6 @@ internal class RemoteConfigV2Manager(
     private fun expectation() = RemoteConfigSnapshotEnvelopeExpectation(
         projectId = options.projectId,
         environmentUid = options.environmentUid,
-        contextFingerprint = options.contextFingerprint,
     )
 
     private fun scheduleTimeout(
@@ -267,9 +266,10 @@ internal class RemoteConfigV2Manager(
     }
 
     private fun RemoteConfigSnapshotTransitionResult.toFetchStatus(): QRemoteConfigFetchStatus = when (status) {
-        // Rejected covers a malformed envelope AND a snapshot whose project id, environment or
-        // context fingerprint does not match the configured expectation. The latter is a
-        // permanent misconfiguration that otherwise looks exactly like a network failure.
+        // Rejected covers a malformed envelope AND a snapshot whose project id or environment does
+        // not match the configured expectation. The latter is a permanent misconfiguration that
+        // otherwise looks exactly like a network failure. A changed targeting context is NOT in
+        // this class: it rotates on any app/OS update, locale change, purchase or property edit.
         RemoteConfigSnapshotTransitionStatus.Accepted,
         RemoteConfigSnapshotTransitionStatus.Activated,
         RemoteConfigSnapshotTransitionStatus.Unchanged,
@@ -278,8 +278,8 @@ internal class RemoteConfigV2Manager(
         RemoteConfigSnapshotTransitionStatus.PersistenceFailed -> QRemoteConfigFetchStatus.Failed
         RemoteConfigSnapshotTransitionStatus.Rejected -> {
             logger.error(
-                "Remote Config v2 refused a snapshot: it did not match the configured project id, " +
-                    "environment uid or context fingerprint, or the envelope was malformed",
+                "Remote Config v2 refused a snapshot: it did not match the configured project id " +
+                    "or environment uid, or the envelope was malformed",
             )
             QRemoteConfigFetchStatus.Failed
         }
