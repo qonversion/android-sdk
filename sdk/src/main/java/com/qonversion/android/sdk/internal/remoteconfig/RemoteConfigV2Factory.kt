@@ -71,34 +71,27 @@ internal object RemoteConfigV2Factory {
         val moshi = Moshi.Builder().build()
         val primaryConfig = internalConfig.primaryConfig
         val store = PersistentRemoteConfigSnapshotStore(cache, moshi)
-        val core = RemoteConfigSnapshotCore(store, bundledRelease(application, primaryConfig.projectKey))
         // One single-threaded worker for BOTH the preloader and the manager: the manager's
         // ordering contract (preload installs before a scope transition is observed) is
         // exactly this executor's FIFO ordering.
         val worker = Executors.newSingleThreadExecutor(daemonThreadFactory(REMOTE_CONFIG_V2_WORKER_THREAD_NAME))
         val scheduler = scheduler()
-        val readGuard = RemoteConfigReadGuard(
-            core = core,
-            preloader = PersistentRemoteConfigReadPreloader(store, worker),
-            buildMode = if (application.isDebuggable) {
-                RemoteConfigReadBuildMode.Debug
-            } else {
-                RemoteConfigReadBuildMode.Release
-            },
-            assertion = { message ->
-                logger.error(message)
-                // Only fires when JVM assertions are enabled, so a debug build shouts without
-                // turning a config read into a production crash.
-                assert(false) { message }
-            },
-            telemetry = { event -> logger.debug("Remote Config v2 guard event: $event") },
-        )
         val scopeHolder = RemoteConfigV2ScopeHolder()
         val clock = RemoteConfigFetchClock { System.currentTimeMillis() }
         val random = RemoteConfigFetchRandom { Random.Default.nextDouble() }
-        // One transport for both routes: the activation ack rides the very same session, bootstrap
-        // and re-bootstrap-once rule as a snapshot read.
+        // One transport for all three routes: the activation ack and the client telemetry batch
+        // ride the very same session, bootstrap and re-bootstrap-once rule as a snapshot read.
         val transport = transport(application, internalConfig, config, scopeHolder, cache, moshi, logger, clock)
+        val telemetrySender = telemetrySender(transport, cache, moshi, clock, random, scheduler, worker)
+        val core = RemoteConfigSnapshotCore(
+            store = store,
+            bundledRelease = bundledRelease(application, primaryConfig.projectKey),
+            // The only production point for `decode_failure`, and the only one that can exist: the
+            // resolution ladder absorbs a failed decode by design, so nothing downstream of the
+            // read site can tell a mis-typed key from an absent one.
+            decodeFailureObserver = telemetrySender::recordDecodeFailure,
+        )
+        val readGuard = readGuard(application, core, store, worker, telemetrySender, logger)
         val coordinator = RemoteConfigFetchCoordinator(
             core = core,
             transport = transport,
@@ -112,12 +105,17 @@ internal object RemoteConfigV2Factory {
                 // the socket timeouts somehow outlived, so one wedged call cannot park later ones.
                 timeoutMillis = REMOTE_CONFIG_V2_REQUEST_TIMEOUT_MILLIS,
             ),
+            // Bookkeeping the next attempt re-derives, so it never surfaces to the app — but it is
+            // the one persistence failure the read guard cannot see, and the dashboard counts it
+            // with the rest.
+            policyPersistenceFailureObserver = { telemetrySender.recordPolicyPersistenceFailure() },
         )
         return RemoteConfigV2Manager(
             core = core,
             readGuard = readGuard,
             coordinator = coordinator,
             ackSender = ackSender(transport, cache, moshi, clock, random, scheduler, worker),
+            telemetrySender = telemetrySender,
             options = RemoteConfigV2Options(
                 projectKey = primaryConfig.projectKey,
                 environmentUid = config.environmentUid,
@@ -129,6 +127,40 @@ internal object RemoteConfigV2Factory {
             logger = logger,
         )
     }
+
+    /**
+     * The read guard, with both of its side channels attached.
+     *
+     * The assertion channel shouts in a debug build; the telemetry channel only ever enqueues,
+     * because it is invoked from the app's own read thread.
+     */
+    @Suppress("LongParameterList")
+    private fun readGuard(
+        application: Application,
+        core: RemoteConfigSnapshotCore,
+        store: PersistentRemoteConfigSnapshotStore,
+        worker: Executor,
+        telemetrySender: RemoteConfigTelemetrySender,
+        logger: Logger,
+    ) = RemoteConfigReadGuard(
+        core = core,
+        preloader = PersistentRemoteConfigReadPreloader(store, worker),
+        buildMode = if (application.isDebuggable) {
+            RemoteConfigReadBuildMode.Debug
+        } else {
+            RemoteConfigReadBuildMode.Release
+        },
+        assertion = { message ->
+            logger.error(message)
+            // Only fires when JVM assertions are enabled, so a debug build shouts without
+            // turning a config read into a production crash.
+            assert(false) { message }
+        },
+        telemetry = { event ->
+            logger.debug("Remote Config v2 guard event: $event")
+            telemetrySender.record(event)
+        },
+    )
 
     /**
      * The activation ack queue.
@@ -161,6 +193,42 @@ internal object RemoteConfigV2Factory {
                 }
             }
         },
+    )
+
+    /**
+     * The client telemetry queue.
+     *
+     * Built exactly like [ackSender] and on purpose: the same transport (same session, same
+     * bootstrap), the same jitter source, and retries handed to [worker] rather than to the timer
+     * thread, which also releases fetch waiters. [worker] is additionally the executor the sender
+     * defers its durable writes to, so a handler invoked from the app's read thread can enqueue an
+     * event and return without ever touching storage.
+     */
+    @Suppress("LongParameterList")
+    private fun telemetrySender(
+        transport: RemoteConfigTelemetryTransport,
+        cache: Cache,
+        moshi: Moshi,
+        clock: RemoteConfigFetchClock,
+        random: RemoteConfigFetchRandom,
+        scheduler: RemoteConfigFetchScheduler,
+        worker: Executor,
+    ) = RemoteConfigTelemetrySender(
+        transport = transport,
+        store = PersistentRemoteConfigTelemetryStore(cache, moshi),
+        clock = clock,
+        random = random,
+        scheduler = { delayMillis, action ->
+            scheduler.schedule(delayMillis) {
+                try {
+                    worker.execute(action)
+                } catch (@Suppress("TooGenericExceptionCaught") _: RuntimeException) {
+                    // A shut-down worker simply means this flush is not taken; the buffer stays
+                    // durable for the next process.
+                }
+            }
+        },
+        executor = worker,
     )
 
     @Suppress("LongParameterList")

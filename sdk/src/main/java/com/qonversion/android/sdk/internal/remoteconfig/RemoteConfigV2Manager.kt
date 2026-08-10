@@ -79,6 +79,7 @@ internal class RemoteConfigV2Manager(
     private val readGuard: RemoteConfigReadGuard,
     private val coordinator: RemoteConfigFetchCoordinator,
     private val ackSender: RemoteConfigActivationAckSender,
+    private val telemetrySender: RemoteConfigTelemetrySender,
     private val options: RemoteConfigV2Options,
     private val scopeHolder: RemoteConfigV2ScopeHolder,
     private val scheduler: RemoteConfigFetchScheduler,
@@ -124,6 +125,9 @@ internal class RemoteConfigV2Manager(
             // resumes an ack an earlier process activated but never managed to deliver.
             notedActivation.set(null)
             ackSender.bind(scope)
+            // Same binding rule as the ack queue: telemetry buffered under one identity is never
+            // reported under another's session, and a cold start resumes whatever is still owed.
+            telemetrySender.bind(scope)
             if (scope != null) forceFetch(forceReason)
         }
         if (!submitted) logger.debug("Remote Config v2 could not apply an identity change")
@@ -178,6 +182,10 @@ internal class RemoteConfigV2Manager(
             coordinator.fetch(forceReason) { result ->
                 timeoutTask.cancelSafely()
                 delivery.deliver(result.toPublicResult())
+                // Strictly after the app's completion: the connection is warm and the session is
+                // known-good, which is the cheapest moment to hand over buffered telemetry — but
+                // no caller may ever wait on it.
+                if (result.answeredByGateway()) telemetrySender.onSuccessfulFetch()
             }
         }
         if (!submitted) {
@@ -305,6 +313,18 @@ internal class RemoteConfigV2Manager(
 
     private fun result(status: QRemoteConfigFetchStatus) =
         QRemoteConfigFetchResult(status, bestAvailableSnapshot())
+
+    /**
+     * Whether the gateway actually answered this fetch.
+     *
+     * A throttled, superseded or timed-out fetch never reached the network, and a failure says the
+     * network is exactly where telemetry should not be sent right now.
+     */
+    private fun RemoteConfigFetchResult.answeredByGateway(): Boolean = when (this) {
+        is RemoteConfigFetchResult.Fetched, RemoteConfigFetchResult.NotModified -> true
+        is RemoteConfigFetchResult.PolicyPersistenceFailed -> result.answeredByGateway()
+        else -> false
+    }
 
     private fun RemoteConfigFetchResult.toPublicResult(): QRemoteConfigFetchResult = when (this) {
         is RemoteConfigFetchResult.Fetched -> result(transition.toFetchStatus())

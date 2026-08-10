@@ -96,6 +96,12 @@ internal class RemoteConfigSnapshotCore(
     private val envelopeParser: RemoteConfigSnapshotEnvelopeDecoder = RemoteConfigSnapshotEnvelopeParser(),
     private val deliveryQueueObservedEmpty: (() -> Unit)? = null,
     private val scopePreloadMutatedBeforeBinding: (() -> Unit)? = null,
+    /**
+     * Handed to every snapshot this core hands out, so a decode failure is reported from the read
+     * site that actually saw it. It is a side channel only: it can neither change a resolved value
+     * nor be observed by the app.
+     */
+    private val decodeFailureObserver: RemoteConfigDecodeFailureObserver = RemoteConfigDecodeFailureObserver { _, _ -> },
 ) {
     private val lock = Any()
     private val deliveryLock = ReentrantLock()
@@ -588,7 +594,12 @@ internal class RemoteConfigSnapshotCore(
     private fun snapshotFor(
         primary: RemoteConfigSnapshotRelease?,
         previous: RemoteConfigSnapshotRelease?,
-    ) = RemoteConfigSnapshot(primary, previous, bundledRelease?.releaseFor(currentScope))
+    ) = RemoteConfigSnapshot(
+        primaryRelease = primary,
+        previousRelease = previous,
+        bundledRelease = bundledRelease?.releaseFor(currentScope),
+        decodeFailureObserver = decodeFailureObserver,
+    )
 
     private fun buildUpdate(
         oldSnapshot: RemoteConfigSnapshot?,

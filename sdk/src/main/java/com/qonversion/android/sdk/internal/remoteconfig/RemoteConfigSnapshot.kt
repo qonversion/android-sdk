@@ -299,10 +299,22 @@ internal class RemoteConfigResolvedValue<T>(
     val metadataBytes: ByteArray? get() = storedMetadata?.clone()
 }
 
+/**
+ * Told that a typed read of [logicalKey] could not decode the value release [releaseNumber] served.
+ *
+ * The observer is a pure side channel: it is invoked AFTER the resolution ladder has already fallen
+ * through to the next rung, it may not throw into the read, and it must do nothing but enqueue —
+ * see [RemoteConfigTelemetrySender.recordDecodeFailure].
+ */
+internal fun interface RemoteConfigDecodeFailureObserver {
+    fun onDecodeFailure(logicalKey: String, releaseNumber: Long)
+}
+
 internal class RemoteConfigSnapshot(
     private val primaryRelease: RemoteConfigSnapshotRelease?,
     private val previousRelease: RemoteConfigSnapshotRelease?,
     private val bundledRelease: RemoteConfigSnapshotRelease?,
+    private val decodeFailureObserver: RemoteConfigDecodeFailureObserver = NO_DECODE_FAILURE_OBSERVER,
 ) {
     val releaseUid: String get() = primaryRelease?.releaseUid.orEmpty()
     val releaseNumber: Long get() = primaryRelease?.releaseNumber ?: 0
@@ -330,6 +342,11 @@ internal class RemoteConfigSnapshot(
         val primary = primaryRelease?.entry(key)
         if (primary != null && !primary.isTombstone) {
             primary.decode(decoder, RemoteConfigSnapshotValueSource.Server)?.let { return it }
+            // The served release carries the key but the app's decoder refused its value — the one
+            // failure mode the ladder hides completely, which is why it is reported here and only
+            // here. Reported strictly after the decode and strictly before the ladder continues:
+            // the value the caller receives is byte-for-byte what it would be without telemetry.
+            reportDecodeFailure(key)
             previousRelease?.entry(key)
                 ?.takeUnless { it.isTombstone }
                 ?.decode(decoder, RemoteConfigSnapshotValueSource.Cache)
@@ -349,6 +366,14 @@ internal class RemoteConfigSnapshot(
     internal fun effectiveEntry(key: String): RemoteConfigSnapshotEntry? =
         primaryRelease?.entry(key)?.takeUnless { it.isTombstone }
             ?: bundledRelease?.entry(key)?.takeUnless { it.isTombstone }
+
+    private fun reportDecodeFailure(key: String) {
+        try {
+            decodeFailureObserver.onDecodeFailure(key, primaryRelease?.releaseNumber ?: 0)
+        } catch (@Suppress("TooGenericExceptionCaught") _: Throwable) {
+            // Telemetry can never affect a read.
+        }
+    }
 
     private fun <T> RemoteConfigSnapshotEntry.decode(
         decoder: (ByteArray) -> T?,
@@ -372,6 +397,10 @@ internal class RemoteConfigSnapshot(
         applyPolicy = applyPolicy,
         metadata = metadataBytes,
     )
+
+    private companion object {
+        val NO_DECODE_FAILURE_OBSERVER = RemoteConfigDecodeFailureObserver { _, _ -> }
+    }
 }
 
 internal class RemoteConfigSnapshotUpdate(

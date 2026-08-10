@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal const val REMOTE_CONFIG_SESSION_PATH = "v3/remote-config-v2/session"
 internal const val REMOTE_CONFIG_SNAPSHOT_PATH = "v3/remote-config-v2/snapshot"
 internal const val REMOTE_CONFIG_ACK_PATH = "v3/remote-config-v2/ack"
+internal const val REMOTE_CONFIG_TELEMETRY_PATH = "v3/remote-config-v2/telemetry"
 internal const val REMOTE_CONFIG_SESSION_HEADER = "X-Qonversion-RC-Session"
 internal const val REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES = 8L * 1024 * 1024
 
@@ -130,8 +131,9 @@ internal fun interface RemoteConfigTransportIdentityProvider {
  * waiter until its (optional) timeout.
  *
  * The same session seam serves the activation ack route — `POST {base}/v3/remote-config-v2/ack` —
- * see [sendAck]. It is a strictly out-of-band signal: it shares the session, the bootstrap and the
- * single re-bootstrap-on-401 rule, and nothing else. It can neither admit nor invalidate config
+ * see [sendAck], and the client telemetry route — `POST {base}/v3/remote-config-v2/telemetry` —
+ * see [postTelemetry]. Both are strictly out-of-band signals: they share the session, the bootstrap
+ * and the single re-bootstrap-on-401 rule, and nothing else. Neither can admit or invalidate config
  * data.
  *
  * The [callFactory] must NOT carry the legacy `NetworkInterceptor`: this transport owns its
@@ -152,11 +154,12 @@ internal class RemoteConfigGatewayTransport(
     moshi: Moshi,
     private val logger: Logger,
     private val maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
-) : RemoteConfigFetchTransport, RemoteConfigAckTransport {
+) : RemoteConfigFetchTransport, RemoteConfigAckTransport, RemoteConfigTelemetryTransport {
     private val bootstrapRequestAdapter = moshi.adapter(RemoteConfigSessionRequest::class.java)
     private val bootstrapResponseAdapter = moshi.adapter(RemoteConfigSessionResponse::class.java)
     private val snapshotRequestAdapter = moshi.adapter(RemoteConfigSnapshotRequest::class.java)
     private val ackRequestAdapter = moshi.adapter(RemoteConfigActivationAckRequest::class.java)
+    private val telemetryRequestAdapter = moshi.adapter(RemoteConfigTelemetryBatchRequest::class.java)
 
     private val lock = Any()
     private var cachedKey: RemoteConfigSessionKey? = null
@@ -288,6 +291,113 @@ internal class RemoteConfigGatewayTransport(
                     when (minted) {
                         is MintResult.Minted ->
                             postAck(identity, minted.session, ack, deliver, allowReBootstrap = false)
+                        is MintResult.Refused -> deliver(minted.ackResponse)
+                    }
+                }
+            }
+            outcome.isRetryableStatus() -> deliver(RemoteConfigAckResponse.Retryable)
+            else -> deliver(RemoteConfigAckResponse.Permanent)
+        }
+    }
+
+    /**
+     * Reports one coalesced telemetry batch out of band — `POST {base}/v3/remote-config-v2/telemetry`.
+     *
+     * Structurally identical to [sendAck], and for the same reasons: the [scope] the batch was
+     * buffered for is compared against the identity the transport currently addresses, so an
+     * identity change between buffering and sending refuses the attempt as
+     * [RemoteConfigAckResponse.NotAddressable] (which costs no retry budget) instead of letting one
+     * identity's session vouch for another identity's events.
+     *
+     * An empty batch is refused as [RemoteConfigAckResponse.Permanent] rather than sent: the
+     * gateway requires 1..50 events and would answer a terminal 400.
+     *
+     * Unlike [sendAck] and [fetch], this route NEVER bootstraps a session it does not already have.
+     * Session establishment belongs to the config read path, and a diagnostic signal must not be
+     * the reason an installation contacts the gateway at all: with no session the batch is refused
+     * as [RemoteConfigAckResponse.NotAddressable], which costs no retry budget and leaves the
+     * events buffered for the first flush that follows a real fetch.
+     */
+    @Suppress("ReturnCount")
+    override fun postTelemetry(
+        scope: RemoteConfigSnapshotScope,
+        events: List<RemoteConfigTelemetryEvent>,
+        completion: (RemoteConfigAckResponse) -> Unit,
+    ) {
+        val deliver = SingleDelivery(completion)
+        if (events.isEmpty() || events.size > REMOTE_CONFIG_TELEMETRY_MAX_BATCH_EVENTS) {
+            deliver(RemoteConfigAckResponse.Permanent)
+            return
+        }
+        val identity = identityProvider.currentIdentity()
+            ?.takeIf { it.isValid() && it.scope == scope }
+        if (identity == null) {
+            deliver(RemoteConfigAckResponse.NotAddressable)
+            return
+        }
+        val session = loadUsableSession(identity.sessionKey)
+        if (session == null) {
+            deliver(RemoteConfigAckResponse.NotAddressable)
+            return
+        }
+        val refusal = establishProjectId(identity, session)
+        if (refusal != null) {
+            deliver(refusal.toAckResponse())
+        } else {
+            postTelemetryBatch(identity, session, events, deliver, allowReBootstrap = true)
+        }
+    }
+
+    @Suppress("LongParameterList")
+    private fun postTelemetryBatch(
+        identity: RemoteConfigTransportIdentity,
+        session: RemoteConfigGatewaySession,
+        events: List<RemoteConfigTelemetryEvent>,
+        deliver: SingleDelivery<RemoteConfigAckResponse>,
+        allowReBootstrap: Boolean,
+    ) {
+        val body = try {
+            telemetryRequestAdapter.toJson(RemoteConfigTelemetryBatchRequest(events.map { it.toWire() }))
+        } catch (_: Throwable) {
+            null
+        }
+        val httpRequest = body?.let {
+            buildRequest(REMOTE_CONFIG_TELEMETRY_PATH, identity, it) { builder ->
+                builder.header(REMOTE_CONFIG_SESSION_HEADER, session.token)
+            }
+        }
+        if (httpRequest == null) {
+            deliver(RemoteConfigAckResponse.Permanent)
+            return
+        }
+        enqueue(httpRequest, onThrow = { deliver(RemoteConfigAckResponse.Retryable) }) { outcome ->
+            onTelemetryOutcome(identity, events, deliver, allowReBootstrap, outcome)
+        }
+    }
+
+    @Suppress("LongParameterList")
+    private fun onTelemetryOutcome(
+        identity: RemoteConfigTransportIdentity,
+        events: List<RemoteConfigTelemetryEvent>,
+        deliver: SingleDelivery<RemoteConfigAckResponse>,
+        allowReBootstrap: Boolean,
+        outcome: HttpOutcome?,
+    ) {
+        when {
+            outcome == null -> deliver(RemoteConfigAckResponse.Retryable)
+            outcome.code in HTTP_SUCCESS_MIN..HTTP_SUCCESS_MAX -> deliver(RemoteConfigAckResponse.Delivered)
+            outcome.code == HTTP_UNAUTHORIZED -> {
+                // Deliberately NOT forgetSession(): the stored session is shared with the config
+                // read path, and an out-of-band signal may not invalidate it. Minting simply
+                // replaces it if it really is dead, and the read path applies its own 401 rule.
+                if (!allowReBootstrap) {
+                    deliver(RemoteConfigAckResponse.Permanent)
+                    return
+                }
+                mint(identity) { minted ->
+                    when (minted) {
+                        is MintResult.Minted ->
+                            postTelemetryBatch(identity, minted.session, events, deliver, allowReBootstrap = false)
                         is MintResult.Refused -> deliver(minted.ackResponse)
                     }
                 }
@@ -620,6 +730,18 @@ internal class RemoteConfigGatewayTransport(
         0
     }
 
+    /**
+     * `logical_key` is nullable rather than empty-by-default because the gateway requires it to be
+     * present iff the kind is `decode_failure`. Moshi omits a null field, which is exactly "absent".
+     */
+    private fun RemoteConfigTelemetryEvent.toWire() = RemoteConfigTelemetryEventWire(
+        kind = kind.wireName,
+        logicalKey = logicalKey.takeIf { kind.carriesLogicalKey && it.isNotEmpty() },
+        releaseNumber = releaseNumber,
+        count = count,
+        lastOccurredAt = lastOccurredAtSeconds,
+    )
+
     private fun RemoteConfigClientContext.toWire() = RemoteConfigClientContextWire(
         platform = platform,
         appVersion = appVersion,
@@ -776,6 +898,20 @@ internal data class RemoteConfigSessionResponse(
 internal data class RemoteConfigActivationAckRequest(
     @Json(name = "release_number") val releaseNumber: Long,
     @Json(name = "activated_at") val activatedAt: Long,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class RemoteConfigTelemetryBatchRequest(
+    @Json(name = "events") val events: List<RemoteConfigTelemetryEventWire>,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class RemoteConfigTelemetryEventWire(
+    @Json(name = "kind") val kind: String,
+    @Json(name = "logical_key") val logicalKey: String?,
+    @Json(name = "release_number") val releaseNumber: Long,
+    @Json(name = "count") val count: Long,
+    @Json(name = "last_occurred_at") val lastOccurredAt: Long,
 )
 
 @JsonClass(generateAdapter = true)

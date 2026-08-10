@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal const val RC_PROJECT_KEY = "project-key"
@@ -39,6 +40,7 @@ internal const val RC_MAIN_THREAD_NAME = "qonversion-test-main"
 internal const val RC_SESSION_PATH = "/v3/remote-config-v2/session"
 internal const val RC_SNAPSHOT_PATH = "/v3/remote-config-v2/snapshot"
 internal const val RC_ACK_PATH = "/v3/remote-config-v2/ack"
+internal const val RC_TELEMETRY_PATH = "/v3/remote-config-v2/telemetry"
 internal const val RC_DEVICE_INSTALLED_AT = 1_577_836_800L
 internal const val HTTP_OK = 200
 internal const val HTTP_NO_CONTENT = 204
@@ -134,6 +136,7 @@ internal class RemoteConfigV2Harness(
     // state, which is the only honest way to test that a queued ack survives one.
     val snapshotStore: InMemorySnapshotStore = InMemorySnapshotStore(),
     val ackStore: InMemoryActivationAckStore = InMemoryActivationAckStore(),
+    val telemetryStore: InMemoryTelemetryStore = InMemoryTelemetryStore(),
     clientContextProvider: RemoteConfigClientContextProvider = RemoteConfigClientContextProvider {
         RemoteConfigClientContext(
             platform = "android",
@@ -155,6 +158,7 @@ internal class RemoteConfigV2Harness(
     val snapshotRequests: MutableList<String> = Collections.synchronizedList(mutableListOf())
     val sessionRequests: MutableList<String> = Collections.synchronizedList(mutableListOf())
     val ackRequests: MutableList<RcRecordedAck> = Collections.synchronizedList(mutableListOf())
+    val telemetryRequests: MutableList<RcRecordedAck> = Collections.synchronizedList(mutableListOf())
 
     @Volatile
     var userUid: String = "QON_anon_a"
@@ -164,6 +168,7 @@ internal class RemoteConfigV2Harness(
     private val responseDelayMillis = AtomicReference(0L)
     private val snapshotStatusCode = AtomicReference(HTTP_OK)
     private val ackStatusCode = AtomicReference(HTTP_NO_CONTENT)
+    private val telemetryStatusCode = AtomicReference(HTTP_NO_CONTENT)
     private val hangAcks = AtomicReference(false)
     private val contextFingerprint = AtomicReference(RC_FINGERPRINT)
     private val worker: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -174,16 +179,6 @@ internal class RemoteConfigV2Harness(
     }
     private val scopeHolder = RemoteConfigV2ScopeHolder()
     private val mainDispatcher = RemoteConfigMainDispatcher { action -> mainExecutor.execute(action) }
-
-    val core = RemoteConfigSnapshotCore(snapshotStore, bundled)
-
-    private val readGuard = RemoteConfigReadGuard(
-        core = core,
-        preloader = PersistentRemoteConfigReadPreloader(snapshotStore, worker),
-        buildMode = buildMode,
-        assertion = { message -> assertions += message },
-        telemetry = { event -> guardEvents += event },
-    )
 
     val transport = RemoteConfigGatewayTransport(
         callFactory = httpClient,
@@ -211,6 +206,34 @@ internal class RemoteConfigV2Harness(
         scheduler = ackScheduler,
     )
 
+    val telemetryScheduler = ManualScheduler()
+
+    val telemetrySender = RemoteConfigTelemetrySender(
+        transport = transport,
+        store = telemetryStore,
+        clock = { System.currentTimeMillis() },
+        random = { 0.5 },
+        scheduler = telemetryScheduler,
+        executor = worker,
+    )
+
+    val core = RemoteConfigSnapshotCore(
+        store = snapshotStore,
+        bundledRelease = bundled,
+        decodeFailureObserver = telemetrySender::recordDecodeFailure,
+    )
+
+    private val readGuard = RemoteConfigReadGuard(
+        core = core,
+        preloader = PersistentRemoteConfigReadPreloader(snapshotStore, worker),
+        buildMode = buildMode,
+        assertion = { message -> assertions += message },
+        telemetry = { event ->
+            guardEvents += event
+            telemetrySender.record(event)
+        },
+    )
+
     val coordinator = RemoteConfigFetchCoordinator(
         core = core,
         transport = transport,
@@ -224,6 +247,7 @@ internal class RemoteConfigV2Harness(
             minimumFetchIntervalMillis = minimumFetchIntervalMillis,
             timeoutMillis = null,
         ),
+        policyPersistenceFailureObserver = { telemetrySender.recordPolicyPersistenceFailure() },
     )
 
     val manager = RemoteConfigV2Manager(
@@ -231,6 +255,7 @@ internal class RemoteConfigV2Harness(
         readGuard = readGuard,
         coordinator = coordinator,
         ackSender = ackSender,
+        telemetrySender = telemetrySender,
         options = RemoteConfigV2Options(RC_PROJECT_KEY, RC_ENVIRONMENT),
         scopeHolder = scopeHolder,
         scheduler = timeoutScheduler,
@@ -269,6 +294,14 @@ internal class RemoteConfigV2Harness(
                         MockResponse().setResponseCode(ackStatusCode.get())
                     }
                 }
+                RC_TELEMETRY_PATH -> {
+                    telemetryRequests += RcRecordedAck(
+                        body = request.body.readUtf8(),
+                        sessionHeader = request.getHeader(REMOTE_CONFIG_SESSION_HEADER),
+                        authorization = request.getHeader("Authorization"),
+                    )
+                    MockResponse().setResponseCode(telemetryStatusCode.get())
+                }
                 else -> MockResponse().setResponseCode(404)
             }
         }
@@ -296,6 +329,19 @@ internal class RemoteConfigV2Harness(
 
     /** Makes the gateway accept activation acks and never answer them, without closing the socket. */
     fun hangAckReads(hanging: Boolean) = hangAcks.set(hanging)
+
+    /** Makes the gateway answer telemetry batches with [statusCode] instead of `204`. */
+    fun serveTelemetryStatus(statusCode: Int) = telemetryStatusCode.set(statusCode)
+
+    /** Waits until [count] telemetry batches have reached the gateway. */
+    fun awaitTelemetryBatches(count: Int) {
+        val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(RC_AWAIT_SECONDS)
+        while (System.currentTimeMillis() < deadline) {
+            if (telemetryRequests.size >= count) return
+            Thread.sleep(POLL_INTERVAL_MILLIS)
+        }
+        throw AssertionError("expected $count telemetry batches, saw ${telemetryRequests.size}")
+    }
 
     /** Waits until [count] acks have reached the gateway. */
     fun awaitAcks(count: Int) {
@@ -521,6 +567,67 @@ internal class InMemoryActivationAckStore : RemoteConfigActivationAckStore {
     @Synchronized
     override fun clear(scope: RemoteConfigSnapshotScope): Boolean {
         records.remove(scope)
+        return true
+    }
+}
+
+/**
+ * In-memory telemetry buffer that outlives the harness (and the sender) it was handed to, so a
+ * "process restart" is a new sender over the same map.
+ */
+internal class InMemoryTelemetryStore : RemoteConfigTelemetryStore {
+    private val buffers = mutableMapOf<RemoteConfigSnapshotScope, List<RemoteConfigTelemetryEvent>>()
+    private val writes = AtomicInteger()
+
+    /** Set to fail every write, to prove a lost durable write never costs an in-memory event. */
+    @Volatile
+    var failWrites: Boolean = false
+
+    @Volatile
+    private var loadStarted: CountDownLatch? = null
+
+    @Volatile
+    private var loadGate: CountDownLatch? = null
+
+    /**
+     * Every save/clear this store was actually asked to perform.
+     *
+     * Counted rather than inferred, because "storage is touched only when the buffer changed shape"
+     * is a claim about calls, not about content: a write that rewrites the same bytes is still a
+     * synchronous preferences commit on the worker the config path shares.
+     */
+    val writeCount: Int get() = writes.get()
+
+    /**
+     * Makes the next [load] announce itself on [started] and park until [gate] opens.
+     *
+     * Deliberately NOT synchronized: the whole point is to hold a load open while another thread
+     * records, which a lock on this object would itself serialise.
+     */
+    fun blockLoadsOn(started: CountDownLatch, gate: CountDownLatch) {
+        loadStarted = started
+        loadGate = gate
+    }
+
+    override fun load(scope: RemoteConfigSnapshotScope): List<RemoteConfigTelemetryEvent> {
+        loadStarted?.countDown()
+        loadGate?.await(RC_AWAIT_SECONDS, TimeUnit.SECONDS)
+        return synchronized(this) { buffers[scope].orEmpty() }
+    }
+
+    @Synchronized
+    override fun save(scope: RemoteConfigSnapshotScope, events: List<RemoteConfigTelemetryEvent>): Boolean {
+        writes.incrementAndGet()
+        if (failWrites) return false
+        buffers[scope] = events
+        return true
+    }
+
+    @Synchronized
+    override fun clear(scope: RemoteConfigSnapshotScope): Boolean {
+        writes.incrementAndGet()
+        if (failWrites) return false
+        buffers.remove(scope)
         return true
     }
 }
