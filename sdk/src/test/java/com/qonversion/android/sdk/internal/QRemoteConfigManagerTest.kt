@@ -2312,6 +2312,58 @@ internal class QRemoteConfigManagerTest {
         assertEquals(false, loadingStates().containsKey("ctx"))
     }
 
+    // region v2 identity bridge producer side
+    //
+    // QonversionInternalRemoteConfigV2WiringTest exercises the CONSUMER side of the bridge by
+    // firing it manually, so these tests pin the PRODUCER side: the v1 manager entry points must
+    // actually emit the bridge events, or v2 scope switching on identify/logout silently dies
+    // while every wiring test stays green.
+
+    @Test
+    fun `onUserUpdate fires identityScopeChanged on the v2 bridge exactly once`() {
+        var identityScopeChanges = 0
+        var targetingInvalidations = 0
+        manager.identityBridge.onIdentityScopeChanged = { identityScopeChanges++ }
+        manager.identityBridge.onTargetingInvalidated = { targetingInvalidations++ }
+
+        manager.onUserUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(1, identityScopeChanges)
+        assertEquals(0, targetingInvalidations)
+    }
+
+    @Test
+    fun `invalidateRemoteConfigsCache fires targetingInvalidated on the v2 bridge exactly once`() {
+        var identityScopeChanges = 0
+        var targetingInvalidations = 0
+        manager.identityBridge.onIdentityScopeChanged = { identityScopeChanges++ }
+        manager.identityBridge.onTargetingInvalidated = { targetingInvalidations++ }
+
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(1, targetingInvalidations)
+        assertEquals(0, identityScopeChanges)
+    }
+
+    @Test
+    fun `a throwing v2 bridge observer does not break the v1 identity flow`() {
+        manager.identityBridge.onIdentityScopeChanged = { throw RuntimeException("v2 observer boom") }
+        manager.identityBridge.onTargetingInvalidated = { throw RuntimeException("v2 observer boom") }
+        var identityUpdated = false
+
+        // Neither call may propagate the observer's exception.
+        manager.onUserUpdate { identityUpdated = true }
+        manager.invalidateRemoteConfigsCache()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // The v1 side of onUserUpdate (the identity mutation) still ran to completion.
+        assertTrue(identityUpdated)
+    }
+
+    // endregion
+
     private fun listRequests() =
         manager.getPrivateField<List<*>>("listRequests")
 
