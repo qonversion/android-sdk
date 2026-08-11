@@ -100,7 +100,7 @@ internal object RemoteConfigV2Factory {
             random = random,
             scheduler = scheduler,
             policy = RemoteConfigFetchPolicy(
-                minimumFetchIntervalMillis = REMOTE_CONFIG_V2_MINIMUM_FETCH_INTERVAL_MILLIS,
+                minimumFetchIntervalMillis = minimumFetchIntervalMillis(config, application.isDebuggable),
                 // A backstop above the per-call waits: it releases waiters that joined a request
                 // the socket timeouts somehow outlived, so one wedged call cannot park later ones.
                 timeoutMillis = REMOTE_CONFIG_V2_REQUEST_TIMEOUT_MILLIS,
@@ -126,6 +126,21 @@ internal object RemoteConfigV2Factory {
             mainDispatcher = mainDispatcher,
             logger = logger,
         )
+    }
+
+    /**
+     * The effective floor between real network fetches.
+     *
+     * `0` in the configuration means "auto": the production default in a release build, and no
+     * floor at all in a debuggable one, so a developer iterating on an environment sees every
+     * change. An explicit positive value wins over auto in both build modes. Forced fetches
+     * already bypass the floor, and failure backoff applies independently of it — an interval of
+     * zero never disables backoff.
+     */
+    fun minimumFetchIntervalMillis(config: QRemoteConfigV2Config, isDebuggable: Boolean): Long = when {
+        config.minFetchIntervalSeconds > 0 -> TimeUnit.SECONDS.toMillis(config.minFetchIntervalSeconds)
+        isDebuggable -> 0L
+        else -> REMOTE_CONFIG_V2_MINIMUM_FETCH_INTERVAL_MILLIS
     }
 
     /**

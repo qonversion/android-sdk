@@ -23,6 +23,15 @@ internal class QRemoteConfigV2ConfigTest {
 
         assertEquals("https://gateway.example.com/", config.baseUrl)
         assertEquals("production", config.environmentUid)
+        // Unset interval means "auto": the build-mode-dependent default is resolved later, so the
+        // configuration itself carries the sentinel untouched.
+        assertEquals(0, config.minFetchIntervalSeconds)
+    }
+
+    @Test
+    fun `an explicit minimum fetch interval is accepted verbatim`() {
+        assertEquals(300, config(minFetchIntervalSeconds = 300).minFetchIntervalSeconds)
+        assertEquals(0, config(minFetchIntervalSeconds = 0).minFetchIntervalSeconds)
     }
 
     @Test
@@ -32,6 +41,7 @@ internal class QRemoteConfigV2ConfigTest {
             "scheme-less base url" to { config(baseUrl = "//gateway.example.com") },
             "empty environment" to { config(environmentUid = "") },
             "over-long environment" to { config(environmentUid = "e".repeat(37)) },
+            "negative fetch interval" to { config(minFetchIntervalSeconds = -1) },
         )
 
         malformed.forEach { (name, build) ->
@@ -48,7 +58,7 @@ internal class QRemoteConfigV2ConfigTest {
             QRemoteConfigV2Config::class.java.declaredMethods.map { it.name }
         members.forEach { name -> assertFalse(name, name.contains("rojectId")) }
         assertEquals(
-            setOf("baseUrl", "environmentUid"),
+            setOf("baseUrl", "environmentUid", "minFetchIntervalSeconds"),
             QRemoteConfigV2Config::class.java.declaredFields.map { it.name }.toSet(),
         )
     }
@@ -56,5 +66,6 @@ internal class QRemoteConfigV2ConfigTest {
     private fun config(
         baseUrl: String = "https://gateway.example.com/",
         environmentUid: String = "production",
-    ) = QRemoteConfigV2Config(baseUrl, environmentUid)
+        minFetchIntervalSeconds: Long = 0,
+    ) = QRemoteConfigV2Config(baseUrl, environmentUid, minFetchIntervalSeconds)
 }

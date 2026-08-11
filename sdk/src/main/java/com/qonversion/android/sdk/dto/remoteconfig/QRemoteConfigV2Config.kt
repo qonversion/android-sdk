@@ -34,12 +34,18 @@ private const val REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS = 36
  * @param baseUrl base URL of the Remote Config v2 gateway, e.g. `https://host/`. The SDK appends
  * its own paths, so a bare origin is expected.
  * @param environmentUid uid of the Remote Config environment to read.
+ * @param minFetchIntervalSeconds minimum interval between real network fetches, in seconds.
+ * `0` (the default) means "auto": the production default interval in a release build and no
+ * throttling at all in a debuggable one, so a developer iterating on an environment sees every
+ * change. An explicit positive value wins over auto in both build modes. Forced fetches bypass
+ * the interval either way, and failure backoff applies independently of it.
  * @throws IllegalArgumentException if any value is malformed.
  */
 @ExperimentalQonversionApi
-class QRemoteConfigV2Config(
+class QRemoteConfigV2Config @JvmOverloads constructor(
     val baseUrl: String,
     val environmentUid: String,
+    val minFetchIntervalSeconds: Long = 0,
 ) {
     init {
         require(baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
@@ -49,5 +55,8 @@ class QRemoteConfigV2Config(
             environmentUid.isNotEmpty() &&
                 environmentUid.codePointCount(0, environmentUid.length) <= REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS,
         ) { "Remote Config v2 environment uid must be 1..$REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS code points" }
+        require(minFetchIntervalSeconds >= 0) {
+            "Remote Config v2 minimum fetch interval must not be negative"
+        }
     }
 }
