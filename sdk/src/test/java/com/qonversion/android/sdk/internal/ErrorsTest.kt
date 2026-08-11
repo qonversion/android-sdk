@@ -2,6 +2,7 @@ package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import org.json.JSONException
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -25,6 +26,15 @@ internal class ErrorsTest {
     @Test
     fun `JSONException maps to ResponseParsingFailed`() {
         val error = JSONException("Unterminated object").toQonversionError()
+
+        assertEquals(QonversionErrorCode.ResponseParsingFailed, error.code)
+    }
+
+    @Test
+    fun `moshi JsonEncodingException maps to ResponseParsingFailed, not NetworkConnectionFailed`() {
+        // JsonEncodingException extends IOException; without an explicit branch it would fall
+        // through to the NetworkConnectionFailed mapping and be retried as a transient failure.
+        val error = JsonEncodingException("malformed JSON").toQonversionError()
 
         assertEquals(QonversionErrorCode.ResponseParsingFailed, error.code)
     }

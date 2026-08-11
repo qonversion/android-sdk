@@ -5,6 +5,7 @@ import com.qonversion.android.sdk.dto.QonversionError
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 import com.qonversion.android.sdk.internal.billing.BillingError
 import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import org.json.JSONException
 import java.io.IOException
 
@@ -40,7 +41,11 @@ internal fun BillingError.toQonversionError(): QonversionError {
 
 internal fun Throwable.toQonversionError(): QonversionError {
     return when (this) {
-        is JSONException, is JsonDataException -> {
+        // JsonEncodingException (syntactically malformed JSON) extends IOException, so it must be
+        // matched before the IOException branch below. It is never a network condition: the bytes
+        // arrived, they just are not valid JSON. Mapping it to NetworkConnectionFailed would make
+        // callers treat a permanently broken payload as a retryable transient failure.
+        is JSONException, is JsonDataException, is JsonEncodingException -> {
             QonversionError(QonversionErrorCode.ResponseParsingFailed, localizedMessage ?: "")
         }
 
