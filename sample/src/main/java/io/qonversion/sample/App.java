@@ -26,12 +26,27 @@ public class App extends MultiDexApplication {
 
         String projectKey = getProjectKey(this, DEFAULT_PROJECT_KEY);
         String apiUrl = getApiUrl(this);
+        // The sample's default project belongs to the local RC v2 playground. Keeping the
+        // legacy/identity API on production while snapshots use the local gateway creates a
+        // split-brain identity scope: identify() mutates a production user and the local RC
+        // session continues to resolve the anonymous uid. An explicitly configured URL still
+        // wins, and a non-playground project keeps the SDK's normal production default.
+        String effectiveApiUrl = apiUrl != null
+                ? apiUrl
+                : (DEFAULT_PROJECT_KEY.equals(projectKey)
+                    ? UtilsKt.RC_V2_PLAYGROUND_BASE_URL + "/"
+                    : null);
+        // Session mint resolves the same production client that RC v2 targets. Creating the demo
+        // user in Sandbox would make init succeed while every production session bootstrap is 404.
+        QEnvironment effectiveEnvironment = DEFAULT_PROJECT_KEY.equals(projectKey)
+                ? QEnvironment.Production
+                : QEnvironment.Sandbox;
 
         QonversionConfig.Builder qonversionConfigBuilder = new QonversionConfig.Builder(
                 this,
                 projectKey,
                 QLaunchMode.SubscriptionManagement
-        ).setEnvironment(QEnvironment.Sandbox);
+        ).setEnvironment(effectiveEnvironment);
 
         // Remote Config v2 has no default base URL — the pipeline stays dormant until a config is
         // supplied, and it is addressed independently of setProxyURL below (which only moves the
@@ -39,7 +54,10 @@ public class App extends MultiDexApplication {
         qonversionConfigBuilder.setRemoteConfigV2Config(new QRemoteConfigV2Config(
                 UtilsKt.RC_V2_PLAYGROUND_BASE_URL,
                 UtilsKt.RC_V2_PLAYGROUND_ENVIRONMENT_UID,
-                0
+                0,
+                DEFAULT_PROJECT_KEY.equals(projectKey)
+                        ? new LocalRemoteConfigIdentifyAssertionProvider()
+                        : null
         ));
 
         NoCodesConfig.Builder noCodesConfigBuilder = new NoCodesConfig.Builder(
@@ -47,9 +65,9 @@ public class App extends MultiDexApplication {
                 projectKey
         ).setCustomFallbackFileName("fallbacks/nocodes_fallbacks.json");
 
-        if (apiUrl != null) {
-            qonversionConfigBuilder.setProxyURL(apiUrl);
-            noCodesConfigBuilder.setProxyURL(apiUrl);
+        if (effectiveApiUrl != null) {
+            qonversionConfigBuilder.setProxyURL(effectiveApiUrl);
+            noCodesConfigBuilder.setProxyURL(effectiveApiUrl);
         }
 
         Qonversion.initialize(qonversionConfigBuilder.build());

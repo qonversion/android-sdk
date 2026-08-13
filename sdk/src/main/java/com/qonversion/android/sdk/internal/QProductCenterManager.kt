@@ -237,11 +237,11 @@ internal class QProductCenterManager internal constructor(
                     // Invalidate BEFORE handlePendingRequests: the replay must
                     // miss the cache, or queued completions would be served the
                     // pre-identify evaluation.
-                    remoteConfigManager.invalidateRemoteConfigsCache()
+                    remoteConfigManager.invalidateRemoteConfigsCache(identityId)
                     handlePendingRequests()
                     fireIdentitySuccess(identityId)
                 } else {
-                    remoteConfigManager.onUserUpdate {
+                    remoteConfigManager.onUserUpdate(identityId) {
                         internalConfig.uid = qonversionUid
                     }
                     launchResultCache.clearPermissionsCache()
@@ -474,7 +474,7 @@ internal class QProductCenterManager internal constructor(
 
         if (isLogoutNeeded) {
             val userId = userInfoService.obtainUserId()
-            remoteConfigManager.onUserUpdate {
+            remoteConfigManager.onUserUpdate(null) {
                 internalConfig.uid = userId
             }
             launchResultCache.clearPermissionsCache()
@@ -528,7 +528,7 @@ internal class QProductCenterManager internal constructor(
         )
 
         userInfoService.storeQonversionUserId(newUserId)
-        remoteConfigManager.onUserUpdate {
+        remoteConfigManager.onUserUpdate(null) {
             internalConfig.uid = newUserId
         }
         launchResultCache.clearPermissionsCache()

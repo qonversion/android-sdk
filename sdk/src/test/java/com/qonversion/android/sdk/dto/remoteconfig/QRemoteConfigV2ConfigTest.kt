@@ -26,6 +26,7 @@ internal class QRemoteConfigV2ConfigTest {
         // Unset interval means "auto": the build-mode-dependent default is resolved later, so the
         // configuration itself carries the sentinel untouched.
         assertEquals(0, config.minFetchIntervalSeconds)
+        assertEquals(null, config.identifyAssertionProvider)
     }
 
     @Test
@@ -58,7 +59,7 @@ internal class QRemoteConfigV2ConfigTest {
             QRemoteConfigV2Config::class.java.declaredMethods.map { it.name }
         members.forEach { name -> assertFalse(name, name.contains("rojectId")) }
         assertEquals(
-            setOf("baseUrl", "environmentUid", "minFetchIntervalSeconds"),
+            setOf("baseUrl", "environmentUid", "minFetchIntervalSeconds", "identifyAssertionProvider"),
             QRemoteConfigV2Config::class.java.declaredFields.map { it.name }.toSet(),
         )
     }

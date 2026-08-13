@@ -274,6 +274,7 @@ internal object RemoteConfigV2Factory {
                     // construction, and reading one source makes it impossible to mint a session
                     // for one identity and admit its snapshot into another identity's store.
                     userUid = scope.canonicalUserId,
+                    externalUserId = scopeHolder.externalUserId,
                 )
             }
         },
@@ -286,6 +287,7 @@ internal object RemoteConfigV2Factory {
         // must outlive both the session that carried it and the process that learned it.
         projectIds = RemoteConfigProjectIdRegistry(PersistentRemoteConfigProjectIdStore(cache)),
         clock = clock,
+        identifyAssertionProvider = config.identifyAssertionProvider,
         moshi = moshi,
         logger = logger,
     )

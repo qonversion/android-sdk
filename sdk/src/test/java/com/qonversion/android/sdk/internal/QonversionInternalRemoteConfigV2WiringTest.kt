@@ -70,6 +70,7 @@ internal class QonversionInternalRemoteConfigV2WiringTest {
         every { appComponent.sharedPreferencesCache() } returns sharedPreferencesCache
         every { appComponent.userInfoService() } returns userInfoService
         every { userInfoService.obtainUserId() } returns INITIAL_UID
+        every { userInfoService.getPartnersIdentityId() } returns null
 
         // The real product center chain builds a Play Billing client and fires a launch request
         // during init; both are irrelevant to the v2 wiring under test.
@@ -147,7 +148,7 @@ internal class QonversionInternalRemoteConfigV2WiringTest {
 
         // A targeting invalidation re-reads targeting without a scope transition.
         identityBridge.targetingInvalidated()
-        verify(exactly = 1) { manager.refreshTargeting() }
+        verify(exactly = 1) { manager.refreshTargeting(null) }
     }
 
     @Test
@@ -156,7 +157,7 @@ internal class QonversionInternalRemoteConfigV2WiringTest {
         every {
             manager.updateIdentity(any(), RemoteConfigFetchForceReason.Identify)
         } throws IllegalStateException("v2 refused the identity change")
-        every { manager.refreshTargeting() } throws IllegalStateException("v2 refused the refresh")
+        every { manager.refreshTargeting(null) } throws IllegalStateException("v2 refused the refresh")
 
         QonversionInternal(internalConfig(remoteConfigV2Config = v2Config()), RuntimeEnvironment.getApplication())
 

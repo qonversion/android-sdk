@@ -162,12 +162,12 @@ internal class QRemoteConfigManager @Inject constructor(
     // stale so the next load fetches a fresh evaluation. Non-destructive —
     // loading states and pending callbacks survive, and the generation bump
     // stops in-flight loads from re-caching a superseded response.
-    fun invalidateRemoteConfigsCache() {
+    fun invalidateRemoteConfigsCache(externalUserId: String? = null) {
         invalidateOnAnyThread {}
-        identityBridge.targetingInvalidated()
+        identityBridge.targetingInvalidated(externalUserId)
     }
 
-    fun onUserUpdate(updateIdentity: () -> Unit = {}) {
+    fun onUserUpdate(externalUserId: String? = null, updateIdentity: () -> Unit = {}) {
         // The generation and the UID mutation share one linearization point.
         // Loads and response delivery take the same lock, so a background
         // logout/identify cannot expose a half-transitioned cache scope.
@@ -175,7 +175,7 @@ internal class QRemoteConfigManager @Inject constructor(
             invalidationGeneration.incrementAndGet()
             userGeneration.incrementAndGet()
             updateIdentity()
-            identityBridge.identityScopeChanged()
+            identityBridge.identityScopeChanged(externalUserId)
             if (Looper.myLooper() == Looper.getMainLooper()) {
                 resetIdentityStateIfNeeded()
             } else {

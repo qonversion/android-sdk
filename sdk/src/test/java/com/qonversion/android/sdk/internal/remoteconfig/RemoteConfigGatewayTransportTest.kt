@@ -1,5 +1,8 @@
+@file:OptIn(com.qonversion.android.sdk.ExperimentalQonversionApi::class)
+
 package com.qonversion.android.sdk.internal.remoteconfig
 
+import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigIdentifyAssertionProvider
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.qonversion.android.sdk.internal.storage.Cache
 import com.squareup.moshi.JsonAdapter
@@ -81,6 +84,35 @@ internal class RemoteConfigGatewayTransportTest {
             snapshot.body.readUtf8(),
         )
         assertTrue(response is RemoteConfigFetchResponse.Success)
+    }
+
+    @Test
+    fun `identified scope obtains a host assertion and uses the identify bootstrap`() {
+        identity = identityFor(SCOPE_B, USER_B, externalUserId = "account-1")
+        server.enqueue(sessionResponse(SESSION_TOKEN))
+        server.enqueue(snapshotResponse(SNAPSHOT_BODY, SNAPSHOT_ETAG))
+        val provider = QRemoteConfigIdentifyAssertionProvider { externalUserId, completion ->
+            assertEquals("account-1", externalUserId)
+            completion.onResult("payload.mac")
+        }
+
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport(assertionProvider = provider)) is RemoteConfigFetchResponse.Success)
+
+        val bootstrap = server.takeRequest()
+        assertEquals("/v3/remote-config-v2/session/identify", bootstrap.path)
+        val bootstrapBody = bootstrap.body.readUtf8()
+        assertEquals("{\"assertion\":\"payload.mac\"}", bootstrapBody)
+        assertFalse(bootstrapBody.contains(USER_B))
+        assertEquals("/v3/remote-config-v2/snapshot", server.takeRequest().path)
+    }
+
+    @Test
+    fun `identified scope without an assertion fails closed without anonymous bootstrap`() {
+        identity = identityFor(SCOPE_B, USER_B, externalUserId = "account-1")
+        val provider = QRemoteConfigIdentifyAssertionProvider { _, completion -> completion.onResult(null) }
+
+        assertTrue(fetch(RemoteConfigFetchRequest(), transport(assertionProvider = provider)) is RemoteConfigFetchResponse.Failure)
+        assertEquals(0, server.requestCount)
     }
 
     @Test
@@ -529,6 +561,7 @@ internal class RemoteConfigGatewayTransportTest {
         sessionStore: RemoteConfigSessionStore = store(),
         maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
         projectIds: RemoteConfigProjectIdRegistry = registry(),
+        assertionProvider: QRemoteConfigIdentifyAssertionProvider? = null,
     ) = RemoteConfigGatewayTransport(
         callFactory = client,
         baseUrlProvider = { server.url("/").toString() },
@@ -537,6 +570,7 @@ internal class RemoteConfigGatewayTransportTest {
         sessionStore = sessionStore,
         projectIds = projectIds,
         clock = clock,
+        identifyAssertionProvider = assertionProvider,
         moshi = Moshi.Builder().build(),
         logger = logger,
         maxSnapshotBodyBytes = maxSnapshotBodyBytes,
@@ -588,8 +622,11 @@ internal class RemoteConfigGatewayTransportTest {
         .setHeader("Content-Type", "application/json")
         .setBody(Buffer().write(body))
 
-    private fun identityFor(scope: RemoteConfigSnapshotScope, userUid: String) =
-        RemoteConfigTransportIdentity(scope, PROJECT_TOKEN, userUid)
+    private fun identityFor(
+        scope: RemoteConfigSnapshotScope,
+        userUid: String,
+        externalUserId: String? = null,
+    ) = RemoteConfigTransportIdentity(scope, PROJECT_TOKEN, userUid, externalUserId)
 
     /** Answers by path so concurrent calls are not order-coupled. */
     private inner class PathDispatcher : Dispatcher() {

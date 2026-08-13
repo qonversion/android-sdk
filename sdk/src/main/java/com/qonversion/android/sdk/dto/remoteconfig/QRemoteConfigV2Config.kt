@@ -4,6 +4,26 @@ import com.qonversion.android.sdk.ExperimentalQonversionApi
 
 private const val REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS = 36
 
+/** Receives one short-lived host-signed assertion requested by Remote Config v2. */
+@ExperimentalQonversionApi
+fun interface QRemoteConfigIdentifyAssertionCallback {
+    /** Pass `null` when no assertion can be obtained; the SDK then fails closed. */
+    fun onResult(assertion: String?)
+}
+
+/**
+ * Obtains a short-lived assertion from the app's authenticated backend for an identified user.
+ *
+ * The SDK calls this only when it must mint a Remote Config session for an existing identified
+ * account. Implementations may complete asynchronously and must never put the host signing key in
+ * the app. The assertion is opaque to the SDK and is sent only to the configured gateway's
+ * `/v3/remote-config-v2/session/identify` endpoint.
+ */
+@ExperimentalQonversionApi
+fun interface QRemoteConfigIdentifyAssertionProvider {
+    fun requestAssertion(externalUserId: String, callback: QRemoteConfigIdentifyAssertionCallback)
+}
+
 /**
  * Enables the experimental Remote Config v2 snapshot pipeline.
  *
@@ -39,6 +59,9 @@ private const val REMOTE_CONFIG_V2_UID_MAX_CODE_POINTS = 36
  * throttling at all in a debuggable one, so a developer iterating on an environment sees every
  * change. An explicit positive value wins over auto in both build modes. Forced fetches bypass
  * the interval either way, and failure backoff applies independently of it.
+ * @param identifyAssertionProvider obtains a host-signed assertion when `identify()` switches to
+ * an existing account. Without it anonymous Remote Config continues to work, while an identified
+ * session that needs proof of identity fails closed instead of sending a bare external user id.
  * @throws IllegalArgumentException if any value is malformed.
  */
 @ExperimentalQonversionApi
@@ -46,6 +69,7 @@ class QRemoteConfigV2Config @JvmOverloads constructor(
     val baseUrl: String,
     val environmentUid: String,
     val minFetchIntervalSeconds: Long = 0,
+    val identifyAssertionProvider: QRemoteConfigIdentifyAssertionProvider? = null,
 ) {
     init {
         require(baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {

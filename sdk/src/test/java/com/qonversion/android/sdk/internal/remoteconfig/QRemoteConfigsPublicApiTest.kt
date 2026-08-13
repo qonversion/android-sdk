@@ -278,6 +278,33 @@ internal class QRemoteConfigsPublicApiTest {
     }
 
     @Test
+    fun `context keys exclude deleted server values which have no bundled fallback`() {
+        val harness = harness()
+        harness.serve(
+            "release-1",
+            1,
+            listOf(RcWireValue("count", "1"), RcWireValue("server_only", "true")),
+        )
+        harness.identify("QON_anon_a", "canonical-a", RemoteConfigFetchForceReason.Build)
+        harness.fetchBlocking()
+        harness.activateBlocking()
+        assertEquals(setOf("count", "server_only", "bundled_only"), harness.configs.current.contextKeys)
+
+        // A complete snapshot omitting server_only tombstones it so Previous cannot resurrect it.
+        // The public key set promises readable keys, therefore the internal tombstone must not leak.
+        harness.serve(
+            "release-2",
+            2,
+            listOf(RcWireValue("count", "2", applyPolicy = "immediate")),
+        )
+        harness.fetchBlocking()
+
+        val current = harness.configs.current
+        assertNull(current.rawValue("server_only"))
+        assertEquals(setOf("count", "bundled_only"), current.contextKeys)
+    }
+
+    @Test
     fun `bundled fallback values answer before any fetch or activation`() {
         val harness = harness()
 
@@ -325,6 +352,7 @@ internal class QRemoteConfigsPublicApiTest {
         harness.identify("QON_anon_a", "canonical-a", RemoteConfigFetchForceReason.Build)
         harness.fetchBlocking()
         harness.activateBlocking()
+        harness.awaitAcks(1)
 
         val updates = Collections.synchronizedList(mutableListOf<QRemoteConfigUpdate>())
         val latch = CountDownLatch(1)
@@ -338,6 +366,7 @@ internal class QRemoteConfigsPublicApiTest {
             ),
         )
         harness.fetchBlocking()
+        harness.awaitAcks(2)
 
         assertTrue("no update was delivered", latch.await(RC_AWAIT_SECONDS, TimeUnit.SECONDS))
         val update = updates.single()
@@ -348,6 +377,7 @@ internal class QRemoteConfigsPublicApiTest {
         assertEquals("5", harness.configs.current.rawValue("count")?.value)
         assertEquals("\"new\"", harness.configs.current.rawValue("extra")?.value)
         assertEquals("release-2", update.snapshot.releaseUid)
+        assertTrue(harness.ackRequests.last().body.contains("\"release_number\":2"))
     }
 
     @Test

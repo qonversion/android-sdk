@@ -325,6 +325,16 @@ internal class RemoteConfigSnapshot(
             bundledRelease?.entries?.keys?.let(::addAll)
         },
     )
+    val readableKeys: Set<String> = Collections.unmodifiableSet(
+        buildSet {
+            primaryRelease?.entries?.values
+                ?.filterNot(RemoteConfigSnapshotEntry::isTombstone)
+                ?.mapTo(this, RemoteConfigSnapshotEntry::key)
+            bundledRelease?.entries?.values
+                ?.filterNot(RemoteConfigSnapshotEntry::isTombstone)
+                ?.mapTo(this, RemoteConfigSnapshotEntry::key)
+        },
+    )
 
     @Suppress("ReturnCount")
     fun rawValue(key: String): RemoteConfigResolvedValue<ByteArray>? {

@@ -57,7 +57,7 @@ class RemoteConfigV2Fragment : Fragment() {
         setupButtons()
         renderEnvironment()
         renderSubscriptionState()
-        renderSnapshot(snapshots.current)
+        activate()
 
         return binding.root
     }
@@ -114,8 +114,19 @@ class RemoteConfigV2Fragment : Fragment() {
     private fun onFetch(result: QRemoteConfigFetchResult) {
         _binding?.let { b ->
             b.progressBar.visibility = View.GONE
-            b.statusText.text = getString(R.string.rc_v2_fetch_status_format, result.status.name)
-            renderSnapshot(result.snapshot)
+            b.statusText.text = getString(
+                R.string.rc_v2_fetch_status_format,
+                result.status.name,
+                result.snapshot.releaseNumber.toString()
+            )
+            // Fetching an on-next-activate release must not make the candidate look current.
+            // An immediate-policy release is already current by callback time, even when this
+            // screen is not subscribed to update events, so it is safe and necessary to render it.
+            val activatedImmediately = result.snapshot.contextKeys.any { contextKey ->
+                result.snapshot.rawValue(contextKey)?.applyPolicy ==
+                    com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigApplyPolicy.Immediate
+            }
+            if (activatedImmediately) renderSnapshot(result.snapshot)
         }
     }
 
@@ -194,6 +205,12 @@ class RemoteConfigV2Fragment : Fragment() {
     private fun renderSnapshot(snapshot: QRemoteConfigSnapshot) {
         val binding = _binding ?: return
 
+        // contextKeys also contains server tombstones used to suppress removed values. Count and
+        // display only keys which remain readable from the server/fallback resolution ladder.
+        val values = snapshot.contextKeys.sorted().mapNotNull { contextKey ->
+            snapshot.rawValue(contextKey)?.let { value -> ResolvedEntry(contextKey, value) }
+        }
+
         // A fallback-only snapshot carries no release: releaseNumber is 0 and releaseUid is empty.
         binding.releaseInfo.text = if (snapshot.releaseNumber == 0L) {
             getString(R.string.rc_v2_no_release)
@@ -202,12 +219,8 @@ class RemoteConfigV2Fragment : Fragment() {
                 R.string.rc_v2_release_format,
                 snapshot.releaseNumber.toString(),
                 snapshot.releaseUid,
-                snapshot.contextKeys.size.toString()
+                values.size.toString()
             )
-        }
-
-        val values = snapshot.contextKeys.sorted().mapNotNull { contextKey ->
-            snapshot.rawValue(contextKey)?.let { value -> ResolvedEntry(contextKey, value) }
         }
 
         if (values.isEmpty()) {

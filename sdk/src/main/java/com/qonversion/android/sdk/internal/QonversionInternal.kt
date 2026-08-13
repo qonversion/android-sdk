@@ -132,15 +132,21 @@ internal class QonversionInternal(
         )
         remoteConfigsV2 = remoteConfigsV2Impl
         remoteConfigsV2Impl.manager?.let { manager ->
-            manager.updateIdentity(internalConfig.uid, RemoteConfigFetchForceReason.Build)
+            manager.updateIdentity(
+                internalConfig.uid,
+                RemoteConfigFetchForceReason.Build,
+                userInfoService.getPartnersIdentityId(),
+            )
             // The v1 manager owns the identity transition; v2 switches its scope inside it, so the
             // previous identity's release stops being readable at the same instant for both.
-            remoteConfigManager.identityBridge.onIdentityScopeChanged = {
-                manager.updateIdentity(internalConfig.uid, RemoteConfigFetchForceReason.Identify)
+            remoteConfigManager.identityBridge.onIdentityScopeChanged = { externalUserId ->
+                manager.updateIdentity(internalConfig.uid, RemoteConfigFetchForceReason.Identify, externalUserId)
             }
             // Targeting can change without the uid changing — identify() that only attaches an
             // external id, an experiment attach, or an explicit invalidation. Re-read, keep serving.
-            remoteConfigManager.identityBridge.onTargetingInvalidated = { manager.refreshTargeting() }
+            remoteConfigManager.identityBridge.onTargetingInvalidated = { externalUserId ->
+                manager.refreshTargeting(externalUserId)
+            }
         }
 
         val lifecycleHandler = AppLifecycleHandler(this)

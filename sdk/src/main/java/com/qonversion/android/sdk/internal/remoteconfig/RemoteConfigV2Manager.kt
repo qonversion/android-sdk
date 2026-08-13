@@ -40,10 +40,15 @@ internal data class RemoteConfigV2Options(
  */
 internal class RemoteConfigV2ScopeHolder {
     private val current = AtomicReference<RemoteConfigSnapshotScope?>(null)
+    private val externalIdentity = AtomicReference<String?>(null)
 
     var scope: RemoteConfigSnapshotScope?
         get() = current.get()
         set(value) = current.set(value)
+
+    var externalUserId: String?
+        get() = externalIdentity.get()
+        set(value) = externalIdentity.set(value)
 }
 
 internal fun interface RemoteConfigMainDispatcher {
@@ -112,13 +117,18 @@ internal class RemoteConfigV2Manager(
      * snapshot stops being readable before this call returns — a read that races an identity
      * change can only ever see the new (initially fallback-only) scope, never the old release.
      */
-    fun updateIdentity(canonicalUserId: String, forceReason: RemoteConfigFetchForceReason) {
+    fun updateIdentity(
+        canonicalUserId: String,
+        forceReason: RemoteConfigFetchForceReason,
+        externalUserId: String? = null,
+    ) {
         val scope = scopeFor(canonicalUserId)
         // Order matters: the core stops accepting admissions for the previous scope BEFORE the
         // transport starts addressing the new one. The reverse order leaves a window in which a
         // concurrent fetch reads the new identity and admits its snapshot into the old store.
         readGuard.transitionScopeBeforeSdkReady(scope)
         scopeHolder.scope = scope
+        scopeHolder.externalUserId = externalUserId
         val submitted = submit {
             coordinator.transitionTo(scope)
             // Binds the ack queue to the new identity — and, on the first identity of a process,
@@ -140,8 +150,11 @@ internal class RemoteConfigV2Manager(
      * Deliberately not a scope transition: the identity did not change, so the served release must
      * keep serving until a newer one is fetched and activated.
      */
-    fun refreshTargeting() {
+    fun refreshTargeting() = refreshTargeting(null)
+
+    fun refreshTargeting(externalUserId: String?) {
         if (scopeHolder.scope == null) return
+        if (externalUserId != null) scopeHolder.externalUserId = externalUserId
         submit { forceFetch(RemoteConfigFetchForceReason.Identify) }
     }
 
@@ -182,6 +195,14 @@ internal class RemoteConfigV2Manager(
             coordinator.fetch(forceReason) { result ->
                 timeoutTask.cancelSafely()
                 delivery.deliver(result.toPublicResult())
+                // An immediate-policy admission performs the same whole-release activation as
+                // activate(), so it owes the same fleet-distribution ack. Merely returning the
+                // activated snapshot to the fetch caller is not enough: no later current read or
+                // explicit activate is required by this policy and therefore neither can be relied
+                // on to discover the activation for us.
+                if (result.activatedImmediately()) {
+                    noteActivatedRelease(core.currentSnapshot().releaseNumber)
+                }
                 // Strictly after the app's completion: the connection is warm and the session is
                 // known-good, which is the cheapest moment to hand over buffered telemetry — but
                 // no caller may ever wait on it.
@@ -323,6 +344,13 @@ internal class RemoteConfigV2Manager(
     private fun RemoteConfigFetchResult.answeredByGateway(): Boolean = when (this) {
         is RemoteConfigFetchResult.Fetched, RemoteConfigFetchResult.NotModified -> true
         is RemoteConfigFetchResult.PolicyPersistenceFailed -> result.answeredByGateway()
+        else -> false
+    }
+
+    private fun RemoteConfigFetchResult.activatedImmediately(): Boolean = when (this) {
+        is RemoteConfigFetchResult.Fetched ->
+            transition.status == RemoteConfigSnapshotTransitionStatus.Activated
+        is RemoteConfigFetchResult.PolicyPersistenceFailed -> result.activatedImmediately()
         else -> false
     }
 

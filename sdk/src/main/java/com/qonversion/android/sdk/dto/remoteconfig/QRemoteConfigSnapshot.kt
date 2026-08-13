@@ -32,7 +32,7 @@ class QRemoteConfigSnapshot internal constructor(
     val releaseNumber: Long get() = snapshot.releaseNumber
 
     /** Every context key readable from this snapshot, including keys served by bundled defaults. */
-    val contextKeys: Set<String> get() = snapshot.allKeys
+    val contextKeys: Set<String> get() = snapshot.readableKeys
 
     /**
      * Reads [contextKey] as the exact JSON text stored for it.

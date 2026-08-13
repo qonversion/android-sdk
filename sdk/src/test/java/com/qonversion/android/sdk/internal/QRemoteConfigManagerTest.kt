@@ -2323,13 +2323,18 @@ internal class QRemoteConfigManagerTest {
     fun `onUserUpdate fires identityScopeChanged on the v2 bridge exactly once`() {
         var identityScopeChanges = 0
         var targetingInvalidations = 0
-        manager.identityBridge.onIdentityScopeChanged = { identityScopeChanges++ }
-        manager.identityBridge.onTargetingInvalidated = { targetingInvalidations++ }
+        var bridgedExternalUserId: String? = null
+        manager.identityBridge.onIdentityScopeChanged = { externalUserId ->
+            identityScopeChanges++
+            bridgedExternalUserId = externalUserId
+        }
+        manager.identityBridge.onTargetingInvalidated = { _ -> targetingInvalidations++ }
 
-        manager.onUserUpdate()
+        manager.onUserUpdate("account-1")
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(1, identityScopeChanges)
+        assertEquals("account-1", bridgedExternalUserId)
         assertEquals(0, targetingInvalidations)
     }
 
@@ -2337,20 +2342,25 @@ internal class QRemoteConfigManagerTest {
     fun `invalidateRemoteConfigsCache fires targetingInvalidated on the v2 bridge exactly once`() {
         var identityScopeChanges = 0
         var targetingInvalidations = 0
-        manager.identityBridge.onIdentityScopeChanged = { identityScopeChanges++ }
-        manager.identityBridge.onTargetingInvalidated = { targetingInvalidations++ }
+        var bridgedExternalUserId: String? = null
+        manager.identityBridge.onIdentityScopeChanged = { _ -> identityScopeChanges++ }
+        manager.identityBridge.onTargetingInvalidated = { externalUserId ->
+            targetingInvalidations++
+            bridgedExternalUserId = externalUserId
+        }
 
-        manager.invalidateRemoteConfigsCache()
+        manager.invalidateRemoteConfigsCache("account-1")
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(1, targetingInvalidations)
+        assertEquals("account-1", bridgedExternalUserId)
         assertEquals(0, identityScopeChanges)
     }
 
     @Test
     fun `a throwing v2 bridge observer does not break the v1 identity flow`() {
-        manager.identityBridge.onIdentityScopeChanged = { throw RuntimeException("v2 observer boom") }
-        manager.identityBridge.onTargetingInvalidated = { throw RuntimeException("v2 observer boom") }
+        manager.identityBridge.onIdentityScopeChanged = { _ -> throw RuntimeException("v2 observer boom") }
+        manager.identityBridge.onTargetingInvalidated = { _ -> throw RuntimeException("v2 observer boom") }
         var identityUpdated = false
 
         // Neither call may propagate the observer's exception.

@@ -1,5 +1,8 @@
+@file:OptIn(com.qonversion.android.sdk.ExperimentalQonversionApi::class)
+
 package com.qonversion.android.sdk.internal.remoteconfig
 
+import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigIdentifyAssertionProvider
 import com.qonversion.android.sdk.internal.logger.Logger
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -18,6 +21,7 @@ import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val REMOTE_CONFIG_SESSION_PATH = "v3/remote-config-v2/session"
+internal const val REMOTE_CONFIG_SESSION_IDENTIFY_PATH = "v3/remote-config-v2/session/identify"
 internal const val REMOTE_CONFIG_SNAPSHOT_PATH = "v3/remote-config-v2/snapshot"
 internal const val REMOTE_CONFIG_ACK_PATH = "v3/remote-config-v2/ack"
 internal const val REMOTE_CONFIG_TELEMETRY_PATH = "v3/remote-config-v2/telemetry"
@@ -25,6 +29,7 @@ internal const val REMOTE_CONFIG_SESSION_HEADER = "X-Qonversion-RC-Session"
 internal const val REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES = 8L * 1024 * 1024
 
 private const val REMOTE_CONFIG_USER_UID_MAX_BYTES = 255
+private const val REMOTE_CONFIG_IDENTIFY_ASSERTION_MAX_BYTES = 2 * 1024
 private const val REMOTE_CONFIG_SESSION_TOKEN_HEADER_MAX_BYTES = 512
 private const val REMOTE_CONFIG_CLIENT_CONTEXT_SCALAR_MAX_BYTES = 256
 private const val REMOTE_CONFIG_SESSION_EXPIRY_SKEW_MILLIS = 30_000L
@@ -91,6 +96,7 @@ internal data class RemoteConfigTransportIdentity(
     val scope: RemoteConfigSnapshotScope,
     val projectToken: String,
     val userUid: String,
+    val externalUserId: String? = null,
 ) {
     internal val sessionKey: RemoteConfigSessionKey get() = RemoteConfigSessionKey(scope, userUid)
 
@@ -151,11 +157,13 @@ internal class RemoteConfigGatewayTransport(
     private val sessionStore: RemoteConfigSessionStore,
     private val projectIds: RemoteConfigProjectIdRegistry,
     private val clock: RemoteConfigFetchClock,
+    private val identifyAssertionProvider: QRemoteConfigIdentifyAssertionProvider? = null,
     moshi: Moshi,
     private val logger: Logger,
     private val maxSnapshotBodyBytes: Long = REMOTE_CONFIG_SNAPSHOT_BODY_MAX_BYTES,
 ) : RemoteConfigFetchTransport, RemoteConfigAckTransport, RemoteConfigTelemetryTransport {
     private val bootstrapRequestAdapter = moshi.adapter(RemoteConfigSessionRequest::class.java)
+    private val identifyRequestAdapter = moshi.adapter(RemoteConfigIdentifiedSessionRequest::class.java)
     private val bootstrapResponseAdapter = moshi.adapter(RemoteConfigSessionResponse::class.java)
     private val snapshotRequestAdapter = moshi.adapter(RemoteConfigSnapshotRequest::class.java)
     private val ackRequestAdapter = moshi.adapter(RemoteConfigActivationAckRequest::class.java)
@@ -519,12 +527,52 @@ internal class RemoteConfigGatewayTransport(
         identity: RemoteConfigTransportIdentity,
         onResult: (MintResult) -> Unit,
     ) {
-        val body = try {
-            bootstrapRequestAdapter.toJson(RemoteConfigSessionRequest(identity.userUid))
-        } catch (_: Throwable) {
-            null
+        val externalUserId = identity.externalUserId
+        if (externalUserId == null) {
+            val body = try {
+                bootstrapRequestAdapter.toJson(RemoteConfigSessionRequest(identity.userUid))
+            } catch (_: Throwable) {
+                null
+            }
+            mintWithBody(identity, REMOTE_CONFIG_SESSION_PATH, body, onResult)
+            return
         }
-        val httpRequest = body?.let { buildRequest(REMOTE_CONFIG_SESSION_PATH, identity, it) }
+
+        val provider = identifyAssertionProvider
+        if (provider == null) {
+            logger.debug("Remote Config v2 identified session has no assertion provider")
+            onResult(MintResult.refused(RemoteConfigFetchResponse.Failure(), RemoteConfigAckResponse.Permanent))
+            return
+        }
+        val delivered = AtomicBoolean(false)
+        try {
+            provider.requestAssertion(externalUserId) { assertion ->
+                if (!delivered.compareAndSet(false, true)) return@requestAssertion
+                val body = assertion
+                    ?.takeIf { it.isValidIdentifyAssertion() }
+                    ?.let { valid ->
+                        try {
+                            identifyRequestAdapter.toJson(RemoteConfigIdentifiedSessionRequest(valid))
+                        } catch (_: Throwable) {
+                            null
+                        }
+                    }
+                mintWithBody(identity, REMOTE_CONFIG_SESSION_IDENTIFY_PATH, body, onResult)
+            }
+        } catch (_: Throwable) {
+            if (delivered.compareAndSet(false, true)) {
+                onResult(MintResult.refused(RemoteConfigFetchResponse.Failure(), RemoteConfigAckResponse.Permanent))
+            }
+        }
+    }
+
+    private fun mintWithBody(
+        identity: RemoteConfigTransportIdentity,
+        path: String,
+        body: String?,
+        onResult: (MintResult) -> Unit,
+    ) {
+        val httpRequest = body?.let { buildRequest(path, identity, it) }
         if (httpRequest == null) {
             onResult(MintResult.refused(RemoteConfigFetchResponse.Failure(), RemoteConfigAckResponse.Permanent))
             return
@@ -561,6 +609,14 @@ internal class RemoteConfigGatewayTransport(
             onResult(MintResult.Minted(session))
         }
     }
+
+    private fun String.isValidIdentifyAssertion(): Boolean =
+        isNotEmpty() &&
+            toByteArray(Charsets.UTF_8).size <= REMOTE_CONFIG_IDENTIFY_ASSERTION_MAX_BYTES &&
+            all { character ->
+                character in 'A'..'Z' || character in 'a'..'z' || character in '0'..'9' ||
+                    character == '-' || character == '.' || character == '_' || character == '~'
+            }
 
     /**
      * Builds a request, returning `null` instead of throwing. `Request.Builder.header` rejects
@@ -884,6 +940,11 @@ private val RFC3339_PATTERN = Regex(
 @JsonClass(generateAdapter = true)
 internal data class RemoteConfigSessionRequest(
     @Json(name = "user_uid") val userUid: String,
+)
+
+@JsonClass(generateAdapter = true)
+internal data class RemoteConfigIdentifiedSessionRequest(
+    @Json(name = "assertion") val assertion: String,
 )
 
 @JsonClass(generateAdapter = true)
