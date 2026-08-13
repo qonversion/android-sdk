@@ -48,6 +48,14 @@ class OtherFragment : Fragment() {
             findNavController().navigate(R.id.remoteConfigsFragment)
         }
 
+        binding.buttonRemoteConfigV2.setOnClickListener {
+            findNavController().navigate(R.id.remoteConfigV2Fragment)
+        }
+
+        binding.buttonPaywallDemo.setOnClickListener {
+            findNavController().navigate(R.id.paywallDemoFragment)
+        }
+
         binding.buttonNoCodes.setOnClickListener {
             findNavController().navigate(R.id.noCodesFragment)
         }

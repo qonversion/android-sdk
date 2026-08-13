@@ -1,0 +1,23 @@
+{
+  "headline": "Find your calm",
+  "subtitle": "Guided meditations, sleep stories and breathing exercises. Five minutes a day is enough.",
+  "accentColor": "#7C5CFF",
+  "ctaText": "Start 7-day free trial",
+  "showCountdown": false,
+  "countdownSeconds": 0,
+  "products": [
+    {
+      "id": "calmly_monthly",
+      "title": "Monthly",
+      "priceText": "$9.99 / month",
+      "badge": null
+    },
+    {
+      "id": "calmly_annual",
+      "title": "Annual",
+      "priceText": "$59.99 / year",
+      "badge": "BEST VALUE"
+    }
+  ],
+  "highlightProductId": "calmly_annual"
+}

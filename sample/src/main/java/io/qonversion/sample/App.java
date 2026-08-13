@@ -9,12 +9,16 @@ import com.qonversion.android.sdk.Qonversion;
 import com.qonversion.android.sdk.QonversionConfig;
 import com.qonversion.android.sdk.dto.QEnvironment;
 import com.qonversion.android.sdk.dto.QLaunchMode;
+import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigV2Config;
 
 import io.qonversion.nocodes.NoCodes;
 import io.qonversion.nocodes.NoCodesConfig;
 
 public class App extends MultiDexApplication {
-    private static final String DEFAULT_PROJECT_KEY = "PV77YHL7qnGvsdmpTs7gimsxUvY-Znl2";
+    // The RC v2 playground project. The RemoteConfigV2Fragment demo only works against the project
+    // on the local gateway's RC v2 allowlist, so that project is the sample's default. The
+    // configuration dialog on the Home screen still overrides it at runtime without a rebuild.
+    private static final String DEFAULT_PROJECT_KEY = UtilsKt.RC_V2_PLAYGROUND_PROJECT_KEY;
 
     @Override
     public void onCreate() {
@@ -28,6 +32,15 @@ public class App extends MultiDexApplication {
                 projectKey,
                 QLaunchMode.SubscriptionManagement
         ).setEnvironment(QEnvironment.Sandbox);
+
+        // Remote Config v2 has no default base URL — the pipeline stays dormant until a config is
+        // supplied, and it is addressed independently of setProxyURL below (which only moves the
+        // legacy REST API). minFetchIntervalSeconds is 0 so the demo is never throttled.
+        qonversionConfigBuilder.setRemoteConfigV2Config(new QRemoteConfigV2Config(
+                UtilsKt.RC_V2_PLAYGROUND_BASE_URL,
+                UtilsKt.RC_V2_PLAYGROUND_ENVIRONMENT_UID,
+                0
+        ));
 
         NoCodesConfig.Builder noCodesConfigBuilder = new NoCodesConfig.Builder(
                 this,
