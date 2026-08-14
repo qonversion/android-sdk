@@ -6,6 +6,7 @@ import android.graphics.Color
 import com.qonversion.android.sdk.ExperimentalQonversionApi
 import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigDecoder
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
 /** The Remote Config context key the Calmly paywall is driven by. */
@@ -80,7 +81,7 @@ const val PAYWALL_FALLBACK_ACCENT_COLOR = 0xFF7C5CFF.toInt()
  */
 fun PaywallConfig.accentColorOrDefault(): Int = try {
     Color.parseColor(accentColor)
-} catch (e: IllegalArgumentException) {
+} catch (_: IllegalArgumentException) {
     PAYWALL_FALLBACK_ACCENT_COLOR
 }
 
@@ -88,7 +89,7 @@ fun PaywallConfig.accentColorOrDefault(): Int = try {
 fun PaywallConfig.hasValidAccentColor(): Boolean = try {
     Color.parseColor(accentColor)
     true
-} catch (e: IllegalArgumentException) {
+} catch (_: IllegalArgumentException) {
     false
 }
 
@@ -118,7 +119,7 @@ val PaywallConfigDecoder = QRemoteConfigDecoder { rawJson ->
             products = products,
             highlightProductId = root.optNullableString("highlightProductId").orEmpty(),
         )
-    } catch (e: Exception) {
+    } catch (_: JSONException) {
         // A decoder must never crash the read: any malformed payload is simply not a candidate.
         null
     }

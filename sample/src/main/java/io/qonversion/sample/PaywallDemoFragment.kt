@@ -29,6 +29,7 @@ import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigUpdate
 import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigValue
 import io.qonversion.sample.databinding.FragmentPaywallDemoBinding
 import io.qonversion.sample.databinding.ItemPaywallProductBinding
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
@@ -329,37 +330,35 @@ class PaywallDemoFragment : Fragment() {
     }
 
     private fun renderCountdown(config: PaywallConfig, accent: Int) {
-        val binding = _binding ?: return
+        _binding?.let { binding ->
+            val enabled = config.showCountdown && config.countdownSeconds > 0
+            if (!enabled) {
+                countdownHandler.removeCallbacks(countdownTick)
+                countdownTotalSeconds = 0
+                countdownRemainingSeconds = 0
+                binding.countdownContainer.visibility = View.GONE
+            } else {
+                binding.countdownContainer.visibility = View.VISIBLE
+                binding.countdownText.setTextColor(accent)
+                binding.countdownBar.progressTintList = ColorStateList.valueOf(accent)
 
-        val enabled = config.showCountdown && config.countdownSeconds > 0
-        if (!enabled) {
-            countdownHandler.removeCallbacks(countdownTick)
-            countdownTotalSeconds = 0
-            countdownRemainingSeconds = 0
-            binding.countdownContainer.visibility = View.GONE
-            return
+                // Restart only when the countdown itself was re-configured; an unrelated re-render
+                // must not silently give the user their time back.
+                val previous = renderedConfig
+                val unchanged = previous != null &&
+                    previous.showCountdown == config.showCountdown &&
+                    previous.countdownSeconds == config.countdownSeconds
+                if (unchanged && countdownTotalSeconds == config.countdownSeconds) {
+                    renderCountdownValue()
+                } else {
+                    countdownHandler.removeCallbacks(countdownTick)
+                    countdownTotalSeconds = config.countdownSeconds
+                    countdownRemainingSeconds = config.countdownSeconds
+                    renderCountdownValue()
+                    countdownHandler.postDelayed(countdownTick, COUNTDOWN_TICK_MS)
+                }
+            }
         }
-
-        binding.countdownContainer.visibility = View.VISIBLE
-        binding.countdownText.setTextColor(accent)
-        binding.countdownBar.progressTintList = ColorStateList.valueOf(accent)
-
-        // Restart only when the countdown itself was re-configured; an unrelated re-render must not
-        // silently give the user their time back.
-        val previous = renderedConfig
-        val unchanged = previous != null &&
-            previous.showCountdown == config.showCountdown &&
-            previous.countdownSeconds == config.countdownSeconds
-        if (unchanged && countdownTotalSeconds == config.countdownSeconds) {
-            renderCountdownValue()
-            return
-        }
-
-        countdownHandler.removeCallbacks(countdownTick)
-        countdownTotalSeconds = config.countdownSeconds
-        countdownRemainingSeconds = config.countdownSeconds
-        renderCountdownValue()
-        countdownHandler.postDelayed(countdownTick, COUNTDOWN_TICK_MS)
     }
 
     private fun renderCountdownValue() {
@@ -467,7 +466,7 @@ class PaywallDemoFragment : Fragment() {
             experiment != null -> experiment
             else -> null
         }
-    } catch (e: Exception) {
+    } catch (_: JSONException) {
         null
     }
 

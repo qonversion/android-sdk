@@ -12,6 +12,7 @@ import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigSource
 import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigValue
 import io.qonversion.sample.databinding.ItemRemoteConfigV2Binding
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
 /** One resolved Remote Config v2 key, paired with the context key it was read under. */
@@ -76,7 +77,7 @@ class RemoteConfigV2Adapter(
             trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
             else -> raw
         }
-    } catch (e: Exception) {
+    } catch (_: JSONException) {
         raw
     }
 
