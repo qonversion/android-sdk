@@ -77,6 +77,9 @@ internal class QProductCenterManagerIdentifyContractTest {
         // would otherwise spin up a background Thread and break the
         // synchronous verifyOrder window.
         every { mockConfig.primaryConfig.isKidsMode } returns true
+        every { mockRemoteConfigManager.onUserUpdate(any(), any()) } answers {
+            secondArg<() -> Unit>().invoke()
+        }
 
         // billingService.queryPurchases is the synchronous entry point
         // into continueLaunchWithPurchasesInfo → processInit →
@@ -137,8 +140,8 @@ internal class QProductCenterManagerIdentifyContractTest {
         // cache and finds stale permissions before clear, the UX is
         // broken.
         verifyOrder {
+            mockRemoteConfigManager.onUserUpdate(newIdentity, any())
             mockConfig.uid = mergedUid
-            mockRemoteConfigManager.onUserUpdate()
             mockLaunchResultCacheWrapper.clearPermissionsCache()
             mockRepository.init(match { it.requestTrigger == RequestTrigger.Identify })
         }
@@ -176,12 +179,12 @@ internal class QProductCenterManagerIdentifyContractTest {
         // the invalidation, or queued RC completions would be served the
         // pre-identify evaluation straight from the cache.
         verifyOrder {
-            mockRemoteConfigManager.invalidateRemoteConfigsCache()
+            mockRemoteConfigManager.invalidateRemoteConfigsCache(newIdentity)
             mockRemoteConfigManager.handlePendingRequests()
         }
-        verify(exactly = 1) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
+        verify(exactly = 1) { mockRemoteConfigManager.invalidateRemoteConfigsCache(newIdentity) }
         // ...and the destructive user-switch path must NOT fire on same-uid
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any(), any()) }
     }
 
     /**
@@ -200,8 +203,8 @@ internal class QProductCenterManagerIdentifyContractTest {
         pcm.identify(identity)
 
         verify(exactly = 0) { mockIdentityManager.identify(any(), any()) }
-        verify(exactly = 0) { mockRemoteConfigManager.invalidateRemoteConfigsCache() }
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.invalidateRemoteConfigsCache(any()) }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any(), any()) }
     }
 
     /**

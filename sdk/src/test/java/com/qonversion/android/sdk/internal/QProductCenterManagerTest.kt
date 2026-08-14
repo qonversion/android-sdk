@@ -60,6 +60,9 @@ internal class QProductCenterManagerTest {
 
         mockInstallDate()
         every { mockHandledPurchasesCache.shouldHandlePurchase(any()) } returns true
+        every { mockRemoteConfigManager.onUserUpdate(any(), any()) } answers {
+            secondArg<() -> Unit>().invoke()
+        }
 
         productCenterManager = QProductCenterManager(
             mockContext,
@@ -171,7 +174,7 @@ internal class QProductCenterManagerTest {
         productCenterManager.restore(RequestTrigger.Restore, callback)
 
         verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any(), any()) }
         verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
         verify { callback.onSuccess(any()) }
     }
@@ -190,12 +193,31 @@ internal class QProductCenterManagerTest {
 
         verifyOrder {
             mockUserInfoService.storeQonversionUserId(originalOwnerUid)
+            mockRemoteConfigManager.onUserUpdate(null, any())
             mockConfig.uid = originalOwnerUid
-            mockRemoteConfigManager.onUserUpdate()
             mockLaunchResultCacheWrapper.clearPermissionsCache()
         }
         verify { callback.onSuccess(any()) }
         verify { mockLogger.debug(match { it.contains("User switch detected") }) }
+    }
+
+    @Test
+    fun `logout from background changes uid inside remote config identity transition`() {
+        val anonymousUid = "anonymous-user"
+        every { mockIdentityManager.logoutIfNeeded() } returns true
+        every { mockUserInfoService.obtainUserId() } returns anonymousUid
+
+        val logoutThread = Thread(productCenterManager::logout)
+        logoutThread.start()
+        logoutThread.join()
+
+        verifyOrder {
+            mockIdentityManager.logoutIfNeeded()
+            mockUserInfoService.obtainUserId()
+            mockRemoteConfigManager.onUserUpdate(null, any())
+            mockConfig.uid = anonymousUid
+            mockLaunchResultCacheWrapper.clearPermissionsCache()
+        }
     }
 
     @Test
@@ -220,7 +242,7 @@ internal class QProductCenterManagerTest {
         productCenterManager.restore(RequestTrigger.Restore, callback)
 
         verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any(), any()) }
         verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
         verify { callback.onError(any()) }
     }
@@ -352,7 +374,7 @@ internal class QProductCenterManagerTest {
         productCenterManager.restore(RequestTrigger.Restore, callback)
 
         verify(exactly = 0) { mockUserInfoService.storeQonversionUserId(any()) }
-        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate() }
+        verify(exactly = 0) { mockRemoteConfigManager.onUserUpdate(any(), any()) }
         verify(exactly = 0) { mockLaunchResultCacheWrapper.clearPermissionsCache() }
         verify { callback.onSuccess(any()) }
     }

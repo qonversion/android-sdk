@@ -27,6 +27,16 @@ internal interface Cache {
     fun getLong(key: String, defValue: Long): Long
 
     fun putString(key: String, value: String?)
+
+    fun updateStrings(values: Map<String, String?>, removedKeys: Set<String>) {
+        removedKeys.forEach(::remove)
+        values.forEach(::putString)
+    }
+
+    fun updateStringsDurably(values: Map<String, String?>, removedKeys: Set<String>): Boolean {
+        throw UnsupportedOperationException("This cache does not provide durable atomic string updates")
+    }
+
     /**
     * @param defValue is returned if the String preference for key does not exist
     */

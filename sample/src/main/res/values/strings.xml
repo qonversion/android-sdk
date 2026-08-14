@@ -189,6 +189,64 @@
     <string name="enter_custom_url">Enter custom URL</string>
     <string name="configuration_note">Note: Changing these settings will restart the app.</string>
     
+    <!-- Remote Config v2 -->
+    <string name="remote_config_v2">Remote Config v2</string>
+    <string name="rc_v2_current_release">Current release</string>
+    <string name="rc_v2_fetch_activate">Fetch &amp; activate</string>
+    <string name="rc_v2_live_updates">Live updates</string>
+    <string name="rc_v2_identity">Identity</string>
+    <string name="rc_v2_identity_hint">Identify re-scopes resolution and supersedes any fetch in flight.</string>
+    <string name="rc_v2_fetch_and_activate">Fetch and activate</string>
+    <string name="rc_v2_fetch">Fetch</string>
+    <string name="rc_v2_activate">Activate</string>
+    <string name="rc_v2_subscribe">Subscribe to updates</string>
+    <string name="rc_v2_unsubscribe">Unsubscribe</string>
+    <string name="rc_v2_identify">Identify test-user-1</string>
+    <string name="rc_v2_logout">Log out</string>
+    <string name="rc_v2_subscription_active">Subscribed — updates arrive live</string>
+    <string name="rc_v2_subscription_inactive">Not subscribed</string>
+    <string name="rc_v2_subscribed">Subscribed to config updates</string>
+    <string name="rc_v2_logged_out">Logged out</string>
+    <string name="rc_v2_identified">Identified as %1$s</string>
+    <string name="rc_v2_identity_anonymous">Identity: anonymous</string>
+    <string name="rc_v2_identity_format">Identity: %1$s</string>
+    <string name="rc_v2_no_release">No release activated yet — tap Fetch and activate</string>
+    <string name="rc_v2_release_format">Release %1$s · %2$s · %3$s keys</string>
+    <string name="rc_v2_fetch_status_format">Fetch status: %1$s · fetched release %2$s</string>
+    <string name="rc_v2_activation_status_format">Fetch: %1$s · changed: %2$s</string>
+    <string name="rc_v2_update_format">Update: release %1$s · changed: %2$s</string>
+    <string name="rc_v2_no_changed_keys">nothing</string>
+    <string name="rc_v2_no_fetch">not fetched</string>
+    <string name="rc_v2_environment_format">%1$s\nenv %2$s</string>
+    <string name="rc_v2_no_values">No resolved values. The pipeline is dormant unless a QRemoteConfigV2Config was set at init.</string>
+    <string name="rc_v2_source">Source</string>
+    <string name="rc_v2_apply_policy">Apply policy</string>
+    <string name="rc_v2_variation">Variation</string>
+    <string name="rc_v2_value">Value</string>
+    <string name="rc_v2_metadata">Metadata</string>
+    <string name="rc_v2_no_variation">—</string>
+
+    <!-- Calmly paywall demo, driven by the `paywall_config` Remote Config key -->
+    <string name="paywall_demo">Paywall demo (Remote Config)</string>
+    <string name="paywall_brand">CALMLY</string>
+    <string name="paywall_refresh">Refresh config</string>
+    <string name="paywall_activate_now">Activate now</string>
+    <string name="paywall_cta_toast">Demo only — no purchase was started.</string>
+    <string name="paywall_countdown_format">Offer ends in %1$s</string>
+    <string name="paywall_countdown_expired">Offer expired</string>
+    <string name="paywall_fetch_status_format">Fetch: %1$s</string>
+    <string name="paywall_pending_format">New config pending (release #%1$s, %2$s) — applies on next activation</string>
+    <string name="paywall_source_format">config: %1$s · release #%2$s</string>
+    <string name="paywall_source_local">config: local default</string>
+    <string name="paywall_source_segment_format"> · %1$s</string>
+    <string name="paywall_source_bad_color_format"> · bad accentColor \"%1$s\"</string>
+    <string name="paywall_source_server">server</string>
+    <string name="paywall_source_cache">cache</string>
+    <string name="paywall_source_fallback">fallback</string>
+    <string name="paywall_policy_immediate">immediate</string>
+    <string name="paywall_policy_on_next_activate">on next activation</string>
+    <string name="paywall_experiment_format">exp %1$s / group %2$s</string>
+
     <!-- Legacy (keeping for backwards compatibility) -->
     <string name="loading">Loading…</string>
 </resources>

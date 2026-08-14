@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.qonversion.android.sdk.ExperimentalQonversionApi
+import com.qonversion.android.sdk.QRemoteConfigSnapshots
 import com.qonversion.android.sdk.Qonversion
 import com.qonversion.android.sdk.dto.QAttributionProvider
 import com.qonversion.android.sdk.dto.QPurchaseOptions
@@ -25,6 +27,8 @@ import com.qonversion.android.sdk.internal.logger.ConsoleLogger
 import com.qonversion.android.sdk.internal.logger.ExceptionManager
 import com.qonversion.android.sdk.internal.provider.AppStateProvider
 import com.qonversion.android.sdk.internal.redemption.RedemptionManager
+import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigFetchForceReason
+import com.qonversion.android.sdk.internal.remoteconfig.RemoteConfigV2Factory
 import com.qonversion.android.sdk.internal.services.QFallbacksService
 import com.qonversion.android.sdk.internal.storage.SharedPreferencesCache
 import com.qonversion.android.sdk.listeners.QonversionExperimentAttachCallback
@@ -46,6 +50,7 @@ import com.qonversion.android.sdk.dto.QPurchaseResult
 import com.qonversion.android.sdk.dto.QPurchaseResultStatus
 import com.qonversion.android.sdk.dto.QonversionErrorCode
 
+@OptIn(ExperimentalQonversionApi::class)
 internal class QonversionInternal(
     internalConfig: InternalConfig,
     application: Application
@@ -59,6 +64,7 @@ internal class QonversionInternal(
     private var sharedPreferencesCache: SharedPreferencesCache
     private var exceptionManager: ExceptionManager
     private var remoteConfigManager: QRemoteConfigManager
+    private val remoteConfigsV2: QRemoteConfigSnapshots
     private var fallbackService: QFallbacksService
     private val redemptionManager: RedemptionManager
 
@@ -115,6 +121,33 @@ internal class QonversionInternal(
         }
 
         remoteConfigManager.userPropertiesManager = userPropertiesManager
+
+        // Remote Config v2 is opt-in: with no QRemoteConfigV2Config the factory builds nothing but
+        // the (bundled-defaults only) public facade, so the pipeline stays completely dormant.
+        val remoteConfigsV2Impl = RemoteConfigV2Factory.create(
+            application,
+            internalConfig,
+            sharedPreferencesCache,
+            logger,
+        )
+        remoteConfigsV2 = remoteConfigsV2Impl
+        remoteConfigsV2Impl.manager?.let { manager ->
+            manager.updateIdentity(
+                internalConfig.uid,
+                RemoteConfigFetchForceReason.Build,
+                userInfoService.getPartnersIdentityId(),
+            )
+            // The v1 manager owns the identity transition; v2 switches its scope inside it, so the
+            // previous identity's release stops being readable at the same instant for both.
+            remoteConfigManager.identityBridge.onIdentityScopeChanged = { externalUserId ->
+                manager.updateIdentity(internalConfig.uid, RemoteConfigFetchForceReason.Identify, externalUserId)
+            }
+            // Targeting can change without the uid changing — identify() that only attaches an
+            // external id, an experiment attach, or an explicit invalidation. Re-read, keep serving.
+            remoteConfigManager.identityBridge.onTargetingInvalidated = { externalUserId ->
+                manager.refreshTargeting(externalUserId)
+            }
+        }
 
         val lifecycleHandler = AppLifecycleHandler(this)
         postToMainThread { ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleHandler) }
@@ -306,6 +339,8 @@ internal class QonversionInternal(
             }
         })
     }
+
+    override fun remoteConfigSnapshots(): QRemoteConfigSnapshots = remoteConfigsV2
 
     override fun invalidateRemoteConfigsCache() {
         remoteConfigManager.invalidateRemoteConfigsCache()

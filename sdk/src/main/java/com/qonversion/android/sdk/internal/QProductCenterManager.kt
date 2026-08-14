@@ -237,12 +237,13 @@ internal class QProductCenterManager internal constructor(
                     // Invalidate BEFORE handlePendingRequests: the replay must
                     // miss the cache, or queued completions would be served the
                     // pre-identify evaluation.
-                    remoteConfigManager.invalidateRemoteConfigsCache()
+                    remoteConfigManager.invalidateRemoteConfigsCache(identityId)
                     handlePendingRequests()
                     fireIdentitySuccess(identityId)
                 } else {
-                    internalConfig.uid = qonversionUid
-                    remoteConfigManager.onUserUpdate()
+                    remoteConfigManager.onUserUpdate(identityId) {
+                        internalConfig.uid = qonversionUid
+                    }
                     launchResultCache.clearPermissionsCache()
                     launch(RequestTrigger.Identify, object : QonversionLaunchCallback {
                         override fun onSuccess(launchResult: QLaunchResult) {
@@ -472,13 +473,13 @@ internal class QProductCenterManager internal constructor(
         val isLogoutNeeded = identityManager.logoutIfNeeded()
 
         if (isLogoutNeeded) {
-            remoteConfigManager.onUserUpdate()
+            val userId = userInfoService.obtainUserId()
+            remoteConfigManager.onUserUpdate(null) {
+                internalConfig.uid = userId
+            }
             launchResultCache.clearPermissionsCache()
 
             unhandledLogoutAvailable = true
-
-            val userId = userInfoService.obtainUserId()
-            internalConfig.uid = userId
         }
     }
 
@@ -527,8 +528,9 @@ internal class QProductCenterManager internal constructor(
         )
 
         userInfoService.storeQonversionUserId(newUserId)
-        internalConfig.uid = newUserId
-        remoteConfigManager.onUserUpdate()
+        remoteConfigManager.onUserUpdate(null) {
+            internalConfig.uid = newUserId
+        }
         launchResultCache.clearPermissionsCache()
     }
 

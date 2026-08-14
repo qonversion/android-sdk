@@ -62,6 +62,34 @@
                     app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonRemoteConfigV2"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/remote_config_v2"
+                    android:textColor="@color/colorWhite"
+                    app:backgroundTint="@color/colorDark"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_remote_config"
+                    app:iconTint="@color/colorWhite"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonPaywallDemo"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/paywall_demo"
+                    android:textColor="@color/colorWhite"
+                    app:backgroundTint="@color/colorDark"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_remote_config"
+                    app:iconTint="@color/colorWhite"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonNoCodes"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"

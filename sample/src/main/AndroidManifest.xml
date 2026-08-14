@@ -46,9 +46,12 @@
               SDK. Production merchants set this to their project's uid
               issued in Qonversion Connect Apps onboarding.
 
-              Scoped to the Qonversion sample project uid `kZfGkwHa`
-              (matches DEFAULT_PROJECT_KEY in App.java). Must stay in sync
-              with whatever project this sample initializes the SDK with.
+              Scoped to the Qonversion sample project uid `kZfGkwHa`.
+              Must stay in sync with whatever project this sample
+              initializes the SDK with — while App.java defaults to the
+              Remote Config v2 local playground project this filter does
+              not match, so redemption links stay inert until the project
+              key is switched back via the Home configuration dialog.
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

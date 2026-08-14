@@ -1,6 +1,7 @@
 package com.qonversion.android.sdk.internal
 
 import com.qonversion.android.sdk.QonversionConfig
+import com.qonversion.android.sdk.dto.remoteconfig.QRemoteConfigV2Config
 import com.qonversion.android.sdk.internal.dto.config.PrimaryConfig
 import com.qonversion.android.sdk.dto.QEnvironment
 import com.qonversion.android.sdk.dto.QLaunchMode
@@ -11,10 +12,12 @@ import com.qonversion.android.sdk.internal.provider.PrimaryConfigProvider
 import com.qonversion.android.sdk.internal.provider.UidProvider
 import com.qonversion.android.sdk.listeners.QDeferredPurchasesListener
 
+@OptIn(com.qonversion.android.sdk.ExperimentalQonversionApi::class)
 internal class InternalConfig(
     override var primaryConfig: PrimaryConfig,
     override val cacheConfig: CacheConfig,
-    var deferredPurchasesListener: QDeferredPurchasesListener? = null
+    var deferredPurchasesListener: QDeferredPurchasesListener? = null,
+    val remoteConfigV2Config: QRemoteConfigV2Config? = null
 ) : EnvironmentProvider,
     PrimaryConfigProvider,
     CacheConfigProvider,
@@ -33,7 +36,8 @@ internal class InternalConfig(
     constructor(qonversionConfig: QonversionConfig) : this(
         qonversionConfig.primaryConfig,
         qonversionConfig.cacheConfig,
-        qonversionConfig.deferredPurchasesListener
+        qonversionConfig.deferredPurchasesListener,
+        qonversionConfig.remoteConfigV2Config
     )
 
     override val apiUrl: String

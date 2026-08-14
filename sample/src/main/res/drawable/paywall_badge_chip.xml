@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Badge chip. The fill is re-tinted at runtime with the configured accent color. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/colorDark" />
+    <corners android:radius="10dp" />
+</shape>

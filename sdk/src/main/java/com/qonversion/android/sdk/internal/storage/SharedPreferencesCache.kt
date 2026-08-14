@@ -31,6 +31,45 @@ internal class SharedPreferencesCache(
     override fun putString(key: String, value: String?) =
         preferences.edit().putString(key, value).apply()
 
+    override fun updateStrings(values: Map<String, String?>, removedKeys: Set<String>) {
+        preferences.edit().also { editor ->
+            removedKeys.forEach { key -> editor.remove(key) }
+            values.forEach { (key, value) -> editor.putString(key, value) }
+        }.apply()
+    }
+
+    @Suppress("TooGenericExceptionCaught") // Any runtime commit failure needs the same in-memory rollback.
+    override fun updateStringsDurably(values: Map<String, String?>, removedKeys: Set<String>): Boolean {
+        val affectedKeys = values.keys + removedKeys
+        val previousValues = affectedKeys.associateWith { key ->
+            val exists = preferences.contains(key)
+            exists to if (exists) preferences.getString(key, null) else null
+        }
+        val committed = try {
+            preferences.edit().also { editor ->
+                removedKeys.forEach { key -> editor.remove(key) }
+                values.forEach { (key, value) -> editor.putString(key, value) }
+            }.commit()
+        } catch (error: RuntimeException) {
+            restoreStrings(previousValues)
+            throw error
+        }
+        if (!committed) restoreStrings(previousValues)
+        return committed
+    }
+
+    private fun restoreStrings(previousValues: Map<String, Pair<Boolean, String?>>) {
+        preferences.edit().also { editor ->
+            previousValues.forEach { (key, previous) ->
+                if (previous.first) {
+                    editor.putString(key, previous.second)
+                } else {
+                    editor.remove(key)
+                }
+            }
+        }.apply()
+    }
+
     override fun getString(key: String, defValue: String?): String? =
         preferences.getString(key, defValue)
 

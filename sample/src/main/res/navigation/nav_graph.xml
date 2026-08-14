@@ -44,6 +44,18 @@
         tools:layout="@layout/fragment_remote_configs" />
 
     <fragment
+        android:id="@+id/remoteConfigV2Fragment"
+        android:name="io.qonversion.sample.RemoteConfigV2Fragment"
+        android:label="@string/remote_config_v2"
+        tools:layout="@layout/fragment_remote_config_v2" />
+
+    <fragment
+        android:id="@+id/paywallDemoFragment"
+        android:name="io.qonversion.sample.PaywallDemoFragment"
+        android:label="@string/paywall_demo"
+        tools:layout="@layout/fragment_paywall_demo" />
+
+    <fragment
         android:id="@+id/userFragment"
         android:name="io.qonversion.sample.UserFragment"
         android:label="@string/user"
