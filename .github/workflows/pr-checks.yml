@@ -12,6 +12,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    # DEV-1837: sdk 9.3.0-9.7.0 and nocodes 1.7.0-1.11.0 shipped a trust-all X509TrustManager and a hostname
+    # verifier that accepted every host (42ba1424). Nothing caught it for six months, so the guard is mechanical.
+    # Certificate pinning is deliberately not in scope: if it is ever added, extend this pattern on purpose.
+    - name: No TLS trust overrides in shipped sources
+      run: |
+        PATTERN='X509TrustManager|checkServerTrusted|hostnameVerifier|HostnameVerifier|sslSocketFactory|setSSLSocketFactory|SSLContext\.getInstance|cleartextTrafficPermitted|networkSecurityConfig|onReceivedSslError'
+        HITS=$(grep -rnE "$PATTERN" sdk/src/main nocodes/src/main --include='*.kt' --include='*.java' --include='*.xml' || true)
+        if [ -n "$HITS" ]; then
+          echo "::error::TLS trust override found in shipped sources - certificate validation must stay enabled"
+          echo "$HITS"
+          exit 1
+        fi
+        echo "OK: no TLS trust overrides in sdk/src/main or nocodes/src/main"
+
     - name: set up JDK 18
       uses: actions/setup-java@v1
       with:
