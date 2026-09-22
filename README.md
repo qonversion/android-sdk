@@ -17,7 +17,7 @@ Qonversion - In-app subscription monetization: implement subscriptions and grow 
 </p>
 
 [![Release](https://img.shields.io/github/release/qonversion/android-sdk.svg?style=flat)](https://github.com/qonversion/android-sdk/releases)
-[![MIT License](http://img.shields.io/cocoapods/l/Qonversion.svg?style=flat)](https://qonversion.io)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 
 ## In-App Subscription Implementation & Management
@@ -75,7 +75,7 @@ Send user-level subscription data to your favorite platforms.
 * Adjust
 * Singular
 * CleverTap
-* [All other integrations here](qonversion.io/integrations)
+* [All other integrations here](https://qonversion.io/integrations)
 
 <p align="center">
      <a href="https://documentation.qonversion.io/docs/integrations-overview"><img width="90%", src="https://qcdn3.sfo3.digitaloceanspaces.com/github/integrations.png">
@@ -188,13 +188,27 @@ Qonversion.shared.reissueRedemption(email, object : QonversionReissueCallback {
 * **Track and increase your revenue.** Qonversion provides detailed real-time revenue analytics including cohort analysis, trial conversion rates, country segmentation, and much more.
 * **Integrations with the leading mobile platforms.** Qonversion allows sending data to platforms like AppsFlyer, Adjust, Branch, Tenjin, Facebook Ads, Amplitude, Mixpanel, and many others.
 * **Change promoted in-app products.** Change promoted in-app products anytime without app releases.
-* **A/B test** and identify winning in-app purchases, subscriptions or paywals.
+* **A/B test** and identify winning in-app purchases, subscriptions or paywalls.
 * **Cross-device and cross-platform access management.** If you provide user authorization in your app, you can easily set Qonversion to provide premium access to authorized users across devices and operating systems.
 * **SDK caches the data.** Qonversion SDK caches purchase data including in-app products and entitlements, so the user experience is not affected even with the slow or interrupting network connection.
 * **Webhooks.** You can easily send all of the data to your server with Qonversion webhooks.
 * **Customer support.** You can always reach out to our customer support and get the help required.
 
 Convinced? Let's go!
+
+## Installation
+
+The SDK is distributed through Maven Central. Add it to the dependencies section of your app's **build.gradle**:
+
+```groovy
+dependencies {
+    implementation 'io.qonversion.android.sdk:sdk:9.+'
+}
+```
+
+The SDK requires `minSdkVersion` 23. Check the [releases](https://github.com/qonversion/android-sdk/releases) if you want to pin an exact version instead of the latest 9.x.
+
+See the [Android setup guide](https://documentation.qonversion.io/docs/android-sdk) for the full installation steps.
 
 ## Documentation
 
@@ -221,7 +235,7 @@ Contributions are what make the open source community such an amazing place to l
 
 ## Have a question?
 
-Contact us via [issues on GitHub](https://github.com/qonversion/android-sdk/issues) or [ask a question](https://documentation.qonversion.io/discuss-new) on the site.
+Contact us via [issues on GitHub](https://github.com/qonversion/android-sdk/issues) or the [contact form](https://qonversion.io/contact-us) on our site.
 
 ## License
 
