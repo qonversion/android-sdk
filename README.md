@@ -196,6 +196,20 @@ Qonversion.shared.reissueRedemption(email, object : QonversionReissueCallback {
 
 Convinced? Let's go!
 
+## Installation
+
+The SDK is distributed through Maven Central. Add it to the dependencies section of your app's **build.gradle**:
+
+```groovy
+dependencies {
+    implementation 'io.qonversion.android.sdk:sdk:9.+'
+}
+```
+
+The SDK requires `minSdkVersion` 23. Check the [releases](https://github.com/qonversion/android-sdk/releases) if you want to pin an exact version instead of the latest 9.x.
+
+See the [Android setup guide](https://documentation.qonversion.io/docs/android-sdk) for the full installation steps.
+
 ## Documentation
 
 Check the [full documentation](https://documentation.qonversion.io/docs/quickstart) to learn about implementation details and available features.
