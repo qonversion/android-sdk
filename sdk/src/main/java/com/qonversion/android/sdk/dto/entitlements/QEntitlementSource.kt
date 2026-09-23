@@ -5,7 +5,8 @@ enum class QEntitlementSource(internal val key: String) {
     AppStore("appstore"), // App Store
     PlayStore("playstore"), // Play Store
     Stripe("stripe"), // Stripe
-    Manual("manual"); // The entitlement was activated manually
+    Manual("manual"), // The entitlement was activated manually
+    Paddle("paddle"); // Paddle
 
     companion object {
         fun fromKey(key: String): QEntitlementSource {
