@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace 'io.qonversion.nocodes'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdk 23
-        targetSdk 34
+        targetSdk 35
 
         group = 'io.qonversion.nocodes'
         version = nocodes.versionName
