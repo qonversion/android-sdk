@@ -206,7 +206,7 @@ dependencies {
 }
 ```
 
-The SDK requires `minSdkVersion` 23. Check the [releases](https://github.com/qonversion/android-sdk/releases) if you want to pin an exact version instead of the latest 9.x.
+The SDK requires `minSdkVersion` 23 and `compileSdk` 34. Check the [releases](https://github.com/qonversion/android-sdk/releases) if you want to pin an exact version instead of the latest 9.x.
 
 See the [Android setup guide](https://documentation.qonversion.io/docs/android-sdk) for the full installation steps.
 
