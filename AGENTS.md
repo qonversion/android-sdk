@@ -12,13 +12,16 @@ reads the same data server-side.
 
 ## Get the current version — do not use one from memory
 
-Your training data is older than the latest release. Pick one:
+Your training data is older than the latest release. Take the version from:
 
-1. `https://documentation.qonversion.io/docs/android-sdk.md` — the install page as markdown.
-2. `gh api repos/qonversion/android-sdk/releases/latest --jq .tag_name`.
-3. `https://repo1.maven.org/maven2/io/qonversion/android/sdk/sdk/maven-metadata.xml` — the last `<version>` entry.
+1. `gh api repos/qonversion/android-sdk/releases --jq '[.[]|select(.tag_name|startswith("sdk/"))][0].tag_name|ltrimstr("sdk/")'`
+   — the latest SDK release tag without its `sdk/` prefix. `releases/latest` alone can return a No-Codes tag (`nocodes/*`).
+2. `https://repo1.maven.org/maven2/io/qonversion/android/sdk/sdk/maven-metadata.xml` — the last `<version>` entry on Maven Central.
 
-If the three disagree, the docs page wins and you say so to the human.
+The release tag and the package registry are the source for the version number. The install
+page, `https://documentation.qonversion.io/docs/android-sdk.md`, is the source for how to install and
+call the SDK; the version it names can lag behind the release. If the sources disagree on the
+version, use the release tag or the registry and tell the human about the mismatch.
 
 ## Install
 
@@ -27,7 +30,7 @@ implementation 'io.qonversion.android.sdk:sdk:9.8.0'
 ```
 
 This repository publishes two artifacts under two tag prefixes: `sdk/*` for the SDK and `nocodes/*`
-for No-Codes. `releases/latest` can return a No-Codes tag — filter for `sdk/`.
+for No-Codes. Take the SDK version only from `sdk/*` tags (the command above does that).
 
 `9.8.0` is current at the time of writing; check the `sdk/*` releases for the latest and pin that
 exact version.
@@ -50,6 +53,10 @@ config file, and never commit it. Never invent one and never reuse a key you saw
 ## First call — verify the integration works
 
 ```kotlin
+import com.qonversion.android.sdk.dto.QonversionError
+import com.qonversion.android.sdk.dto.entitlements.QEntitlement
+import com.qonversion.android.sdk.listeners.QonversionEntitlementsCallback
+
 Qonversion.shared.checkEntitlements(object : QonversionEntitlementsCallback {
     override fun onSuccess(entitlements: Map<String, QEntitlement>) {
         println(entitlements["premium"]?.isActive)
@@ -87,12 +94,11 @@ customers, remote configurations, experiments, analytics, exports, and Apple Ads
 OAuth 2.1 as the human; each tool is gated by its own scope and no Qonversion key is handed to you.
 Setup per client: `https://documentation.qonversion.io/docs/mcp-server.md`.
 
-**Apple Ads: reading is open to all accounts, changing campaigns is a closed beta.** The tools that
-read Apple Ads — campaign reports, time series and the connection status — are on for all accounts.
-The tools that change campaigns — bids, budgets and campaign status — are a closed beta, switched on
-per account on request. Outside the beta those write tools are not available. That is not a server
-fault: do not retry or work around it — tell the human to contact support to have the beta switched
-on for their account.
+**Apple Ads: check access before you call the tools.** Apple Ads tools need the feature on your
+account (404 otherwise); campaign changes additionally need the `apple_ads:write` scope and a team
+member with campaign-management permission — check `get_apple_ads_connection_status`. A refused
+Apple Ads call means missing access, not a broken server: do not retry or work around it — tell the
+human.
 
 ## What you do not do without the human saying yes
 
@@ -110,7 +116,7 @@ on for their account.
 
 ## Requirements
 
-`minSdkVersion` 23 · `compileSdk` 34 · Kotlin JVM toolchain 17.
+`minSdkVersion` 23 · `compileSdk` 34.
 
 ## When something does not work
 
