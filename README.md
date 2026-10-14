@@ -77,9 +77,9 @@ Full walk-through, both modes and the store setup: [Quick start](https://documen
 Redeeming a web purchase inside the app — the intent filter, `assetlinks.json`, the certificate
 fingerprint and the reissue flow — is documented in full on
 [Redeem web purchases in your app](https://documentation.qonversion.io/docs/web-funnel-redemption).
-Two things worth knowing before you read it: the entitlement is already granted server-side when the
-link arrives, so you do not add an `identify` call yourself, and the redemption `Uri` carries a
-single-use token — do not log or display it.
+When `handleRedemptionLink` returns success, the entitlement has already been granted server-side,
+so you do not add an `identify` call yourself; the redemption `Uri` carries a single-use token — do
+not log or display it.
 
 ## What this SDK does
 
@@ -141,7 +141,8 @@ Prefer to do it by hand? The steps are in the [quick start](https://documentatio
 ## Sample app
 
 An app that initializes the SDK, lists products, makes a purchase and reads entitlements:
-[`sample/`](sample).
+[`sample/`](sample). It runs in the sandbox environment; for your own initialization, use the
+Quickstart snippet above.
 
 ## Requirements
 
