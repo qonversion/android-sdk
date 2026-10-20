@@ -113,7 +113,7 @@ what it reports.
 
 ## Sample
 
-`sample/` — a Java demo app that initializes the SDK, lists products, purchases and reads entitlements; it runs in the sandbox environment. It is not a reference for initialization: `App.java` hardcodes a sample project key, sets `QEnvironment.Sandbox` and a proxy URL. The reference is the Initialize snippet above (the same as in the README).
+`sample/` — a demo app (Kotlin, with `App.java` as the entry point) that initializes the SDK, lists products, purchases and reads entitlements; it runs in the sandbox environment. It is not a reference for initialization: `App.java` hardcodes a sample project key, sets `QEnvironment.Sandbox` and a proxy URL. The reference is the Initialize snippet above (the same as in the README).
 
 ## Requirements
 
